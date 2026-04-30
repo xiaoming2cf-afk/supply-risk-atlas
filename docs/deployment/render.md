@@ -9,7 +9,7 @@ SupplyRiskAtlas deploys to Render as two Git-backed web services managed by the 
 | `supply-risk-atlas-api` | Python | FastAPI-compatible API envelope routes under `/api/v1/*` |
 | `supply-risk-atlas-web` | Node.js | Next.js web app and same-origin API proxy |
 
-The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=/api/v1` on Render. Requests from the browser go to the web service first, then the Next.js route handler proxies them to the API over Render's private network using `SUPPLY_RISK_API_HOSTPORT`.
+The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=/api/v1` on Render. Requests from the browser go to the web service first, then the Next.js route handler proxies them to the API using `SUPPLY_RISK_API_ORIGIN`, with `SUPPLY_RISK_API_HOSTPORT` retained as a private-network fallback.
 The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds.
 
 ## Deploy From GitHub

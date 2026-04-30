@@ -53,12 +53,38 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   const params = await context.params;
   const path = params.path?.join("/") ?? "";
   const upstreamUrl = new URL(`/api/v1/${path}${request.nextUrl.search}`, API_ORIGIN);
-  const upstreamResponse = await fetch(upstreamUrl, {
-    method: request.method,
-    headers: forwardHeaders(request),
-    body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
-    cache: "no-store"
-  });
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(upstreamUrl, {
+      method: request.method,
+      headers: forwardHeaders(request),
+      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
+      cache: "no-store"
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        request_id: crypto.randomUUID(),
+        status: "error",
+        data: null,
+        metadata: {
+          graph_version: "unavailable",
+          feature_version: "unavailable",
+          label_version: "unavailable",
+          model_version: "unavailable",
+          as_of_time: new Date().toISOString()
+        },
+        warnings: [`Unable to reach SupplyRiskAtlas API at ${API_ORIGIN}.`],
+        errors: [
+          {
+            code: "api_proxy_upstream_unreachable",
+            message: error instanceof Error ? error.message : "SupplyRiskAtlas API proxy upstream failed."
+          }
+        ]
+      },
+      { status: 502, headers: corsHeaders() }
+    );
+  }
 
   return new NextResponse(upstreamResponse.body, {
     status: upstreamResponse.status,
