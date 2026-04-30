@@ -35,7 +35,7 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: NEXT_PUBLIC_SUPPLY_RISK_API_URL
-        value: /api/v1
+        value: https://supply-risk-atlas-api.onrender.com/api/v1
       - key: SUPPLY_RISK_API_ORIGIN
         value: https://supply-risk-atlas-api.onrender.com
       - key: SUPPLY_RISK_API_HOSTPORT

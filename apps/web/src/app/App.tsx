@@ -32,6 +32,18 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "system-health-center": ServerCog
 };
 
+function resolveApiBaseUrl() {
+  const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname === "supply-risk-atlas-web.onrender.com" &&
+    (!configured || configured === "/api/v1")
+  ) {
+    return "https://supply-risk-atlas-api.onrender.com/api/v1";
+  }
+  return configured;
+}
+
 function getHashPage(): DashboardPageId {
   if (typeof window === "undefined") {
     return "global-risk-cockpit";
@@ -67,7 +79,7 @@ export function App() {
   const [lastRefresh, setLastRefresh] = useState("booting");
   const [error, setError] = useState<string | null>(null);
   const activePage = dashboardPages.find((page) => page.id === pageId) ?? dashboardPages[0];
-  const configuredApiBaseUrl = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
+  const configuredApiBaseUrl = resolveApiBaseUrl();
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
