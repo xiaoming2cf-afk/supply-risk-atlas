@@ -183,7 +183,7 @@ export function App() {
           </div>
         </div>
 
-        <label className="language-control">
+        <label className="language-control" data-feature="page-translator">
           <span>{t("Page language")}</span>
           <select
             aria-label={t("Page language")}
