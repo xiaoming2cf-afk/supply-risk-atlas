@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+﻿import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import net from "node:net";
@@ -20,9 +20,13 @@ const pages = [
   ["Shock Simulator", "#shock-simulator"],
   ["Causal Evidence Board", "#causal-evidence-board"],
   ["Graph Version Studio", "#graph-version-studio"],
-  ["Translator", "#translator"],
   ["System Health Center", "#system-health-center"],
 ];
+
+const zhGlobalRiskTitle = "\u5168\u7403\u98ce\u9669\u9a7e\u9a76\u8231";
+const zhGraphExplorerLabel = "\u56fe\u8c31\u63a2\u7d22\u5668";
+const frGlobalRiskTitle = "Poste de pilotage des risques mondiaux";
+const frGraphExplorerLabel = "Explorateur de graphe";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -98,9 +102,38 @@ async function main() {
     }
 
     await navigate(client, `${webUrl}#global-risk-cockpit`);
-    await evaluate(client, `Array.from(document.querySelectorAll(".nav-button")).find((button) => button.textContent.includes("Graph Explorer"))?.click()`);
+    await evaluate(client, `document.querySelector('[data-page-id="graph-explorer"]')?.click()`);
     const navClick = await waitFor(client, () => pageState(client), (state) => state.title === "Graph Explorer");
     checks.push({ page: "nav click to Graph Explorer", title: navClick.title, passed: navClick.title === "Graph Explorer" });
+
+    await navigate(client, `${webUrl}#global-risk-cockpit`);
+    const languageBefore = await waitFor(client, () => pageLanguageState(client), (state) => state.title === "Global Risk Cockpit");
+    await setPageLanguage(client, "zh");
+    const zhState = await waitFor(
+      client,
+      () => pageLanguageState(client),
+      (state) => state.language === "zh" && state.title === zhGlobalRiskTitle && state.navText.includes(zhGraphExplorerLabel),
+    );
+    await setPageLanguage(client, "fr");
+    const frState = await waitFor(
+      client,
+      () => pageLanguageState(client),
+      (state) => state.language === "fr" && state.title === frGlobalRiskTitle && state.navText.includes(frGraphExplorerLabel),
+    );
+    await setPageLanguage(client, "en");
+    const languageAfter = await waitFor(client, () => pageLanguageState(client), (state) => state.language === "en" && state.title === "Global Risk Cockpit");
+    checks.push({
+      page: "global page translator",
+      beforeLanguage: languageBefore.language,
+      zhTitle: zhState.title,
+      frTitle: frState.title,
+      afterLanguage: languageAfter.language,
+      passed:
+        languageBefore.language === "en" &&
+        zhState.title === zhGlobalRiskTitle &&
+        frState.title === frGlobalRiskTitle &&
+        languageAfter.language === "en",
+    });
 
     await navigate(client, `${webUrl}#shock-simulator`);
     const before = await waitFor(client, () => shockState(client), (state) => state.hasImpact && Number(state.severity) === 72);
@@ -142,27 +175,6 @@ async function main() {
       beforeImpact: before.impactScore,
       afterImpact: after.impactScore,
       passed: Number(after.severity) >= 90 && after.impactScore !== before.impactScore,
-    });
-
-    await navigate(client, `${webUrl}#translator`);
-    const translatorBefore = await waitFor(client, () => translatorState(client), (state) => state.title === "Translator" && state.hasOutput);
-    await evaluate(client, `(() => {
-      const selects = document.querySelectorAll('select');
-      const target = selects[1];
-      target.value = 'fr';
-      target.dispatchEvent(new Event('change', { bubbles: true }));
-    })()`);
-    const translatorAfter = await waitFor(
-      client,
-      () => translatorState(client),
-      (state) => state.output.includes("risque de chaîne d'approvisionnement") && state.targetLanguage === "fr",
-    );
-    checks.push({
-      page: "Translator local state",
-      beforeTarget: translatorBefore.targetLanguage,
-      afterTarget: translatorAfter.targetLanguage,
-      outputPrefix: translatorAfter.output.slice(0, 80),
-      passed: translatorAfter.output.includes("risque de chaîne d'approvisionnement"),
     });
 
     await client.send("Emulation.setDeviceMetricsOverride", {
@@ -228,17 +240,23 @@ async function shockState(client) {
   })()`);
 }
 
-async function translatorState(client) {
+async function pageLanguageState(client) {
   return evaluate(client, `(() => {
-    const selects = document.querySelectorAll('select');
-    const output = document.querySelector('.translation-output')?.textContent?.trim() ?? '';
     return {
+      language: document.querySelector('.page-language-select')?.value ?? '',
       title: document.querySelector('h1')?.textContent?.trim() ?? '',
-      sourceLanguage: selects[0]?.value ?? '',
-      targetLanguage: selects[1]?.value ?? '',
-      output,
-      hasOutput: output.length > 0
+      htmlLang: document.documentElement.lang,
+      navText: Array.from(document.querySelectorAll('.nav-label')).map((item) => item.textContent?.trim() ?? '').join(' | '),
+      panelText: Array.from(document.querySelectorAll('.panel-title')).map((item) => item.textContent?.trim() ?? '').join(' | ')
     };
+  })()`);
+}
+
+async function setPageLanguage(client, language) {
+  await evaluate(client, `(() => {
+    const select = document.querySelector('.page-language-select');
+    select.value = '${language}';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
   })()`);
 }
 

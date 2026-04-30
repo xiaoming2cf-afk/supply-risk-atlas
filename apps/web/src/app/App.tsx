@@ -9,7 +9,6 @@ import {
   GitBranch,
   Globe2,
   Layers3,
-  Languages,
   Network,
   RefreshCw,
   Route,
@@ -20,6 +19,14 @@ import {
 import { createSupplyRiskApiClient, getMockSupplyRiskData, type SupplyRiskMockData } from "@supply-risk/api-client";
 import { dashboardPages, type DashboardPageId } from "@supply-risk/shared-types";
 import { Button, IconButton } from "./components";
+import {
+  I18nProvider,
+  localizeSupplyRiskData,
+  pageLanguages,
+  translateDashboardPage,
+  translateText,
+  type PageLanguage
+} from "./i18n";
 import { renderPage } from "./pages";
 
 const iconByPage: Record<DashboardPageId, typeof Globe2> = {
@@ -30,7 +37,6 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "shock-simulator": SlidersHorizontal,
   "causal-evidence-board": ShieldAlert,
   "graph-version-studio": GitBranch,
-  translator: Languages,
   "system-health-center": ServerCog
 };
 
@@ -74,13 +80,27 @@ function useHashPage() {
   return [pageId, setPageId] as const;
 }
 
+function getInitialLanguage(): PageLanguage {
+  if (typeof window === "undefined") return "en";
+  const stored = window.localStorage.getItem("supply-risk-atlas-language");
+  if (stored === "zh" || stored === "en" || stored === "fr") return stored;
+  return "en";
+}
+
 export function App() {
   const [pageId, setPageId] = useHashPage();
+  const [language, setLanguageState] = useState<PageLanguage>(getInitialLanguage);
   const [data, setData] = useState<SupplyRiskMockData>(() => getMockSupplyRiskData());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState("booting");
   const [error, setError] = useState<string | null>(null);
-  const activePage = dashboardPages.find((page) => page.id === pageId) ?? dashboardPages[0];
+  const activePageDefinition = dashboardPages.find((page) => page.id === pageId) ?? dashboardPages[0];
+  const localizedPages = useMemo(
+    () => dashboardPages.map((page) => translateDashboardPage(page, language)),
+    [language]
+  );
+  const activePage = translateDashboardPage(activePageDefinition, language);
+  const localizedData = useMemo(() => localizeSupplyRiskData(data, language), [data, language]);
   const configuredApiBaseUrl = resolveApiBaseUrl();
   const apiClient = useMemo(
     () =>
@@ -90,9 +110,17 @@ export function App() {
       }),
     [configuredApiBaseUrl]
   );
-  const runtimeModeLabel = configuredApiBaseUrl ? (apiClient.mode === "real" ? "API linked" : "API fallback") : "mock data";
+  const t = (value: string) => translateText(value, language);
+  const runtimeModeLabel = configuredApiBaseUrl ? (apiClient.mode === "real" ? t("API linked") : t("API fallback")) : t("mock data");
   const runtimeNotice =
-    configuredApiBaseUrl && apiClient.mode !== "real" ? "Using mock fallback; API endpoint unavailable." : null;
+    configuredApiBaseUrl && apiClient.mode !== "real" ? t("Using mock fallback; API endpoint unavailable.") : null;
+
+  const setLanguage = (nextLanguage: PageLanguage) => {
+    setLanguageState(nextLanguage);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("supply-risk-atlas-language", nextLanguage);
+    }
+  };
 
   const refreshData = async () => {
     setIsRefreshing(true);
@@ -137,7 +165,12 @@ export function App() {
     void refreshData();
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = language === "zh" ? "zh-CN" : language;
+  }, [language]);
+
   return (
+    <I18nProvider language={language} setLanguage={setLanguage}>
     <div className="app-shell">
       <aside className="side-rail" aria-label="SupplyRiskAtlas navigation">
         <div className="brand-lockup">
@@ -146,19 +179,36 @@ export function App() {
           </div>
           <div>
             <p className="brand-name">SupplyRiskAtlas</p>
-            <span className="brand-system">industrial graph console</span>
+            <span className="brand-system">{t("industrial graph console")}</span>
           </div>
         </div>
 
+        <label className="language-control">
+          <span>{t("Page language")}</span>
+          <select
+            aria-label={t("Page language")}
+            className="page-language-select"
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as PageLanguage)}
+          >
+            {pageLanguages.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.nativeLabel} / {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <nav>
           <ul className="nav-list">
-            {dashboardPages.map((page) => {
+            {localizedPages.map((page) => {
               const Icon = iconByPage[page.id];
               return (
                 <li key={page.id}>
                   <button
                     aria-current={activePage.id === page.id ? "page" : undefined}
                     className={`nav-button ${activePage.id === page.id ? "is-active" : ""}`}
+                    data-page-id={page.id}
                     onClick={() => setPageId(page.id)}
                     type="button"
                   >
@@ -180,7 +230,7 @@ export function App() {
             <span className={`dot ${apiClient.mode === "mock" ? "mock" : ""}`} />
           </div>
           <div className="mode-strip">
-            <span>refresh</span>
+            <span>{t("refresh")}</span>
             <span>{lastRefresh}</span>
           </div>
         </div>
@@ -190,7 +240,7 @@ export function App() {
         <header className="topbar">
           <div className="title-block">
             <h1 className="page-title">{activePage.label}</h1>
-            <p className="page-description">{error ?? runtimeNotice ?? activePage.description}</p>
+            <p className="page-description">{error ? t(error) : runtimeNotice ?? activePage.description}</p>
           </div>
           <div className="top-actions">
             <IconButton icon={Activity} label="Open live monitor" />
@@ -202,8 +252,9 @@ export function App() {
           </div>
         </header>
 
-        <div className="content">{renderPage(activePage.id, { data, apiClient })}</div>
+        <div className="content">{renderPage(activePage.id, { data: localizedData, apiClient })}</div>
       </main>
     </div>
+    </I18nProvider>
   );
 }

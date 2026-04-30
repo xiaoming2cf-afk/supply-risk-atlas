@@ -102,7 +102,6 @@ export type DashboardPageId =
   | "shock-simulator"
   | "causal-evidence-board"
   | "graph-version-studio"
-  | "translator"
   | "system-health-center";
 
 export interface DashboardPage {
@@ -154,12 +153,6 @@ export const dashboardPages: DashboardPage[] = [
     label: "Graph Version Studio",
     shortLabel: "Versions",
     description: "Compare graph builds, schema drift, and promotion readiness",
-  },
-  {
-    id: "translator",
-    label: "Translator",
-    shortLabel: "Translate",
-    description: "Manual Chinese, English, and French translation workbench",
   },
   {
     id: "system-health-center",

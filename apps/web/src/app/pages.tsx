@@ -1,16 +1,12 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+﻿import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
   Activity,
   AlertTriangle,
-  ArrowLeftRight,
-  ArrowRight,
   CheckCircle2,
-  Clipboard,
   Database,
   Factory,
   Filter,
   GitBranch,
-  Languages,
   Layers3,
   Play,
   Search,
@@ -33,6 +29,7 @@ import type {
 } from "@supply-risk/shared-types";
 import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel } from "@supply-risk/design-system";
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "./components";
+import { useI18n } from "./i18n";
 
 export interface PageRenderProps {
   data: SupplyRiskMockData;
@@ -55,8 +52,6 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return <CausalEvidenceBoard data={props.data} />;
     case "graph-version-studio":
       return <GraphVersionStudio data={props.data} />;
-    case "translator":
-      return <TranslatorWorkbench />;
     case "system-health-center":
       return <SystemHealthCenter data={props.data} />;
     default:
@@ -68,231 +63,8 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
   }
 }
 
-type TranslationLanguage = "zh" | "en" | "fr";
-
-interface TranslationEntry {
-  zh: string;
-  en: string;
-  fr: string;
-}
-
-const translationLanguages: Array<{ code: TranslationLanguage; label: string; nativeLabel: string }> = [
-  { code: "zh", label: "Chinese", nativeLabel: "中文" },
-  { code: "en", label: "English", nativeLabel: "English" },
-  { code: "fr", label: "French", nativeLabel: "Français" }
-];
-
-const translationMemory: TranslationEntry[] = [
-  { zh: "全球产业风险操作系统", en: "Global Industrial Risk Operating System", fr: "système mondial d'exploitation des risques industriels" },
-  { zh: "供应链风险", en: "supply chain risk", fr: "risque de chaîne d'approvisionnement" },
-  { zh: "风险传播", en: "risk propagation", fr: "propagation du risque" },
-  { zh: "冲击模拟", en: "shock simulation", fr: "simulation de choc" },
-  { zh: "反事实模拟", en: "counterfactual simulation", fr: "simulation contrefactuelle" },
-  { zh: "因果证据", en: "causal evidence", fr: "preuve causale" },
-  { zh: "异质图", en: "heterogeneous graph", fr: "graphe hétérogène" },
-  { zh: "动态图谱", en: "dynamic graph", fr: "graphe dynamique" },
-  { zh: "实体注册表", en: "entity registry", fr: "registre des entités" },
-  { zh: "事件溯源", en: "event sourcing", fr: "journalisation événementielle" },
-  { zh: "图快照", en: "graph snapshot", fr: "instantané du graphe" },
-  { zh: "路径索引", en: "path index", fr: "index des chemins" },
-  { zh: "特征工厂", en: "feature factory", fr: "fabrique de caractéristiques" },
-  { zh: "标签工厂", en: "label factory", fr: "fabrique d'étiquettes" },
-  { zh: "模型注册表", en: "model registry", fr: "registre des modèles" },
-  { zh: "数据血缘", en: "data lineage", fr: "lignage des données" },
-  { zh: "系统健康", en: "system health", fr: "santé du système" },
-  { zh: "供应商", en: "supplier", fr: "fournisseur" },
-  { zh: "客户", en: "customer", fr: "client" },
-  { zh: "港口", en: "port", fr: "port" },
-  { zh: "产品", en: "product", fr: "produit" },
-  { zh: "国家", en: "country", fr: "pays" },
-  { zh: "企业", en: "firm", fr: "entreprise" },
-  { zh: "设施", en: "facility", fr: "installation" },
-  { zh: "路线", en: "route", fr: "itinéraire" },
-  { zh: "预测", en: "prediction", fr: "prédiction" },
-  { zh: "解释", en: "explanation", fr: "explication" },
-  { zh: "报告", en: "report", fr: "rapport" },
-  { zh: "韧性", en: "resilience", fr: "résilience" },
-  { zh: "严重", en: "severe", fr: "sévère" },
-  { zh: "关键", en: "critical", fr: "critique" },
-  { zh: "升高", en: "elevated", fr: "élevé" },
-  { zh: "受控", en: "guarded", fr: "surveillé" },
-  { zh: "低", en: "low", fr: "faible" },
-  { zh: "风险", en: "risk", fr: "risque" },
-  { zh: "图", en: "graph", fr: "graphe" }
-];
-
-const translatorSamples: Record<TranslationLanguage, string> = {
-  zh: "供应链风险通过港口和供应商路径传播。冲击模拟需要图快照、因果证据和数据血缘。",
-  en: "Supply chain risk propagates through port and supplier paths. Shock simulation needs graph snapshots, causal evidence, and data lineage.",
-  fr: "Le risque de chaîne d'approvisionnement se propage par les ports et les fournisseurs. La simulation de choc nécessite des instantanés du graphe, des preuves causales et le lignage des données."
-};
-
-function normalizeTranslationText(value: string) {
-  return value
-    .toLocaleLowerCase()
-    .replace(/[.,;:!?，。；：！？()[\]{}"]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function translateText(input: string, sourceLanguage: TranslationLanguage, targetLanguage: TranslationLanguage) {
-  if (!input.trim()) {
-    return { output: "", matchedTerms: [] as TranslationEntry[], coverage: 0 };
-  }
-
-  if (sourceLanguage === targetLanguage) {
-    return { output: input, matchedTerms: [] as TranslationEntry[], coverage: 100 };
-  }
-
-  const exactMatch = translationMemory.find(
-    (entry) => normalizeTranslationText(entry[sourceLanguage]) === normalizeTranslationText(input)
-  );
-  if (exactMatch) {
-    return { output: exactMatch[targetLanguage], matchedTerms: [exactMatch], coverage: 100 };
-  }
-
-  const sortedEntries = [...translationMemory].sort((a, b) => b[sourceLanguage].length - a[sourceLanguage].length);
-  const matchedTerms: TranslationEntry[] = [];
-  let output = input;
-  let matchedLength = 0;
-
-  for (const entry of sortedEntries) {
-    const sourceTerm = entry[sourceLanguage];
-    const targetTerm = entry[targetLanguage];
-    const hasCjkSource = sourceLanguage === "zh";
-    const pattern = hasCjkSource
-      ? new RegExp(escapeRegExp(sourceTerm), "g")
-      : new RegExp(`\\b${escapeRegExp(sourceTerm)}\\b`, "gi");
-
-    let replaced = false;
-    output = output.replace(pattern, (match) => {
-      replaced = true;
-      matchedLength += match.length;
-      return targetTerm;
-    });
-
-    if (replaced) matchedTerms.push(entry);
-  }
-
-  const coverage = Math.min(100, Math.round((matchedLength / Math.max(input.length, 1)) * 100));
-  return { output, matchedTerms, coverage };
-}
-
-function TranslatorWorkbench() {
-  const [sourceLanguage, setSourceLanguage] = useState<TranslationLanguage>("zh");
-  const [targetLanguage, setTargetLanguage] = useState<TranslationLanguage>("en");
-  const [input, setInput] = useState(translatorSamples.zh);
-  const [copyState, setCopyState] = useState("Copy result");
-  const translation = useMemo(
-    () => translateText(input, sourceLanguage, targetLanguage),
-    [input, sourceLanguage, targetLanguage]
-  );
-
-  const setLanguage = (kind: "source" | "target") => (event: ChangeEvent<HTMLSelectElement>) => {
-    const nextLanguage = event.target.value as TranslationLanguage;
-    if (kind === "source") {
-      setSourceLanguage(nextLanguage);
-      if (!input.trim() || input === translatorSamples[sourceLanguage]) {
-        setInput(translatorSamples[nextLanguage]);
-      }
-      if (nextLanguage === targetLanguage) setTargetLanguage(sourceLanguage);
-      return;
-    }
-
-    setTargetLanguage(nextLanguage === sourceLanguage ? targetLanguage : nextLanguage);
-  };
-
-  const swapLanguages = () => {
-    setSourceLanguage(targetLanguage);
-    setTargetLanguage(sourceLanguage);
-    setInput(translation.output || translatorSamples[targetLanguage]);
-  };
-
-  const copyResult = async () => {
-    if (!translation.output.trim()) return;
-    await navigator.clipboard?.writeText(translation.output);
-    setCopyState("Copied");
-    window.setTimeout(() => setCopyState("Copy result"), 1400);
-  };
-
-  return (
-    <div className="page-grid translator-layout">
-      <Panel
-        title="Manual translation workbench"
-        subtitle="Select Chinese, English, or French explicitly; translations use the governed SupplyRiskAtlas glossary."
-        action={<Button icon={Languages} onClick={() => setInput(translatorSamples[sourceLanguage])}>Load sample</Button>}
-      >
-        <div className="translator-controls">
-          <label className="form-control">
-            <span>Source language</span>
-            <select value={sourceLanguage} onChange={setLanguage("source")}>
-              {translationLanguages.map((language) => (
-                <option key={language.code} value={language.code}>
-                  {language.nativeLabel} / {language.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="language-swap" type="button" onClick={swapLanguages} aria-label="Swap source and target languages">
-            <ArrowLeftRight aria-hidden="true" />
-          </button>
-          <label className="form-control">
-            <span>Target language</span>
-            <select value={targetLanguage} onChange={setLanguage("target")}>
-              {translationLanguages.map((language) => (
-                <option disabled={language.code === sourceLanguage} key={language.code} value={language.code}>
-                  {language.nativeLabel} / {language.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <label className="form-control translator-input">
-          <span>Text to translate</span>
-          <textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            rows={8}
-            placeholder="Enter a supply-chain risk sentence or glossary term."
-          />
-        </label>
-      </Panel>
-
-      <Panel
-        title="Translation result"
-        subtitle={`${translation.coverage}% glossary coverage; unmatched words remain unchanged for auditability.`}
-        action={<Button icon={Clipboard} onClick={() => void copyResult()}>{copyState}</Button>}
-      >
-        <div className="translation-output" aria-live="polite">
-          {translation.output || "Translation output will appear here."}
-        </div>
-      </Panel>
-
-      <Panel title="Governed glossary hits" subtitle="Matched terms are shown so analysts can audit the generated wording.">
-        {translation.matchedTerms.length > 0 ? (
-          <div className="glossary-grid">
-            {translation.matchedTerms.slice(0, 12).map((entry) => (
-              <article className="glossary-card" key={`${entry[sourceLanguage]}-${entry[targetLanguage]}`}>
-                <span>{entry[sourceLanguage]}</span>
-                <ArrowRight aria-hidden="true" />
-                <strong>{entry[targetLanguage]}</strong>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">No governed glossary terms detected yet.</div>
-        )}
-      </Panel>
-    </div>
-  );
-}
-
 function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const cockpit = data.globalRiskCockpit;
 
   return (
@@ -309,7 +81,7 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
           subtitle={`Last refreshed ${cockpit.lastUpdated}; hotspots are positioned by route and supplier concentration.`}
           action={<IconButton icon={Search} label="Search exposure graph" />}
         >
-          <div className="map-canvas" role="img" aria-label="Global supply risk hotspot map">
+          <div className="map-canvas" role="img" aria-label={t("Global supply risk hotspot map")}>
             {cockpit.hotspots.map((hotspot) => (
               <div key={hotspot.id}>
                 <span
@@ -348,8 +120,8 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
                   </div>
                   <ProgressBar value={incident.signalStrength * 100} level={incident.level} />
                   <div className="row-meta">
-                    <span>{incident.affectedCompanies} companies</span>
-                    <span>{formatPercent(incident.signalStrength)} signal strength</span>
+                    <span>{t(`${incident.affectedCompanies} companies`)}</span>
+                    <span>{t(`${formatPercent(incident.signalStrength)} signal strength`)}</span>
                   </div>
                 </li>
               ))}
@@ -363,7 +135,7 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
                   <div className="row-top">
                     <div>
                       <span className="row-title">
-                        {corridor.source} to {corridor.target}
+                        {t(`${corridor.source} to ${corridor.target}`)}
                       </span>
                       <span className="row-subtitle">{corridor.commodity}</span>
                     </div>
@@ -371,8 +143,8 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
                   </div>
                   <ProgressBar value={corridor.score} level={corridor.level} />
                   <div className="row-meta">
-                    <span>{corridor.score}/100 risk</span>
-                    <span>{formatPercent(corridor.volumeShare)} volume share</span>
+                    <span>{t(`${corridor.score}/100 risk`)}</span>
+                    <span>{t(`${formatPercent(corridor.volumeShare)} volume share`)}</span>
                   </div>
                 </li>
               ))}
@@ -385,6 +157,7 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
 }
 
 function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const graph = data.graphExplorer;
   const [kind, setKind] = useState<GraphNodeKind | "all">("all");
   const [selectedNodeId, setSelectedNodeId] = useState(graph.selectedNodeId);
@@ -400,7 +173,7 @@ function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
   return (
     <div className="page-grid split-layout">
       <Panel title="Graph filters" subtitle="Scope the visible network without losing node context.">
-        <div className="segmented" aria-label="Graph node type">
+        <div className="segmented" aria-label={t("Graph node type")}>
           {(["all", ...graph.filters] as Array<GraphNodeKind | "all">).map((filter) => (
             <button
               className={`segment ${kind === filter ? "is-active" : ""}`}
@@ -408,7 +181,7 @@ function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
               onClick={() => setKind(filter)}
               type="button"
             >
-              {filter}
+              {t(filter)}
             </button>
           ))}
         </div>
@@ -436,7 +209,7 @@ function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
               type="button"
             >
               <strong>{node.label}</strong>
-              <span>{node.kind}</span>
+              <span>{t(node.kind)}</span>
             </button>
           ))}
         </div>
@@ -487,6 +260,7 @@ function NetworkSvg({ links, nodes }: { links: GraphLink[]; nodes: GraphNode[] }
 }
 
 function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const companyData = data.companyRisk360;
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyData.selectedCompanyId);
   const selectedCompany =
@@ -507,7 +281,7 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
                 <div>
                   <span className="row-title">{company.name}</span>
                   <span className="row-subtitle">
-                    {company.ticker} / {company.sector}
+                    {company.ticker} / {t(company.sector)}
                   </span>
                 </div>
                 <RiskPill level={company.level} />
@@ -559,13 +333,13 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Supplier</th>
-                  <th>Country</th>
-                  <th>Category</th>
-                  <th>Spend</th>
-                  <th>Dependency</th>
-                  <th>Lead time</th>
-                  <th>Level</th>
+                  <th>{t("Supplier")}</th>
+                  <th>{t("Country")}</th>
+                  <th>{t("Category")}</th>
+                  <th>{t("Spend")}</th>
+                  <th>{t("Dependency")}</th>
+                  <th>{t("Lead time")}</th>
+                  <th>{t("Level")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -576,7 +350,7 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
                     <td>{supplier.category}</td>
                     <td>{formatPercent(supplier.spendShare)}</td>
                     <td>{formatPercent(supplier.dependency)}</td>
-                    <td>{supplier.leadTimeDays} days</td>
+                    <td>{t(`${supplier.leadTimeDays} days`)}</td>
                     <td>
                       <RiskPill level={supplier.level} />
                     </td>
@@ -592,6 +366,7 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
 }
 
 function PathExplainer({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const pathData = data.pathExplainer;
   const [selectedPathId, setSelectedPathId] = useState(pathData.selectedPathId);
   const selectedPath = pathData.paths.find((path) => path.id === selectedPathId) ?? pathData.paths[0];
@@ -603,7 +378,7 @@ function PathExplainer({ data }: { data: SupplyRiskMockData }) {
         subtitle="Trace the concrete graph route behind a risk score movement."
         action={<Button icon={GitBranch}>Pin explanation</Button>}
       >
-        <div className="segmented" aria-label="Explained path">
+        <div className="segmented" aria-label={t("Explained path")}>
           {pathData.paths.map((path) => (
             <button
               className={`segment ${selectedPath.id === path.id ? "is-active" : ""}`}
@@ -631,13 +406,14 @@ function PathExplainer({ data }: { data: SupplyRiskMockData }) {
 }
 
 function PathStrip({ path }: { path: ExplainedPath }) {
+  const { t } = useI18n();
   return (
     <div className="path-strip">
       {path.steps.map((step) => (
         <article className="path-step" key={step.id}>
           <div className="row-top">
             <RiskPill level={step.level} />
-            <span className="method-pill">{step.kind}</span>
+            <span className="method-pill">{t(step.kind)}</span>
           </div>
           <p className="contribution">+{step.contribution}%</p>
           <span className="row-title">{step.label}</span>
@@ -649,6 +425,7 @@ function PathStrip({ path }: { path: ExplainedPath }) {
 }
 
 function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
+  const { t } = useI18n();
   const [input, setInput] = useState<ShockSimulationInput>({
     region: "Taiwan Strait",
     commodity: "advanced semiconductor components",
@@ -689,40 +466,40 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
       >
         <div className="form-grid">
           <label className="form-control">
-            <span>Region</span>
+            <span>{t("Region")}</span>
             <select value={input.region} onChange={(event) => setInput((current) => ({ ...current, region: event.target.value }))}>
-              <option>Taiwan Strait</option>
-              <option>Red Sea / Suez</option>
-              <option>Panama Canal</option>
-              <option>Rhine Industrial Belt</option>
+              <option value="Taiwan Strait">{t("Taiwan Strait")}</option>
+              <option value="Red Sea / Suez">{t("Red Sea / Suez")}</option>
+              <option value="Panama Canal">{t("Panama Canal")}</option>
+              <option value="Rhine Industrial Belt">{t("Rhine Industrial Belt")}</option>
             </select>
           </label>
           <label className="form-control">
-            <span>Commodity</span>
+            <span>{t("Commodity")}</span>
             <select
               value={input.commodity}
               onChange={(event) => setInput((current) => ({ ...current, commodity: event.target.value }))}
             >
-              <option>advanced semiconductor components</option>
-              <option>battery graphite</option>
-              <option>specialty chemical feedstock</option>
-              <option>consumer electronics assemblies</option>
+              <option value="advanced semiconductor components">{t("advanced semiconductor components")}</option>
+              <option value="battery graphite">{t("battery graphite")}</option>
+              <option value="specialty chemical feedstock">{t("specialty chemical feedstock")}</option>
+              <option value="consumer electronics assemblies">{t("consumer electronics assemblies")}</option>
             </select>
           </label>
           <label className="form-control">
-            <span>Severity: {input.severity}</span>
+            <span>{t("Severity")}: {input.severity}</span>
             <input min="10" max="100" onChange={setNumber("severity")} type="range" value={input.severity} />
           </label>
           <label className="form-control">
-            <span>Duration: {input.durationDays} days</span>
+            <span>{t("Duration")}: {t(`${input.durationDays} days`)}</span>
             <input min="3" max="90" onChange={setNumber("durationDays")} type="range" value={input.durationDays} />
           </label>
           <label className="form-control">
-            <span>Scope</span>
+            <span>{t("Scope")}</span>
             <select value={input.scope} onChange={(event) => setInput((current) => ({ ...current, scope: event.target.value as ShockSimulationInput["scope"] }))}>
-              <option value="facility">Facility</option>
-              <option value="regional">Regional</option>
-              <option value="global">Global</option>
+              <option value="facility">{t("Facility")}</option>
+              <option value="regional">{t("Regional")}</option>
+              <option value="global">{t("Global")}</option>
             </select>
           </label>
         </div>
@@ -733,20 +510,20 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
           {result ? (
             <div className="three-column page-grid">
               <div className={`big-result ${riskClassByLevel[result.affectedPaths[0]?.level ?? "guarded"]}`}>
-                <span>Impact score</span>
+                <span>{t("Impact score")}</span>
                 <strong>{result.impactScore}</strong>
               </div>
               <div className="big-result tone-elevated">
-                <span>EBITDA at risk</span>
+                <span>{t("EBITDA at risk")}</span>
                 <strong>{formatUsdCompact(result.ebitdaAtRiskUsd)}</strong>
               </div>
               <div className="big-result tone-guarded">
-                <span>Recovery time</span>
-                <strong>{result.timeToRecoveryDays}d</strong>
+                <span>{t("Recovery time")}</span>
+                <strong>{t(`${result.timeToRecoveryDays}d`)}</strong>
               </div>
             </div>
           ) : (
-            <div className="empty-state">Awaiting simulation result.</div>
+            <div className="empty-state">{t("Awaiting simulation result.")}</div>
           )}
         </Panel>
 
@@ -757,7 +534,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
                 {result.affectedPaths.map((path) => (
                   <li className="data-row" key={path.id}>
                     <div className="row-top">
-                      <span className="row-title">{path.label}</span>
+                      <span className="row-title">{t(path.label)}</span>
                       <RiskPill level={path.level} />
                     </div>
                     <ProgressBar value={path.impact} level={path.level} />
@@ -770,7 +547,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
               <ul className="recommendation-list">
                 {result.recommendations.map((recommendation) => (
                   <li className="data-row" key={recommendation}>
-                    <span className="row-title">{recommendation}</span>
+                    <span className="row-title">{t(recommendation)}</span>
                   </li>
                 ))}
               </ul>
@@ -783,6 +560,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
 }
 
 function CausalEvidenceBoard({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const board = data.causalEvidenceBoard;
   const [activeClaimId, setActiveClaimId] = useState(board.activeClaimId);
   const activeClaim = board.evidence.find((claim) => claim.id === activeClaimId) ?? board.evidence[0];
@@ -818,16 +596,16 @@ function CausalEvidenceBoard({ data }: { data: SupplyRiskMockData }) {
                 <Field label="Level" value={<RiskPill level={activeClaim.level} />} />
               </div>
             </div>
-            <div className="causal-canvas" role="img" aria-label="Causal evidence mini graph">
+            <div className="causal-canvas" role="img" aria-label={t("Causal evidence mini graph")}>
               <NetworkSvg
                 nodes={[
-                  { id: "shock", label: "Shock", kind: "route", level: activeClaim.level, score: 80, x: 18, y: 48, metadata: {} },
-                  { id: "mechanism", label: "Mechanism", kind: "facility", level: "elevated", score: 66, x: 50, y: 28, metadata: {} },
-                  { id: "outcome", label: "Outcome", kind: "company", level: activeClaim.level, score: 78, x: 78, y: 62, metadata: {} }
+                  { id: "shock", label: t("Shock"), kind: "route", level: activeClaim.level, score: 80, x: 18, y: 48, metadata: {} },
+                  { id: "mechanism", label: t("Mechanism"), kind: "facility", level: "elevated", score: 66, x: 50, y: 28, metadata: {} },
+                  { id: "outcome", label: t("Outcome"), kind: "company", level: activeClaim.level, score: 78, x: 78, y: 62, metadata: {} }
                 ]}
                 links={[
-                  { id: "a", source: "shock", target: "mechanism", label: "causes", weight: 0.76, level: activeClaim.level },
-                  { id: "b", source: "mechanism", target: "outcome", label: "shifts", weight: 0.62, level: "elevated" }
+                  { id: "a", source: "shock", target: "mechanism", label: t("causes"), weight: 0.76, level: activeClaim.level },
+                  { id: "b", source: "mechanism", target: "outcome", label: t("shifts"), weight: 0.62, level: "elevated" }
                 ]}
               />
             </div>
@@ -839,11 +617,11 @@ function CausalEvidenceBoard({ data }: { data: SupplyRiskMockData }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Claim</th>
-                  <th>Method</th>
-                  <th>Confidence</th>
-                  <th>Disagreement</th>
-                  <th>Level</th>
+                  <th>{t("Claim")}</th>
+                  <th>{t("Method")}</th>
+                  <th>{t("Confidence")}</th>
+                  <th>{t("Disagreement")}</th>
+                  <th>{t("Level")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -868,6 +646,7 @@ function CausalEvidenceBoard({ data }: { data: SupplyRiskMockData }) {
 }
 
 function EvidenceButton({ item, isActive, onSelect }: { item: EvidenceItem; isActive: boolean; onSelect: () => void }) {
+  const { t } = useI18n();
   return (
     <button className={`evidence-card ${isActive ? "is-active" : ""}`} onClick={onSelect} type="button">
       <div className="row-top">
@@ -877,14 +656,15 @@ function EvidenceButton({ item, isActive, onSelect }: { item: EvidenceItem; isAc
       <span className="row-subtitle">{item.source}</span>
       <ProgressBar value={item.confidence * 100} level={item.level} />
       <div className="row-meta">
-        <span>{item.method}</span>
-        <span>{formatPercent(item.disagreement)} disagreement</span>
+        <span>{t(item.method)}</span>
+        <span>{t(`${formatPercent(item.disagreement)} disagreement`)}</span>
       </div>
     </button>
   );
 }
 
 function GraphVersionStudio({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const studio = data.graphVersionStudio;
   const [candidateVersionId, setCandidateVersionId] = useState(studio.candidateVersionId);
   const [promotedVersionId, setPromotedVersionId] = useState(studio.baselineVersionId);
@@ -925,10 +705,10 @@ function GraphVersionStudio({ data }: { data: SupplyRiskMockData }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Area</th>
-                  <th>Change</th>
-                  <th>Count</th>
-                  <th>Severity</th>
+                  <th>{t("Area")}</th>
+                  <th>{t("Change")}</th>
+                  <th>{t("Count")}</th>
+                  <th>{t("Severity")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -962,6 +742,7 @@ function VersionButton({
   isPromoted: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <button className={`version-card ${isSelected ? "is-selected" : ""}`} onClick={onSelect} type="button">
       <div className="row-top">
@@ -976,14 +757,15 @@ function VersionButton({
         level={version.validationPassRate > 0.98 ? "low" : "elevated"}
       />
       <div className="row-meta">
-        <span>{formatCompactNumber(version.nodes)} nodes</span>
-        <span>{formatCompactNumber(version.edges)} edges</span>
+        <span>{t(`${formatCompactNumber(version.nodes)} nodes`)}</span>
+        <span>{t(`${formatCompactNumber(version.edges)} edges`)}</span>
       </div>
     </button>
   );
 }
 
 function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
+  const { t } = useI18n();
   const health = data.systemHealthCenter;
   const operationalCount = health.services.filter((service) => service.status === "operational").length;
   const pipelineTotal = health.stages.reduce((total, stage) => total + stage.total, 0);
@@ -994,42 +776,42 @@ function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
       <div className="metrics-grid">
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">Services operational</p>
+            <p className="metric-label">{t("Services operational")}</p>
             <StatusPill status="operational" />
           </div>
           <p className="metric-value">
             {operationalCount}
             <span className="metric-unit">/{health.services.length}</span>
           </p>
-          <p className="metric-detail">API, graph, model, and signal ingest fleet.</p>
+          <p className="metric-detail">{t("API, graph, model, and signal ingest fleet.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">Pipeline processed</p>
+            <p className="metric-label">{t("Pipeline processed")}</p>
             <StatusPill status="running" />
           </div>
           <p className="metric-value">{formatPercent(pipelineProcessed / pipelineTotal)}</p>
-          <p className="metric-detail">Current build is advancing through entity resolution.</p>
+          <p className="metric-detail">{t("Current build is advancing through entity resolution.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">Median latency</p>
+            <p className="metric-label">{t("Median latency")}</p>
             <StatusPill status="operational" />
           </div>
           <p className="metric-value">
             181<span className="metric-unit">ms</span>
           </p>
-          <p className="metric-detail">Across API, graph query, ingest, and scorer endpoints.</p>
+          <p className="metric-detail">{t("Across API, graph query, ingest, and scorer endpoints.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">Freshness lag</p>
+            <p className="metric-label">{t("Freshness lag")}</p>
             <StatusPill status="degraded" />
           </div>
           <p className="metric-value">
             17<span className="metric-unit">m</span>
           </p>
-          <p className="metric-detail">Signal ingest is the current freshness constraint.</p>
+          <p className="metric-detail">{t("Signal ingest is the current freshness constraint.")}</p>
         </article>
       </div>
 
@@ -1046,9 +828,9 @@ function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
                   <StatusPill status={service.status} />
                 </div>
                 <div className="row-meta">
-                  <span>{service.latencyMs} ms</span>
-                  <span>{service.freshnessMinutes} m freshness</span>
-                  <span>{formatPercent(service.errorRate, 1)} errors</span>
+                  <span>{t(`${service.latencyMs} ms`)}</span>
+                  <span>{t(`${service.freshnessMinutes} m freshness`)}</span>
+                  <span>{t(`${formatPercent(service.errorRate, 1)} errors`)}</span>
                 </div>
               </li>
             ))}
