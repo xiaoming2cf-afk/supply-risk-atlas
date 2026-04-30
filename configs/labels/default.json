@@ -1,0 +1,5 @@
+{
+  "horizon": 7,
+  "positive_actions": ["delete"],
+  "incident_only": true
+}

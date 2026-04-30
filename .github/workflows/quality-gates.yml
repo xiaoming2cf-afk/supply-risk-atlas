@@ -1,0 +1,223 @@
+name: Quality Gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  governance-docs-and-acceptance:
+    name: Governance, docs, and acceptance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate required docs and acceptance coverage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import unquote
+          import re
+          import sys
+
+          root = Path.cwd()
+          required = [
+              Path("AGENTS.md"),
+              Path("README.md"),
+              Path("docs/governance/multi-agent.md"),
+              Path("docs/architecture/overview.md"),
+              Path("docs/data/data-flow.md"),
+              Path("docs/quality-gates.md"),
+              Path("tests/e2e/README.md"),
+              Path("tests/e2e/supply-risk-atlas.feature"),
+          ]
+
+          errors = []
+          for path in required:
+              full_path = root / path
+              if not full_path.exists():
+                  errors.append(f"Missing required file: {path}")
+              elif full_path.is_file() and full_path.stat().st_size == 0:
+                  errors.append(f"Required file is empty: {path}")
+
+          scan_roots = [
+              root / "AGENTS.md",
+              root / "README.md",
+              root / "docs",
+              root / ".github" / "workflows",
+              root / "tests" / "e2e",
+          ]
+          scan_files = []
+          for item in scan_roots:
+              if item.is_file():
+                  scan_files.append(item)
+              elif item.is_dir():
+                  scan_files.extend(path for path in item.rglob("*") if path.is_file())
+
+          conflict_re = re.compile(r"^(<{7}|={7}|>{7})", re.MULTILINE)
+          for path in scan_files:
+              text = path.read_text(encoding="utf-8", errors="replace")
+              if conflict_re.search(text):
+                  errors.append(f"Conflict marker found: {path.relative_to(root)}")
+
+          link_re = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+          markdown_files = [
+              root / "AGENTS.md",
+              root / "README.md",
+              *list((root / "docs").rglob("*.md")),
+              *list((root / "tests" / "e2e").rglob("*.md")),
+          ]
+          for md_file in markdown_files:
+              if not md_file.exists():
+                  continue
+              text = md_file.read_text(encoding="utf-8", errors="replace")
+              for match in link_re.finditer(text):
+                  target = match.group(1).strip()
+                  if not target or target.startswith("#"):
+                      continue
+                  if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                      continue
+                  target_path = unquote(target.split("#", 1)[0])
+                  if not target_path:
+                      continue
+                  resolved = (md_file.parent / target_path).resolve()
+                  try:
+                      resolved.relative_to(root.resolve())
+                  except ValueError:
+                      errors.append(f"Link escapes repository: {md_file.relative_to(root)} -> {target}")
+                      continue
+                  if not resolved.exists():
+                      errors.append(f"Broken local link: {md_file.relative_to(root)} -> {target}")
+
+          feature_path = root / "tests" / "e2e" / "supply-risk-atlas.feature"
+          if feature_path.exists():
+              feature_text = feature_path.read_text(encoding="utf-8", errors="replace")
+              scenario_count = len(re.findall(r"^\s*Scenario(?: Outline)?:", feature_text, re.MULTILINE))
+              if scenario_count < 5:
+                  errors.append(f"Expected at least 5 E2E scenarios, found {scenario_count}")
+              for tag in ["@smoke", "@risk", "@graph", "@explainability", "@resilience"]:
+                  if tag not in feature_text:
+                      errors.append(f"Missing required E2E tag: {tag}")
+
+          if errors:
+              print("Quality gate failures:")
+              for error in errors:
+                  print(f"- {error}")
+              sys.exit(1)
+
+          print("Governance, documentation, and acceptance gates passed.")
+          PY
+
+  optional-code-gates:
+    name: Optional implementation gates
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node when needed
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run Node checks when package.json exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "package.json")) {
+            Write-Host "No package.json found; skipping Node checks."
+            exit 0
+          }
+
+          $packageManager = "npm"
+          if (Test-Path "pnpm-lock.yaml") {
+            corepack.cmd enable
+            $packageManager = "pnpm"
+            pnpm.cmd install --frozen-lockfile
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } elseif (Test-Path "yarn.lock") {
+            corepack.cmd enable
+            $packageManager = "yarn"
+            yarn.cmd install --immutable
+            if ($LASTEXITCODE -ne 0) {
+              yarn.cmd install --frozen-lockfile
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            }
+          } else {
+            if (Test-Path "package-lock.json") {
+              npm.cmd ci
+            } else {
+              npm.cmd install
+            }
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+          function Invoke-ScriptIfPresent {
+            param([string] $Name)
+
+            $packageJson = Get-Content "package.json" -Raw | ConvertFrom-Json
+            $scripts = @()
+            if ($packageJson.scripts) {
+              $scripts = $packageJson.scripts.PSObject.Properties.Name
+            }
+
+            if ($scripts -notcontains $Name) {
+              Write-Host "No $Name script found; skipping."
+              return
+            }
+
+            if ($packageManager -eq "pnpm") {
+              pnpm.cmd run $Name
+            } elseif ($packageManager -eq "yarn") {
+              yarn.cmd run $Name
+            } else {
+              npm.cmd run $Name
+            }
+
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+          Invoke-ScriptIfPresent "lint"
+          Invoke-ScriptIfPresent "typecheck"
+          Invoke-ScriptIfPresent "test"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Python checks when Python files exist
+        shell: pwsh
+        run: |
+          $checkDirs = @("services", "packages", "ml", "graph_kernel", "tests") | Where-Object { Test-Path $_ }
+          $pythonFiles = @()
+          if ($checkDirs.Count -gt 0) {
+            $pythonFiles = @(Get-ChildItem -Path $checkDirs -Recurse -File -Filter "*.py")
+          }
+
+          if ($pythonFiles.Count -gt 0) {
+            python -m compileall @checkDirs
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } else {
+            Write-Host "No Python files found; skipping compile check."
+          }
+
+          $testFiles = @()
+          if (Test-Path "tests") {
+            $testFiles = @(Get-ChildItem -Path "tests" -Recurse -File -Include "test_*.py", "*_test.py")
+          }
+
+          if ($testFiles.Count -gt 0) {
+            python -m pip install --upgrade pip
+            if (Test-Path "pyproject.toml") {
+              python -m pip install -e ".[dev,api]"
+            } else {
+              python -m pip install pytest
+            }
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            python -m pytest
+          } else {
+            Write-Host "No pytest-style tests found; skipping pytest."
+          }

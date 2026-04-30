@@ -1,0 +1,14 @@
+{
+  "features": [
+    "active_in_degree",
+    "active_out_degree",
+    "active_total_degree",
+    "reachable_downstream_count",
+    "mean_out_lead_time_days",
+    "min_out_reliability",
+    "out_edge_kind_counts"
+  ],
+  "max_hops": 2,
+  "edge_kinds": ["supplies", "used_by", "ships_to"],
+  "reliability_default": 1.0
+}

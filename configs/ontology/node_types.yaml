@@ -1,0 +1,65 @@
+node_types:
+  firm:
+    description: "Company or business entity."
+    required_fields: [canonical_id, name, country, industry]
+    temporal: true
+  subsidiary:
+    description: "Legal subsidiary or controlled affiliate."
+    required_fields: [canonical_id, name, parent_id]
+    temporal: true
+  supplier:
+    description: "Supplier role for a firm."
+    required_fields: [canonical_id, name]
+    temporal: true
+  customer:
+    description: "Customer role for a firm."
+    required_fields: [canonical_id, name]
+    temporal: true
+  factory:
+    description: "Production facility."
+    required_fields: [canonical_id, name, country]
+    temporal: true
+  warehouse:
+    description: "Storage and distribution facility."
+    required_fields: [canonical_id, name, country]
+    temporal: true
+  port:
+    description: "Seaport or inland cargo port."
+    required_fields: [canonical_id, name, country]
+    temporal: true
+  route:
+    description: "Trade, logistics, maritime, rail, or air route."
+    required_fields: [canonical_id, name]
+    temporal: true
+  product:
+    description: "Product, component, raw material, HS code, SKU, or BOM item."
+    required_fields: [canonical_id, name, product_code]
+    temporal: true
+  raw_material:
+    description: "Primary material or commodity input."
+    required_fields: [canonical_id, name]
+    temporal: true
+  country:
+    description: "Country-level geography."
+    required_fields: [canonical_id, name, iso2]
+    temporal: false
+  region:
+    description: "Subnational or transnational region."
+    required_fields: [canonical_id, name]
+    temporal: false
+  policy:
+    description: "Tariff, sanction, export control, subsidy, or regulation."
+    required_fields: [canonical_id, name, policy_type]
+    temporal: true
+  risk_event:
+    description: "Conflict, weather, strike, accident, cyber, or other shock event."
+    required_fields: [canonical_id, name, event_type]
+    temporal: true
+  market_instrument:
+    description: "Stock, bond, CDS, commodity, currency, or freight index."
+    required_fields: [canonical_id, name, instrument_type]
+    temporal: true
+  text_artifact:
+    description: "News, filing, earnings call, analyst report, or social signal."
+    required_fields: [canonical_id, name, source]
+    temporal: true

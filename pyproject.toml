@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supply-risk-atlas"
+version = "0.1.0"
+description = "Dynamic causal heterogeneous graph foundation for global industrial risk intelligence."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.7",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+api = [
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "httpx>=0.27",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["packages/sra_core", "."]
+include = ["sra_core*", "graph_kernel*", "ml*", "services*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["packages/sra_core", "."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100

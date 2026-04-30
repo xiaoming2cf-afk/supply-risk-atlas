@@ -1,0 +1,148 @@
+from __future__ import annotations
+
+import pytest
+
+pytest.importorskip("fastapi")
+pytest.importorskip("pydantic")
+from fastapi.testclient import TestClient
+
+from services.api.main import create_app
+
+
+def _client() -> TestClient:
+    app = create_app()
+    assert app is not None
+    return TestClient(app)
+
+
+def test_health_aliases_return_envelope_with_request_id() -> None:
+    client = _client()
+
+    for path in ("/health", "/api/v1/health"):
+        response = client.get(path, headers={"x-request-id": "req_health"})
+        payload = response.json()
+
+        assert response.status_code == 200
+        assert payload["request_id"] == "req_health"
+        assert payload["status"] == "success"
+        assert payload["data"]["service"] == "supply-risk-atlas-api"
+        assert payload["errors"] == []
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "json_body"),
+    [
+        ("get", "/api/v1/entities", None),
+        ("get", "/api/v1/entities/firm_anchor", None),
+        ("get", "/api/v1/graph", None),
+        ("get", "/api/v1/graph/snapshots", None),
+        ("get", "/api/v1/features?entity_id=firm_anchor", None),
+        ("get", "/api/v1/labels", None),
+        ("get", "/api/v1/predictions", None),
+        ("get", "/api/v1/explanations", None),
+        ("get", "/api/v1/simulations", None),
+        ("get", "/api/v1/reports", None),
+        ("get", "/api/v1/dashboard/global-risk-cockpit", None),
+        ("get", "/api/v1/dashboard/graph-explorer", None),
+        ("post", "/api/v1/predictions", {"target_id": "firm_anchor"}),
+        ("post", "/api/v1/explanations", {"target_id": "firm_anchor"}),
+        (
+            "post",
+            "/api/v1/simulations",
+            {"intervention_type": "close_port", "target_id": "port_kaohsiung"},
+        ),
+        (
+            "post",
+            "/api/v1/dashboard/shock-simulator",
+            {
+                "region": "Taiwan Strait",
+                "commodity": "advanced semiconductor components",
+                "severity": 95,
+                "durationDays": 28,
+                "scope": "regional",
+            },
+        ),
+        ("post", "/api/v1/reports", {"report_type": "entity", "target_id": "firm_anchor"}),
+    ],
+)
+def test_primary_api_endpoints_return_success_envelopes(
+    method: str,
+    path: str,
+    json_body: dict[str, object] | None,
+) -> None:
+    client = _client()
+
+    response = client.request(
+        method,
+        path,
+        json=json_body,
+        headers={"x-request-id": "req_endpoint"},
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["request_id"] == "req_endpoint"
+    assert payload["status"] == "success"
+    assert payload["metadata"]["graph_version"]
+    assert payload["errors"] == []
+    assert payload["data"] is not None
+
+
+def test_not_found_returns_error_envelope() -> None:
+    client = _client()
+
+    response = client.get("/api/v1/entities/missing", headers={"x-request-id": "req_missing"})
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload["request_id"] == "req_missing"
+    assert payload["status"] == "error"
+    assert payload["data"] is None
+    assert payload["errors"][0]["code"] == "not_found"
+
+
+def test_dashboard_routes_return_envelope_and_view_model() -> None:
+    client = _client()
+
+    cockpit = client.get("/api/v1/dashboard/global-risk-cockpit", headers={"x-request-id": "req_dash"})
+    cockpit_payload = cockpit.json()
+
+    assert cockpit.status_code == 200
+    assert cockpit_payload["request_id"] == "req_dash"
+    assert cockpit_payload["status"] == "success"
+    assert cockpit_payload["data"]["operatingMode"] == "real"
+    assert cockpit_payload["metadata"]["graph_version"]
+
+    shock = client.post(
+        "/api/v1/dashboard/shock-simulator",
+        json={
+            "region": "Taiwan Strait",
+            "commodity": "advanced semiconductor components",
+            "severity": 95,
+            "durationDays": 28,
+            "scope": "regional",
+        },
+        headers={"x-request-id": "req_shock"},
+    )
+    shock_payload = shock.json()
+
+    assert shock.status_code == 200
+    assert shock_payload["request_id"] == "req_shock"
+    assert shock_payload["status"] == "success"
+    assert shock_payload["data"]["input"]["severity"] == 95
+    assert shock_payload["data"]["impactScore"] > 70
+
+
+def test_cors_preflight_is_available_for_frontend() -> None:
+    client = _client()
+
+    response = client.options(
+        "/api/v1/health",
+        headers={
+            "Origin": "http://127.0.0.1:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code in {200, 204}
+    assert response.headers["access-control-allow-origin"]

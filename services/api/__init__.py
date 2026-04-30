@@ -1,0 +1,1 @@
+"""SupplyRiskAtlas FastAPI service."""

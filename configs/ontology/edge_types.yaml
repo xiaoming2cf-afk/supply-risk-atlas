@@ -1,0 +1,106 @@
+edge_types:
+  supplies_to:
+    source: firm
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [trade_value, dependency_ratio, lead_time, substitutability]
+  buys_from:
+    source: firm
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [trade_value, dependency_ratio]
+  produces:
+    source: firm
+    target: product
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [volume, margin, strategic_importance]
+  consumes:
+    source: firm
+    target: raw_material
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [volume, dependency_ratio]
+  located_in:
+    source: firm
+    target: country
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [exposure_weight]
+  ships_through:
+    source: firm
+    target: port
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [volume, delay, route_dependency]
+  route_connects:
+    source: port
+    target: port
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [distance, freight_cost, delay]
+  policy_targets:
+    source: policy
+    target: product
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [severity, coverage]
+  event_affects:
+    source: risk_event
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [severity, proximity, duration]
+  owns:
+    source: firm
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [ownership_pct]
+  substitutes:
+    source: product
+    target: product
+    directed: false
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [substitutability, qualification_time]
+  competes_with:
+    source: firm
+    target: firm
+    directed: false
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [overlap_score]
+  co_mentions:
+    source: text_artifact
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [sentiment, mention_count]
+  causal_prior:
+    source: risk_event
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [prior_strength]
+  risk_transmits_to:
+    source: firm
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [weight, confidence, valid_from]
+    features: [path_risk, lag_days]

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FeatureValue",
+  "required": [
+    "feature_id",
+    "entity_id",
+    "entity_type",
+    "feature_name",
+    "feature_value",
+    "feature_time",
+    "as_of_time",
+    "feature_version",
+    "source_snapshot"
+  ],
+  "properties": {
+    "feature_id": { "type": "string" },
+    "entity_id": { "type": "string" },
+    "entity_type": { "type": "string" },
+    "feature_name": { "type": "string" },
+    "feature_value": { "type": "number" },
+    "feature_time": { "type": "string", "format": "date-time" },
+    "as_of_time": { "type": "string", "format": "date-time" },
+    "feature_version": { "type": "string" },
+    "source_snapshot": { "type": "string" }
+  }
+}

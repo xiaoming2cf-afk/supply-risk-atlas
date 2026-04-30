@@ -1,0 +1,25 @@
+features:
+  firm_supplier_concentration_90d:
+    entity_type: firm
+    frequency: daily
+    window_days: 90
+    point_in_time_safe: true
+    dependencies: [supplies_to, trade_value]
+  firm_inbound_risk_mean_30d:
+    entity_type: firm
+    frequency: daily
+    window_days: 30
+    point_in_time_safe: true
+    dependencies: [event_affects, risk_score]
+  port_delay_mean_30d:
+    entity_type: port
+    frequency: daily
+    window_days: 30
+    point_in_time_safe: true
+    dependencies: [shipment_delay, port_congestion]
+  path_risk_max_30d:
+    entity_type: firm
+    frequency: daily
+    window_days: 30
+    point_in_time_safe: true
+    dependencies: [path_index, risk_transmits_to]

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LabelValue",
+  "required": [
+    "label_id",
+    "target_id",
+    "target_type",
+    "label_name",
+    "prediction_time",
+    "horizon",
+    "label_time",
+    "label_value",
+    "confidence",
+    "label_version",
+    "label_source"
+  ],
+  "properties": {
+    "label_id": { "type": "string" },
+    "target_id": { "type": "string" },
+    "target_type": { "type": "string" },
+    "label_name": { "type": "string" },
+    "prediction_time": { "type": "string", "format": "date-time" },
+    "horizon": { "type": "integer", "minimum": 1 },
+    "label_time": { "type": "string", "format": "date-time" },
+    "label_value": { "type": "number" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "label_version": { "type": "string" },
+    "label_source": { "type": "string" }
+  }
+}

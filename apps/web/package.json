@@ -1,0 +1,27 @@
+{
+  "name": "supply-risk-atlas-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "tsc --noEmit && next build",
+    "typecheck": "tsc --noEmit",
+    "typecheck:packages": "tsc --noEmit -p ../../packages/shared-types/tsconfig.json && tsc --noEmit -p ../../packages/api-client/tsconfig.json && tsc --noEmit -p ../../packages/design-system/tsconfig.json"
+  },
+  "dependencies": {
+    "@supply-risk/api-client": "file:../../packages/api-client",
+    "@supply-risk/design-system": "file:../../packages/design-system",
+    "@supply-risk/shared-types": "file:../../packages/shared-types",
+    "lucide-react": "0.562.0",
+    "next": "16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

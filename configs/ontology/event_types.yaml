@@ -1,0 +1,37 @@
+event_types:
+  supplier_added:
+    description: "A supplier relationship becomes visible."
+    actor_type: firm
+    object_type: firm
+  supplier_removed:
+    description: "A supplier relationship is removed or expires."
+    actor_type: firm
+    object_type: firm
+  shipment_delay:
+    description: "A shipment or route delay event."
+    actor_type: firm
+    object_type: port
+  port_congestion:
+    description: "A port congestion event."
+    actor_type: port
+    object_type: port
+  export_control:
+    description: "A government export control or restriction."
+    actor_type: policy
+    object_type: product
+  tariff_change:
+    description: "A tariff increase or decrease."
+    actor_type: policy
+    object_type: product
+  conflict_event:
+    description: "Conflict event affecting a geography or entity."
+    actor_type: risk_event
+    object_type: region
+  weather_event:
+    description: "Extreme weather event."
+    actor_type: risk_event
+    object_type: region
+  filing_disruption_disclosure:
+    description: "Company filing discloses a supply disruption."
+    actor_type: text_artifact
+    object_type: firm

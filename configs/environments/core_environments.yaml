@@ -1,0 +1,7 @@
+environments:
+  global_2026:
+    environment_type: period
+    name: "Global baseline 2026"
+    filter_rule: "event_time >= '2026-01-01'"
+    start_time: "2026-01-01T00:00:00Z"
+    end_time: "2026-12-31T23:59:59Z"

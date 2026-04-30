@@ -1,0 +1,13 @@
+labels:
+  firm_risk_7d:
+    target_type: firm
+    horizon_days: 7
+    source: synthetic_event_future_window
+  firm_risk_30d:
+    target_type: firm
+    horizon_days: 30
+    source: synthetic_event_future_window
+  edge_disruption_30d:
+    target_type: edge
+    horizon_days: 30
+    source: synthetic_edge_remove_future_window

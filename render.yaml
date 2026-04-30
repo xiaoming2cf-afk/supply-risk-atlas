@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: supply-risk-atlas-api
+    runtime: python
+    plan: free
+    buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]"
+    startCommand: python -m uvicorn services.api.main:app --host 0.0.0.0 --port $PORT
+    branch: main
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+    buildFilter:
+      paths:
+        - services/**
+        - packages/sra_core/**
+        - graph_kernel/**
+        - ml/**
+        - configs/**
+        - data_contracts/**
+        - pyproject.toml
+        - render.yaml
+
+  - type: web
+    name: supply-risk-atlas-web
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build:web
+    startCommand: npm --workspace apps/web exec -- next start --hostname 0.0.0.0 --port $PORT
+    branch: main
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NEXT_PUBLIC_SUPPLY_RISK_API_URL
+        value: /api/v1
+      - key: SUPPLY_RISK_API_HOSTPORT
+        fromService:
+          type: web
+          name: supply-risk-atlas-api
+          property: hostport
+    buildFilter:
+      paths:
+        - apps/web/**
+        - packages/api-client/**
+        - packages/design-system/**
+        - packages/shared-types/**
+        - package.json
+        - package-lock.json
+        - render.yaml

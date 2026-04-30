@@ -1,0 +1,22 @@
+{
+  "name": "supply-risk-atlas",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web",
+    "packages/shared-types",
+    "packages/api-client",
+    "packages/design-system"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "typecheck": "npm --workspace apps/web run typecheck",
+    "typecheck:packages": "npm --workspace apps/web run typecheck:packages",
+    "smoke:web": "node scripts/browser-smoke.mjs",
+    "test": "npm run typecheck && npm run typecheck:packages && npm run build:web"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
