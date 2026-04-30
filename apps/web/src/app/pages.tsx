@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
   Activity,
   AlertTriangle,
+  ArrowLeftRight,
   ArrowRight,
   CheckCircle2,
+  Clipboard,
   Database,
   Factory,
   Filter,
   GitBranch,
+  Languages,
   Layers3,
   Play,
   Search,
@@ -52,6 +55,8 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return <CausalEvidenceBoard data={props.data} />;
     case "graph-version-studio":
       return <GraphVersionStudio data={props.data} />;
+    case "translator":
+      return <TranslatorWorkbench />;
     case "system-health-center":
       return <SystemHealthCenter data={props.data} />;
     default:
@@ -61,6 +66,230 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
         </div>
       );
   }
+}
+
+type TranslationLanguage = "zh" | "en" | "fr";
+
+interface TranslationEntry {
+  zh: string;
+  en: string;
+  fr: string;
+}
+
+const translationLanguages: Array<{ code: TranslationLanguage; label: string; nativeLabel: string }> = [
+  { code: "zh", label: "Chinese", nativeLabel: "中文" },
+  { code: "en", label: "English", nativeLabel: "English" },
+  { code: "fr", label: "French", nativeLabel: "Français" }
+];
+
+const translationMemory: TranslationEntry[] = [
+  { zh: "全球产业风险操作系统", en: "Global Industrial Risk Operating System", fr: "système mondial d'exploitation des risques industriels" },
+  { zh: "供应链风险", en: "supply chain risk", fr: "risque de chaîne d'approvisionnement" },
+  { zh: "风险传播", en: "risk propagation", fr: "propagation du risque" },
+  { zh: "冲击模拟", en: "shock simulation", fr: "simulation de choc" },
+  { zh: "反事实模拟", en: "counterfactual simulation", fr: "simulation contrefactuelle" },
+  { zh: "因果证据", en: "causal evidence", fr: "preuve causale" },
+  { zh: "异质图", en: "heterogeneous graph", fr: "graphe hétérogène" },
+  { zh: "动态图谱", en: "dynamic graph", fr: "graphe dynamique" },
+  { zh: "实体注册表", en: "entity registry", fr: "registre des entités" },
+  { zh: "事件溯源", en: "event sourcing", fr: "journalisation événementielle" },
+  { zh: "图快照", en: "graph snapshot", fr: "instantané du graphe" },
+  { zh: "路径索引", en: "path index", fr: "index des chemins" },
+  { zh: "特征工厂", en: "feature factory", fr: "fabrique de caractéristiques" },
+  { zh: "标签工厂", en: "label factory", fr: "fabrique d'étiquettes" },
+  { zh: "模型注册表", en: "model registry", fr: "registre des modèles" },
+  { zh: "数据血缘", en: "data lineage", fr: "lignage des données" },
+  { zh: "系统健康", en: "system health", fr: "santé du système" },
+  { zh: "供应商", en: "supplier", fr: "fournisseur" },
+  { zh: "客户", en: "customer", fr: "client" },
+  { zh: "港口", en: "port", fr: "port" },
+  { zh: "产品", en: "product", fr: "produit" },
+  { zh: "国家", en: "country", fr: "pays" },
+  { zh: "企业", en: "firm", fr: "entreprise" },
+  { zh: "设施", en: "facility", fr: "installation" },
+  { zh: "路线", en: "route", fr: "itinéraire" },
+  { zh: "预测", en: "prediction", fr: "prédiction" },
+  { zh: "解释", en: "explanation", fr: "explication" },
+  { zh: "报告", en: "report", fr: "rapport" },
+  { zh: "韧性", en: "resilience", fr: "résilience" },
+  { zh: "严重", en: "severe", fr: "sévère" },
+  { zh: "关键", en: "critical", fr: "critique" },
+  { zh: "升高", en: "elevated", fr: "élevé" },
+  { zh: "受控", en: "guarded", fr: "surveillé" },
+  { zh: "低", en: "low", fr: "faible" },
+  { zh: "风险", en: "risk", fr: "risque" },
+  { zh: "图", en: "graph", fr: "graphe" }
+];
+
+const translatorSamples: Record<TranslationLanguage, string> = {
+  zh: "供应链风险通过港口和供应商路径传播。冲击模拟需要图快照、因果证据和数据血缘。",
+  en: "Supply chain risk propagates through port and supplier paths. Shock simulation needs graph snapshots, causal evidence, and data lineage.",
+  fr: "Le risque de chaîne d'approvisionnement se propage par les ports et les fournisseurs. La simulation de choc nécessite des instantanés du graphe, des preuves causales et le lignage des données."
+};
+
+function normalizeTranslationText(value: string) {
+  return value
+    .toLocaleLowerCase()
+    .replace(/[.,;:!?，。；：！？()[\]{}"]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function translateText(input: string, sourceLanguage: TranslationLanguage, targetLanguage: TranslationLanguage) {
+  if (!input.trim()) {
+    return { output: "", matchedTerms: [] as TranslationEntry[], coverage: 0 };
+  }
+
+  if (sourceLanguage === targetLanguage) {
+    return { output: input, matchedTerms: [] as TranslationEntry[], coverage: 100 };
+  }
+
+  const exactMatch = translationMemory.find(
+    (entry) => normalizeTranslationText(entry[sourceLanguage]) === normalizeTranslationText(input)
+  );
+  if (exactMatch) {
+    return { output: exactMatch[targetLanguage], matchedTerms: [exactMatch], coverage: 100 };
+  }
+
+  const sortedEntries = [...translationMemory].sort((a, b) => b[sourceLanguage].length - a[sourceLanguage].length);
+  const matchedTerms: TranslationEntry[] = [];
+  let output = input;
+  let matchedLength = 0;
+
+  for (const entry of sortedEntries) {
+    const sourceTerm = entry[sourceLanguage];
+    const targetTerm = entry[targetLanguage];
+    const hasCjkSource = sourceLanguage === "zh";
+    const pattern = hasCjkSource
+      ? new RegExp(escapeRegExp(sourceTerm), "g")
+      : new RegExp(`\\b${escapeRegExp(sourceTerm)}\\b`, "gi");
+
+    let replaced = false;
+    output = output.replace(pattern, (match) => {
+      replaced = true;
+      matchedLength += match.length;
+      return targetTerm;
+    });
+
+    if (replaced) matchedTerms.push(entry);
+  }
+
+  const coverage = Math.min(100, Math.round((matchedLength / Math.max(input.length, 1)) * 100));
+  return { output, matchedTerms, coverage };
+}
+
+function TranslatorWorkbench() {
+  const [sourceLanguage, setSourceLanguage] = useState<TranslationLanguage>("zh");
+  const [targetLanguage, setTargetLanguage] = useState<TranslationLanguage>("en");
+  const [input, setInput] = useState(translatorSamples.zh);
+  const [copyState, setCopyState] = useState("Copy result");
+  const translation = useMemo(
+    () => translateText(input, sourceLanguage, targetLanguage),
+    [input, sourceLanguage, targetLanguage]
+  );
+
+  const setLanguage = (kind: "source" | "target") => (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLanguage = event.target.value as TranslationLanguage;
+    if (kind === "source") {
+      setSourceLanguage(nextLanguage);
+      if (!input.trim() || input === translatorSamples[sourceLanguage]) {
+        setInput(translatorSamples[nextLanguage]);
+      }
+      if (nextLanguage === targetLanguage) setTargetLanguage(sourceLanguage);
+      return;
+    }
+
+    setTargetLanguage(nextLanguage === sourceLanguage ? targetLanguage : nextLanguage);
+  };
+
+  const swapLanguages = () => {
+    setSourceLanguage(targetLanguage);
+    setTargetLanguage(sourceLanguage);
+    setInput(translation.output || translatorSamples[targetLanguage]);
+  };
+
+  const copyResult = async () => {
+    if (!translation.output.trim()) return;
+    await navigator.clipboard?.writeText(translation.output);
+    setCopyState("Copied");
+    window.setTimeout(() => setCopyState("Copy result"), 1400);
+  };
+
+  return (
+    <div className="page-grid translator-layout">
+      <Panel
+        title="Manual translation workbench"
+        subtitle="Select Chinese, English, or French explicitly; translations use the governed SupplyRiskAtlas glossary."
+        action={<Button icon={Languages} onClick={() => setInput(translatorSamples[sourceLanguage])}>Load sample</Button>}
+      >
+        <div className="translator-controls">
+          <label className="form-control">
+            <span>Source language</span>
+            <select value={sourceLanguage} onChange={setLanguage("source")}>
+              {translationLanguages.map((language) => (
+                <option key={language.code} value={language.code}>
+                  {language.nativeLabel} / {language.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="language-swap" type="button" onClick={swapLanguages} aria-label="Swap source and target languages">
+            <ArrowLeftRight aria-hidden="true" />
+          </button>
+          <label className="form-control">
+            <span>Target language</span>
+            <select value={targetLanguage} onChange={setLanguage("target")}>
+              {translationLanguages.map((language) => (
+                <option disabled={language.code === sourceLanguage} key={language.code} value={language.code}>
+                  {language.nativeLabel} / {language.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <label className="form-control translator-input">
+          <span>Text to translate</span>
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            rows={8}
+            placeholder="Enter a supply-chain risk sentence or glossary term."
+          />
+        </label>
+      </Panel>
+
+      <Panel
+        title="Translation result"
+        subtitle={`${translation.coverage}% glossary coverage; unmatched words remain unchanged for auditability.`}
+        action={<Button icon={Clipboard} onClick={() => void copyResult()}>{copyState}</Button>}
+      >
+        <div className="translation-output" aria-live="polite">
+          {translation.output || "Translation output will appear here."}
+        </div>
+      </Panel>
+
+      <Panel title="Governed glossary hits" subtitle="Matched terms are shown so analysts can audit the generated wording.">
+        {translation.matchedTerms.length > 0 ? (
+          <div className="glossary-grid">
+            {translation.matchedTerms.slice(0, 12).map((entry) => (
+              <article className="glossary-card" key={`${entry[sourceLanguage]}-${entry[targetLanguage]}`}>
+                <span>{entry[sourceLanguage]}</span>
+                <ArrowRight aria-hidden="true" />
+                <strong>{entry[targetLanguage]}</strong>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">No governed glossary terms detected yet.</div>
+        )}
+      </Panel>
+    </div>
+  );
 }
 
 function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {

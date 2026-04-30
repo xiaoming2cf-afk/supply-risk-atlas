@@ -20,6 +20,7 @@ const pages = [
   ["Shock Simulator", "#shock-simulator"],
   ["Causal Evidence Board", "#causal-evidence-board"],
   ["Graph Version Studio", "#graph-version-studio"],
+  ["Translator", "#translator"],
   ["System Health Center", "#system-health-center"],
 ];
 
@@ -68,7 +69,7 @@ async function main() {
     for (const [page, hash] of pages) {
       await navigate(client, `${webUrl}${hash}`);
       const result = await waitFor(client, () => pageState(client), (state) => state.title === page);
-      checks.push({ page, hash, title: result.title, navCount: result.navCount, passed: result.title === page && result.navCount === 8 });
+      checks.push({ page, hash, title: result.title, navCount: result.navCount, passed: result.title === page && result.navCount === pages.length });
     }
 
     if (expectedMode) {
@@ -143,6 +144,27 @@ async function main() {
       passed: Number(after.severity) >= 90 && after.impactScore !== before.impactScore,
     });
 
+    await navigate(client, `${webUrl}#translator`);
+    const translatorBefore = await waitFor(client, () => translatorState(client), (state) => state.title === "Translator" && state.hasOutput);
+    await evaluate(client, `(() => {
+      const selects = document.querySelectorAll('select');
+      const target = selects[1];
+      target.value = 'fr';
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`);
+    const translatorAfter = await waitFor(
+      client,
+      () => translatorState(client),
+      (state) => state.output.includes("risque de chaîne d'approvisionnement") && state.targetLanguage === "fr",
+    );
+    checks.push({
+      page: "Translator local state",
+      beforeTarget: translatorBefore.targetLanguage,
+      afterTarget: translatorAfter.targetLanguage,
+      outputPrefix: translatorAfter.output.slice(0, 80),
+      passed: translatorAfter.output.includes("risque de chaîne d'approvisionnement"),
+    });
+
     await client.send("Emulation.setDeviceMetricsOverride", {
       width: 390,
       height: 844,
@@ -203,6 +225,20 @@ async function shockState(client) {
     const severity = document.querySelector('input[type="range"]')?.value ?? '';
     const impactScore = document.querySelector('.big-result strong')?.textContent?.trim() ?? '';
     return { severity, impactScore, hasImpact: text.includes('Impact score') };
+  })()`);
+}
+
+async function translatorState(client) {
+  return evaluate(client, `(() => {
+    const selects = document.querySelectorAll('select');
+    const output = document.querySelector('.translation-output')?.textContent?.trim() ?? '';
+    return {
+      title: document.querySelector('h1')?.textContent?.trim() ?? '',
+      sourceLanguage: selects[0]?.value ?? '',
+      targetLanguage: selects[1]?.value ?? '',
+      output,
+      hasOutput: output.length > 0
+    };
   })()`);
 }
 

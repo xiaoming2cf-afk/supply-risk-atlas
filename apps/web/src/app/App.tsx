@@ -9,6 +9,7 @@ import {
   GitBranch,
   Globe2,
   Layers3,
+  Languages,
   Network,
   RefreshCw,
   Route,
@@ -29,6 +30,7 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "shock-simulator": SlidersHorizontal,
   "causal-evidence-board": ShieldAlert,
   "graph-version-studio": GitBranch,
+  translator: Languages,
   "system-health-center": ServerCog
 };
 
