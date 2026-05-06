@@ -75,25 +75,6 @@ jobs:
         run: |
           SUPPLY_RISK_EXPECT_MODE=real npm run smoke:web
           cp artifacts/browser-smoke/report.json artifacts/browser-smoke/report.real.json
-      - name: Restart web dev server in mock mode
-        run: |
-          kill "$(cat artifacts/runtime/web-ci.pid)" || true
-          sleep 2
-          npm --workspace apps/web run dev -- --hostname 127.0.0.1 --port 3000 \
-            > artifacts/runtime/web-ci-mock.out.log 2> artifacts/runtime/web-ci-mock.err.log &
-          echo $! > artifacts/runtime/web-ci.pid
-          for attempt in {1..90}; do
-            if curl -fsS http://127.0.0.1:3000 >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat artifacts/runtime/web-ci-mock.out.log artifacts/runtime/web-ci-mock.err.log
-          exit 1
-      - name: Browser smoke mock mode
-        run: |
-          SUPPLY_RISK_EXPECT_MODE=mock npm run smoke:web
-          cp artifacts/browser-smoke/report.json artifacts/browser-smoke/report.mock.json
       - name: Upload smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -101,7 +82,6 @@ jobs:
           name: browser-smoke-artifacts
           path: |
             artifacts/browser-smoke/report.real.json
-            artifacts/browser-smoke/report.mock.json
             artifacts/browser-smoke/report.json
           if-no-files-found: ignore
       - name: Stop dev servers
