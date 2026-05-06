@@ -1,0 +1,5 @@
+{
+  "fixture_type": "synthetic_only",
+  "source_id": "synthetic_fixture",
+  "note": "Synthetic payloads are retained only as offline test fixtures and are not registered as production sources."
+}

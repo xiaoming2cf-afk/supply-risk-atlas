@@ -14,6 +14,67 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Report changed-file gate routing
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import subprocess
+
+          if os.environ.get("GITHUB_EVENT_NAME") != "pull_request":
+              print("Changed-file gate routing is reported for pull requests only.")
+              raise SystemExit(0)
+
+          base_ref = os.environ.get("GITHUB_BASE_REF")
+          if not base_ref:
+              print("No pull request base ref found; skipping changed-file gate routing.")
+              raise SystemExit(0)
+
+          subprocess.run(["git", "fetch", "origin", base_ref, "--depth=1"], check=False)
+          result = subprocess.run(
+              ["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"],
+              check=True,
+              text=True,
+              capture_output=True,
+          )
+          changed = [Path(line.strip()).as_posix() for line in result.stdout.splitlines() if line.strip()]
+          if not changed:
+              print("No changed files detected.")
+              raise SystemExit(0)
+
+          routes = [
+              (("docs/", "AGENTS.md", "README.md", ".github/workflows/"), "Governance and docs; PII/secret hygiene for workflow or deployment changes", "QA and docs supervisor"),
+              (("tests/e2e/",), "Governance and docs; E2E acceptance; source freshness for stale or degraded data states", "QA and docs supervisor"),
+              (("data_contracts/", "configs/sources/", "source_manifests/", "scripts/sources/", "services/ingest/"), "Real-data source license; schema validation; source freshness; contract compatibility; PII/secret hygiene", "API and contracts with Data and ML"),
+              (("configs/features/", "configs/labels/", "ml/"), "Schema validation; source freshness; snapshot determinism; leakage and model quality; contract compatibility", "Data and ML"),
+              (("graph_kernel/", "packages/sra_core/", "configs/ontology/"), "Schema validation; snapshot determinism; graph invariants; contract compatibility", "Graph and core model"),
+              (("services/api/", "packages/shared-types/", "packages/api-client/"), "Contract compatibility; unit and API behavior; schema validation; source freshness metadata checks", "API and contracts"),
+              (("apps/web/", "packages/design-system/"), "Frontend runtime; E2E acceptance for user-visible workflows; source freshness display checks", "Product and frontend"),
+              (("infra/", "render.yaml", "docs/deployment/", "configs/environments/"), "Infrastructure; PII/secret hygiene; source license policy for exposed data; Render/GitHub deployment notes", "Infrastructure with QA and docs supervisor"),
+          ]
+
+          print("Changed-file gate routing:")
+          emitted = set()
+          for file_path in changed:
+              matches = []
+              for prefixes, gates, owner in routes:
+                  if any(file_path == prefix.rstrip("/") or file_path.startswith(prefix) for prefix in prefixes):
+                      matches.append((gates, owner))
+              if not matches:
+                  matches.append(("Nearest applicable repository gate by reviewer judgment", "Owning lane for changed path"))
+              for gates, owner in matches:
+                  row = (file_path, gates, owner)
+                  if row in emitted:
+                      continue
+                  emitted.add(row)
+                  print(f"- {file_path}: {gates} | responsible: {owner}")
+          PY
 
       - name: Validate required docs and acceptance coverage
         run: |
@@ -31,6 +92,8 @@ jobs:
               Path("docs/architecture/overview.md"),
               Path("docs/data/data-flow.md"),
               Path("docs/quality-gates.md"),
+              Path("docs/governance/real-data-governance.md"),
+              Path("docs/deployment/github-ci.md"),
               Path("tests/e2e/README.md"),
               Path("tests/e2e/supply-risk-atlas.feature"),
           ]
@@ -62,6 +125,32 @@ jobs:
               text = path.read_text(encoding="utf-8", errors="replace")
               if conflict_re.search(text):
                   errors.append(f"Conflict marker found: {path.relative_to(root)}")
+
+          quality_text = (root / "docs" / "quality-gates.md").read_text(encoding="utf-8", errors="replace")
+          required_real_data_terms = [
+              "License policy",
+              "Schema validation",
+              "Source freshness",
+              "Contract compatibility",
+              "PII/secret hygiene",
+              "Input-manifest determinism",
+              "public no-key sources",
+              "Changed-File Gate Routing",
+          ]
+          for term in required_real_data_terms:
+              if term not in quality_text:
+                  errors.append(f"Missing real-data quality gate term in docs/quality-gates.md: {term}")
+
+          workflow_files = list((root / ".github" / "workflows").glob("*.yml")) + list((root / ".github" / "workflows").glob("*.yaml"))
+          broad_artifact_re = re.compile(r"(?mi)^\s*path:\s*[\"']?artifacts/?[\"']?\s*$")
+          raw_artifact_re = re.compile(r"(?i)(data/raw|raw-data|raw_data|source-extract|source_extract|\.env)")
+          for workflow_file in workflow_files:
+              workflow_text = workflow_file.read_text(encoding="utf-8", errors="replace")
+              if "actions/upload-artifact" in workflow_text and broad_artifact_re.search(workflow_text):
+                  errors.append(f"Broad artifact upload is not allowed: {workflow_file.relative_to(root)}")
+              for line_number, line in enumerate(workflow_text.splitlines(), start=1):
+                  if "path:" in line and raw_artifact_re.search(line):
+                      errors.append(f"Potential raw data or secret artifact path: {workflow_file.relative_to(root)}:{line_number}")
 
           link_re = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
           markdown_files = [

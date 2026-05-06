@@ -1,0 +1,1357 @@
+catalog_version: public-real-node-catalog-v1
+description: Public no-key real entity and evidence graph catalog for SupplyRiskAtlas v1.
+entities:
+  - canonical_id: firm_apple
+    entity_type: firm
+    display_name: Apple Inc.
+    country: US
+    industry: Consumer electronics
+    source_id: sec_edgar
+    confidence: 0.99
+    external_ids: {sec_cik: "0000320193", ticker: AAPL}
+  - canonical_id: firm_tesla
+    entity_type: firm
+    display_name: Tesla, Inc.
+    country: US
+    industry: Electric vehicles and energy storage
+    source_id: sec_edgar
+    confidence: 0.98
+    external_ids: {sec_cik: "0001318605", ticker: TSLA}
+  - canonical_id: firm_intel
+    entity_type: firm
+    display_name: Intel Corporation
+    country: US
+    industry: Semiconductors
+    source_id: sec_edgar
+    confidence: 0.98
+    external_ids: {sec_cik: "0000050863", ticker: INTC}
+  - canonical_id: firm_nvidia
+    entity_type: firm
+    display_name: NVIDIA Corporation
+    country: US
+    industry: Semiconductors
+    source_id: sec_edgar
+    confidence: 0.98
+    external_ids: {sec_cik: "0001045810", ticker: NVDA}
+  - canonical_id: firm_amd
+    entity_type: firm
+    display_name: Advanced Micro Devices, Inc.
+    country: US
+    industry: Semiconductors
+    source_id: sec_edgar
+    confidence: 0.97
+    external_ids: {sec_cik: "0000002488", ticker: AMD}
+  - canonical_id: firm_broadcom
+    entity_type: firm
+    display_name: Broadcom Inc.
+    country: US
+    industry: Semiconductors
+    source_id: sec_edgar
+    confidence: 0.97
+    external_ids: {sec_cik: "0001730168", ticker: AVGO}
+  - canonical_id: firm_qualcomm
+    entity_type: firm
+    display_name: Qualcomm Incorporated
+    country: US
+    industry: Semiconductors
+    source_id: sec_edgar
+    confidence: 0.97
+    external_ids: {sec_cik: "0000804328", ticker: QCOM}
+  - canonical_id: firm_micron
+    entity_type: firm
+    display_name: Micron Technology, Inc.
+    country: US
+    industry: Memory semiconductors
+    source_id: sec_edgar
+    confidence: 0.97
+    external_ids: {sec_cik: "0000723125", ticker: MU}
+  - canonical_id: firm_texas_instruments
+    entity_type: firm
+    display_name: Texas Instruments Incorporated
+    country: US
+    industry: Analog semiconductors
+    source_id: sec_edgar
+    confidence: 0.97
+    external_ids: {sec_cik: "0000097476", ticker: TXN}
+  - canonical_id: firm_analog_devices
+    entity_type: firm
+    display_name: Analog Devices, Inc.
+    country: US
+    industry: Analog semiconductors
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0000006281", ticker: ADI}
+  - canonical_id: firm_applied_materials
+    entity_type: firm
+    display_name: Applied Materials, Inc.
+    country: US
+    industry: Semiconductor equipment
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0000006951", ticker: AMAT}
+  - canonical_id: firm_lam_research
+    entity_type: firm
+    display_name: Lam Research Corporation
+    country: US
+    industry: Semiconductor equipment
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0000707549", ticker: LRCX}
+  - canonical_id: firm_jabil
+    entity_type: firm
+    display_name: Jabil Inc.
+    country: US
+    industry: Electronics manufacturing services
+    source_id: sec_edgar
+    confidence: 0.95
+    external_ids: {sec_cik: "0000898293", ticker: JBL}
+  - canonical_id: firm_flex
+    entity_type: firm
+    display_name: Flex Ltd.
+    country: SG
+    industry: Electronics manufacturing services
+    source_id: sec_edgar
+    confidence: 0.95
+    external_ids: {sec_cik: "0000866374", ticker: FLEX}
+  - canonical_id: firm_tsmc
+    entity_type: firm
+    display_name: Taiwan Semiconductor Manufacturing Company Limited
+    country: TW
+    industry: Semiconductors
+    source_id: gleif
+    confidence: 0.96
+    external_ids: {ticker: 2330.TW}
+  - canonical_id: firm_asml
+    entity_type: firm
+    display_name: ASML Holding N.V.
+    country: NL
+    industry: Semiconductor equipment
+    source_id: gleif
+    confidence: 0.96
+    external_ids: {ticker: ASML}
+  - canonical_id: firm_samsung_electronics
+    entity_type: firm
+    display_name: Samsung Electronics Co., Ltd.
+    country: KR
+    industry: Electronics and semiconductors
+    source_id: gleif
+    confidence: 0.95
+    external_ids: {ticker: 005930.KS}
+  - canonical_id: firm_sk_hynix
+    entity_type: firm
+    display_name: SK hynix Inc.
+    country: KR
+    industry: Memory semiconductors
+    source_id: gleif
+    confidence: 0.95
+    external_ids: {ticker: 000660.KS}
+  - canonical_id: firm_sony_semiconductor
+    entity_type: firm
+    display_name: Sony Semiconductor Solutions Corporation
+    country: JP
+    industry: Image sensors
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {parent_ticker: 6758.T}
+  - canonical_id: firm_infineon
+    entity_type: firm
+    display_name: Infineon Technologies AG
+    country: DE
+    industry: Power semiconductors
+    source_id: gleif
+    confidence: 0.95
+    external_ids: {ticker: IFX.DE}
+  - canonical_id: firm_stmicroelectronics
+    entity_type: firm
+    display_name: STMicroelectronics N.V.
+    country: CH
+    industry: Semiconductors
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: STM}
+  - canonical_id: firm_nxp
+    entity_type: firm
+    display_name: NXP Semiconductors N.V.
+    country: NL
+    industry: Automotive semiconductors
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: NXPI}
+  - canonical_id: firm_microchip
+    entity_type: firm
+    display_name: Microchip Technology Incorporated
+    country: US
+    industry: Microcontrollers
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0000827054", ticker: MCHP}
+  - canonical_id: firm_tokyo_electron
+    entity_type: firm
+    display_name: Tokyo Electron Limited
+    country: JP
+    industry: Semiconductor equipment
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: 8035.T}
+  - canonical_id: firm_canon
+    entity_type: firm
+    display_name: Canon Inc.
+    country: JP
+    industry: Semiconductor lithography and imaging
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 7751.T}
+  - canonical_id: firm_nikon
+    entity_type: firm
+    display_name: Nikon Corporation
+    country: JP
+    industry: Precision equipment
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 7731.T}
+  - canonical_id: firm_foxconn
+    entity_type: firm
+    display_name: Hon Hai Precision Industry Co., Ltd.
+    country: TW
+    industry: Electronics manufacturing services
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: 2317.TW}
+  - canonical_id: firm_pegatron
+    entity_type: firm
+    display_name: Pegatron Corporation
+    country: TW
+    industry: Electronics manufacturing services
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 4938.TW}
+  - canonical_id: firm_quanta
+    entity_type: firm
+    display_name: Quanta Computer Inc.
+    country: TW
+    industry: Electronics manufacturing services
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 2382.TW}
+  - canonical_id: firm_compal
+    entity_type: firm
+    display_name: Compal Electronics, Inc.
+    country: TW
+    industry: Electronics manufacturing services
+    source_id: gleif
+    confidence: 0.92
+    external_ids: {ticker: 2324.TW}
+  - canonical_id: firm_globalfoundries
+    entity_type: firm
+    display_name: GlobalFoundries Inc.
+    country: US
+    industry: Semiconductor foundry
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0001709048", ticker: GFS}
+  - canonical_id: firm_umc
+    entity_type: firm
+    display_name: United Microelectronics Corporation
+    country: TW
+    industry: Semiconductor foundry
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: UMC}
+  - canonical_id: firm_toyota
+    entity_type: firm
+    display_name: Toyota Motor Corporation
+    country: JP
+    industry: Automotive
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: 7203.T}
+  - canonical_id: firm_volkswagen
+    entity_type: firm
+    display_name: Volkswagen AG
+    country: DE
+    industry: Automotive
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: VOW3.DE}
+  - canonical_id: firm_byd
+    entity_type: firm
+    display_name: BYD Company Limited
+    country: CN
+    industry: Electric vehicles and batteries
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 002594.SZ}
+  - canonical_id: firm_catl
+    entity_type: firm
+    display_name: Contemporary Amperex Technology Co., Limited
+    country: CN
+    industry: Battery manufacturing
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 300750.SZ}
+  - canonical_id: firm_lg_energy_solution
+    entity_type: firm
+    display_name: LG Energy Solution, Ltd.
+    country: KR
+    industry: Battery manufacturing
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 373220.KS}
+  - canonical_id: firm_panasonic_energy
+    entity_type: firm
+    display_name: Panasonic Energy Co., Ltd.
+    country: JP
+    industry: Battery manufacturing
+    source_id: gleif
+    confidence: 0.92
+    external_ids: {parent_ticker: 6752.T}
+  - canonical_id: firm_basf
+    entity_type: firm
+    display_name: BASF SE
+    country: DE
+    industry: Chemicals
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: BAS.DE}
+  - canonical_id: firm_dupont
+    entity_type: firm
+    display_name: DuPont de Nemours, Inc.
+    country: US
+    industry: Specialty chemicals
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0001666700", ticker: DD}
+  - canonical_id: firm_merck_kgaa
+    entity_type: firm
+    display_name: Merck KGaA
+    country: DE
+    industry: Electronic materials
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: MRK.DE}
+  - canonical_id: firm_air_liquide
+    entity_type: firm
+    display_name: L'Air Liquide S.A.
+    country: FR
+    industry: Industrial gases
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: AI.PA}
+  - canonical_id: firm_linde
+    entity_type: firm
+    display_name: Linde plc
+    country: GB
+    industry: Industrial gases
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {ticker: LIN}
+  - canonical_id: firm_mitsubishi_chemical
+    entity_type: firm
+    display_name: Mitsubishi Chemical Group Corporation
+    country: JP
+    industry: Specialty chemicals
+    source_id: gleif
+    confidence: 0.92
+    external_ids: {ticker: 4188.T}
+  - canonical_id: firm_sumco
+    entity_type: firm
+    display_name: SUMCO Corporation
+    country: JP
+    industry: Silicon wafers
+    source_id: gleif
+    confidence: 0.92
+    external_ids: {ticker: 3436.T}
+  - canonical_id: firm_shin_etsu
+    entity_type: firm
+    display_name: Shin-Etsu Chemical Co., Ltd.
+    country: JP
+    industry: Silicon wafers and chemicals
+    source_id: gleif
+    confidence: 0.93
+    external_ids: {ticker: 4063.T}
+  - canonical_id: firm_albemarle
+    entity_type: firm
+    display_name: Albemarle Corporation
+    country: US
+    industry: Lithium chemicals
+    source_id: sec_edgar
+    confidence: 0.96
+    external_ids: {sec_cik: "0000915913", ticker: ALB}
+  - canonical_id: firm_sqm
+    entity_type: firm
+    display_name: Sociedad Quimica y Minera de Chile S.A.
+    country: CL
+    industry: Lithium chemicals
+    source_id: gleif
+    confidence: 0.92
+    external_ids: {ticker: SQM}
+  - canonical_id: country_us
+    entity_type: country
+    display_name: United States
+    country: US
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: US}
+  - canonical_id: country_tw
+    entity_type: country
+    display_name: Taiwan
+    country: TW
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: TW}
+  - canonical_id: country_nl
+    entity_type: country
+    display_name: Netherlands
+    country: NL
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: NL}
+  - canonical_id: country_kr
+    entity_type: country
+    display_name: South Korea
+    country: KR
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: KR}
+  - canonical_id: country_jp
+    entity_type: country
+    display_name: Japan
+    country: JP
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: JP}
+  - canonical_id: country_cn
+    entity_type: country
+    display_name: China
+    country: CN
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: CN}
+  - canonical_id: country_de
+    entity_type: country
+    display_name: Germany
+    country: DE
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: DE}
+  - canonical_id: country_fr
+    entity_type: country
+    display_name: France
+    country: FR
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: FR}
+  - canonical_id: country_sg
+    entity_type: country
+    display_name: Singapore
+    country: SG
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: SG}
+  - canonical_id: country_my
+    entity_type: country
+    display_name: Malaysia
+    country: MY
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: MY}
+  - canonical_id: country_vn
+    entity_type: country
+    display_name: Vietnam
+    country: VN
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: VN}
+  - canonical_id: country_mx
+    entity_type: country
+    display_name: Mexico
+    country: MX
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: MX}
+  - canonical_id: country_in
+    entity_type: country
+    display_name: India
+    country: IN
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: IN}
+  - canonical_id: country_ae
+    entity_type: country
+    display_name: United Arab Emirates
+    country: AE
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: AE}
+  - canonical_id: country_pa
+    entity_type: country
+    display_name: Panama
+    country: PA
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: PA}
+  - canonical_id: country_eg
+    entity_type: country
+    display_name: Egypt
+    country: EG
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: EG}
+  - canonical_id: country_cl
+    entity_type: country
+    display_name: Chile
+    country: CL
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: CL}
+  - canonical_id: country_au
+    entity_type: country
+    display_name: Australia
+    country: AU
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: AU}
+  - canonical_id: country_gb
+    entity_type: country
+    display_name: United Kingdom
+    country: GB
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: GB}
+  - canonical_id: country_ch
+    entity_type: country
+    display_name: Switzerland
+    country: CH
+    industry: null
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {iso2: CH}
+  - canonical_id: port_kaohsiung
+    entity_type: port
+    display_name: Port of Kaohsiung
+    country: TW
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.92
+    external_ids: {unlocode: TWKHH}
+  - canonical_id: port_rotterdam
+    entity_type: port
+    display_name: Port of Rotterdam
+    country: NL
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.93
+    external_ids: {unlocode: NLRTM}
+  - canonical_id: port_shanghai
+    entity_type: port
+    display_name: Port of Shanghai
+    country: CN
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.93
+    external_ids: {unlocode: CNSHA}
+  - canonical_id: port_singapore
+    entity_type: port
+    display_name: Port of Singapore
+    country: SG
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.93
+    external_ids: {unlocode: SGSIN}
+  - canonical_id: port_busan
+    entity_type: port
+    display_name: Port of Busan
+    country: KR
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.92
+    external_ids: {unlocode: KRPUS}
+  - canonical_id: port_los_angeles
+    entity_type: port
+    display_name: Port of Los Angeles
+    country: US
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.92
+    external_ids: {unlocode: USLAX}
+  - canonical_id: port_long_beach
+    entity_type: port
+    display_name: Port of Long Beach
+    country: US
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.92
+    external_ids: {unlocode: USLGB}
+  - canonical_id: port_hamburg
+    entity_type: port
+    display_name: Port of Hamburg
+    country: DE
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.91
+    external_ids: {unlocode: DEHAM}
+  - canonical_id: port_antwerp_bruges
+    entity_type: port
+    display_name: Port of Antwerp-Bruges
+    country: BE
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.91
+    external_ids: {unlocode: BEANR}
+  - canonical_id: port_jebel_ali
+    entity_type: port
+    display_name: Jebel Ali Port
+    country: AE
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.91
+    external_ids: {unlocode: AEJEA}
+  - canonical_id: port_tanjung_pelepas
+    entity_type: port
+    display_name: Port of Tanjung Pelepas
+    country: MY
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.9
+    external_ids: {unlocode: MYTPP}
+  - canonical_id: port_klang
+    entity_type: port
+    display_name: Port Klang
+    country: MY
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.9
+    external_ids: {unlocode: MYPKG}
+  - canonical_id: port_manzanillo
+    entity_type: port
+    display_name: Port of Manzanillo
+    country: MX
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.89
+    external_ids: {unlocode: MXZLO}
+  - canonical_id: port_balboa
+    entity_type: port
+    display_name: Port of Balboa
+    country: PA
+    industry: Maritime logistics
+    source_id: nga_world_port_index
+    confidence: 0.89
+    external_ids: {unlocode: PABLB}
+  - canonical_id: airport_taoyuan
+    entity_type: airport
+    display_name: Taiwan Taoyuan International Airport
+    country: TW
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: TPE, icao: RCTP}
+  - canonical_id: airport_incheon
+    entity_type: airport
+    display_name: Incheon International Airport
+    country: KR
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: ICN, icao: RKSI}
+  - canonical_id: airport_changi
+    entity_type: airport
+    display_name: Singapore Changi Airport
+    country: SG
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: SIN, icao: WSSS}
+  - canonical_id: airport_hong_kong
+    entity_type: airport
+    display_name: Hong Kong International Airport
+    country: HK
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: HKG, icao: VHHH}
+  - canonical_id: airport_narita
+    entity_type: airport
+    display_name: Narita International Airport
+    country: JP
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: NRT, icao: RJAA}
+  - canonical_id: airport_schiphol
+    entity_type: airport
+    display_name: Amsterdam Airport Schiphol
+    country: NL
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: AMS, icao: EHAM}
+  - canonical_id: airport_frankfurt
+    entity_type: airport
+    display_name: Frankfurt Airport
+    country: DE
+    industry: Air cargo logistics
+    source_id: ourairports
+    confidence: 0.9
+    external_ids: {iata: FRA, icao: EDDF}
+  - canonical_id: product_advanced_semiconductors
+    entity_type: product
+    display_name: Advanced semiconductors
+    country: null
+    industry: HS 8542
+    source_id: world_bank
+    confidence: 0.9
+    external_ids: {hs_code: "8542"}
+  - canonical_id: product_memory_chips
+    entity_type: product
+    display_name: Memory chips
+    country: null
+    industry: HS 8542
+    source_id: world_bank
+    confidence: 0.88
+    external_ids: {hs_code: "8542-memory"}
+  - canonical_id: product_ev_batteries
+    entity_type: product
+    display_name: EV battery cells
+    country: null
+    industry: HS 8507
+    source_id: world_bank
+    confidence: 0.88
+    external_ids: {hs_code: "8507"}
+  - canonical_id: product_lithium
+    entity_type: product
+    display_name: Lithium compounds
+    country: null
+    industry: Critical minerals
+    source_id: world_bank
+    confidence: 0.87
+    external_ids: {commodity_code: lithium}
+  - canonical_id: product_nickel
+    entity_type: product
+    display_name: Nickel
+    country: null
+    industry: Critical minerals
+    source_id: world_bank
+    confidence: 0.87
+    external_ids: {commodity_code: nickel}
+  - canonical_id: product_cobalt
+    entity_type: product
+    display_name: Cobalt
+    country: null
+    industry: Critical minerals
+    source_id: world_bank
+    confidence: 0.87
+    external_ids: {commodity_code: cobalt}
+  - canonical_id: product_graphite
+    entity_type: product
+    display_name: Battery-grade graphite
+    country: null
+    industry: Critical minerals
+    source_id: world_bank
+    confidence: 0.87
+    external_ids: {commodity_code: graphite}
+  - canonical_id: product_rare_earths
+    entity_type: product
+    display_name: Rare earth elements
+    country: null
+    industry: Critical minerals
+    source_id: world_bank
+    confidence: 0.87
+    external_ids: {commodity_code: rare_earths}
+  - canonical_id: product_photoresist
+    entity_type: product
+    display_name: Semiconductor photoresist
+    country: null
+    industry: Electronic materials
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {material_class: photoresist}
+  - canonical_id: product_silicon_wafers
+    entity_type: product
+    display_name: Silicon wafers
+    country: null
+    industry: Electronic materials
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {material_class: silicon_wafers}
+  - canonical_id: product_lithography_equipment
+    entity_type: product
+    display_name: Semiconductor lithography equipment
+    country: null
+    industry: Semiconductor equipment
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {equipment_class: lithography}
+  - canonical_id: product_industrial_gases
+    entity_type: product
+    display_name: Industrial gases for semiconductors
+    country: null
+    industry: Electronic materials
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {material_class: industrial_gases}
+  - canonical_id: product_power_modules
+    entity_type: product
+    display_name: Power semiconductor modules
+    country: null
+    industry: Automotive electronics
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {product_class: power_modules}
+  - canonical_id: product_automotive_ecu
+    entity_type: product
+    display_name: Automotive electronic control units
+    country: null
+    industry: Automotive electronics
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {product_class: automotive_ecu}
+  - canonical_id: policy_ofac_sanctions
+    entity_type: policy
+    display_name: OFAC sanctions exposure
+    country: US
+    industry: Sanctions
+    source_id: ofac
+    confidence: 0.98
+    external_ids: {source: OFAC Sanctions List Service}
+  - canonical_id: policy_us_semiconductor_export_controls
+    entity_type: policy
+    display_name: U.S. semiconductor export controls
+    country: US
+    industry: Export controls
+    source_id: ofac
+    confidence: 0.9
+    external_ids: {policy_area: export_controls}
+  - canonical_id: policy_eu_chips_act
+    entity_type: policy
+    display_name: European Chips Act
+    country: EU
+    industry: Industrial policy
+    source_id: world_bank
+    confidence: 0.86
+    external_ids: {policy_area: semiconductor_capacity}
+  - canonical_id: risk_event_red_sea_disruption
+    entity_type: risk_event
+    display_name: Red Sea shipping disruption
+    country: null
+    industry: Logistics risk
+    source_id: gdelt
+    confidence: 0.82
+    external_ids: {source: GDELT}
+  - canonical_id: risk_event_panama_canal_drought
+    entity_type: risk_event
+    display_name: Panama Canal drought constraints
+    country: PA
+    industry: Logistics risk
+    source_id: gdelt
+    confidence: 0.78
+    external_ids: {source: GDELT}
+  - canonical_id: risk_event_taiwan_strait_tension
+    entity_type: risk_event
+    display_name: Taiwan Strait tension
+    country: TW
+    industry: Geopolitical risk
+    source_id: gdelt
+    confidence: 0.79
+    external_ids: {source: GDELT}
+  - canonical_id: text_gdelt_semiconductor_logistics
+    entity_type: text_artifact
+    display_name: GDELT semiconductor logistics signal
+    country: null
+    industry: News evidence
+    source_id: gdelt
+    confidence: 0.78
+    external_ids: {source: GDELT}
+  - canonical_id: text_gdelt_battery_materials
+    entity_type: text_artifact
+    display_name: GDELT battery materials signal
+    country: null
+    industry: News evidence
+    source_id: gdelt
+    confidence: 0.76
+    external_ids: {source: GDELT}
+  - canonical_id: text_gdelt_port_congestion
+    entity_type: text_artifact
+    display_name: GDELT port congestion signal
+    country: null
+    industry: News evidence
+    source_id: gdelt
+    confidence: 0.76
+    external_ids: {source: GDELT}
+  - canonical_id: data_category_entity_master
+    entity_type: data_category
+    display_name: Entity master data
+    country: null
+    industry: Data governance
+    source_id: gleif
+    confidence: 1.0
+    external_ids: {category_type: entity_resolution}
+  - canonical_id: data_category_company_filings
+    entity_type: data_category
+    display_name: Company filings and disclosure
+    country: null
+    industry: Data governance
+    source_id: sec_edgar
+    confidence: 1.0
+    external_ids: {category_type: filings}
+  - canonical_id: data_category_news_events
+    entity_type: data_category
+    display_name: News and event intelligence
+    country: null
+    industry: Data governance
+    source_id: gdelt
+    confidence: 1.0
+    external_ids: {category_type: event_signal}
+  - canonical_id: data_category_macro_indicators
+    entity_type: data_category
+    display_name: Macro and country indicators
+    country: null
+    industry: Data governance
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {category_type: macro_indicator}
+  - canonical_id: data_category_sanctions_policy
+    entity_type: data_category
+    display_name: Sanctions and policy lists
+    country: null
+    industry: Data governance
+    source_id: ofac
+    confidence: 1.0
+    external_ids: {category_type: sanctions_policy}
+  - canonical_id: data_category_transport_infrastructure
+    entity_type: data_category
+    display_name: Transport infrastructure reference
+    country: null
+    industry: Data governance
+    source_id: nga_world_port_index
+    confidence: 1.0
+    external_ids: {category_type: transport_reference}
+  - canonical_id: data_source_sec_edgar
+    entity_type: data_source
+    display_name: SEC EDGAR APIs
+    country: US
+    industry: Public filings source
+    source_id: sec_edgar
+    confidence: 1.0
+    external_ids: {source_id: sec_edgar, url: "https://www.sec.gov/edgar/sec-api-documentation"}
+  - canonical_id: data_source_gleif
+    entity_type: data_source
+    display_name: GLEIF LEI data
+    country: null
+    industry: Legal entity source
+    source_id: gleif
+    confidence: 1.0
+    external_ids: {source_id: gleif, url: "https://www.gleif.org/en/lei-data/gleif-golden-copy/download-the-golden-copy"}
+  - canonical_id: data_source_gdelt
+    entity_type: data_source
+    display_name: GDELT Project
+    country: null
+    industry: News event source
+    source_id: gdelt
+    confidence: 1.0
+    external_ids: {source_id: gdelt, url: "https://www.gdeltproject.org/"}
+  - canonical_id: data_source_world_bank
+    entity_type: data_source
+    display_name: World Bank Indicators API
+    country: null
+    industry: Macro indicator source
+    source_id: world_bank
+    confidence: 1.0
+    external_ids: {source_id: world_bank, url: "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation"}
+  - canonical_id: data_source_ofac
+    entity_type: data_source
+    display_name: OFAC Sanctions List Service
+    country: US
+    industry: Sanctions source
+    source_id: ofac
+    confidence: 1.0
+    external_ids: {source_id: ofac, url: "https://ofac.treasury.gov/ofac-sanctions-lists"}
+  - canonical_id: data_source_ourairports
+    entity_type: data_source
+    display_name: OurAirports Open Data
+    country: null
+    industry: Airport reference source
+    source_id: ourairports
+    confidence: 1.0
+    external_ids: {source_id: ourairports, url: "https://ourairports.com/data/"}
+  - canonical_id: data_source_nga_wpi
+    entity_type: data_source
+    display_name: NGA World Port Index
+    country: US
+    industry: Port reference source
+    source_id: nga_world_port_index
+    confidence: 1.0
+    external_ids: {source_id: nga_world_port_index, url: "https://msi.nga.mil/Publications/WPI"}
+  - canonical_id: dataset_sec_company_submissions
+    entity_type: dataset
+    display_name: SEC company submissions JSON
+    country: US
+    industry: Public filings dataset
+    source_id: sec_edgar
+    confidence: 0.98
+    external_ids: {endpoint: "data.sec.gov/submissions", format: json}
+  - canonical_id: dataset_sec_company_facts
+    entity_type: dataset
+    display_name: SEC company facts API
+    country: US
+    industry: XBRL facts dataset
+    source_id: sec_edgar
+    confidence: 0.98
+    external_ids: {endpoint: "data.sec.gov/api/xbrl/companyfacts", format: json}
+  - canonical_id: dataset_gleif_golden_copy
+    entity_type: dataset
+    display_name: GLEIF Golden Copy
+    country: null
+    industry: LEI reference dataset
+    source_id: gleif
+    confidence: 0.98
+    external_ids: {dataset: gleif_golden_copy, format: csv}
+  - canonical_id: dataset_gleif_lei_api
+    entity_type: dataset
+    display_name: GLEIF LEI API records
+    country: null
+    industry: Legal entity API
+    source_id: gleif
+    confidence: 0.98
+    external_ids: {endpoint: api.gleif.org/api/v1/lei-records, format: json}
+  - canonical_id: dataset_gdelt_events
+    entity_type: dataset
+    display_name: GDELT event database
+    country: null
+    industry: Event dataset
+    source_id: gdelt
+    confidence: 0.9
+    external_ids: {dataset: gdelt_events, format: csv}
+  - canonical_id: dataset_gdelt_gkg
+    entity_type: dataset
+    display_name: GDELT Global Knowledge Graph
+    country: null
+    industry: Text and event dataset
+    source_id: gdelt
+    confidence: 0.88
+    external_ids: {dataset: gdelt_gkg, format: csv}
+  - canonical_id: dataset_world_bank_indicators
+    entity_type: dataset
+    display_name: World Bank Indicators API dataset
+    country: null
+    industry: Macro indicators dataset
+    source_id: world_bank
+    confidence: 0.98
+    external_ids: {endpoint: api.worldbank.org/v2, format: json}
+  - canonical_id: dataset_ofac_sanctions
+    entity_type: dataset
+    display_name: OFAC consolidated sanctions lists
+    country: US
+    industry: Sanctions dataset
+    source_id: ofac
+    confidence: 0.98
+    external_ids: {dataset: ofac_consolidated, format: xml}
+  - canonical_id: dataset_ourairports_airports
+    entity_type: dataset
+    display_name: OurAirports airports.csv
+    country: null
+    industry: Airport reference dataset
+    source_id: ourairports
+    confidence: 0.94
+    external_ids: {file: airports.csv, format: csv}
+  - canonical_id: dataset_nga_world_port_index
+    entity_type: dataset
+    display_name: NGA World Port Index publication
+    country: US
+    industry: Port reference dataset
+    source_id: nga_world_port_index
+    confidence: 0.94
+    external_ids: {publication: WPI, format: zip}
+  - canonical_id: indicator_gdp_current_usd
+    entity_type: indicator
+    display_name: GDP current US dollars
+    country: null
+    industry: Macroeconomics
+    source_id: world_bank
+    confidence: 0.96
+    external_ids: {indicator_code: NY.GDP.MKTP.CD, source: World Bank}
+  - canonical_id: indicator_trade_percent_gdp
+    entity_type: indicator
+    display_name: Trade percent of GDP
+    country: null
+    industry: Trade exposure
+    source_id: world_bank
+    confidence: 0.96
+    external_ids: {indicator_code: NE.TRD.GNFS.ZS, source: World Bank}
+  - canonical_id: indicator_high_tech_exports
+    entity_type: indicator
+    display_name: High-technology exports percent of manufactured exports
+    country: null
+    industry: Technology trade
+    source_id: world_bank
+    confidence: 0.94
+    external_ids: {indicator_code: TX.VAL.TECH.MF.ZS, source: World Bank}
+  - canonical_id: indicator_container_port_traffic
+    entity_type: indicator
+    display_name: Container port traffic
+    country: null
+    industry: Maritime logistics
+    source_id: world_bank
+    confidence: 0.94
+    external_ids: {indicator_code: IS.SHP.GOOD.TU, source: World Bank}
+  - canonical_id: indicator_air_transport_freight
+    entity_type: indicator
+    display_name: Air transport freight million ton-km
+    country: null
+    industry: Air cargo logistics
+    source_id: world_bank
+    confidence: 0.94
+    external_ids: {indicator_code: IS.AIR.GOOD.MT.K1, source: World Bank}
+  - canonical_id: indicator_lpi_overall
+    entity_type: indicator
+    display_name: Logistics performance index overall
+    country: null
+    industry: Logistics performance
+    source_id: world_bank
+    confidence: 0.92
+    external_ids: {indicator_code: LP.LPI.OVRL.XQ, source: World Bank}
+  - canonical_id: industry_semiconductors
+    entity_type: industry
+    display_name: Semiconductors
+    country: null
+    industry: Industry taxonomy
+    source_id: gleif
+    confidence: 0.95
+    external_ids: {sector: semiconductors}
+  - canonical_id: industry_electronics_manufacturing
+    entity_type: industry
+    display_name: Electronics manufacturing services
+    country: null
+    industry: Industry taxonomy
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {sector: electronics_manufacturing_services}
+  - canonical_id: industry_automotive
+    entity_type: industry
+    display_name: Automotive
+    country: null
+    industry: Industry taxonomy
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {sector: automotive}
+  - canonical_id: industry_batteries
+    entity_type: industry
+    display_name: Battery manufacturing
+    country: null
+    industry: Industry taxonomy
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {sector: batteries}
+  - canonical_id: industry_specialty_chemicals
+    entity_type: industry
+    display_name: Specialty chemicals
+    country: null
+    industry: Industry taxonomy
+    source_id: gleif
+    confidence: 0.94
+    external_ids: {sector: specialty_chemicals}
+edges:
+  - {source_id: data_source_sec_edgar, target_id: data_category_company_filings, edge_type: categorized_as, source: sec_edgar, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_gleif, target_id: data_category_entity_master, edge_type: categorized_as, source: gleif, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_gdelt, target_id: data_category_news_events, edge_type: categorized_as, source: gdelt, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_world_bank, target_id: data_category_macro_indicators, edge_type: categorized_as, source: world_bank, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_ofac, target_id: data_category_sanctions_policy, edge_type: categorized_as, source: ofac, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_ourairports, target_id: data_category_transport_infrastructure, edge_type: categorized_as, source: ourairports, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_nga_wpi, target_id: data_category_transport_infrastructure, edge_type: categorized_as, source: nga_world_port_index, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_sec_edgar, target_id: dataset_sec_company_submissions, edge_type: source_provides, source: sec_edgar, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
+  - {source_id: data_source_sec_edgar, target_id: dataset_sec_company_facts, edge_type: source_provides, source: sec_edgar, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
+  - {source_id: data_source_gleif, target_id: dataset_gleif_golden_copy, edge_type: source_provides, source: gleif, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
+  - {source_id: data_source_gleif, target_id: dataset_gleif_lei_api, edge_type: source_provides, source: gleif, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
+  - {source_id: data_source_gdelt, target_id: dataset_gdelt_events, edge_type: source_provides, source: gdelt, day: 1, confidence: 0.9, attributes: {weight: 1.0, freshness_sla_hours: 6}}
+  - {source_id: data_source_gdelt, target_id: dataset_gdelt_gkg, edge_type: source_provides, source: gdelt, day: 1, confidence: 0.88, attributes: {weight: 1.0, freshness_sla_hours: 6}}
+  - {source_id: data_source_world_bank, target_id: dataset_world_bank_indicators, edge_type: source_provides, source: world_bank, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 168}}
+  - {source_id: data_source_ofac, target_id: dataset_ofac_sanctions, edge_type: source_provides, source: ofac, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
+  - {source_id: data_source_ourairports, target_id: dataset_ourairports_airports, edge_type: source_provides, source: ourairports, day: 1, confidence: 0.94, attributes: {weight: 1.0, freshness_sla_hours: 168}}
+  - {source_id: data_source_nga_wpi, target_id: dataset_nga_world_port_index, edge_type: source_provides, source: nga_world_port_index, day: 1, confidence: 0.94, attributes: {weight: 1.0, freshness_sla_hours: 720}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_apple, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_tesla, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_nvidia, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_intel, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_amd, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.97, attributes: {coverage: 1.0, evidence_weight: 0.88}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_micron, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.97, attributes: {coverage: 1.0, evidence_weight: 0.88}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_qualcomm, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.97, attributes: {coverage: 1.0, evidence_weight: 0.88}}
+  - {source_id: dataset_sec_company_submissions, target_id: firm_broadcom, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.97, attributes: {coverage: 1.0, evidence_weight: 0.88}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_tsmc, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.96, attributes: {coverage: 1.0, evidence_weight: 0.86}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_asml, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.96, attributes: {coverage: 1.0, evidence_weight: 0.86}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_samsung_electronics, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.95, attributes: {coverage: 1.0, evidence_weight: 0.84}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_sk_hynix, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.95, attributes: {coverage: 1.0, evidence_weight: 0.84}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_foxconn, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.94, attributes: {coverage: 1.0, evidence_weight: 0.82}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_catl, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.93, attributes: {coverage: 1.0, evidence_weight: 0.8}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_toyota, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.94, attributes: {coverage: 1.0, evidence_weight: 0.82}}
+  - {source_id: dataset_gleif_lei_api, target_id: firm_volkswagen, edge_type: dataset_observes, source: gleif, day: 1, confidence: 0.94, attributes: {coverage: 1.0, evidence_weight: 0.82}}
+  - {source_id: dataset_gdelt_events, target_id: risk_event_red_sea_disruption, edge_type: dataset_observes, source: gdelt, day: 1, confidence: 0.82, attributes: {coverage: 0.7, evidence_weight: 0.78}}
+  - {source_id: dataset_gdelt_events, target_id: risk_event_panama_canal_drought, edge_type: dataset_observes, source: gdelt, day: 1, confidence: 0.78, attributes: {coverage: 0.68, evidence_weight: 0.74}}
+  - {source_id: dataset_gdelt_events, target_id: risk_event_taiwan_strait_tension, edge_type: dataset_observes, source: gdelt, day: 1, confidence: 0.79, attributes: {coverage: 0.68, evidence_weight: 0.74}}
+  - {source_id: dataset_gdelt_gkg, target_id: text_gdelt_semiconductor_logistics, edge_type: dataset_observes, source: gdelt, day: 1, confidence: 0.78, attributes: {coverage: 0.75, evidence_weight: 0.76}}
+  - {source_id: dataset_gdelt_gkg, target_id: text_gdelt_battery_materials, edge_type: dataset_observes, source: gdelt, day: 1, confidence: 0.76, attributes: {coverage: 0.72, evidence_weight: 0.74}}
+  - {source_id: dataset_gdelt_gkg, target_id: text_gdelt_port_congestion, edge_type: dataset_observes, source: gdelt, day: 1, confidence: 0.76, attributes: {coverage: 0.72, evidence_weight: 0.74}}
+  - {source_id: dataset_ourairports_airports, target_id: airport_taoyuan, edge_type: dataset_observes, source: ourairports, day: 1, confidence: 0.9, attributes: {coverage: 1.0, evidence_weight: 0.76}}
+  - {source_id: dataset_ourairports_airports, target_id: airport_incheon, edge_type: dataset_observes, source: ourairports, day: 1, confidence: 0.9, attributes: {coverage: 1.0, evidence_weight: 0.76}}
+  - {source_id: dataset_ourairports_airports, target_id: airport_changi, edge_type: dataset_observes, source: ourairports, day: 1, confidence: 0.9, attributes: {coverage: 1.0, evidence_weight: 0.76}}
+  - {source_id: dataset_nga_world_port_index, target_id: port_kaohsiung, edge_type: dataset_observes, source: nga_world_port_index, day: 1, confidence: 0.92, attributes: {coverage: 1.0, evidence_weight: 0.78}}
+  - {source_id: dataset_nga_world_port_index, target_id: port_rotterdam, edge_type: dataset_observes, source: nga_world_port_index, day: 1, confidence: 0.93, attributes: {coverage: 1.0, evidence_weight: 0.78}}
+  - {source_id: dataset_nga_world_port_index, target_id: port_singapore, edge_type: dataset_observes, source: nga_world_port_index, day: 1, confidence: 0.93, attributes: {coverage: 1.0, evidence_weight: 0.78}}
+  - {source_id: dataset_world_bank_indicators, target_id: indicator_gdp_current_usd, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.96, attributes: {coverage: 1.0, update_frequency: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: indicator_trade_percent_gdp, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.96, attributes: {coverage: 1.0, update_frequency: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: indicator_high_tech_exports, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.88, update_frequency: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: indicator_container_port_traffic, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.88, update_frequency: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: indicator_air_transport_freight, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.88, update_frequency: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: indicator_lpi_overall, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.92, attributes: {coverage: 0.84, update_frequency: periodic}}
+  - {source_id: dataset_world_bank_indicators, target_id: country_us, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: country_tw, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.95, attributes: {coverage: 0.85, freshness: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: country_kr, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: country_jp, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: country_de, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
+  - {source_id: indicator_gdp_current_usd, target_id: country_us, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.96, attributes: {coverage: 1.0}}
+  - {source_id: indicator_trade_percent_gdp, target_id: country_tw, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.86}}
+  - {source_id: indicator_high_tech_exports, target_id: country_kr, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.86}}
+  - {source_id: indicator_container_port_traffic, target_id: country_sg, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.92, attributes: {coverage: 0.84}}
+  - {source_id: indicator_air_transport_freight, target_id: country_de, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.92, attributes: {coverage: 0.84}}
+  - {source_id: indicator_lpi_overall, target_id: country_nl, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.9, attributes: {coverage: 0.8}}
+  - {source_id: firm_tsmc, target_id: industry_semiconductors, edge_type: classified_as, source: gleif, day: 1, confidence: 0.95, attributes: {classification_confidence: 0.95}}
+  - {source_id: firm_asml, target_id: industry_semiconductors, edge_type: classified_as, source: gleif, day: 1, confidence: 0.95, attributes: {classification_confidence: 0.95}}
+  - {source_id: firm_nvidia, target_id: industry_semiconductors, edge_type: classified_as, source: sec_edgar, day: 1, confidence: 0.95, attributes: {classification_confidence: 0.95}}
+  - {source_id: firm_apple, target_id: industry_electronics_manufacturing, edge_type: classified_as, source: sec_edgar, day: 1, confidence: 0.82, attributes: {classification_confidence: 0.82}}
+  - {source_id: firm_foxconn, target_id: industry_electronics_manufacturing, edge_type: classified_as, source: gleif, day: 1, confidence: 0.94, attributes: {classification_confidence: 0.94}}
+  - {source_id: firm_tesla, target_id: industry_automotive, edge_type: classified_as, source: sec_edgar, day: 1, confidence: 0.92, attributes: {classification_confidence: 0.92}}
+  - {source_id: firm_toyota, target_id: industry_automotive, edge_type: classified_as, source: gleif, day: 1, confidence: 0.94, attributes: {classification_confidence: 0.94}}
+  - {source_id: firm_catl, target_id: industry_batteries, edge_type: classified_as, source: gleif, day: 1, confidence: 0.94, attributes: {classification_confidence: 0.94}}
+  - {source_id: firm_lg_energy_solution, target_id: industry_batteries, edge_type: classified_as, source: gleif, day: 1, confidence: 0.94, attributes: {classification_confidence: 0.94}}
+  - {source_id: firm_basf, target_id: industry_specialty_chemicals, edge_type: classified_as, source: gleif, day: 1, confidence: 0.94, attributes: {classification_confidence: 0.94}}
+  - {source_id: firm_apple, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.98, attributes: {weight: 1.0}}
+  - {source_id: firm_tesla, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.98, attributes: {weight: 1.0}}
+  - {source_id: firm_intel, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.98, attributes: {weight: 1.0}}
+  - {source_id: firm_nvidia, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.98, attributes: {weight: 1.0}}
+  - {source_id: firm_amd, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.97, attributes: {weight: 1.0}}
+  - {source_id: firm_broadcom, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.97, attributes: {weight: 1.0}}
+  - {source_id: firm_qualcomm, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.97, attributes: {weight: 1.0}}
+  - {source_id: firm_micron, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.97, attributes: {weight: 1.0}}
+  - {source_id: firm_texas_instruments, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.97, attributes: {weight: 1.0}}
+  - {source_id: firm_analog_devices, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_applied_materials, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_lam_research, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_jabil, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
+  - {source_id: firm_flex, target_id: country_sg, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
+  - {source_id: firm_tsmc, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_asml, target_id: country_nl, edge_type: located_in, source: gleif, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_samsung_electronics, target_id: country_kr, edge_type: located_in, source: gleif, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
+  - {source_id: firm_sk_hynix, target_id: country_kr, edge_type: located_in, source: gleif, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
+  - {source_id: firm_sony_semiconductor, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_infineon, target_id: country_de, edge_type: located_in, source: gleif, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
+  - {source_id: firm_stmicroelectronics, target_id: country_ch, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_nxp, target_id: country_nl, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_microchip, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_tokyo_electron, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_canon, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_nikon, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_foxconn, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_pegatron, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_quanta, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_compal, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0}}
+  - {source_id: firm_globalfoundries, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_umc, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_toyota, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_volkswagen, target_id: country_de, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_byd, target_id: country_cn, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_catl, target_id: country_cn, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_lg_energy_solution, target_id: country_kr, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_panasonic_energy, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0}}
+  - {source_id: firm_basf, target_id: country_de, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_dupont, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_merck_kgaa, target_id: country_de, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_air_liquide, target_id: country_fr, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_linde, target_id: country_gb, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
+  - {source_id: firm_mitsubishi_chemical, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0}}
+  - {source_id: firm_sumco, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0}}
+  - {source_id: firm_shin_etsu, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_albemarle, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_sqm, target_id: country_cl, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0}}
+  - {source_id: firm_tsmc, target_id: product_advanced_semiconductors, edge_type: produces, source: gleif, day: 3, confidence: 0.88, attributes: {weight: 0.91, risk_score: 0.31}}
+  - {source_id: firm_samsung_electronics, target_id: product_advanced_semiconductors, edge_type: produces, source: gleif, day: 3, confidence: 0.84, attributes: {weight: 0.78, risk_score: 0.24}}
+  - {source_id: firm_intel, target_id: product_advanced_semiconductors, edge_type: produces, source: sec_edgar, day: 3, confidence: 0.86, attributes: {weight: 0.76, risk_score: 0.28}}
+  - {source_id: firm_globalfoundries, target_id: product_advanced_semiconductors, edge_type: produces, source: sec_edgar, day: 3, confidence: 0.83, attributes: {weight: 0.68, risk_score: 0.22}}
+  - {source_id: firm_umc, target_id: product_advanced_semiconductors, edge_type: produces, source: gleif, day: 3, confidence: 0.82, attributes: {weight: 0.66, risk_score: 0.22}}
+  - {source_id: firm_sk_hynix, target_id: product_memory_chips, edge_type: produces, source: gleif, day: 3, confidence: 0.84, attributes: {weight: 0.8, risk_score: 0.25}}
+  - {source_id: firm_micron, target_id: product_memory_chips, edge_type: produces, source: sec_edgar, day: 3, confidence: 0.84, attributes: {weight: 0.78, risk_score: 0.25}}
+  - {source_id: firm_catl, target_id: product_ev_batteries, edge_type: produces, source: gleif, day: 3, confidence: 0.83, attributes: {weight: 0.82, risk_score: 0.3}}
+  - {source_id: firm_lg_energy_solution, target_id: product_ev_batteries, edge_type: produces, source: gleif, day: 3, confidence: 0.82, attributes: {weight: 0.74, risk_score: 0.25}}
+  - {source_id: firm_panasonic_energy, target_id: product_ev_batteries, edge_type: produces, source: gleif, day: 3, confidence: 0.81, attributes: {weight: 0.68, risk_score: 0.24}}
+  - {source_id: firm_asml, target_id: product_lithography_equipment, edge_type: produces, source: gleif, day: 3, confidence: 0.9, attributes: {weight: 0.94, risk_score: 0.38}}
+  - {source_id: firm_tokyo_electron, target_id: product_lithography_equipment, edge_type: produces, source: gleif, day: 3, confidence: 0.84, attributes: {weight: 0.72, risk_score: 0.26}}
+  - {source_id: firm_applied_materials, target_id: product_lithography_equipment, edge_type: produces, source: sec_edgar, day: 3, confidence: 0.82, attributes: {weight: 0.68, risk_score: 0.24}}
+  - {source_id: firm_sumco, target_id: product_silicon_wafers, edge_type: produces, source: gleif, day: 3, confidence: 0.84, attributes: {weight: 0.73, risk_score: 0.24}}
+  - {source_id: firm_shin_etsu, target_id: product_silicon_wafers, edge_type: produces, source: gleif, day: 3, confidence: 0.84, attributes: {weight: 0.73, risk_score: 0.24}}
+  - {source_id: firm_merck_kgaa, target_id: product_photoresist, edge_type: produces, source: gleif, day: 3, confidence: 0.8, attributes: {weight: 0.62, risk_score: 0.22}}
+  - {source_id: firm_dupont, target_id: product_photoresist, edge_type: produces, source: sec_edgar, day: 3, confidence: 0.79, attributes: {weight: 0.6, risk_score: 0.2}}
+  - {source_id: firm_air_liquide, target_id: product_industrial_gases, edge_type: produces, source: gleif, day: 3, confidence: 0.8, attributes: {weight: 0.62, risk_score: 0.2}}
+  - {source_id: firm_linde, target_id: product_industrial_gases, edge_type: produces, source: gleif, day: 3, confidence: 0.8, attributes: {weight: 0.62, risk_score: 0.2}}
+  - {source_id: firm_albemarle, target_id: product_lithium, edge_type: produces, source: sec_edgar, day: 3, confidence: 0.82, attributes: {weight: 0.68, risk_score: 0.31}}
+  - {source_id: firm_sqm, target_id: product_lithium, edge_type: produces, source: gleif, day: 3, confidence: 0.81, attributes: {weight: 0.66, risk_score: 0.29}}
+  - {source_id: firm_tesla, target_id: product_ev_batteries, edge_type: consumes, source: sec_edgar, day: 4, confidence: 0.8, attributes: {weight: 0.76, risk_score: 0.34, dependency_ratio: 0.76}}
+  - {source_id: firm_toyota, target_id: product_power_modules, edge_type: consumes, source: gleif, day: 4, confidence: 0.76, attributes: {weight: 0.68, risk_score: 0.24, dependency_ratio: 0.68}}
+  - {source_id: firm_volkswagen, target_id: product_ev_batteries, edge_type: consumes, source: gleif, day: 4, confidence: 0.76, attributes: {weight: 0.66, risk_score: 0.25, dependency_ratio: 0.66}}
+  - {source_id: firm_apple, target_id: firm_tsmc, edge_type: buys_from, source: sec_edgar, day: 4, confidence: 0.74, attributes: {weight: 0.72, risk_score: 0.39, dependency_ratio: 0.72}}
+  - {source_id: firm_apple, target_id: firm_foxconn, edge_type: buys_from, source: sec_edgar, day: 4, confidence: 0.73, attributes: {weight: 0.68, risk_score: 0.34, dependency_ratio: 0.68}}
+  - {source_id: firm_nvidia, target_id: firm_tsmc, edge_type: buys_from, source: sec_edgar, day: 4, confidence: 0.74, attributes: {weight: 0.75, risk_score: 0.42, dependency_ratio: 0.75}}
+  - {source_id: firm_amd, target_id: firm_tsmc, edge_type: buys_from, source: sec_edgar, day: 4, confidence: 0.72, attributes: {weight: 0.7, risk_score: 0.37, dependency_ratio: 0.7}}
+  - {source_id: firm_qualcomm, target_id: firm_tsmc, edge_type: buys_from, source: sec_edgar, day: 4, confidence: 0.7, attributes: {weight: 0.65, risk_score: 0.35, dependency_ratio: 0.65}}
+  - {source_id: firm_broadcom, target_id: firm_tsmc, edge_type: buys_from, source: sec_edgar, day: 4, confidence: 0.7, attributes: {weight: 0.62, risk_score: 0.34, dependency_ratio: 0.62}}
+  - {source_id: firm_tsmc, target_id: firm_apple, edge_type: risk_transmits_to, source: gdelt, day: 26, confidence: 0.68, attributes: {weight: 0.64, path_risk: 0.64, lag_days: 14, risk_score: 0.64}}
+  - {source_id: firm_tsmc, target_id: firm_nvidia, edge_type: risk_transmits_to, source: gdelt, day: 26, confidence: 0.68, attributes: {weight: 0.66, path_risk: 0.66, lag_days: 12, risk_score: 0.66}}
+  - {source_id: firm_tsmc, target_id: firm_amd, edge_type: risk_transmits_to, source: gdelt, day: 26, confidence: 0.66, attributes: {weight: 0.58, path_risk: 0.58, lag_days: 12, risk_score: 0.58}}
+  - {source_id: firm_tsmc, target_id: port_kaohsiung, edge_type: ships_through, source: nga_world_port_index, day: 5, confidence: 0.82, attributes: {weight: 0.74, risk_score: 0.42, route_dependency: 0.58}}
+  - {source_id: firm_samsung_electronics, target_id: port_busan, edge_type: ships_through, source: nga_world_port_index, day: 5, confidence: 0.8, attributes: {weight: 0.68, risk_score: 0.33, route_dependency: 0.48}}
+  - {source_id: firm_asml, target_id: port_rotterdam, edge_type: ships_through, source: nga_world_port_index, day: 5, confidence: 0.78, attributes: {weight: 0.52, risk_score: 0.27, route_dependency: 0.38}}
+  - {source_id: firm_foxconn, target_id: port_kaohsiung, edge_type: ships_through, source: nga_world_port_index, day: 5, confidence: 0.76, attributes: {weight: 0.58, risk_score: 0.29, route_dependency: 0.42}}
+  - {source_id: firm_catl, target_id: port_shanghai, edge_type: ships_through, source: nga_world_port_index, day: 5, confidence: 0.74, attributes: {weight: 0.58, risk_score: 0.32, route_dependency: 0.44}}
+  - {source_id: firm_tesla, target_id: port_los_angeles, edge_type: ships_through, source: nga_world_port_index, day: 5, confidence: 0.72, attributes: {weight: 0.42, risk_score: 0.22, route_dependency: 0.28}}
+  - {source_id: port_kaohsiung, target_id: port_rotterdam, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.78, attributes: {weight: 0.62, risk_score: 0.46}}
+  - {source_id: port_shanghai, target_id: port_singapore, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.78, attributes: {weight: 0.68, risk_score: 0.38}}
+  - {source_id: port_singapore, target_id: port_jebel_ali, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.76, attributes: {weight: 0.64, risk_score: 0.41}}
+  - {source_id: port_jebel_ali, target_id: port_rotterdam, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.74, attributes: {weight: 0.6, risk_score: 0.43}}
+  - {source_id: port_busan, target_id: port_los_angeles, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.74, attributes: {weight: 0.62, risk_score: 0.32}}
+  - {source_id: port_los_angeles, target_id: port_long_beach, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.73, attributes: {weight: 0.42, risk_score: 0.26}}
+  - {source_id: port_rotterdam, target_id: port_hamburg, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.72, attributes: {weight: 0.44, risk_score: 0.2}}
+  - {source_id: port_tanjung_pelepas, target_id: port_klang, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.72, attributes: {weight: 0.45, risk_score: 0.21}}
+  - {source_id: port_balboa, target_id: port_manzanillo, edge_type: route_connects, source: nga_world_port_index, day: 5, confidence: 0.7, attributes: {weight: 0.4, risk_score: 0.31}}
+  - {source_id: policy_ofac_sanctions, target_id: product_advanced_semiconductors, edge_type: policy_targets, source: ofac, day: 9, confidence: 0.91, attributes: {severity: 0.53, risk_score: 0.53}}
+  - {source_id: policy_us_semiconductor_export_controls, target_id: product_lithography_equipment, edge_type: policy_targets, source: ofac, day: 9, confidence: 0.88, attributes: {severity: 0.56, risk_score: 0.56}}
+  - {source_id: policy_us_semiconductor_export_controls, target_id: product_advanced_semiconductors, edge_type: policy_targets, source: ofac, day: 9, confidence: 0.87, attributes: {severity: 0.5, risk_score: 0.5}}
+  - {source_id: policy_eu_chips_act, target_id: product_advanced_semiconductors, edge_type: policy_targets, source: world_bank, day: 9, confidence: 0.76, attributes: {severity: 0.18, risk_score: 0.18}}
+  - {source_id: risk_event_red_sea_disruption, target_id: firm_apple, edge_type: event_affects, source: gdelt, day: 18, confidence: 0.72, attributes: {severity: 0.61, risk_score: 0.61}}
+  - {source_id: risk_event_red_sea_disruption, target_id: firm_asml, edge_type: event_affects, source: gdelt, day: 18, confidence: 0.69, attributes: {severity: 0.49, risk_score: 0.49}}
+  - {source_id: risk_event_panama_canal_drought, target_id: firm_tesla, edge_type: event_affects, source: gdelt, day: 20, confidence: 0.66, attributes: {severity: 0.38, risk_score: 0.38}}
+  - {source_id: risk_event_taiwan_strait_tension, target_id: firm_tsmc, edge_type: event_affects, source: gdelt, day: 21, confidence: 0.68, attributes: {severity: 0.54, risk_score: 0.54}}
+  - {source_id: risk_event_taiwan_strait_tension, target_id: firm_foxconn, edge_type: event_affects, source: gdelt, day: 21, confidence: 0.66, attributes: {severity: 0.46, risk_score: 0.46}}
+  - {source_id: text_gdelt_semiconductor_logistics, target_id: firm_tsmc, edge_type: co_mentions, source: gdelt, day: 25, confidence: 0.76, attributes: {sentiment: -0.34, mention_count: 17, risk_score: 0.57}}
+  - {source_id: text_gdelt_semiconductor_logistics, target_id: firm_asml, edge_type: co_mentions, source: gdelt, day: 25, confidence: 0.72, attributes: {sentiment: -0.22, mention_count: 11, risk_score: 0.42}}
+  - {source_id: text_gdelt_battery_materials, target_id: firm_catl, edge_type: co_mentions, source: gdelt, day: 25, confidence: 0.72, attributes: {sentiment: -0.2, mention_count: 12, risk_score: 0.41}}
+  - {source_id: text_gdelt_battery_materials, target_id: firm_tesla, edge_type: co_mentions, source: gdelt, day: 25, confidence: 0.7, attributes: {sentiment: -0.18, mention_count: 9, risk_score: 0.36}}
+  - {source_id: text_gdelt_port_congestion, target_id: firm_apple, edge_type: co_mentions, source: gdelt, day: 25, confidence: 0.69, attributes: {sentiment: -0.16, mention_count: 8, risk_score: 0.33}}
+  - {source_id: product_lithium, target_id: product_ev_batteries, edge_type: substitutes, source: world_bank, day: 10, confidence: 0.62, attributes: {weight: 0.24, risk_score: 0.18, substitutability: 0.24}}
+  - {source_id: product_nickel, target_id: product_ev_batteries, edge_type: substitutes, source: world_bank, day: 10, confidence: 0.62, attributes: {weight: 0.18, risk_score: 0.16, substitutability: 0.18}}
+  - {source_id: product_silicon_wafers, target_id: product_advanced_semiconductors, edge_type: substitutes, source: world_bank, day: 10, confidence: 0.68, attributes: {weight: 0.18, risk_score: 0.2, substitutability: 0.18}}

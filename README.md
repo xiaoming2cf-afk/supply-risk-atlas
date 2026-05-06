@@ -51,11 +51,33 @@ python -m pytest -q
 python -m services.api.dev_server
 ```
 
-The zero-dependency API dev server serves the same synthetic API envelope routes as the FastAPI app. The default health URL is:
+The zero-dependency API dev server serves the same real-data-first envelope routes as the FastAPI app. The default health URL is:
 
 ```text
 http://127.0.0.1:8000/api/v1/health
 ```
+
+Useful real-data audit endpoints:
+
+```text
+http://127.0.0.1:8000/api/v1/sources
+http://127.0.0.1:8000/api/v1/lineage
+http://127.0.0.1:8000/api/v1/entities?q=SEC%20EDGAR
+http://127.0.0.1:8000/api/v1/entities?entity_type=indicator&source_id=world_bank
+```
+
+Build or refresh the promoted public-real graph from local cache or public no-key
+sources:
+
+```powershell
+python -m sra_core.ingestion.bulk_public --mode online --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
+python -m sra_core.ingestion.bulk_public --mode cache --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
+```
+
+The command writes raw downloads under `data/cache/public_real/` and the
+promoted catalog plus manifest under `data/promoted/public_real/latest/`.
+Both paths are intentionally ignored by Git. API routes read the promoted graph
+when present and otherwise report a partial built-in public catalog.
 
 If `uvicorn` is installed, the FastAPI app can also be started with:
 
@@ -73,15 +95,15 @@ npm --workspace apps/web run dev -- --hostname 127.0.0.1 --port 3000
 npm run smoke:web
 ```
 
-The web app defaults to mock data. To point it at the local API, set:
+The web app is real-data-first. Point it at the local API with:
 
 ```powershell
 $env:NEXT_PUBLIC_SUPPLY_RISK_API_URL='http://127.0.0.1:8000/api/v1'
 ```
 
 When the API URL is configured, the dashboard client calls versioned envelope routes under
-`/api/v1/dashboard/*`. If those routes are unavailable, the UI shows `API fallback` and keeps
-the deterministic mock view models visible for analysis work.
+`/api/v1/dashboard/*`. If those routes are unavailable, the UI blocks business payloads and
+shows real-data unavailable states rather than silently rendering fabricated fallback data.
 
 ## Acceptance Baseline
 

@@ -5,7 +5,7 @@ import pytest
 pytest.importorskip("pydantic")
 from pydantic import ValidationError
 
-from services.api.main import route_predictions
+from services.api.main import route_health, route_predictions
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from sra_core.contracts.domain import PredictionRequest, ReportRequest
 from sra_core.pipeline import default_metadata, run_synthetic_pipeline
@@ -60,11 +60,30 @@ def test_request_contracts_reject_unknown_fields() -> None:
 
 def test_prediction_route_filters_by_contract_request() -> None:
     payload = route_predictions(
-        PredictionRequest(target_id="firm_anchor"),
+        PredictionRequest(target_id="firm_apple"),
         request_id="req_predictions",
     )
 
     assert payload["request_id"] == "req_predictions"
     assert payload["status"] == "success"
     assert payload["data"]
-    assert {prediction["target_id"] for prediction in payload["data"]} == {"firm_anchor"}
+    assert payload["metadata"]["data_mode"] == "real"
+    assert {prediction["target_id"] for prediction in payload["data"]} == {"firm_apple"}
+
+
+def test_health_route_exposes_public_real_source_manifest() -> None:
+    payload = route_health(request_id="req_real_health")
+
+    assert payload["status"] == "success"
+    assert payload["metadata"]["data_mode"] == "real"
+    assert payload["metadata"]["source_count"] >= 7
+    assert payload["data"]["source_manifest_ref"].startswith("manifest_public_real_")
+    assert {source["source_id"] for source in payload["data"]["sources"]} >= {
+        "sec_edgar",
+        "gleif",
+        "gdelt",
+        "world_bank",
+        "ofac",
+        "ourairports",
+        "nga_world_port_index",
+    }

@@ -1,0 +1,105 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "manifest_id": {
+      "title": "Manifest Id",
+      "type": "string"
+    },
+    "source_id": {
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "title": "Source Id",
+      "type": "string"
+    },
+    "checked_at": {
+      "format": "date-time",
+      "title": "Checked At",
+      "type": "string"
+    },
+    "latest_record_time": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latest Record Time"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "stale",
+        "empty",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "raw_record_count": {
+      "minimum": 0,
+      "title": "Raw Record Count",
+      "type": "integer"
+    },
+    "raw_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Raw Ids",
+      "type": "array"
+    },
+    "raw_checksums": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Raw Checksums",
+      "type": "array"
+    },
+    "manifest_checksum": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Manifest Checksum",
+      "type": "string"
+    },
+    "freshness_sla_hours": {
+      "exclusiveMinimum": 0,
+      "title": "Freshness Sla Hours",
+      "type": "integer"
+    },
+    "is_fresh": {
+      "title": "Is Fresh",
+      "type": "boolean"
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Message"
+    },
+    "schema_version": {
+      "default": "source-manifest-v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "manifest_id",
+    "source_id",
+    "checked_at",
+    "status",
+    "raw_record_count",
+    "manifest_checksum",
+    "freshness_sla_hours",
+    "is_fresh"
+  ],
+  "title": "SourceManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 import type { DashboardPage, DashboardPageId, RiskLevel } from "@supply-risk/shared-types";
-import type { SupplyRiskMockData } from "@supply-risk/api-client";
+import type { SupplyRiskDashboardData } from "@supply-risk/api-client";
 
 export type PageLanguage = "en" | "zh" | "fr";
 
@@ -165,18 +165,63 @@ const phraseCopy: Record<string, TranslationPair> = {
   "industrial graph console": { zh: "产业图谱控制台", fr: "console de graphe industriel" },
   "Page language": { zh: "页面语言", fr: "Langue de la page" },
   "API linked": { zh: "API 已连接", fr: "API connectée" },
-  "API fallback": { zh: "API 回退", fr: "repli API" },
-  "mock data": { zh: "模拟数据", fr: "données simulées" },
+  "API fallback": { zh: "API 不可用", fr: "API indisponible" },
+  "fallback data": { zh: "真实数据不可用", fr: "données réelles indisponibles" },
+  "API unavailable": { zh: "API 不可用", fr: "API indisponible" },
   refresh: { zh: "刷新", fr: "actualisation" },
   Refresh: { zh: "刷新", fr: "Actualiser" },
   Refreshing: { zh: "刷新中", fr: "Actualisation" },
   "Graph build": { zh: "图构建", fr: "Build du graphe" },
   "Open live monitor": { zh: "打开实时监控", fr: "Ouvrir le moniteur en direct" },
   "Open layer catalog": { zh: "打开图层目录", fr: "Ouvrir le catalogue des couches" },
-  "Using mock fallback; API endpoint unavailable.": {
-    zh: "正在使用模拟回退；API 端点不可用。",
-    fr: "Repli sur les données simulées ; le point d'API est indisponible."
+  "Using public-source fallback; API endpoint unavailable.": {
+    zh: "真实 API 不可用；业务载荷已阻断。",
+    fr: "L'API réelle est indisponible ; la charge métier est bloquée."
   },
+  "Data lineage": { zh: "\u6570\u636e\u8840\u7edf", fr: "Lignee des donnees" },
+  Mode: { zh: "\u6a21\u5f0f", fr: "Mode" },
+  Freshness: { zh: "\u65b0\u9c9c\u5ea6", fr: "Fraicheur" },
+  Source: { zh: "\u6765\u6e90", fr: "Source" },
+  Lineage: { zh: "\u8840\u7edf", fr: "Lignee" },
+  Request: { zh: "\u8bf7\u6c42", fr: "Requete" },
+  "REAL API DATA": { zh: "\u771f\u5b9e API \u6570\u636e", fr: "DONNEES API REELLES" },
+  "PUBLIC SOURCE FALLBACK DATA VISIBLE": { zh: "真实数据不可用，业务载荷已阻断", fr: "DONNEES REELLES INDISPONIBLES, CHARGE BLOQUEE" },
+  "REAL API REQUIRED": { zh: "需要真实 API", fr: "API réelle requise" },
+  "REAL DATA FALLBACK BLOCKED": { zh: "真实数据不可用，已阻断回退", fr: "DONNEES REELLES INDISPONIBLES, REPLI BLOQUE" },
+  "Loading real API data": { zh: "正在加载真实 API 数据", fr: "Chargement des donnees API reelles" },
+  "Real API data required": { zh: "需要真实 API 数据", fr: "Donnees API reelles requises" },
+  "UNAUTHORIZED API - FALLBACK DATA VISIBLE": {
+    zh: "API 未授权 - 业务载荷已阻断",
+    fr: "API NON AUTORISEE - CHARGE METIER BLOQUEE"
+  },
+  "UNAUTHORIZED API - REAL DATA BLOCKED": {
+    zh: "API \u672a\u6388\u6743 - \u771f\u5b9e\u6570\u636e\u5df2\u963b\u65ad",
+    fr: "API NON AUTORISEE - DONNEES REELLES BLOQUEES"
+  },
+  "STALE REAL DATA": { zh: "\u8fc7\u65f6\u7684\u771f\u5b9e\u6570\u636e", fr: "DONNEES REELLES PERIMEES" },
+  "PARTIAL REAL DATA": { zh: "\u90e8\u5206\u771f\u5b9e\u6570\u636e", fr: "DONNEES REELLES PARTIELLES" },
+  "Waiting for API envelope": { zh: "\u7b49\u5f85 API \u5c01\u5957", fr: "En attente de l'enveloppe API" },
+  "The dashboard is waiting for request metadata before treating data as live.": {
+    zh: "\u4eea\u8868\u677f\u6b63\u5728\u7b49\u5f85\u8bf7\u6c42\u5143\u6570\u636e\uff0c\u7136\u540e\u624d\u5c06\u6570\u636e\u89c6\u4e3a\u5b9e\u65f6\u3002",
+    fr: "Le tableau attend les metadonnees de requete avant de traiter les donnees comme actives."
+  },
+  "No API base URL is configured, so the UI is showing public-source fallback data with degraded provenance.": {
+    zh: "未配置 API 基础 URL；业务图表已阻断，直到真实 API 信封可用。",
+    fr: "Aucune URL API n'est configuree ; les vues metier sont bloquees jusqu'a reception d'une enveloppe API reelle."
+  },
+  "No accepted real API envelope is available, so business graph tables are blocked.": {
+    zh: "\u6ca1\u6709\u53ef\u63a5\u53d7\u7684\u771f\u5b9e API \u5c01\u5957\uff0c\u56e0\u6b64\u5df2\u963b\u65ad\u4e1a\u52a1\u56fe\u8c31\u8868\u683c\u3002",
+    fr: "Aucune enveloppe API reelle acceptee n'est disponible ; les tables de graphe metier sont bloquees."
+  },
+  "The page is not backed by fresh authorized API data; verify before using operationally.": {
+    zh: "\u6b64\u9875\u9762\u4e0d\u7531\u65b0\u9c9c\u4e14\u5df2\u6388\u6743\u7684 API \u6570\u636e\u652f\u6491\uff1b\u8fd0\u8425\u4f7f\u7528\u524d\u8bf7\u6838\u9a8c\u3002",
+    fr: "La page n'est pas adossee a des donnees API fraiches et autorisees ; verifiez avant usage operationnel."
+  },
+  "Envelope metadata, source, and lineage are preserved from the API response.": {
+    zh: "\u5df2\u4fdd\u7559 API \u54cd\u5e94\u4e2d\u7684\u5c01\u5957\u5143\u6570\u636e\u3001\u6765\u6e90\u548c\u8840\u7edf\u3002",
+    fr: "Les metadonnees d'enveloppe, la source et la lignee sont conservees depuis la reponse API."
+  },
+  to: { zh: "\u81f3", fr: "vers" },
   "Page not configured.": { zh: "页面尚未配置。", fr: "Page non configurée." },
   "of 100": { zh: "/100", fr: "sur 100" },
   percent: { zh: "百分比", fr: "pour cent" },
@@ -287,14 +332,19 @@ const phraseCopy: Record<string, TranslationPair> = {
   Regional: { zh: "区域", fr: "Régional" },
   Global: { zh: "全球", fr: "Mondial" },
   "Projected impact": { zh: "预测影响", fr: "Impact projeté" },
-  "Mock mode uses deterministic scenario math; API mode posts the same payload.": {
-    zh: "模拟模式使用确定性场景计算；API 模式发送同一载荷。",
-    fr: "Le mode simulé utilise un calcul déterministe ; le mode API envoie la même charge utile."
+  "Rendered only from an accepted real API envelope.": {
+    zh: "仅在真实 API 信封通过验收后渲染。",
+    fr: "Affiché uniquement depuis une enveloppe API réelle acceptée."
   },
   "Impact score": { zh: "影响分数", fr: "Score d'impact" },
   "EBITDA at risk": { zh: "风险 EBITDA", fr: "EBITDA à risque" },
   "Recovery time": { zh: "恢复时间", fr: "Temps de reprise" },
   "Awaiting simulation result.": { zh: "等待模拟结果。", fr: "En attente du résultat de simulation." },
+  "Simulation requires a real API envelope before results are rendered.": {
+    zh: "模拟结果需要真实 API 信封通过验收后才会渲染。",
+    fr: "La simulation exige une enveloppe API réelle avant tout affichage des résultats."
+  },
+  "Simulation API request failed.": { zh: "模拟 API 请求失败。", fr: "La requête API de simulation a échoué." },
   "Affected paths": { zh: "受影响路径", fr: "Chemins affectés" },
   "Mitigation queue": { zh: "缓释队列", fr: "File d'atténuation" },
   "Operational actions ranked by speed-to-impact.": {
@@ -379,25 +429,6 @@ const phraseCopy: Record<string, TranslationPair> = {
   "Runtime log": { zh: "运行日志", fr: "Journal d'exécution" },
   "Recent platform events.": { zh: "最近平台事件。", fr: "Événements récents de la plateforme." },
   "Open terminal log": { zh: "打开终端日志", fr: "Ouvrir le journal terminal" },
-  "Global risk index": { zh: "全球风险指数", fr: "Indice de risque mondial" },
-  "Suppliers watched": { zh: "监控供应商", fr: "Fournisseurs surveillés" },
-  "Model confidence": { zh: "模型置信度", fr: "Confiance du modèle" },
-  "Port congestion and rare earth exposure raised the composite index.": {
-    zh: "港口拥堵和稀土暴露推高了综合指数。",
-    fr: "La congestion portuaire et l'exposition aux terres rares ont relevé l'indice composite."
-  },
-  "Expanded coverage across tier-2 electronics and chemicals.": {
-    zh: "扩大了二级电子和化工供应覆盖。",
-    fr: "Couverture élargie des fournisseurs électroniques et chimiques de rang 2."
-  },
-  "Near-term risk concentrated in semiconductors and battery inputs.": {
-    zh: "近期风险集中在半导体和电池投入品。",
-    fr: "Le risque à court terme se concentre sur les semi-conducteurs et intrants batteries."
-  },
-  "Evidence coverage improved after graph build 2026.04.30-candidate.": {
-    zh: "图构建 2026.04.30-candidate 后证据覆盖有所改善。",
-    fr: "La couverture des preuves s'est améliorée après le build 2026.04.30-candidate."
-  },
   "Taiwan Strait": { zh: "台湾海峡", fr: "Détroit de Taïwan" },
   "Suez / Red Sea": { zh: "苏伊士 / 红海", fr: "Suez / mer Rouge" },
   "Panama Canal": { zh: "巴拿马运河", fr: "Canal de Panama" },
@@ -411,29 +442,6 @@ const phraseCopy: Record<string, TranslationPair> = {
   Germany: { zh: "德国", fr: "Allemagne" },
   "South Korea": { zh: "韩国", fr: "Corée du Sud" },
   Mexico: { zh: "墨西哥", fr: "Mexique" },
-  "Semiconductor bottleneck": { zh: "半导体瓶颈", fr: "Goulot semi-conducteur" },
-  "Naval routing alerts": { zh: "海上航线警报", fr: "Alertes de routage maritime" },
-  "Insurance spread widening": { zh: "保险价差扩大", fr: "Élargissement des primes d'assurance" },
-  "Container reroutes": { zh: "集装箱改道", fr: "Détournements de conteneurs" },
-  "Freight rate shock": { zh: "运费冲击", fr: "Choc des taux de fret" },
-  "Lead-time variance": { zh: "交付周期波动", fr: "Variance des délais" },
-  "Drought restrictions": { zh: "干旱限制", fr: "Restrictions liées à la sécheresse" },
-  "Slot scarcity": { zh: "船闸名额稀缺", fr: "Rareté des créneaux" },
-  "Water-level watch": { zh: "水位观察", fr: "Surveillance du niveau d'eau" },
-  "Chemical feedstock sensitivity": { zh: "化工原料敏感性", fr: "Sensibilité des intrants chimiques" },
-  "Foundry wafer allocation tightens after rolling power curbs": {
-    zh: "滚动限电后晶圆代工产能分配趋紧",
-    fr: "L'allocation de wafers se resserre après des restrictions électriques tournantes"
-  },
-  "Container dwell time exceeds 7-day threshold on Red Sea diversion lanes": {
-    zh: "红海改道航线集装箱滞留时间超过 7 天阈值",
-    fr: "Le temps de séjour des conteneurs dépasse 7 jours sur les routes détournées de la mer Rouge"
-  },
-  "Battery-grade graphite export checks add customs variance": {
-    zh: "电池级石墨出口检查增加海关波动",
-    fr: "Les contrôles d'exportation du graphite batterie accroissent la variance douanière"
-  },
-  Shenzhen: { zh: "深圳", fr: "Shenzhen" },
   "Los Angeles": { zh: "洛杉矶", fr: "Los Angeles" },
   Kaohsiung: { zh: "高雄", fr: "Kaohsiung" },
   Rotterdam: { zh: "鹿特丹", fr: "Rotterdam" },
@@ -442,7 +450,6 @@ const phraseCopy: Record<string, TranslationPair> = {
   "Consumer electronics": { zh: "消费电子", fr: "Électronique grand public" },
   "Advanced logic chips": { zh: "先进逻辑芯片", fr: "Puces logiques avancées" },
   "Specialty chemicals": { zh: "特种化学品", fr: "Produits chimiques de spécialité" },
-  "EV platforms": { zh: "电动车平台", fr: "plateformes VE" },
   target: { zh: "目标", fr: "cible" },
   none: { zh: "无", fr: "aucun" },
   "31 days": { zh: "31 天", fr: "31 jours" },
@@ -459,7 +466,6 @@ const phraseCopy: Record<string, TranslationPair> = {
   "Medical devices": { zh: "医疗器械", fr: "dispositifs médicaux" },
   "Grid batteries": { zh: "电网电池", fr: "batteries réseau" },
   "Battery cells": { zh: "电池电芯", fr: "cellules de batterie" },
-  "ADAS silicon": { zh: "ADAS 芯片", fr: "silicium ADAS" },
   "Wire harness": { zh: "线束", fr: "faisceau électrique" },
   "Medical resin": { zh: "医用树脂", fr: "résine médicale" },
   "Battery graphite": { zh: "电池石墨", fr: "graphite batterie" },
@@ -589,9 +595,9 @@ export function translateText(value: string, language: PageLanguage): string {
     );
 }
 
-export function localizeSupplyRiskData(data: SupplyRiskMockData, language: PageLanguage): SupplyRiskMockData {
-  if (language === "en") return data;
-  return localizeValue(data, language) as SupplyRiskMockData;
+export function localizeSupplyRiskData(data: SupplyRiskDashboardData, language: PageLanguage): SupplyRiskDashboardData {
+  void language;
+  return data;
 }
 
 function localizeValue(value: unknown, language: PageLanguage, key?: string): unknown {

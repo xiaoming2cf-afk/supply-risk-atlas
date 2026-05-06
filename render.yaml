@@ -3,7 +3,7 @@ services:
     name: supply-risk-atlas-api
     runtime: python
     plan: free
-    buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]"
+    buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]" && python -m sra_core.ingestion.bulk_public --mode online --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
     startCommand: python -m uvicorn services.api.main:app --host 0.0.0.0 --port $PORT
     branch: main
     healthCheckPath: /api/v1/health

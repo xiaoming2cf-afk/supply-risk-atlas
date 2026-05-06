@@ -10,7 +10,7 @@ SupplyRiskAtlas deploys to Render as two Git-backed web services managed by the 
 | `supply-risk-atlas-web` | Node.js | Next.js web app and same-origin API proxy |
 
 The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1` on Render so browser requests can call the API directly through CORS. The Next.js `/api/v1/*` proxy remains available for same-origin deployments and uses `SUPPLY_RISK_API_ORIGIN`, with `SUPPLY_RISK_API_HOSTPORT` retained as a private-network fallback.
-The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds.
+The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds. The API build also runs `python -m sra_core.ingestion.bulk_public --mode online ...` so Render creates `data/promoted/public_real/latest/catalog.json` during deployment without committing raw source downloads to Git.
 
 ## Deploy From GitHub
 
@@ -34,9 +34,27 @@ Render Blueprint URL form after the repository exists:
 https://dashboard.render.com/blueprint/new?repo=https://github.com/<owner>/supply-risk-atlas
 ```
 
-No secrets are required for the current synthetic MVP. The web service receives
-`NEXT_PUBLIC_SUPPLY_RISK_API_URL=/api/v1` and proxies same-origin API requests to
-the API service through `SUPPLY_RISK_API_HOSTPORT`.
+No secrets are required for the current MVP. V1 real-data work may use only
+public no-key sources, with source license, freshness, schema validation, and
+input-manifest evidence recorded before deployment. Production secrets, private
+source credentials, and paid data feeds are deferred until a separate
+secrets-management gate is approved.
+
+The web service receives `NEXT_PUBLIC_SUPPLY_RISK_API_URL=/api/v1` and proxies
+same-origin API requests to the API service through `SUPPLY_RISK_API_HOSTPORT`.
+
+## Data Hygiene
+
+- Do not store raw source data in Render environment variables, build logs, or
+  service logs.
+- Do not print raw records, source payloads, credentials, signed URLs, or
+  personal data in startup diagnostics or request logs.
+- Log source IDs, manifest IDs, contract versions, aggregate counts, stale/fresh
+  status, and digests instead of raw values.
+- Keep raw source artifacts outside GitHub and Render build artifacts unless a
+  future private storage policy explicitly allows them.
+- Public deployment configuration may reference only public no-key sources in
+  v1.
 
 ## Local Parity
 

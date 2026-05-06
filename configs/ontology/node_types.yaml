@@ -3,6 +3,10 @@ node_types:
     description: "Company or business entity."
     required_fields: [canonical_id, name, country, industry]
     temporal: true
+  legal_entity:
+    description: "Registered legal entity with public identifier such as LEI or CIK."
+    required_fields: [canonical_id, name, country]
+    temporal: true
   subsidiary:
     description: "Legal subsidiary or controlled affiliate."
     required_fields: [canonical_id, name, parent_id]
@@ -62,4 +66,44 @@ node_types:
   text_artifact:
     description: "News, filing, earnings call, analyst report, or social signal."
     required_fields: [canonical_id, name, source]
+    temporal: true
+  data_source:
+    description: "Public or licensed data source represented as a graph node."
+    required_fields: [canonical_id, name, source_id, license]
+    temporal: true
+  data_category:
+    description: "Governance category for data sources, datasets, or evidence domains."
+    required_fields: [canonical_id, name, category_type]
+    temporal: false
+  dataset:
+    description: "Dataset, API endpoint, bulk file, or maintained public data product."
+    required_fields: [canonical_id, name, source_id]
+    temporal: true
+  indicator:
+    description: "Statistical, macro, market, risk, or logistics indicator used as evidence."
+    required_fields: [canonical_id, name, indicator_code]
+    temporal: true
+  industry:
+    description: "Industry or sector taxonomy node used to classify firms and products."
+    required_fields: [canonical_id, name]
+    temporal: false
+  schema_field:
+    description: "Named field or column in a source dataset schema."
+    required_fields: [canonical_id, name, dataset_id]
+    temporal: true
+  license_policy:
+    description: "License, usage policy, attribution rule, or redistribution constraint."
+    required_fields: [canonical_id, name, license_url]
+    temporal: true
+  coverage_area:
+    description: "Geographic, source, or topical coverage segment for a dataset."
+    required_fields: [canonical_id, name]
+    temporal: false
+  source_release:
+    description: "Specific source release, bulk file, or API pull represented in the graph."
+    required_fields: [canonical_id, name, source_id, checksum]
+    temporal: true
+  observation_series:
+    description: "Time series, event stream, or repeated observations derived from a dataset."
+    required_fields: [canonical_id, name, dataset_id]
     temporal: true

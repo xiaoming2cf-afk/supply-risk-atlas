@@ -16,15 +16,15 @@ import {
   ShieldAlert,
   SlidersHorizontal
 } from "lucide-react";
-import { createSupplyRiskApiClient, getMockSupplyRiskData, type SupplyRiskMockData } from "@supply-risk/api-client";
-import { dashboardPages, type DashboardPageId } from "@supply-risk/shared-types";
+import { createSupplyRiskApiClient, type SupplyRiskDashboardData } from "@supply-risk/api-client";
+import { dashboardPages, type ApiResult, type DashboardPageId } from "@supply-risk/shared-types";
 import { Button, IconButton } from "./components";
 import {
   I18nProvider,
-  localizeSupplyRiskData,
   pageLanguages,
   translateDashboardPage,
   translateText,
+  useI18n,
   type PageLanguage
 } from "./i18n";
 import { renderPage } from "./pages";
@@ -40,6 +40,8 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "system-health-center": ServerCog
 };
 
+type DashboardResultMap = Partial<Record<DashboardPageId, ApiResult<unknown>>>;
+
 function resolveApiBaseUrl() {
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
   if (
@@ -48,6 +50,15 @@ function resolveApiBaseUrl() {
     (!configured || configured === "/api/v1")
   ) {
     return "https://supply-risk-atlas-api.onrender.com/api/v1";
+  }
+  if (configured) {
+    return configured;
+  }
+  if (
+    typeof window !== "undefined" &&
+    (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
+  ) {
+    return "http://127.0.0.1:8000/api/v1";
   }
   return configured;
 }
@@ -90,7 +101,8 @@ function getInitialLanguage(): PageLanguage {
 export function App() {
   const [pageId, setPageId] = useHashPage();
   const [language, setLanguageState] = useState<PageLanguage>(getInitialLanguage);
-  const [data, setData] = useState<SupplyRiskMockData>(() => getMockSupplyRiskData());
+  const [data, setData] = useState<SupplyRiskDashboardData | null>(null);
+  const [dashboardResults, setDashboardResults] = useState<DashboardResultMap>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState("booting");
   const [error, setError] = useState<string | null>(null);
@@ -100,20 +112,20 @@ export function App() {
     [language]
   );
   const activePage = translateDashboardPage(activePageDefinition, language);
-  const localizedData = useMemo(() => localizeSupplyRiskData(data, language), [data, language]);
   const configuredApiBaseUrl = resolveApiBaseUrl();
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
-        baseUrl: configuredApiBaseUrl,
-        useMockFallback: true
+        baseUrl: configuredApiBaseUrl
       }),
     [configuredApiBaseUrl]
   );
   const t = (value: string) => translateText(value, language);
-  const runtimeModeLabel = configuredApiBaseUrl ? (apiClient.mode === "real" ? t("API linked") : t("API fallback")) : t("mock data");
-  const runtimeNotice =
-    configuredApiBaseUrl && apiClient.mode !== "real" ? t("Using mock fallback; API endpoint unavailable.") : null;
+  const activeResultKey: DashboardPageId = pageId === "shock-simulator" ? "global-risk-cockpit" : pageId;
+  const activeResult = dashboardResults[activeResultKey];
+  const runtimeModeLabel = configuredApiBaseUrl ? t("API linked") : t("API unavailable");
+  const dataStatus = getDataStatus(activeResult, Boolean(configuredApiBaseUrl), error);
+  const canRenderBusinessData = data !== null && isAcceptedRealResult(activeResult);
 
   const setLanguage = (nextLanguage: PageLanguage) => {
     setLanguageState(nextLanguage);
@@ -127,13 +139,13 @@ export function App() {
     setError(null);
     try {
       const [
-        globalRiskCockpit,
-        graphExplorer,
-        companyRisk360,
-        pathExplainer,
-        causalEvidenceBoard,
-        graphVersionStudio,
-        systemHealthCenter
+        globalRiskCockpitResult,
+        graphExplorerResult,
+        companyRisk360Result,
+        pathExplainerResult,
+        causalEvidenceBoardResult,
+        graphVersionStudioResult,
+        systemHealthCenterResult
       ] = await Promise.all([
         apiClient.getGlobalRiskCockpit(),
         apiClient.getGraphExplorer(),
@@ -144,17 +156,40 @@ export function App() {
         apiClient.getSystemHealthCenter()
       ]);
 
-      setData({
-        globalRiskCockpit,
-        graphExplorer,
-        companyRisk360,
-        pathExplainer,
-        causalEvidenceBoard,
-        graphVersionStudio,
-        systemHealthCenter
-      });
+      const nextResults: DashboardResultMap = {
+        "global-risk-cockpit": globalRiskCockpitResult,
+        "graph-explorer": graphExplorerResult,
+        "company-risk-360": companyRisk360Result,
+        "path-explainer": pathExplainerResult,
+        "causal-evidence-board": causalEvidenceBoardResult,
+        "graph-version-studio": graphVersionStudioResult,
+        "system-health-center": systemHealthCenterResult
+      };
+      setDashboardResults(nextResults);
+      if (
+        isAcceptedRealResult(globalRiskCockpitResult) &&
+        isAcceptedRealResult(graphExplorerResult) &&
+        isAcceptedRealResult(companyRisk360Result) &&
+        isAcceptedRealResult(pathExplainerResult) &&
+        isAcceptedRealResult(causalEvidenceBoardResult) &&
+        isAcceptedRealResult(graphVersionStudioResult) &&
+        isAcceptedRealResult(systemHealthCenterResult)
+      ) {
+        setData({
+          globalRiskCockpit: globalRiskCockpitResult.data,
+          graphExplorer: graphExplorerResult.data,
+          companyRisk360: companyRisk360Result.data,
+          pathExplainer: pathExplainerResult.data,
+          causalEvidenceBoard: causalEvidenceBoardResult.data,
+          graphVersionStudio: graphVersionStudioResult.data,
+          systemHealthCenter: systemHealthCenterResult.data
+        });
+      } else {
+        setData(null);
+      }
       setLastRefresh(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     } catch (caughtError) {
+      setData(null);
       setError(caughtError instanceof Error ? caughtError.message : "Failed to refresh SupplyRiskAtlas data.");
     } finally {
       setIsRefreshing(false);
@@ -227,7 +262,7 @@ export function App() {
         <div className="rail-footer">
           <div className="mode-strip">
             <span>{runtimeModeLabel}</span>
-            <span className={`dot ${apiClient.mode === "mock" ? "mock" : ""}`} />
+            <span className={`dot ${configuredApiBaseUrl ? "" : "mock"}`} />
           </div>
           <div className="mode-strip">
             <span>{t("refresh")}</span>
@@ -240,7 +275,7 @@ export function App() {
         <header className="topbar">
           <div className="title-block">
             <h1 className="page-title">{activePage.label}</h1>
-            <p className="page-description">{error ? t(error) : runtimeNotice ?? activePage.description}</p>
+            <p className="page-description">{error ? t(error) : activePage.description}</p>
           </div>
           <div className="top-actions">
             <IconButton icon={Activity} label="Open live monitor" />
@@ -252,9 +287,145 @@ export function App() {
           </div>
         </header>
 
-        <div className="content">{renderPage(activePage.id, { data: localizedData, apiClient })}</div>
+        <DataLineageBanner status={dataStatus} />
+
+        <div className="content">
+          {canRenderBusinessData ? (
+            renderPage(activePage.id, { data: data as SupplyRiskDashboardData, apiClient })
+          ) : (
+            <RealDataRequiredPanel status={dataStatus} isRefreshing={isRefreshing} />
+          )}
+        </div>
       </main>
     </div>
     </I18nProvider>
   );
+}
+
+function RealDataRequiredPanel({ status, isRefreshing }: { status: DataStatus; isRefreshing: boolean }) {
+  const { language } = useI18n();
+  const t = (value: string) => translateText(value, language);
+
+  return (
+    <section className="empty-state" data-real-data-gate="blocked">
+      <h2>{t(isRefreshing ? "Loading real API data" : "Real API data required")}</h2>
+      <p>{t(status.message)}</p>
+      <div className="lineage-chips" aria-label={t("Data lineage")}>
+        <span>{t("Mode")}: {status.mode}</span>
+        <span>{t("Freshness")}: {status.freshness}</span>
+        <span>{t("Source")}: {status.sourceName}</span>
+        <span>{t("Request")}: {status.requestId}</span>
+      </div>
+    </section>
+  );
+}
+
+function DataLineageBanner({ status }: { status: DataStatus }) {
+  const { language } = useI18n();
+  const t = (value: string) => translateText(value, language);
+
+  return (
+    <section className={`data-lineage-banner ${status.tone}`} data-data-mode={status.mode} data-source-status={status.sourceStatus}>
+      <div>
+        <strong>{t(status.title)}</strong>
+        <p>{t(status.message)}</p>
+      </div>
+      <div className="lineage-chips" aria-label={t("Data lineage")}>
+        <span>{t("Mode")}: {status.mode}</span>
+        <span>{t("Freshness")}: {status.freshness}</span>
+        <span>{t("Source")}: {status.sourceName}</span>
+        <span>{t("Lineage")}: {status.lineage}</span>
+        <span>{t("Request")}: {status.requestId}</span>
+      </div>
+      {status.details.length > 0 ? (
+        <ul className="lineage-messages">
+          {status.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
+interface DataStatus {
+  tone: "fresh" | "stale" | "partial" | "blocked" | "fallback";
+  title: string;
+  message: string;
+  mode: string;
+  sourceStatus: string;
+  freshness: string;
+  sourceName: string;
+  lineage: string;
+  requestId: string;
+  details: string[];
+}
+
+function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: boolean, error: string | null): DataStatus {
+  if (!result) {
+    return {
+      tone: hasApiBaseUrl ? "partial" : "blocked",
+      title: hasApiBaseUrl ? "Waiting for API envelope" : "REAL API REQUIRED",
+      message: hasApiBaseUrl
+        ? "The dashboard is waiting for request metadata before treating data as live."
+        : "No accepted real API envelope is available, so business graph tables are blocked.",
+      mode: hasApiBaseUrl ? "pending" : "unavailable",
+      sourceStatus: hasApiBaseUrl ? "partial" : "unavailable",
+      freshness: "unknown",
+      sourceName: hasApiBaseUrl ? "SupplyRiskAtlas API" : "not configured",
+      lineage: "unavailable",
+      requestId: "pending",
+      details: error ? [error] : [],
+    };
+  }
+
+  const envelope = result.envelope;
+  const sourceStatus = result.sourceStatus;
+  const tone =
+    sourceStatus === "unauthorized"
+      ? "blocked"
+      : sourceStatus === "unavailable" || sourceStatus === "error"
+        ? "blocked"
+      : sourceStatus === "fallback"
+        ? "fallback"
+        : sourceStatus === "stale"
+          ? "stale"
+          : sourceStatus === "partial"
+            ? "partial"
+            : "fresh";
+  const isUnavailable = sourceStatus === "unavailable" || sourceStatus === "error";
+  const isFallback = sourceStatus === "fallback" || sourceStatus === "unauthorized" || isUnavailable;
+  const title =
+    sourceStatus === "unauthorized"
+      ? "UNAUTHORIZED API - REAL DATA BLOCKED"
+      : isUnavailable
+        ? "UNAVAILABLE REAL DATA"
+      : isFallback
+        ? "REAL DATA FALLBACK BLOCKED"
+        : sourceStatus === "stale"
+          ? "STALE REAL DATA"
+          : sourceStatus === "partial"
+            ? "PARTIAL REAL DATA"
+            : "REAL API DATA";
+
+  return {
+    tone,
+    title,
+    message: isFallback
+      ? "No accepted real API envelope is available, so business graph tables are blocked."
+      : "Envelope metadata, source, and lineage are preserved from the API response.",
+    mode: result.mode,
+    sourceStatus,
+    freshness: envelope.metadata?.as_of_time ?? result.receivedAt,
+    sourceName: envelope.source?.name ?? "SupplyRiskAtlas API",
+    lineage: envelope.source?.lineage_ref ?? envelope.metadata?.lineage_ref ?? "unavailable",
+    requestId: envelope.request_id,
+    details: [...(envelope.warnings ?? []), ...(envelope.errors ?? []).map((item) => `${item.code}: ${item.message}`)],
+  };
+}
+
+function isAcceptedRealResult<T>(result: ApiResult<T> | undefined): result is ApiResult<T> & { data: T } {
+  if (!result || result.data === null) return false;
+  if (result.envelope.status !== "success") return false;
+  return !["fallback", "unavailable", "unauthorized", "error"].includes(result.sourceStatus);
 }

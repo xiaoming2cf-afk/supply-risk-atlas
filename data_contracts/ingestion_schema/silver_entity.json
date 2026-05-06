@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "GeoPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {
+          "maximum": 90.0,
+          "minimum": -90.0,
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "maximum": 180.0,
+          "minimum": -180.0,
+          "title": "Longitude",
+          "type": "number"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "title": "GeoPoint",
+      "type": "object"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "raw_id": {
+          "title": "Raw Id",
+          "type": "string"
+        },
+        "source_record_id": {
+          "title": "Source Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "raw_id",
+        "source_record_id"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "entity_id": {
+      "title": "Entity Id",
+      "type": "string"
+    },
+    "entity_type": {
+      "enum": [
+        "company",
+        "legal_entity",
+        "facility",
+        "port",
+        "airport",
+        "country",
+        "sanctioned_party",
+        "vessel",
+        "commodity",
+        "location"
+      ],
+      "title": "Entity Type",
+      "type": "string"
+    },
+    "display_name": {
+      "title": "Display Name",
+      "type": "string"
+    },
+    "source_refs": {
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Source Refs",
+      "type": "array"
+    },
+    "country_code": {
+      "anyOf": [
+        {
+          "maxLength": 2,
+          "minLength": 2,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Country Code"
+    },
+    "external_ids": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "External Ids",
+      "type": "object"
+    },
+    "geo": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GeoPoint"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "silver-entity-v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_id",
+    "entity_type",
+    "display_name",
+    "source_refs",
+    "confidence"
+  ],
+  "title": "SilverEntity",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

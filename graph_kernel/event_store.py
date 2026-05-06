@@ -32,7 +32,9 @@ class EdgeEventStore:
             [
                 event
                 for event in self._events
-                if event.ingest_time <= as_of_time and event.event_time <= as_of_time
+                if event.ingest_time <= as_of_time
+                and (event.observed_time or event.ingest_time) <= as_of_time
+                and event.event_time <= as_of_time
             ],
             key=lambda event: (event.event_time, event.ingest_time, event.edge_event_id),
         )
@@ -93,6 +95,10 @@ def materialize_edge_states(
             )
 
     return sorted(
-        [state for state in states.values() if state.valid_to is None or state.valid_to <= as_of_time],
+        [
+            state
+            for state in states.values()
+            if state.valid_from <= as_of_time and (state.valid_to is None or state.valid_to > as_of_time)
+        ],
         key=lambda state: state.edge_id,
     )

@@ -7,6 +7,7 @@ SupplyRiskAtlas uses multiple focused agents working in parallel. This document 
 - `AGENTS.md` defines ownership lanes and repository-wide rules.
 - This document defines day-to-day collaboration mechanics.
 - `docs/quality-gates.md` defines checks that changes must satisfy.
+- `docs/governance/real-data-governance.md` defines real-source license, freshness, schema, hygiene, and determinism evidence.
 - `tests/e2e/` defines acceptance expectations for user-visible workflows.
 
 ## Agent Lanes
@@ -19,6 +20,21 @@ SupplyRiskAtlas uses multiple focused agents working in parallel. This document 
 | Data and ML | Feature generation, labels, training, evaluation, leakage controls | Graph and core model for topology; API for served predictions |
 | Infrastructure | Runtime, deployment, environment, observability | All lanes when runtime contracts or secrets change |
 | QA and docs supervisor | Governance docs, CI gates, acceptance descriptions, architecture and data-flow docs | All lanes when documented behavior changes |
+
+## Real-Data Coordination
+
+Real-data changes often cross lanes. The initiating agent remains responsible
+for routing the change through the gates in `docs/quality-gates.md`.
+
+- Data and ML owns source freshness, model leakage, and feature/label evidence.
+- API and contracts owns schema validation and compatibility evidence.
+- Graph and core model owns graph snapshot determinism and graph invariants.
+- Infrastructure owns deployment boundaries, runtime logs, and secret handling.
+- QA and docs supervisor owns gate documentation, changed-file routing, and CI hygiene checks.
+
+Public no-key sources are the only allowed v1 sources. Raw source data, private
+credentials, PII, and proprietary extracts must not be committed, printed in CI
+logs, or uploaded as GitHub artifacts.
 
 ## Change Lifecycle
 

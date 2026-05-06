@@ -1,0 +1,259 @@
+registry_version: source-registry-v1
+generated_at: "2026-05-02T00:00:00Z"
+sources:
+  - source_id: sec_edgar
+    source_name: SEC EDGAR
+    publisher: U.S. Securities and Exchange Commission
+    homepage_url: https://www.sec.gov/edgar
+    description: Company filings, submission metadata, and filing documents from EDGAR.
+    public_no_key: true
+    license:
+      name: SEC public data / fair access terms
+      url: https://www.sec.gov/os/accessing-edgar-data
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - derived_products
+      requires_attribution: true
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions:
+        - Follow SEC fair access limits and identify automated clients with a descriptive User-Agent.
+    endpoints:
+      - name: submissions
+        url: https://data.sec.gov/submissions/
+        format: json
+        auth: none
+      - name: companyfacts
+        url: https://data.sec.gov/api/xbrl/companyfacts/
+        format: json
+        auth: none
+    update_cadence: daily
+    freshness_sla_hours: 48
+    allowed_entities:
+      - company
+      - legal_entity
+    allowed_events:
+      - filing
+      - ownership_disclosure
+
+  - source_id: gleif
+    source_name: GLEIF LEI
+    publisher: Global Legal Entity Identifier Foundation
+    homepage_url: https://www.gleif.org/en/lei-data/gleif-api
+    description: Legal Entity Identifier records and relationship data.
+    public_no_key: true
+    license:
+      name: CC0 1.0 Universal
+      url: https://www.gleif.org/en/lei-data/gleif-concatenated-file/download-the-concatenated-file
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - redistribution
+        - derived_products
+      requires_attribution: false
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions: []
+    endpoints:
+      - name: lei-records-api
+        url: https://api.gleif.org/api/v1/lei-records
+        format: json
+        auth: none
+      - name: concatenated-files
+        url: https://leidata.gleif.org/api/v1/concatenated-files
+        format: zip
+        auth: none
+    update_cadence: daily
+    freshness_sla_hours: 48
+    allowed_entities:
+      - company
+      - legal_entity
+    allowed_events:
+      - registration_update
+      - relationship_update
+
+  - source_id: gdelt
+    source_name: GDELT
+    publisher: The GDELT Project
+    homepage_url: https://www.gdeltproject.org/
+    description: Global news-derived events and document metadata.
+    public_no_key: true
+    license:
+      name: GDELT open data terms
+      url: https://www.gdeltproject.org/about.html
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - derived_products
+      requires_attribution: true
+      redistribution_allowed: false
+      commercial_use_allowed: true
+      restrictions:
+        - Retain source attribution and source URLs where provided.
+    endpoints:
+      - name: gdelt-2-events
+        url: http://data.gdeltproject.org/gdeltv2/
+        format: zip
+        auth: none
+      - name: doc-api
+        url: https://api.gdeltproject.org/api/v2/doc/doc
+        format: json
+        auth: none
+    update_cadence: 15_minutes
+    freshness_sla_hours: 6
+    allowed_entities:
+      - company
+      - country
+      - location
+    allowed_events:
+      - disruption
+      - conflict
+      - protest
+      - disaster
+
+  - source_id: world_bank
+    source_name: World Bank Open Data
+    publisher: World Bank
+    homepage_url: https://data.worldbank.org/
+    description: Country indicators, metadata, and macroeconomic context.
+    public_no_key: true
+    license:
+      name: CC BY 4.0
+      url: https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - redistribution
+        - derived_products
+      requires_attribution: true
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions:
+        - Attribute World Bank datasets and preserve third-party attribution where required.
+    endpoints:
+      - name: indicators-api
+        url: https://api.worldbank.org/v2/
+        format: json
+        auth: none
+    update_cadence: monthly
+    freshness_sla_hours: 720
+    allowed_entities:
+      - country
+    allowed_events:
+      - indicator_update
+
+  - source_id: ofac
+    source_name: OFAC Sanctions Lists
+    publisher: U.S. Department of the Treasury, Office of Foreign Assets Control
+    homepage_url: https://ofac.treasury.gov/sanctions-list-service
+    description: Sanctions list data including SDN and consolidated sanctions list downloads.
+    public_no_key: true
+    license:
+      name: U.S. government public information
+      url: https://ofac.treasury.gov/sanctions-list-service
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - redistribution
+        - derived_products
+      requires_attribution: true
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions:
+        - Use current files for compliance decisions and retain Treasury attribution.
+    endpoints:
+      - name: sdn-json
+        url: https://www.treasury.gov/ofac/downloads/sdn.json
+        format: json
+        auth: none
+      - name: consolidated-json
+        url: https://www.treasury.gov/ofac/downloads/consolidated/consolidated.json
+        format: json
+        auth: none
+    update_cadence: irregular
+    freshness_sla_hours: 24
+    allowed_entities:
+      - sanctioned_party
+      - company
+      - vessel
+    allowed_events:
+      - sanctions_listing
+      - sanctions_update
+      - sanctions_delisting
+
+  - source_id: ourairports
+    source_name: OurAirports
+    publisher: OurAirports
+    homepage_url: https://ourairports.com/data/
+    description: Airport, runway, navaid, and country CSV data.
+    public_no_key: true
+    license:
+      name: Public domain
+      url: https://ourairports.com/data/
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - redistribution
+        - derived_products
+      requires_attribution: false
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions: []
+    endpoints:
+      - name: airports-csv
+        url: https://davidmegginson.github.io/ourairports-data/airports.csv
+        format: csv
+        auth: none
+      - name: countries-csv
+        url: https://davidmegginson.github.io/ourairports-data/countries.csv
+        format: csv
+        auth: none
+    update_cadence: daily
+    freshness_sla_hours: 72
+    allowed_entities:
+      - airport
+      - country
+      - location
+    allowed_events:
+      - airport_update
+
+  - source_id: nga_world_port_index
+    source_name: NGA World Port Index
+    publisher: National Geospatial-Intelligence Agency
+    homepage_url: https://msi.nga.mil/Publications/WPI
+    description: World Port Index port locations and characteristics.
+    public_no_key: true
+    license:
+      name: U.S. government public information
+      url: https://msi.nga.mil/Publications/WPI
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - redistribution
+        - derived_products
+      requires_attribution: true
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions:
+        - Retain NGA source attribution and do not imply endorsement.
+    endpoints:
+      - name: world-port-index-download
+        url: https://msi.nga.mil/Publications/WPI
+        format: zip
+        auth: none
+    update_cadence: irregular
+    freshness_sla_hours: 2160
+    allowed_entities:
+      - port
+      - country
+      - location
+    allowed_events:
+      - port_update

@@ -36,7 +36,9 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
           feature_version: "unavailable",
           label_version: "unavailable",
           model_version: "unavailable",
-          as_of_time: new Date().toISOString()
+          as_of_time: new Date().toISOString(),
+          data_mode: "real",
+          freshness_status: "unavailable"
         },
         warnings: ["SUPPLY_RISK_API_ORIGIN or SUPPLY_RISK_API_HOSTPORT is not configured."],
         errors: [
@@ -44,7 +46,13 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
             code: "api_proxy_unconfigured",
             message: "SupplyRiskAtlas API proxy is not configured."
           }
-        ]
+        ],
+        mode: "real",
+        source_status: "unavailable",
+        source: {
+          name: "SupplyRiskAtlas API proxy",
+          lineage_ref: "proxy://unconfigured"
+        }
       },
       { status: 503, headers: corsHeaders() }
     );
@@ -72,7 +80,9 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
           feature_version: "unavailable",
           label_version: "unavailable",
           model_version: "unavailable",
-          as_of_time: new Date().toISOString()
+          as_of_time: new Date().toISOString(),
+          data_mode: "real",
+          freshness_status: "unavailable"
         },
         warnings: [`Unable to reach SupplyRiskAtlas API at ${API_ORIGIN}.`],
         errors: [
@@ -80,7 +90,14 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
             code: "api_proxy_upstream_unreachable",
             message: error instanceof Error ? error.message : "SupplyRiskAtlas API proxy upstream failed."
           }
-        ]
+        ],
+        mode: "real",
+        source_status: "unavailable",
+        source: {
+          name: "SupplyRiskAtlas API proxy",
+          url: API_ORIGIN,
+          lineage_ref: "proxy://upstream-unreachable"
+        }
       },
       { status: 502, headers: corsHeaders() }
     );

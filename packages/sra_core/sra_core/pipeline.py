@@ -100,6 +100,10 @@ def default_metadata(result: PipelineResult) -> VersionMetadata:
         as_of_time=result.snapshot.as_of_time,
         audit_ref="audit_synthetic_demo",
         lineage_ref="lineage_synthetic_seed_42",
+        data_mode="synthetic",
+        freshness_status="fresh",
+        source_count=1,
+        source_manifest_ref="manifest_synthetic_seed_42",
     )
 
 

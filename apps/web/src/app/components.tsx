@@ -44,16 +44,27 @@ interface PanelProps {
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
+  translateTitle?: boolean;
+  translateSubtitle?: boolean;
 }
 
-export function Panel({ title, subtitle, action, children, className = "", bodyClassName = "" }: PanelProps) {
+export function Panel({
+  title,
+  subtitle,
+  action,
+  children,
+  className = "",
+  bodyClassName = "",
+  translateTitle = true,
+  translateSubtitle = true,
+}: PanelProps) {
   const { t } = useI18n();
   return (
     <section className={`panel ${className}`.trim()}>
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">{t(title)}</h2>
-          {subtitle ? <p className="panel-subtitle">{t(subtitle)}</p> : null}
+          <h2 className="panel-title">{translateTitle ? t(title) : title}</h2>
+          {subtitle ? <p className="panel-subtitle">{translateSubtitle ? t(subtitle) : subtitle}</p> : null}
         </div>
         {action}
       </div>
@@ -73,12 +84,11 @@ export function StatusPill({ status }: { status: string }) {
 }
 
 export function MetricTile({ metric }: { metric: RiskMetric }) {
-  const { t } = useI18n();
   const displayValue = metric.displayValue ?? formatCompactNumber(metric.value);
   return (
     <article className="metric-tile">
       <div className="metric-head">
-        <p className="metric-label">{t(metric.label)}</p>
+        <p className="metric-label">{metric.label}</p>
         <RiskPill level={metric.level} />
       </div>
       <div>
@@ -88,7 +98,7 @@ export function MetricTile({ metric }: { metric: RiskMetric }) {
         </p>
         <TrendDelta delta={metric.delta} trend={metric.trend} />
       </div>
-      <p className="metric-detail">{t(metric.detail)}</p>
+      <p className="metric-detail">{metric.detail}</p>
     </article>
   );
 }
@@ -129,11 +139,10 @@ export function ScoreDial({ score, level, label }: { score: number; level: RiskL
 
 export function Field({ label, value }: { label: string; value: ReactNode }) {
   const { t } = useI18n();
-  const translatedValue = typeof value === "string" ? t(value) : value;
   return (
     <div className="field">
       <span className="field-label">{t(label)}</span>
-      <span className="field-value">{translatedValue}</span>
+      <span className="field-value">{value}</span>
     </div>
   );
 }

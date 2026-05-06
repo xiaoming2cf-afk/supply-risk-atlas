@@ -28,6 +28,10 @@ class VersionMetadata(StrictModel):
     as_of_time: datetime
     audit_ref: str | None = None
     lineage_ref: str | None = None
+    data_mode: Literal["real", "synthetic", "mock"] = "real"
+    freshness_status: Literal["fresh", "stale", "partial", "unavailable"] = "fresh"
+    source_count: int = Field(default=0, ge=0)
+    source_manifest_ref: str | None = None
 
     @field_validator("as_of_time")
     @classmethod
@@ -41,6 +45,13 @@ class ApiError(StrictModel):
     field: str | None = None
 
 
+class ApiSourceMetadata(StrictModel):
+    name: str
+    url: str | None = None
+    lineage_ref: str | None = None
+    license: str | None = None
+
+
 class ApiEnvelope(StrictModel):
     request_id: str
     status: Literal["success", "error"]
@@ -48,6 +59,9 @@ class ApiEnvelope(StrictModel):
     metadata: VersionMetadata
     warnings: list[str] = Field(default_factory=list)
     errors: list[ApiError] = Field(default_factory=list)
+    mode: Literal["real", "synthetic", "mock"] = "real"
+    source_status: Literal["fresh", "stale", "partial", "unavailable"] = "fresh"
+    source: ApiSourceMetadata | None = None
 
 
 class SourceRegistry(StrictModel):
@@ -134,15 +148,29 @@ class EdgeEvent(StrictModel):
     edge_type: str
     event_type: Literal["create", "update", "decay", "remove"]
     event_time: datetime
+    published_time: datetime | None = None
+    observed_time: datetime | None = None
     ingest_time: datetime
     attributes: dict[str, Any] = Field(default_factory=dict)
     confidence: float = Field(ge=0.0, le=1.0)
     source: str
 
-    @field_validator("event_time", "ingest_time")
+    @field_validator("event_time", "published_time", "observed_time", "ingest_time")
     @classmethod
-    def _aware_times(cls, value: datetime) -> datetime:
-        return ensure_aware(value)
+    def _aware_times(cls, value: datetime | None) -> datetime | None:
+        return ensure_aware(value) if value is not None else value
+
+    @model_validator(mode="after")
+    def _time_order_consistent(self) -> EdgeEvent:
+        if (
+            self.published_time is not None
+            and self.observed_time is not None
+            and self.published_time > self.observed_time
+        ):
+            raise ValueError("published_time must be <= observed_time")
+        if self.observed_time is not None and self.observed_time > self.ingest_time:
+            raise ValueError("observed_time must be <= ingest_time")
+        return self
 
 
 class EdgeState(StrictModel):

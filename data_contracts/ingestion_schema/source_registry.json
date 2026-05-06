@@ -1,0 +1,234 @@
+{
+  "$defs": {
+    "SourceEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "format": {
+          "enum": [
+            "json",
+            "csv",
+            "xml",
+            "zip",
+            "txt"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "auth": {
+          "const": "none",
+          "default": "none",
+          "title": "Auth",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "name",
+        "url",
+        "format"
+      ],
+      "title": "SourceEndpoint",
+      "type": "object"
+    },
+    "SourceLicense": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "allowed_use": {
+          "items": {
+            "enum": [
+              "research",
+              "commercial_risk_analysis",
+              "internal_operations",
+              "redistribution",
+              "derived_products"
+            ],
+            "type": "string"
+          },
+          "title": "Allowed Use",
+          "type": "array"
+        },
+        "requires_attribution": {
+          "title": "Requires Attribution",
+          "type": "boolean"
+        },
+        "redistribution_allowed": {
+          "title": "Redistribution Allowed",
+          "type": "boolean"
+        },
+        "commercial_use_allowed": {
+          "title": "Commercial Use Allowed",
+          "type": "boolean"
+        },
+        "restrictions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Restrictions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "url",
+        "allowed_use",
+        "requires_attribution",
+        "redistribution_allowed",
+        "commercial_use_allowed"
+      ],
+      "title": "SourceLicense",
+      "type": "object"
+    },
+    "SourceRegistryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_name": {
+          "title": "Source Name",
+          "type": "string"
+        },
+        "publisher": {
+          "title": "Publisher",
+          "type": "string"
+        },
+        "homepage_url": {
+          "title": "Homepage Url",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "public_no_key": {
+          "const": true,
+          "default": true,
+          "title": "Public No Key",
+          "type": "boolean"
+        },
+        "license": {
+          "$ref": "#/$defs/SourceLicense"
+        },
+        "endpoints": {
+          "items": {
+            "$ref": "#/$defs/SourceEndpoint"
+          },
+          "title": "Endpoints",
+          "type": "array"
+        },
+        "update_cadence": {
+          "enum": [
+            "real_time",
+            "15_minutes",
+            "hourly",
+            "daily",
+            "nightly",
+            "three_times_daily",
+            "weekly",
+            "monthly",
+            "irregular"
+          ],
+          "title": "Update Cadence",
+          "type": "string"
+        },
+        "freshness_sla_hours": {
+          "exclusiveMinimum": 0,
+          "title": "Freshness Sla Hours",
+          "type": "integer"
+        },
+        "allowed_entities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Entities",
+          "type": "array"
+        },
+        "allowed_events": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Events",
+          "type": "array"
+        },
+        "owner": {
+          "default": "data-ingestion",
+          "title": "Owner",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_name",
+        "publisher",
+        "homepage_url",
+        "description",
+        "license",
+        "endpoints",
+        "update_cadence",
+        "freshness_sla_hours"
+      ],
+      "title": "SourceRegistryEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "registry_version": {
+      "title": "Registry Version",
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceRegistryEntry"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "registry_version",
+    "sources"
+  ],
+  "title": "SourceRegistry",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

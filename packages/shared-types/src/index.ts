@@ -1,5 +1,9 @@
 export type ApiStatus = "success" | "error";
 
+export type ApiMode = "real";
+
+export type ApiSourceStatus = "fresh" | "stale" | "partial" | "unavailable" | "unauthorized" | "fallback" | "error";
+
 export interface VersionMetadata {
   graph_version: string;
   feature_version: string;
@@ -8,6 +12,10 @@ export interface VersionMetadata {
   as_of_time: string;
   audit_ref?: string | null;
   lineage_ref?: string | null;
+  data_mode?: "real";
+  freshness_status?: "fresh" | "stale" | "partial" | "unavailable";
+  source_count?: number;
+  source_manifest_ref?: string | null;
 }
 
 export interface ApiError {
@@ -19,10 +27,27 @@ export interface ApiError {
 export interface ApiEnvelope<T> {
   request_id: string;
   status: ApiStatus;
-  data: T;
+  data: T | null;
   metadata: VersionMetadata;
   warnings: string[];
   errors: ApiError[];
+  mode?: ApiMode;
+  source_status?: ApiSourceStatus;
+  source?: {
+    name?: string;
+    url?: string;
+    lineage_ref?: string | null;
+    license?: string | null;
+  };
+}
+
+export interface ApiResult<T> {
+  data: T | null;
+  envelope: ApiEnvelope<T>;
+  mode: ApiMode;
+  sourceStatus: ApiSourceStatus;
+  receivedAt: string;
+  httpStatus?: number;
 }
 
 export interface Entity {
@@ -31,6 +56,7 @@ export interface Entity {
   display_name: string;
   country?: string | null;
   industry?: string | null;
+  external_ids?: Record<string, string>;
   confidence: number;
 }
 
@@ -79,6 +105,19 @@ export interface GraphSnapshotPayload {
     path_risk: number;
     path_confidence: number;
   }>;
+  source_manifest: {
+    manifest_ref: string;
+    checksum: string;
+    sources: string[];
+    freshness: Array<{
+      source_id: string;
+      status: "fresh" | "stale" | "partial" | "unavailable";
+      last_successful_ingest: string;
+      max_stale_minutes: number;
+      record_count: number;
+      checksum: string;
+    }>;
+  };
 }
 
 export interface SimulationResult {
@@ -207,14 +246,14 @@ export interface CorridorRisk {
 
 export interface GlobalRiskCockpitData {
   lastUpdated: string;
-  operatingMode: "mock" | "real";
+  operatingMode: "real";
   metrics: RiskMetric[];
   hotspots: Hotspot[];
   incidents: Incident[];
   corridors: CorridorRisk[];
 }
 
-export type GraphNodeKind = "company" | "supplier" | "facility" | "commodity" | "route" | "country";
+export type GraphNodeKind = "company" | "supplier" | "facility" | "commodity" | "route" | "country" | "data";
 
 export interface GraphNode {
   id: string;
@@ -241,6 +280,7 @@ export interface GraphExplorerData {
   links: GraphLink[];
   filters: GraphNodeKind[];
   selectedNodeId: string;
+  dataSummary?: DataCatalogSummary;
 }
 
 export interface SupplierExposure {
@@ -385,8 +425,111 @@ export interface PipelineStage {
   total: number;
 }
 
+export interface SourceRegistryRow {
+  id: string;
+  name: string;
+  type: string;
+  license: string;
+  updateFrequency: string;
+  reliabilityScore: number;
+  owner: string;
+  status: "fresh" | "stale" | "partial" | "unavailable";
+  recordCount: number;
+  maxStaleMinutes: number;
+  checksum: string;
+  latestRecordTime: string | null;
+}
+
+export interface SourceRegistrySummary {
+  manifestRef: string;
+  checksum: string;
+  asOfTime: string;
+  catalogSource?: string;
+  promotedGraph?: {
+    status: "promoted" | "partial";
+    manifest: Record<string, unknown> | null;
+  };
+  sourceCount: number;
+  rawRecordCount: number;
+  silverEntityCount: number;
+  silverEventCount: number;
+  goldEdgeEventCount: number;
+  dataNodeCount?: number;
+  sources: SourceRegistryRow[];
+}
+
+export interface EntityResolutionSummary {
+  totalEntities: number;
+  averageConfidence: number;
+  byEntityType: Array<{
+    entityType: string;
+    count: number;
+  }>;
+  bySource: Array<{
+    sourceId: string;
+    entityCount: number;
+  }>;
+}
+
+export interface EvidenceLineageRecord {
+  id: string;
+  sourceId: string;
+  sourceName: string;
+  rawId: string;
+  sourceRecordId: string;
+  rawChecksum: string;
+  rawObservedTime: string;
+  silverEventIds: string[];
+  silverEntityIds: string[];
+  goldEdgeEventIds: string[];
+  edgeTypes: string[];
+  targetEntities: string[];
+  confidence: number;
+}
+
+export interface EvidenceLineageSummary {
+  manifestRef: string;
+  checksum: string;
+  asOfTime: string;
+  rawRecordCount: number;
+  silverEventCount: number;
+  goldEdgeEventCount: number;
+  records: EvidenceLineageRecord[];
+}
+
+export interface DataCatalogSummary {
+  catalogSource: string;
+  promoted: boolean;
+  totalDataNodes: number;
+  byType: Array<{
+    entityType: string;
+    count: number;
+  }>;
+  bySource: Array<{
+    sourceId: string;
+    count: number;
+  }>;
+  licensePolicies: Array<{
+    id: string;
+    name: string;
+    sourceIds: string[];
+    licenseUrl: string;
+  }>;
+  topNodes: Array<{
+    id: string;
+    name: string;
+    entityType: string;
+    sourceIds: string[];
+    confidence: number;
+  }>;
+}
+
 export interface SystemHealthData {
   services: ServiceHealth[];
   stages: PipelineStage[];
   logs: string[];
+  sourceRegistry: SourceRegistrySummary;
+  entityResolution: EntityResolutionSummary;
+  evidenceLineage: EvidenceLineageSummary;
+  dataCatalog?: DataCatalogSummary;
 }

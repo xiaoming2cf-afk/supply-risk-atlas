@@ -1,0 +1,111 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "raw_id": {
+      "title": "Raw Id",
+      "type": "string"
+    },
+    "source_id": {
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_record_id": {
+      "title": "Source Record Id",
+      "type": "string"
+    },
+    "event_time": {
+      "format": "date-time",
+      "title": "Event Time",
+      "type": "string"
+    },
+    "published_time": {
+      "format": "date-time",
+      "title": "Published Time",
+      "type": "string"
+    },
+    "observed_time": {
+      "format": "date-time",
+      "title": "Observed Time",
+      "type": "string"
+    },
+    "ingest_time": {
+      "format": "date-time",
+      "title": "Ingest Time",
+      "type": "string"
+    },
+    "payload_format": {
+      "enum": [
+        "json",
+        "csv",
+        "xml",
+        "zip",
+        "txt"
+      ],
+      "title": "Payload Format",
+      "type": "string"
+    },
+    "raw_payload": {
+      "additionalProperties": true,
+      "title": "Raw Payload",
+      "type": "object"
+    },
+    "checksum": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Checksum",
+      "type": "string"
+    },
+    "license_name": {
+      "title": "License Name",
+      "type": "string"
+    },
+    "allowed_use": {
+      "items": {
+        "enum": [
+          "research",
+          "commercial_risk_analysis",
+          "internal_operations",
+          "redistribution",
+          "derived_products"
+        ],
+        "type": "string"
+      },
+      "title": "Allowed Use",
+      "type": "array"
+    },
+    "attribution": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attribution"
+    },
+    "schema_version": {
+      "default": "raw-record-v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "raw_id",
+    "source_id",
+    "source_record_id",
+    "event_time",
+    "published_time",
+    "observed_time",
+    "ingest_time",
+    "payload_format",
+    "raw_payload",
+    "checksum",
+    "license_name",
+    "allowed_use"
+  ],
+  "title": "RawRecord",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

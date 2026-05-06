@@ -104,3 +104,80 @@ edge_types:
     temporal: true
     required_fields: [weight, confidence, valid_from]
     features: [path_risk, lag_days]
+  source_provides:
+    source: data_source
+    target: dataset
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [freshness_sla_hours, license_risk]
+  dataset_observes:
+    source: dataset
+    target: firm
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [coverage, evidence_weight]
+  dataset_measures:
+    source: dataset
+    target: indicator
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [coverage, update_frequency]
+  dataset_covers:
+    source: dataset
+    target: country
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [coverage, freshness]
+  categorized_as:
+    source: data_source
+    target: data_category
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [governance_weight]
+  classified_as:
+    source: firm
+    target: industry
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [classification_confidence]
+  indicator_context_for:
+    source: indicator
+    target: country
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [coverage, lag_days]
+  dataset_has_field:
+    source: dataset
+    target: schema_field
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [schema_coverage, null_rate]
+  licensed_under:
+    source: dataset
+    target: license_policy
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [license_risk, attribution_required]
+  released_as:
+    source: data_source
+    target: source_release
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [raw_record_count, freshness_lag]
+  observed_for:
+    source: observation_series
+    target: country
+    directed: true
+    temporal: true
+    required_fields: [confidence, valid_from]
+    features: [observation_count, lag_days]

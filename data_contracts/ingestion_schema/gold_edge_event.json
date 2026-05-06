@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "SourceReference": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "raw_id": {
+          "title": "Raw Id",
+          "type": "string"
+        },
+        "source_record_id": {
+          "title": "Source Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "raw_id",
+        "source_record_id"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "edge_event_id": {
+      "title": "Edge Event Id",
+      "type": "string"
+    },
+    "source_entity_id": {
+      "title": "Source Entity Id",
+      "type": "string"
+    },
+    "target_entity_id": {
+      "title": "Target Entity Id",
+      "type": "string"
+    },
+    "edge_type": {
+      "title": "Edge Type",
+      "type": "string"
+    },
+    "event_type": {
+      "enum": [
+        "create",
+        "update",
+        "decay",
+        "remove"
+      ],
+      "title": "Event Type",
+      "type": "string"
+    },
+    "event_time": {
+      "format": "date-time",
+      "title": "Event Time",
+      "type": "string"
+    },
+    "published_time": {
+      "format": "date-time",
+      "title": "Published Time",
+      "type": "string"
+    },
+    "observed_time": {
+      "format": "date-time",
+      "title": "Observed Time",
+      "type": "string"
+    },
+    "ingest_time": {
+      "format": "date-time",
+      "title": "Ingest Time",
+      "type": "string"
+    },
+    "source_refs": {
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Source Refs",
+      "type": "array"
+    },
+    "evidence_event_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Event Ids",
+      "type": "array"
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "schema_version": {
+      "default": "gold-edge-event-v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "edge_event_id",
+    "source_entity_id",
+    "target_entity_id",
+    "edge_type",
+    "event_type",
+    "event_time",
+    "published_time",
+    "observed_time",
+    "ingest_time",
+    "source_refs",
+    "confidence"
+  ],
+  "title": "GoldEdgeEvent",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

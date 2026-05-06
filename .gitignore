@@ -18,6 +18,8 @@ data/raw/
 data/silver/
 data/gold/
 data/graph/
+data/cache/
+data/promoted/
 artifacts/
 /models/
 /minio_data/

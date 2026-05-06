@@ -14,8 +14,9 @@ import {
   SlidersHorizontal,
   TerminalSquare
 } from "lucide-react";
-import type { SupplyRiskApiClient, SupplyRiskMockData } from "@supply-risk/api-client";
+import type { SupplyRiskApiClient, SupplyRiskDashboardData } from "@supply-risk/api-client";
 import type {
+  ApiResult,
   DashboardPageId,
   EvidenceItem,
   ExplainedPath,
@@ -32,7 +33,7 @@ import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, Sc
 import { useI18n } from "./i18n";
 
 export interface PageRenderProps {
-  data: SupplyRiskMockData;
+  data: SupplyRiskDashboardData;
   apiClient: SupplyRiskApiClient;
 }
 
@@ -63,7 +64,15 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
   }
 }
 
-function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
+function isAcceptedRealApiResult<T>(result: ApiResult<T>): result is ApiResult<T> & { data: T } {
+  return (
+    result.envelope.status === "success" &&
+    result.data !== null &&
+    !["fallback", "unavailable", "unauthorized", "error"].includes(result.sourceStatus)
+  );
+}
+
+function GlobalRiskCockpit({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const cockpit = data.globalRiskCockpit;
 
@@ -135,7 +144,7 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
                   <div className="row-top">
                     <div>
                       <span className="row-title">
-                        {t(`${corridor.source} to ${corridor.target}`)}
+                        {corridor.source} {t("to")} {corridor.target}
                       </span>
                       <span className="row-subtitle">{corridor.commodity}</span>
                     </div>
@@ -156,15 +165,26 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskMockData }) {
   );
 }
 
-function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
+function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const graph = data.graphExplorer;
   const [kind, setKind] = useState<GraphNodeKind | "all">("all");
+  const [query, setQuery] = useState("");
   const [selectedNodeId, setSelectedNodeId] = useState(graph.selectedNodeId);
+  const normalizedQuery = query.trim().toLowerCase();
 
   const visibleNodes = useMemo(
-    () => graph.nodes.filter((node) => kind === "all" || node.kind === kind),
-    [graph.nodes, kind]
+    () =>
+      graph.nodes.filter((node) => {
+        const kindMatches = kind === "all" || node.kind === kind;
+        if (!kindMatches) return false;
+        if (!normalizedQuery) return true;
+        const metadataValues = Object.values(node.metadata).map((value) => String(value).toLowerCase());
+        return [node.id, node.label, node.kind, ...metadataValues].some((value) =>
+          value.toLowerCase().includes(normalizedQuery),
+        );
+      }),
+    [graph.nodes, kind, normalizedQuery]
   );
   const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((node) => node.id)), [visibleNodes]);
   const visibleLinks = graph.links.filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target));
@@ -188,9 +208,20 @@ function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
         <div style={{ marginTop: 16 }} className="inspector-grid">
           <Field label="Visible nodes" value={visibleNodes.length} />
           <Field label="Visible links" value={visibleLinks.length} />
+          <Field label="Data nodes" value={graph.dataSummary?.totalDataNodes ?? 0} />
           <Field label="Focus score" value={`${selectedNode.score}/100`} />
           <Field label="Focus type" value={selectedNode.kind} />
         </div>
+        <label className="form-control" style={{ marginTop: 16 }}>
+          <span>{t("Entity search")}</span>
+          <input
+            aria-label={t("Entity search")}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t("Search name, source, country, or external id")}
+            type="search"
+            value={query}
+          />
+        </label>
       </Panel>
 
       <Panel
@@ -212,6 +243,7 @@ function GraphExplorer({ data }: { data: SupplyRiskMockData }) {
               <span>{t(node.kind)}</span>
             </button>
           ))}
+          {visibleNodes.length === 0 ? <div className="empty-state">{t("No entities match the current filters.")}</div> : null}
         </div>
       </Panel>
 
@@ -259,7 +291,7 @@ function NetworkSvg({ links, nodes }: { links: GraphLink[]; nodes: GraphNode[] }
   );
 }
 
-function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
+function CompanyRisk360({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const companyData = data.companyRisk360;
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyData.selectedCompanyId);
@@ -281,7 +313,7 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
                 <div>
                   <span className="row-title">{company.name}</span>
                   <span className="row-subtitle">
-                    {company.ticker} / {t(company.sector)}
+                    {company.ticker} / {company.sector}
                   </span>
                 </div>
                 <RiskPill level={company.level} />
@@ -294,8 +326,10 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
 
       <div className="page-grid">
         <Panel
-          title={`${selectedCompany.name} risk posture`}
-          subtitle={`${selectedCompany.headquarters}; confidence ${formatPercent(selectedCompany.confidence)}.`}
+          title={`${selectedCompany.name} ${t("risk posture")}`}
+          subtitle={`${selectedCompany.headquarters}; ${t("confidence")} ${formatPercent(selectedCompany.confidence)}.`}
+          translateTitle={false}
+          translateSubtitle={false}
           action={<Button icon={ShieldAlert}>Create watch</Button>}
         >
           <div className="driver-grid">
@@ -365,7 +399,7 @@ function CompanyRisk360({ data }: { data: SupplyRiskMockData }) {
   );
 }
 
-function PathExplainer({ data }: { data: SupplyRiskMockData }) {
+function PathExplainer({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const pathData = data.pathExplainer;
   const [selectedPathId, setSelectedPathId] = useState(pathData.selectedPathId);
@@ -395,6 +429,7 @@ function PathExplainer({ data }: { data: SupplyRiskMockData }) {
       <Panel
         title={selectedPath.title}
         subtitle={`${selectedPath.scoreMove.toFixed(1)} point score move; ${formatPercent(selectedPath.confidence)} explanation confidence.`}
+        translateTitle={false}
       >
         <p className="panel-subtitle" style={{ marginBottom: 16 }}>
           {selectedPath.summary}
@@ -435,6 +470,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
   });
   const [result, setResult] = useState<ShockSimulationResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [simulationWarning, setSimulationWarning] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -442,7 +478,19 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
     apiClient
       .runShockSimulation(input)
       .then((nextResult) => {
-        if (isActive) setResult(nextResult);
+        if (!isActive) return;
+        if (isAcceptedRealApiResult(nextResult)) {
+          setResult(nextResult.data);
+          setSimulationWarning(null);
+          return;
+        }
+        setResult(null);
+        setSimulationWarning("Simulation requires a real API envelope before results are rendered.");
+      })
+      .catch((error: unknown) => {
+        if (!isActive) return;
+        setResult(null);
+        setSimulationWarning(error instanceof Error ? error.message : "Simulation API request failed.");
       })
       .finally(() => {
         if (isActive) setIsRunning(false);
@@ -468,10 +516,10 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
           <label className="form-control">
             <span>{t("Region")}</span>
             <select value={input.region} onChange={(event) => setInput((current) => ({ ...current, region: event.target.value }))}>
-              <option value="Taiwan Strait">{t("Taiwan Strait")}</option>
-              <option value="Red Sea / Suez">{t("Red Sea / Suez")}</option>
-              <option value="Panama Canal">{t("Panama Canal")}</option>
-              <option value="Rhine Industrial Belt">{t("Rhine Industrial Belt")}</option>
+              <option value="Taiwan Strait">Taiwan Strait</option>
+              <option value="Red Sea / Suez">Red Sea / Suez</option>
+              <option value="Panama Canal">Panama Canal</option>
+              <option value="Rhine Industrial Belt">Rhine Industrial Belt</option>
             </select>
           </label>
           <label className="form-control">
@@ -480,10 +528,10 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
               value={input.commodity}
               onChange={(event) => setInput((current) => ({ ...current, commodity: event.target.value }))}
             >
-              <option value="advanced semiconductor components">{t("advanced semiconductor components")}</option>
-              <option value="battery graphite">{t("battery graphite")}</option>
-              <option value="specialty chemical feedstock">{t("specialty chemical feedstock")}</option>
-              <option value="consumer electronics assemblies">{t("consumer electronics assemblies")}</option>
+              <option value="advanced semiconductor components">advanced semiconductor components</option>
+              <option value="battery graphite">battery graphite</option>
+              <option value="specialty chemical feedstock">specialty chemical feedstock</option>
+              <option value="consumer electronics assemblies">consumer electronics assemblies</option>
             </select>
           </label>
           <label className="form-control">
@@ -506,7 +554,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
       </Panel>
 
       <div className="page-grid">
-        <Panel title="Projected impact" subtitle="Mock mode uses deterministic scenario math; API mode posts the same payload.">
+        <Panel title="Projected impact" subtitle="Rendered only from an accepted real API envelope.">
           {result ? (
             <div className="three-column page-grid">
               <div className={`big-result ${riskClassByLevel[result.affectedPaths[0]?.level ?? "guarded"]}`}>
@@ -523,7 +571,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
               </div>
             </div>
           ) : (
-            <div className="empty-state">{t("Awaiting simulation result.")}</div>
+            <div className="empty-state">{t(simulationWarning ?? "Awaiting simulation result.")}</div>
           )}
         </Panel>
 
@@ -534,7 +582,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
                 {result.affectedPaths.map((path) => (
                   <li className="data-row" key={path.id}>
                     <div className="row-top">
-                      <span className="row-title">{t(path.label)}</span>
+                      <span className="row-title">{path.label}</span>
                       <RiskPill level={path.level} />
                     </div>
                     <ProgressBar value={path.impact} level={path.level} />
@@ -547,7 +595,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
               <ul className="recommendation-list">
                 {result.recommendations.map((recommendation) => (
                   <li className="data-row" key={recommendation}>
-                    <span className="row-title">{t(recommendation)}</span>
+                    <span className="row-title">{recommendation}</span>
                   </li>
                 ))}
               </ul>
@@ -559,7 +607,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
   );
 }
 
-function CausalEvidenceBoard({ data }: { data: SupplyRiskMockData }) {
+function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const board = data.causalEvidenceBoard;
   const [activeClaimId, setActiveClaimId] = useState(board.activeClaimId);
@@ -584,6 +632,7 @@ function CausalEvidenceBoard({ data }: { data: SupplyRiskMockData }) {
         <Panel
           title="Causal claim focus"
           subtitle={activeClaim.source}
+          translateSubtitle={false}
           action={<span className="method-pill">{activeClaim.method}</span>}
         >
           <div className="driver-grid">
@@ -663,7 +712,7 @@ function EvidenceButton({ item, isActive, onSelect }: { item: EvidenceItem; isAc
   );
 }
 
-function GraphVersionStudio({ data }: { data: SupplyRiskMockData }) {
+function GraphVersionStudio({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const studio = data.graphVersionStudio;
   const [candidateVersionId, setCandidateVersionId] = useState(studio.candidateVersionId);
@@ -690,6 +739,7 @@ function GraphVersionStudio({ data }: { data: SupplyRiskMockData }) {
         <Panel
           title="Candidate readiness"
           subtitle={`${candidate.label}; built by ${candidate.author}.`}
+          translateSubtitle={false}
           action={<Button icon={CheckCircle2} variant="primary" onClick={() => setPromotedVersionId(candidate.id)}>Promote</Button>}
         >
           <div className="version-grid">
@@ -764,12 +814,30 @@ function VersionButton({
   );
 }
 
-function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
+function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const health = data.systemHealthCenter;
   const operationalCount = health.services.filter((service) => service.status === "operational").length;
   const pipelineTotal = health.stages.reduce((total, stage) => total + stage.total, 0);
   const pipelineProcessed = health.stages.reduce((total, stage) => total + stage.processed, 0);
+  const sortedLatencies = [...health.services].map((service) => service.latencyMs).sort((left, right) => left - right);
+  const medianLatency = sortedLatencies.length === 0 ? 0 : sortedLatencies[Math.floor(sortedLatencies.length / 2)];
+  const maxFreshnessLag = Math.max(0, ...health.services.map((service) => service.freshnessMinutes));
+  const serviceSummaryStatus =
+    health.services.some((service) => service.status === "down")
+      ? "down"
+      : operationalCount === health.services.length
+        ? "operational"
+        : "degraded";
+  const stageSummaryStatus = health.stages.some((stage) => stage.status === "blocked")
+    ? "blocked"
+    : health.stages.some((stage) => stage.status === "running")
+      ? "running"
+      : health.stages.some((stage) => stage.status === "queued")
+        ? "queued"
+        : "complete";
+  const freshnessStatus = maxFreshnessLag === 0 ? "operational" : "degraded";
+  const manifestChecksum = health.sourceRegistry.checksum.slice(0, 12);
 
   return (
     <div className="page-grid">
@@ -777,7 +845,7 @@ function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
         <article className="metric-tile">
           <div className="metric-head">
             <p className="metric-label">{t("Services operational")}</p>
-            <StatusPill status="operational" />
+            <StatusPill status={serviceSummaryStatus} />
           </div>
           <p className="metric-value">
             {operationalCount}
@@ -788,28 +856,28 @@ function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
         <article className="metric-tile">
           <div className="metric-head">
             <p className="metric-label">{t("Pipeline processed")}</p>
-            <StatusPill status="running" />
+            <StatusPill status={stageSummaryStatus} />
           </div>
-          <p className="metric-value">{formatPercent(pipelineProcessed / pipelineTotal)}</p>
+          <p className="metric-value">{formatPercent(pipelineTotal === 0 ? 0 : pipelineProcessed / pipelineTotal)}</p>
           <p className="metric-detail">{t("Current build is advancing through entity resolution.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
             <p className="metric-label">{t("Median latency")}</p>
-            <StatusPill status="operational" />
+            <StatusPill status={serviceSummaryStatus} />
           </div>
           <p className="metric-value">
-            181<span className="metric-unit">ms</span>
+            {medianLatency}<span className="metric-unit">ms</span>
           </p>
           <p className="metric-detail">{t("Across API, graph query, ingest, and scorer endpoints.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
             <p className="metric-label">{t("Freshness lag")}</p>
-            <StatusPill status="degraded" />
+            <StatusPill status={freshnessStatus} />
           </div>
           <p className="metric-value">
-            17<span className="metric-unit">m</span>
+            {maxFreshnessLag}<span className="metric-unit">m</span>
           </p>
           <p className="metric-detail">{t("Signal ingest is the current freshness constraint.")}</p>
         </article>
@@ -851,6 +919,172 @@ function SystemHealthCenter({ data }: { data: SupplyRiskMockData }) {
                 );
               })}
             </ul>
+          </Panel>
+
+          <Panel
+            title="Source registry"
+            subtitle={`${health.sourceRegistry.manifestRef}; checksum ${manifestChecksum}; catalog ${health.sourceRegistry.catalogSource ?? "unknown"}.`}
+            translateSubtitle={false}
+          >
+            <div className="inspector-grid" style={{ marginBottom: 16 }}>
+              <Field label="Sources" value={health.sourceRegistry.sourceCount} />
+              <Field label="Raw records" value={health.sourceRegistry.rawRecordCount} />
+              <Field label="Silver entities" value={health.sourceRegistry.silverEntityCount} />
+              <Field label="Gold edges" value={health.sourceRegistry.goldEdgeEventCount} />
+              <Field label="Data nodes" value={health.sourceRegistry.dataNodeCount ?? 0} />
+              <Field label="Promoted" value={health.sourceRegistry.promotedGraph?.status ?? "partial"} />
+            </div>
+            <ul className="health-list">
+              {health.sourceRegistry.sources.map((source) => (
+                <li className="data-row" key={source.id}>
+                  <div className="row-top">
+                    <div>
+                      <span className="row-title">{source.name}</span>
+                      <span className="row-subtitle">{source.license}</span>
+                    </div>
+                    <StatusPill status={source.status} />
+                  </div>
+                  <div className="row-meta">
+                    <span>{source.updateFrequency}</span>
+                    <span>{t(`${source.recordCount} records`)}</span>
+                    <span>{t(`${source.maxStaleMinutes} m SLA`)}</span>
+                    <span>{source.checksum.slice(0, 10)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          {health.dataCatalog ? (
+            <Panel
+              title="Data node catalog"
+              subtitle={`${health.dataCatalog.totalDataNodes} governed data nodes across source, dataset, indicator, license, release, field, and series classes.`}
+            >
+              <div className="driver-grid">
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>{t("Data node type")}</th>
+                        <th>{t("Count")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {health.dataCatalog.byType.map((row) => (
+                        <tr key={row.entityType}>
+                          <td>{row.entityType}</td>
+                          <td>{formatCompactNumber(row.count)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>{t("Source")}</th>
+                        <th>{t("Data nodes")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {health.dataCatalog.bySource.map((row) => (
+                        <tr key={row.sourceId}>
+                          <td>{row.sourceId}</td>
+                          <td>{formatCompactNumber(row.count)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <ul className="health-list" style={{ marginTop: 16 }}>
+                {health.dataCatalog.licensePolicies.slice(0, 6).map((license) => (
+                  <li className="data-row" key={license.id}>
+                    <div className="row-top">
+                      <div>
+                        <span className="row-title">{license.name}</span>
+                        <span className="row-subtitle">{license.sourceIds.join(" / ")}</span>
+                      </div>
+                      <StatusPill status={health.dataCatalog?.promoted ? "operational" : "degraded"} />
+                    </div>
+                    <div className="row-meta">
+                      <span>{license.licenseUrl || "license URL unavailable"}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ) : null}
+
+          <Panel
+            title="Entity resolution"
+            subtitle={`${health.entityResolution.totalEntities} silver entities; ${formatPercent(health.entityResolution.averageConfidence)} average confidence.`}
+          >
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>{t("Entity type")}</th>
+                    <th>{t("Count")}</th>
+                    <th>{t("Source")}</th>
+                    <th>{t("Entities")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {health.entityResolution.byEntityType.map((row, index) => {
+                    const sourceRow = health.entityResolution.bySource[index];
+                    return (
+                      <tr key={row.entityType}>
+                        <td>{row.entityType}</td>
+                        <td>{formatCompactNumber(row.count)}</td>
+                        <td>{sourceRow?.sourceId ?? "n/a"}</td>
+                        <td>{formatCompactNumber(sourceRow?.entityCount ?? 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Panel>
+
+          <Panel
+            title="Evidence lineage"
+            subtitle={`${health.evidenceLineage.manifestRef}; raw to silver to gold audit chain.`}
+            translateSubtitle={false}
+          >
+            <div className="inspector-grid" style={{ marginBottom: 16 }}>
+              <Field label="Raw records" value={health.evidenceLineage.rawRecordCount} />
+              <Field label="Silver events" value={health.evidenceLineage.silverEventCount} />
+              <Field label="Gold edges" value={health.evidenceLineage.goldEdgeEventCount} />
+              <Field label="Checksum" value={health.evidenceLineage.checksum.slice(0, 12)} />
+            </div>
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>{t("Source")}</th>
+                    <th>{t("Raw record")}</th>
+                    <th>{t("Silver events")}</th>
+                    <th>{t("Gold edges")}</th>
+                    <th>{t("Targets")}</th>
+                    <th>{t("Confidence")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {health.evidenceLineage.records.slice(0, 8).map((record) => (
+                    <tr key={record.id}>
+                      <td>{record.sourceName}</td>
+                      <td>{record.sourceRecordId}</td>
+                      <td>{record.silverEventIds.length}</td>
+                      <td>{record.goldEdgeEventIds.length}</td>
+                      <td>{record.targetEntities.slice(0, 3).join(" / ")}</td>
+                      <td>{formatPercent(record.confidence)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Panel>
 
           <Panel

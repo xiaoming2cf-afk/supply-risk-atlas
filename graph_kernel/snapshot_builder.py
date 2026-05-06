@@ -47,7 +47,7 @@ def canonical_graph_payload(
                     "risk_score": round(state.risk_score, 8),
                 }
                 for state in states
-                if state.valid_from <= as_of_time and (state.valid_to is None or state.valid_to <= as_of_time)
+                if state.valid_from <= as_of_time and (state.valid_to is None or state.valid_to > as_of_time)
             ],
             key=lambda item: item["edge_id"],
         ),
@@ -80,7 +80,13 @@ def build_graph_snapshot(
         window_start=window_start,
         window_end=as_of_time,
         node_count=len(entities),
-        edge_count=len([state for state in states if state.valid_to is None]),
+        edge_count=len(
+            [
+                state
+                for state in states
+                if state.valid_from <= as_of_time and (state.valid_to is None or state.valid_to > as_of_time)
+            ]
+        ),
         checksum=checksum,
     )
     states = [state.model_copy(update={"graph_version": snapshot.graph_version}) for state in states]

@@ -24,8 +24,29 @@ class Handler(BaseHTTPRequestHandler):
         routes = {
             "/health": lambda: main.route_health(request_id=request_id),
             "/api/v1/health": lambda: main.route_health(request_id=request_id),
+            "/lineage": lambda: main.route_lineage(
+                source_id=_first(query.get("source_id")),
+                target_id=_first(query.get("target_id")),
+                request_id=request_id,
+            ),
             "/api/v1/entities": lambda: main.route_entities(
                 entity_type=_first(query.get("entity_type")),
+                source_id=_first(query.get("source_id")),
+                category=_first(query.get("category")),
+                country=_first(query.get("country")),
+                industry=_first(query.get("industry")),
+                q=_first(query.get("q")),
+                limit=_int_or_default(_first(query.get("limit")), 100),
+                offset=_int_or_default(_first(query.get("offset")), 0),
+                request_id=request_id,
+            ),
+            "/api/v1/sources": lambda: main.route_sources(
+                source_id=_first(query.get("source_id")),
+                request_id=request_id,
+            ),
+            "/api/v1/lineage": lambda: main.route_lineage(
+                source_id=_first(query.get("source_id")),
+                target_id=_first(query.get("target_id")),
                 request_id=request_id,
             ),
             "/api/v1/graph": lambda: main.route_graph_snapshots(request_id=request_id),
@@ -49,6 +70,24 @@ class Handler(BaseHTTPRequestHandler):
             "/api/v1/reports": lambda: main.route_reports(request_id=request_id),
         }
         if parsed.path not in routes:
+            if parsed.path.startswith("/api/v1/sources/"):
+                source_id = parsed.path.rsplit("/", 1)[-1]
+                try:
+                    self._write(200, main.route_sources(source_id=source_id, request_id=request_id))
+                except LookupError as exc:
+                    self._write(404, main.make_error("not_found", str(exc), request_id=request_id))
+                return
+            if parsed.path.startswith("/api/v1/lineage/"):
+                source_id = parsed.path.rsplit("/", 1)[-1]
+                self._write(
+                    200,
+                    main.route_lineage(
+                        source_id=source_id,
+                        target_id=_first(query.get("target_id")),
+                        request_id=request_id,
+                    ),
+                )
+                return
             self._write(404, main.make_error("not_found", f"Route not found: {parsed.path}", request_id=request_id))
             return
         try:
@@ -116,6 +155,15 @@ class Handler(BaseHTTPRequestHandler):
 
 def _first(values: list[str] | None) -> str | None:
     return values[0] if values else None
+
+
+def _int_or_default(value: str | None, default: int) -> int:
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
 
 
 def run(host: str = "127.0.0.1", port: int = 8000) -> None:
