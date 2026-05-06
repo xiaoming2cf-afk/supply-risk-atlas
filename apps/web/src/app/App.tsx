@@ -40,6 +40,8 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "system-health-center": ServerCog
 };
 
+const deploymentTarget = "supply-risk-atlas-web.onrender.com";
+
 type DashboardResultMap = Partial<Record<DashboardPageId, ApiResult<unknown>>>;
 
 function resolveApiBaseUrl() {
@@ -206,7 +208,7 @@ export function App() {
 
   return (
     <I18nProvider language={language} setLanguage={setLanguage}>
-    <div className="app-shell">
+    <div className="app-shell" data-deploy-target={deploymentTarget}>
       <aside className="side-rail" aria-label="SupplyRiskAtlas navigation">
         <div className="brand-lockup">
           <div className="brand-mark">

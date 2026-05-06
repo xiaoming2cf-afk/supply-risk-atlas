@@ -34,6 +34,9 @@ from sra_core.contracts.domain import (
 from sra_core.real_pipeline import real_metadata, run_public_real_pipeline
 
 
+DEPLOYMENT_TARGET = "supply-risk-atlas-web.onrender.com"
+
+
 def metadata_for_result(result: Any) -> VersionMetadata:
     return real_metadata(result)
 
@@ -81,6 +84,7 @@ def route_health(request_id: str | None = None) -> dict[str, Any]:
             "service": "supply-risk-atlas-api",
             "status": "ok",
             "data_mode": "real",
+            "deployment_target": DEPLOYMENT_TARGET,
             "source_manifest_ref": result.real.source_manifest_ref,
             "quality_gates": [
                 "contract",
