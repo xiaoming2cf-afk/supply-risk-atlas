@@ -22,6 +22,23 @@ from sra_core.ingestion.registry import load_source_registry
 DEFAULT_USER_AGENT = "SupplyRiskAtlas/0.1 public-real-ingestion contact=ops@supplyriskatlas.local"
 DEFAULT_CACHE_DIR = Path("data/cache/public_real")
 DEFAULT_PROMOTED_DIR = Path("data/promoted/public_real/latest")
+DOWNLOAD_CHUNK_BYTES = 1024 * 1024
+DEFAULT_MAX_DOWNLOAD_BYTES = 8 * 1024 * 1024
+MAX_DOWNLOAD_BYTES_BY_SOURCE = {
+    "ourairports": 32 * 1024 * 1024,
+    "sec_edgar": 8 * 1024 * 1024,
+    "gleif": 8 * 1024 * 1024,
+    "world_bank_indicators": 8 * 1024 * 1024,
+    "world_bank_countries": 8 * 1024 * 1024,
+    "gdelt": 8 * 1024 * 1024,
+    "ofac": 8 * 1024 * 1024,
+    "nga_world_port_index": 8 * 1024 * 1024,
+    "usgs_earthquakes": 8 * 1024 * 1024,
+}
+
+
+class PayloadTooLargeError(ValueError):
+    pass
 
 
 @dataclass(frozen=True)
@@ -795,19 +812,49 @@ def _download_or_seed_sources(
                 },
             )
             with urlopen(req, timeout=30) as response:
-                payload = response.read()
+                payload = _read_limited_response(response, source_id)
             if source_id != "ourairports" and not _payload_looks_json(payload):
                 raise ValueError("downloaded payload was not JSON")
             path.write_bytes(payload)
             files[source_id] = _cached_file(source_id, url, path, "ok", "downloaded")
         except (OSError, URLError, TimeoutError, ValueError) as exc:
-            if not isinstance(exc, ValueError) and path.exists() and path.stat().st_size > 0:
+            if (
+                (not isinstance(exc, ValueError) or isinstance(exc, PayloadTooLargeError))
+                and path.exists()
+                and path.stat().st_size > 0
+            ):
                 files[source_id] = _cached_file(source_id, url, path, "ok", f"reused cached file after {type(exc).__name__}")
             else:
                 payload = _fixture_payload(source_id)
                 path.write_bytes(payload)
                 files[source_id] = _cached_file(source_id, url, path, "partial", f"seeded fixture after {type(exc).__name__}: {exc}")
     return files
+
+
+def _read_limited_response(response: Any, source_id: str) -> bytes:
+    max_bytes = MAX_DOWNLOAD_BYTES_BY_SOURCE.get(source_id, DEFAULT_MAX_DOWNLOAD_BYTES)
+    content_length = response.headers.get("Content-Length") if getattr(response, "headers", None) else None
+    if content_length:
+        try:
+            declared_length = int(content_length)
+        except ValueError:
+            declared_length = None
+        if declared_length is not None and declared_length > max_bytes:
+            raise PayloadTooLargeError(
+                f"{source_id} declared {declared_length} bytes, above {max_bytes} byte limit"
+            )
+
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = response.read(DOWNLOAD_CHUNK_BYTES)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_bytes:
+            raise PayloadTooLargeError(f"{source_id} exceeded {max_bytes} byte download limit")
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 def _payload_looks_json(payload: bytes) -> bool:

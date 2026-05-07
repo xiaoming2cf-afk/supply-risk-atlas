@@ -9,6 +9,7 @@ const root = process.cwd();
 const webUrl = process.env.SUPPLY_RISK_WEB_URL ?? "http://127.0.0.1:3000";
 const expectedMode = process.env.SUPPLY_RISK_EXPECT_MODE;
 const apiUrl = process.env.SUPPLY_RISK_API_URL ?? "http://127.0.0.1:8000/api/v1";
+const apiUrlLiteral = JSON.stringify(apiUrl.replace(/\/$/, ""));
 const artifactDir = path.join(root, "artifacts", "browser-smoke");
 const reportPath = path.join(artifactDir, "report.json");
 
@@ -83,10 +84,10 @@ async function main() {
       if (!expectedModeText) throw new Error(`Unsupported SUPPLY_RISK_EXPECT_MODE: ${expectedMode}`);
       await navigate(client, `${webUrl}#global-risk-cockpit`);
       const modeState = await pageState(client);
-      const apiDiagnostic = await evaluate(client, `fetch('${apiUrl}/dashboard/global-risk-cockpit', { headers: { 'content-type': 'application/json' } })
+      const apiDiagnostic = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/global-risk-cockpit', { headers: { 'content-type': 'application/json' } })
         .then(async (response) => ({ ok: response.ok, status: response.status, bodyPrefix: (await response.text()).slice(0, 80) }))
         .catch((error) => ({ error: String(error) }))`);
-      const shockDiagnostic = await evaluate(client, `fetch('${apiUrl}/dashboard/shock-simulator', {
+      const shockDiagnostic = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/shock-simulator', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ region: 'Taiwan Strait', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
@@ -104,7 +105,7 @@ async function main() {
       });
     }
 
-    const degradedApiResult = await evaluate(client, `fetch('${apiUrl}/dashboard/unavailable-test', { headers: { 'content-type': 'application/json' } })
+    const degradedApiResult = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/unavailable-test', { headers: { 'content-type': 'application/json' } })
       .then(async (response) => ({ ok: response.ok, status: response.status, body: await response.json() }))
       .catch((error) => ({ error: String(error) }))`);
     checks.push({
@@ -184,7 +185,7 @@ async function main() {
     });
 
     if (expectedMode === "real") {
-      const sourceRegistryDiagnostic = await evaluate(client, `fetch('${apiUrl}/sources', { headers: { 'content-type': 'application/json' } })
+      const sourceRegistryDiagnostic = await evaluate(client, `fetch(${apiUrlLiteral} + '/sources', { headers: { 'content-type': 'application/json' } })
         .then((response) => response.json())
         .catch((error) => ({ error: String(error) }))`);
       checks.push({
@@ -201,7 +202,7 @@ async function main() {
           sourceRegistryDiagnostic.data?.silverEntityCount >= 140,
       });
 
-      const lineageDiagnostic = await evaluate(client, `fetch('${apiUrl}/lineage', { headers: { 'content-type': 'application/json' } })
+      const lineageDiagnostic = await evaluate(client, `fetch(${apiUrlLiteral} + '/lineage', { headers: { 'content-type': 'application/json' } })
         .then((response) => response.json())
         .catch((error) => ({ error: String(error) }))`);
       checks.push({
@@ -219,7 +220,7 @@ async function main() {
       const apiPayloadFindings = [];
       for (const [, hash] of pages.filter(([, hash]) => hash !== "#shock-simulator")) {
         const pageId = hash.slice(1);
-        const payloadText = await evaluate(client, `fetch('${apiUrl}/dashboard/${pageId}', { headers: { 'content-type': 'application/json' } })
+        const payloadText = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/${pageId}', { headers: { 'content-type': 'application/json' } })
           .then((response) => response.text())
           .catch((error) => String(error))`);
         const found = deniedDemoStrings.filter((text) => payloadText.includes(text));
@@ -227,7 +228,7 @@ async function main() {
           apiPayloadFindings.push({ endpoint: `/dashboard/${pageId}`, found });
         }
       }
-      const shockPayloadText = await evaluate(client, `fetch('${apiUrl}/dashboard/shock-simulator', {
+      const shockPayloadText = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/shock-simulator', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ region: 'Taiwan Strait', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
@@ -346,7 +347,7 @@ async function main() {
     });
 
     await navigate(client, `${webUrl}#prediction-center`);
-    const predictionCenterApi = await evaluate(client, `fetch('${apiUrl}/dashboard/prediction-center', { headers: { 'content-type': 'application/json' } })
+    const predictionCenterApi = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/prediction-center', { headers: { 'content-type': 'application/json' } })
       .then((response) => response.json())
       .catch((error) => ({ error: String(error) }))`);
     const predictionCenterState = await waitFor(
@@ -371,7 +372,7 @@ async function main() {
     });
 
     await navigate(client, `${webUrl}#path-analysis`);
-    const pathAnalysisApi = await evaluate(client, `fetch('${apiUrl}/dashboard/path-analysis', { headers: { 'content-type': 'application/json' } })
+    const pathAnalysisApi = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/path-analysis', { headers: { 'content-type': 'application/json' } })
       .then((response) => response.json())
       .catch((error) => ({ error: String(error) }))`);
     const pathAnalysisState = await waitFor(
@@ -396,7 +397,7 @@ async function main() {
     });
 
     await navigate(client, `${webUrl}#country-lens`);
-    const countryLensApi = await evaluate(client, `fetch('${apiUrl}/dashboard/country-lens', { headers: { 'content-type': 'application/json' } })
+    const countryLensApi = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/country-lens', { headers: { 'content-type': 'application/json' } })
       .then((response) => response.json())
       .catch((error) => ({ error: String(error) }))`);
     const countryLensState = await waitFor(

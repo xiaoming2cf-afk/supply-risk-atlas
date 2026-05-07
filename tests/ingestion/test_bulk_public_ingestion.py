@@ -2,7 +2,21 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
+from sra_core.ingestion import bulk_public
 from sra_core.ingestion.bulk_public import BulkLimits, build_bulk_catalog, write_promoted_catalog
+
+
+class ChunkedResponse:
+    def __init__(self, chunks: list[bytes], headers: dict[str, str] | None = None) -> None:
+        self.chunks = list(chunks)
+        self.headers = headers or {}
+        self.read_sizes: list[int] = []
+
+    def read(self, size: int = -1) -> bytes:
+        self.read_sizes.append(size)
+        return self.chunks.pop(0) if self.chunks else b""
 
 
 def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
@@ -69,3 +83,24 @@ def test_bulk_public_writer_creates_promoted_manifest(tmp_path) -> None:
     assert written_manifest["schema_version"] == "promoted-public-real-v1"
     assert written_manifest["record_counts"]["entities"] == len(catalog["entities"])
     assert written_manifest["record_counts"]["edges"] == len(catalog["edges"])
+
+
+def test_bulk_public_download_rejects_declared_oversize_payload() -> None:
+    response = ChunkedResponse(
+        [b"{}"],
+        headers={"Content-Length": str(bulk_public.DEFAULT_MAX_DOWNLOAD_BYTES + 1)},
+    )
+
+    with pytest.raises(bulk_public.PayloadTooLargeError):
+        bulk_public._read_limited_response(response, "gdelt")
+
+
+def test_bulk_public_download_streams_with_byte_cap(monkeypatch) -> None:
+    monkeypatch.setitem(bulk_public.MAX_DOWNLOAD_BYTES_BY_SOURCE, "gdelt", 5)
+    response = ChunkedResponse([b"abc", b"def"])
+
+    with pytest.raises(bulk_public.PayloadTooLargeError):
+        bulk_public._read_limited_response(response, "gdelt")
+
+    assert response.read_sizes
+    assert all(size == bulk_public.DOWNLOAD_CHUNK_BYTES for size in response.read_sizes)
