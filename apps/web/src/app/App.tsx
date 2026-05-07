@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Building2,
@@ -44,11 +44,10 @@ const deploymentTarget = "supply-risk-atlas-web.onrender.com";
 
 type DashboardResultMap = Partial<Record<DashboardPageId, ApiResult<unknown>>>;
 
-function resolveApiBaseUrl() {
+function resolveApiBaseUrl(hostname: string | null) {
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
   if (
-    typeof window !== "undefined" &&
-    window.location.hostname === "supply-risk-atlas-web.onrender.com" &&
+    hostname === "supply-risk-atlas-web.onrender.com" &&
     (!configured || configured === "/api/v1")
   ) {
     return "https://supply-risk-atlas-api.onrender.com/api/v1";
@@ -56,10 +55,7 @@ function resolveApiBaseUrl() {
   if (configured) {
     return configured;
   }
-  if (
-    typeof window !== "undefined" &&
-    (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
-  ) {
+  if (hostname === "127.0.0.1" || hostname === "localhost") {
     return "http://127.0.0.1:8000/api/v1";
   }
   return configured;
@@ -108,13 +104,15 @@ export function App() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState("booting");
   const [error, setError] = useState<string | null>(null);
+  const [runtimeHostname, setRuntimeHostname] = useState<string | null>(null);
   const activePageDefinition = dashboardPages.find((page) => page.id === pageId) ?? dashboardPages[0];
   const localizedPages = useMemo(
     () => dashboardPages.map((page) => translateDashboardPage(page, language)),
     [language]
   );
   const activePage = translateDashboardPage(activePageDefinition, language);
-  const configuredApiBaseUrl = resolveApiBaseUrl();
+  const configuredApiBaseUrl = resolveApiBaseUrl(runtimeHostname);
+  const hasResolvedRuntimeHostname = runtimeHostname !== null;
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
@@ -136,7 +134,7 @@ export function App() {
     }
   };
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     setIsRefreshing(true);
     setError(null);
     try {
@@ -196,11 +194,18 @@ export function App() {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [apiClient]);
 
   useEffect(() => {
-    void refreshData();
+    if (typeof window !== "undefined") {
+      setRuntimeHostname(window.location.hostname);
+    }
   }, []);
+
+  useEffect(() => {
+    if (!hasResolvedRuntimeHostname && !configuredApiBaseUrl) return;
+    void refreshData();
+  }, [configuredApiBaseUrl, hasResolvedRuntimeHostname, refreshData]);
 
   useEffect(() => {
     document.documentElement.lang = language === "zh" ? "zh-CN" : language;
@@ -310,13 +315,18 @@ function RealDataRequiredPanel({ status, isRefreshing }: { status: DataStatus; i
 
   return (
     <section className="empty-state" data-real-data-gate="blocked">
-      <h2>{t(isRefreshing ? "Loading real API data" : "Real API data required")}</h2>
-      <p>{t(status.message)}</p>
-      <div className="lineage-chips" aria-label={t("Data lineage")}>
-        <span>{t("Mode")}: {status.mode}</span>
-        <span>{t("Freshness")}: {status.freshness}</span>
-        <span>{t("Source")}: {status.sourceName}</span>
-        <span>{t("Request")}: {status.requestId}</span>
+      <div className="empty-state-shell">
+        <span className="empty-state-mark" aria-hidden="true">
+          <Database size={22} />
+        </span>
+        <h2>{t(isRefreshing ? "Loading real API data" : "Real API data required")}</h2>
+        <p>{t(status.message)}</p>
+        <div className="lineage-chips" aria-label={t("Data lineage")}>
+          <span>{t("Mode")}: {status.mode}</span>
+          <span>{t("Freshness")}: {status.freshness}</span>
+          <span>{t("Source")}: {status.sourceName}</span>
+          <span>{t("Request")}: {status.requestId}</span>
+        </div>
       </div>
     </section>
   );
@@ -327,9 +337,17 @@ function DataLineageBanner({ status }: { status: DataStatus }) {
   const t = (value: string) => translateText(value, language);
 
   return (
-    <section className={`data-lineage-banner ${status.tone}`} data-data-mode={status.mode} data-source-status={status.sourceStatus}>
-      <div>
-        <strong>{t(status.title)}</strong>
+    <section
+      aria-live="polite"
+      className={`data-lineage-banner ${status.tone}`}
+      data-data-mode={status.mode}
+      data-source-status={status.sourceStatus}
+    >
+      <div className="lineage-copy">
+        <div className="lineage-title-row">
+          <span className="lineage-pulse" aria-hidden="true" />
+          <strong>{t(status.title)}</strong>
+        </div>
         <p>{t(status.message)}</p>
       </div>
       <div className="lineage-chips" aria-label={t("Data lineage")}>
