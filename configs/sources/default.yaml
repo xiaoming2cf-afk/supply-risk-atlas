@@ -257,3 +257,41 @@ sources:
       - location
     allowed_events:
       - port_update
+
+  - source_id: usgs_earthquakes
+    source_name: USGS Earthquake Hazards Program
+    publisher: U.S. Geological Survey
+    homepage_url: https://earthquake.usgs.gov/earthquakes/feed/
+    description: Real-time GeoJSON earthquake feeds for recent seismic events and hazard context.
+    public_no_key: true
+    license:
+      name: U.S. government public domain
+      url: https://www.usgs.gov/faqs/what-are-terms-uselicensing-map-services-and-data-national-map
+      allowed_use:
+        - research
+        - commercial_risk_analysis
+        - internal_operations
+        - redistribution
+        - derived_products
+      requires_attribution: true
+      redistribution_allowed: true
+      commercial_use_allowed: true
+      restrictions:
+        - Retain USGS source attribution and do not imply federal endorsement.
+    endpoints:
+      - name: m4_5-month-geojson
+        url: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson
+        format: json
+        auth: none
+    update_cadence: real_time
+    freshness_sla_hours: 2
+    allowed_entities:
+      - risk_event
+      - country
+      - location
+      - port
+      - airport
+    allowed_events:
+      - earthquake
+      - disaster
+      - hazard_update

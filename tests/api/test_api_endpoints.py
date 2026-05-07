@@ -37,6 +37,7 @@ def test_health_aliases_return_envelope_with_request_id() -> None:
         ("get", "/api/v1/entities/firm_apple", None),
         ("get", "/api/v1/sources", None),
         ("get", "/api/v1/sources/sec_edgar", None),
+        ("get", "/api/v1/sources/usgs_earthquakes", None),
         ("get", "/api/v1/lineage", None),
         ("get", "/api/v1/lineage/gdelt", None),
         ("get", "/api/v1/graph", None),
@@ -150,10 +151,15 @@ def test_sources_route_exposes_manifest_and_freshness() -> None:
     assert payload["status"] == "success"
     assert payload["mode"] == "real"
     assert payload["data"]["manifestRef"].startswith("manifest_public_real_")
-    assert payload["data"]["sourceCount"] >= 7
+    assert payload["data"]["sourceCount"] >= 8
     assert payload["data"]["dataNodeCount"] >= 30
     assert payload["data"]["promotedGraph"]["status"] in {"promoted", "partial"}
-    assert {source["id"] for source in payload["data"]["sources"]} >= {"sec_edgar", "gleif", "gdelt"}
+    assert {source["id"] for source in payload["data"]["sources"]} >= {
+        "sec_edgar",
+        "gleif",
+        "gdelt",
+        "usgs_earthquakes",
+    }
     assert all(source["status"] == "fresh" for source in payload["data"]["sources"])
 
 
@@ -211,7 +217,7 @@ def test_lineage_route_links_raw_silver_and_gold_records() -> None:
     assert payload["status"] == "success"
     assert payload["mode"] == "real"
     assert payload["data"]["manifestRef"].startswith("manifest_public_real_")
-    assert payload["data"]["rawRecordCount"] >= 7
+    assert payload["data"]["rawRecordCount"] >= 8
     assert payload["data"]["goldEdgeEventCount"] >= 1
     assert all(len(record["rawChecksum"]) == 64 for record in payload["data"]["records"])
 

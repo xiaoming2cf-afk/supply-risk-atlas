@@ -9,6 +9,7 @@ from sra_core.ingestion.connectors import (
     OurAirportsConnector,
     PublicSourceConnector,
     SecEdgarConnector,
+    UsgsEarthquakesConnector,
     WorldBankConnector,
     connector_for_source,
 )
@@ -23,6 +24,7 @@ __all__ = [
     "OurAirportsConnector",
     "PublicSourceConnector",
     "SecEdgarConnector",
+    "UsgsEarthquakesConnector",
     "WorldBankConnector",
     "connector_for_source",
     "load_source_registry",

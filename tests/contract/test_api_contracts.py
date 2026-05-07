@@ -76,7 +76,7 @@ def test_health_route_exposes_public_real_source_manifest() -> None:
 
     assert payload["status"] == "success"
     assert payload["metadata"]["data_mode"] == "real"
-    assert payload["metadata"]["source_count"] >= 7
+    assert payload["metadata"]["source_count"] >= 8
     assert payload["data"]["source_manifest_ref"].startswith("manifest_public_real_")
     assert {source["source_id"] for source in payload["data"]["sources"]} >= {
         "sec_edgar",
@@ -86,4 +86,5 @@ def test_health_route_exposes_public_real_source_manifest() -> None:
         "ofac",
         "ourairports",
         "nga_world_port_index",
+        "usgs_earthquakes",
     }

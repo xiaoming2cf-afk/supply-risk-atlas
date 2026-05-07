@@ -53,6 +53,7 @@ def test_default_source_registry_validates_license_policy() -> None:
         "ofac",
         "ourairports",
         "nga_world_port_index",
+        "usgs_earthquakes",
     }
 
     for source in registry.sources:

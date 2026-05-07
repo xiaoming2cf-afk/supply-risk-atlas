@@ -18,6 +18,7 @@ def test_public_real_pipeline_end_to_end_is_default_ready() -> None:
         "ofac",
         "ourairports",
         "nga_world_port_index",
+        "usgs_earthquakes",
     }
     assert result.real.entities
     assert result.real.raw_records
@@ -56,6 +57,9 @@ def test_public_real_node_catalog_expands_graph_volume() -> None:
         "industry_semiconductors",
         "product_ev_batteries",
         "risk_event_taiwan_strait_tension",
+        "data_source_usgs_earthquakes",
+        "dataset_usgs_m45_earthquakes_month",
+        "risk_event_usgs_taiwan_m62",
     } <= entity_ids
     assert {
         "located_in",
@@ -70,6 +74,8 @@ def test_public_real_node_catalog_expands_graph_volume() -> None:
         "categorized_as",
         "classified_as",
         "indicator_context_for",
+        "event_affects",
+        "risk_transmits_to",
     } <= edge_types
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from hashlib import sha256
 import json
 import os
@@ -117,7 +118,7 @@ def _load_public_real_node_catalog(path: str | Path | None = None) -> dict[str, 
                 payload = _read_catalog_file(_public_real_node_catalog_path())
     if not isinstance(payload, dict):
         raise ValueError("public real node catalog must be a mapping")
-    return payload
+    return _merge_missing_builtin_sources(payload)
 
 
 def _read_catalog_file(catalog_path: Path) -> dict[str, Any]:
@@ -125,6 +126,59 @@ def _read_catalog_file(catalog_path: Path) -> dict[str, Any]:
         if catalog_path.suffix.lower() == ".json":
             return json.load(handle)
         return yaml.safe_load(handle)
+
+
+def _merge_missing_builtin_sources(catalog: dict[str, Any]) -> dict[str, Any]:
+    configured_sources = {entry.source_id for entry in load_source_registry().sources}
+    catalog_sources = {
+        entity.get("source_id")
+        for entity in catalog.get("entities", [])
+        if isinstance(entity, dict)
+    } | {
+        edge.get("source")
+        for edge in catalog.get("edges", [])
+        if isinstance(edge, dict)
+    }
+    missing_sources = configured_sources - {source for source in catalog_sources if source}
+    if not missing_sources:
+        return catalog
+
+    builtin = _read_catalog_file(_public_real_node_catalog_path())
+    merged_entities = list(catalog.get("entities", []))
+    merged_edges = list(catalog.get("edges", []))
+    entity_ids = {
+        entity["canonical_id"]
+        for entity in merged_entities
+        if isinstance(entity, dict) and "canonical_id" in entity
+    }
+    for entity in builtin.get("entities", []):
+        if not isinstance(entity, dict) or entity.get("source_id") not in missing_sources:
+            continue
+        if entity["canonical_id"] in entity_ids:
+            continue
+        merged_entities.append(entity)
+        entity_ids.add(entity["canonical_id"])
+    edge_keys = {
+        (edge.get("source"), edge.get("source_id"), edge.get("target_id"), edge.get("edge_type"))
+        for edge in merged_edges
+        if isinstance(edge, dict)
+    }
+    for edge in builtin.get("edges", []):
+        if not isinstance(edge, dict) or edge.get("source") not in missing_sources:
+            continue
+        if edge.get("source_id") not in entity_ids or edge.get("target_id") not in entity_ids:
+            continue
+        key = (edge.get("source"), edge.get("source_id"), edge.get("target_id"), edge.get("edge_type"))
+        if key in edge_keys:
+            continue
+        merged_edges.append(edge)
+        edge_keys.add(key)
+    return {
+        **catalog,
+        "catalog_version": f"{catalog.get('catalog_version', 'public-real')}-merged-{checksum_payload({'sources': sorted(missing_sources)})[:8]}",
+        "entities": merged_entities,
+        "edges": merged_edges,
+    }
 
 
 def _catalog_source() -> tuple[str, dict[str, Any] | None]:
@@ -307,6 +361,16 @@ def _ingest_public_real_raw_records(as_of_time: datetime) -> dict[str, Any]:
                 "source_url": "https://msi.nga.mil/Publications/WPI",
             },
         },
+        "usgs_earthquakes": {
+            "source_record_id": "usgs:earthquakes:m4-5-month",
+            "event_time": _utc(5, 1, 6),
+            "payload_format": "json",
+            "raw_payload": {
+                "feed": "M4.5+ earthquakes past month",
+                "hazard_context": "recent seismic events that can transmit risk into ports, airports, and regional supply corridors",
+                "source_url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson",
+            },
+        },
     }
     for source_id, records in catalog_records_by_source.items():
         if source_id not in source_payloads:
@@ -341,6 +405,7 @@ def public_real_sources(as_of_time: datetime = PUBLIC_REAL_AS_OF_TIME) -> list[S
         "ofac": 0.98,
         "ourairports": 0.88,
         "nga_world_port_index": 0.9,
+        "usgs_earthquakes": 0.93,
     }
     return [
         SourceRegistry(
@@ -785,9 +850,33 @@ def _build_silver_events(
     ]
 
 
+def _catalog_cache_key() -> str:
+    env_catalog_path = os.environ.get("SUPPLY_RISK_REAL_CATALOG_PATH")
+    if env_catalog_path:
+        path = Path(env_catalog_path)
+        try:
+            stat = path.stat()
+            return f"env:{path.resolve()}:{stat.st_mtime_ns}:{stat.st_size}"
+        except OSError:
+            return f"env:{env_catalog_path}:missing"
+    promoted_manifest = load_promoted_manifest()
+    if promoted_manifest:
+        return f"promoted:{promoted_manifest.get('checksum') or promoted_manifest.get('catalog_version')}"
+    return "builtin"
+
+
 def run_public_real_pipeline(
     as_of_time: datetime = PUBLIC_REAL_AS_OF_TIME,
     window_start: datetime = PUBLIC_REAL_WINDOW_START,
+) -> RealPipelineResult:
+    return _run_public_real_pipeline_cached(as_of_time, window_start, _catalog_cache_key())
+
+
+@lru_cache(maxsize=8)
+def _run_public_real_pipeline_cached(
+    as_of_time: datetime,
+    window_start: datetime,
+    catalog_cache_key: str,
 ) -> RealPipelineResult:
     real = build_public_real_dataset(as_of_time=as_of_time)
     snapshot, edge_states = build_graph_snapshot(

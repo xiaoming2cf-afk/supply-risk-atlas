@@ -40,7 +40,7 @@ def test_sources_route_is_versioned_and_fresh() -> None:
     payload = main.route_sources()
     assert_envelope(payload)
     assert payload["data"]["manifestRef"].startswith("manifest_public_real_")
-    assert payload["data"]["sourceCount"] >= 7
+    assert payload["data"]["sourceCount"] >= 8
     assert payload["data"]["dataNodeCount"] >= 30
     assert payload["data"]["promotedGraph"]["status"] in {"promoted", "partial"}
     assert payload["data"]["sources"][0]["status"] == "fresh"
@@ -59,6 +59,20 @@ def test_lineage_route_is_versioned_and_filterable() -> None:
     assert_envelope(target_payload)
     assert target_payload["data"]["records"]
     assert all("Apple Inc." in record["targetEntities"] for record in target_payload["data"]["records"])
+
+
+def test_graph_explorer_returns_renderable_subgraph_with_stats() -> None:
+    payload = main.route_dashboard_page(page_id="graph-explorer")
+    assert_envelope(payload)
+
+    graph = payload["data"]
+    assert graph["nodes"]
+    assert graph["links"]
+    assert len(graph["nodes"]) <= graph["graphStats"]["renderedNodeLimit"]
+    assert len(graph["links"]) <= graph["graphStats"]["renderedLinkLimit"]
+    assert graph["graphStats"]["totalNodes"] >= len(graph["nodes"])
+    assert graph["graphStats"]["totalLinks"] >= len(graph["links"])
+    assert any(row["source"] == "USGS Earthquake Hazards Program" for row in graph["graphStats"]["bySource"])
 
 
 def test_entity_route_supports_query_filter() -> None:

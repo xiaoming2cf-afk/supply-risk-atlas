@@ -1951,3 +1951,182 @@ textarea:focus-visible {
     width: 100%;
   }
 }
+
+.graph-canvas {
+  min-height: 640px;
+  height: clamp(600px, 68vh, 760px);
+  isolation: isolate;
+}
+
+.risk-flow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(82, 215, 208, 0.12), transparent 18rem),
+    radial-gradient(circle at 76% 70%, rgba(242, 184, 75, 0.08), transparent 20rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.025), transparent 38%);
+}
+
+.risk-flow .react-flow__pane {
+  cursor: grab;
+}
+
+.risk-flow .react-flow__pane:active {
+  cursor: grabbing;
+}
+
+.risk-flow .react-flow__edge-path {
+  filter: drop-shadow(0 0 7px rgba(82, 215, 208, 0.2));
+}
+
+.risk-flow .react-flow__edge-textbg {
+  fill: rgba(12, 16, 14, 0.88);
+  stroke: rgba(255, 255, 255, 0.12);
+}
+
+.risk-flow .react-flow__edge-text {
+  fill: var(--text);
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.risk-flow-node {
+  width: 214px;
+  min-height: 86px;
+  display: grid;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  color: var(--accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02)),
+    rgba(17, 22, 20, 0.94);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(12px);
+}
+
+.risk-flow-node.tone-low {
+  color: var(--teal);
+}
+
+.risk-flow-node.tone-guarded {
+  color: var(--muted);
+}
+
+.risk-flow-node.tone-elevated {
+  color: var(--amber);
+}
+
+.risk-flow-node.tone-severe,
+.risk-flow-node.tone-critical {
+  color: var(--red);
+}
+
+.risk-flow-node.is-selected {
+  background:
+    linear-gradient(180deg, rgba(196, 255, 77, 0.16), rgba(255, 255, 255, 0.035)),
+    rgba(18, 25, 21, 0.98);
+  box-shadow:
+    0 0 0 2px rgba(215, 255, 95, 0.48),
+    0 22px 48px rgba(0, 0, 0, 0.44);
+}
+
+.risk-flow-node-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.risk-flow-node-topline span {
+  color: currentColor;
+  font-size: 0.66rem;
+  font-weight: 820;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.risk-flow-node-topline strong {
+  min-width: 32px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: #10160f;
+  background: currentColor;
+  font-size: 0.68rem;
+  font-weight: 840;
+  text-align: center;
+}
+
+.risk-flow-node p {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 820;
+  line-height: 1.22;
+}
+
+.risk-flow-node small {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 680;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.risk-flow-handle {
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(238, 247, 242, 0.62);
+  background: currentColor;
+}
+
+.risk-flow-controls,
+.risk-flow-minimap {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(12, 16, 14, 0.82);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+}
+
+.risk-flow-controls button {
+  border-color: rgba(255, 255, 255, 0.09);
+  color: var(--text);
+  background: rgba(20, 26, 23, 0.94);
+}
+
+.risk-flow-controls button:hover {
+  background: rgba(215, 255, 95, 0.12);
+}
+
+.risk-flow-minimap {
+  width: 150px;
+  height: 112px;
+}
+
+.risk-flow-minimap .react-flow__minimap-mask {
+  fill: rgba(215, 255, 95, 0.1);
+  stroke: rgba(215, 255, 95, 0.55);
+}
+
+@media (max-width: 760px) {
+  .graph-canvas {
+    min-height: 600px;
+    height: 620px;
+  }
+
+  .risk-flow-node {
+    width: 184px;
+    min-height: 78px;
+  }
+
+  .risk-flow-minimap {
+    width: 118px;
+    height: 88px;
+  }
+}

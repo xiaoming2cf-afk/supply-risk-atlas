@@ -17,6 +17,7 @@ def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
             ourairports_airports=20,
             gdelt_articles=10,
             ofac_entries=10,
+            usgs_earthquakes=5,
         ),
     )
 
@@ -34,6 +35,7 @@ def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
         "source_release",
         "observation_series",
         "legal_entity",
+        "risk_event",
     } <= entity_types
     assert {
         "dataset_has_field",
@@ -41,7 +43,10 @@ def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
         "released_as",
         "observed_for",
         "dataset_observes",
+        "event_affects",
+        "risk_transmits_to",
     } <= edge_types
+    assert any(entity["source_id"] == "usgs_earthquakes" for entity in catalog["entities"])
 
 
 def test_bulk_public_writer_creates_promoted_manifest(tmp_path) -> None:

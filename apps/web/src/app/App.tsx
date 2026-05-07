@@ -70,10 +70,11 @@ function getHashPage(): DashboardPageId {
 }
 
 function useHashPage() {
-  const [pageId, setPageIdState] = useState<DashboardPageId>(getHashPage);
+  const [pageId, setPageIdState] = useState<DashboardPageId>("global-risk-cockpit");
 
   useEffect(() => {
     const onHashChange = () => setPageIdState(getHashPage());
+    onHashChange();
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
@@ -98,7 +99,7 @@ function getInitialLanguage(): PageLanguage {
 
 export function App() {
   const [pageId, setPageId] = useHashPage();
-  const [language, setLanguageState] = useState<PageLanguage>(getInitialLanguage);
+  const [language, setLanguageState] = useState<PageLanguage>("en");
   const [data, setData] = useState<SupplyRiskDashboardData | null>(null);
   const [dashboardResults, setDashboardResults] = useState<DashboardResultMap>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -199,6 +200,7 @@ export function App() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setRuntimeHostname(window.location.hostname);
+      setLanguageState(getInitialLanguage());
     }
   }, []);
 

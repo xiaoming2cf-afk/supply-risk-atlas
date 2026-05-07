@@ -33,6 +33,7 @@ class BulkLimits:
     ourairports_airports: int = 300
     gdelt_articles: int = 60
     ofac_entries: int = 100
+    usgs_earthquakes: int = 80
 
 
 @dataclass(frozen=True)
@@ -105,6 +106,7 @@ def build_bulk_catalog(
     builder.add_gdelt_nodes(_load_gdelt_articles(source_files, limits.gdelt_articles))
     builder.add_ofac_nodes(_load_ofac_entries(source_files, limits.ofac_entries))
     builder.add_wpi_seed_ports()
+    builder.add_usgs_earthquake_nodes(_load_usgs_earthquakes(source_files, limits.usgs_earthquakes))
 
     catalog = builder.catalog()
     manifest = {
@@ -519,6 +521,78 @@ class _BulkCatalogBuilder:
             )
             self.add_edge("dataset_gdelt_supply_chain_articles", artifact_id, "dataset_observes", "gdelt", confidence=0.74, day=8 + index % 16)
 
+    def add_usgs_earthquake_nodes(self, rows: list[dict[str, Any]]) -> None:
+        self.add_entity(
+            "dataset_usgs_m45_earthquakes_month",
+            "dataset",
+            "USGS M4.5+ earthquakes past month GeoJSON",
+            "usgs_earthquakes",
+            industry="Natural hazard event stream",
+            confidence=0.95,
+            external_ids={"endpoint": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson"},
+        )
+        self.add_edge("data_source_usgs_earthquakes", "dataset_usgs_m45_earthquakes_month", "source_provides", "usgs_earthquakes", confidence=0.95)
+        self.add_edge("dataset_usgs_m45_earthquakes_month", "license_policy_usgs_earthquakes", "licensed_under", "usgs_earthquakes", confidence=0.93)
+        self._add_schema_fields("dataset_usgs_m45_earthquakes_month", "usgs_earthquakes", ["id", "mag", "place", "time", "updated", "url", "geometry.coordinates"])
+        for index, row in enumerate(rows, start=1):
+            event_id = str(row.get("id") or row.get("code") or "").strip()
+            place = str(row.get("place") or "").strip()
+            magnitude = _float_or_none(row.get("mag"))
+            if not event_id or not place or magnitude is None:
+                continue
+            iso2 = _country_from_usgs_place(place)
+            canonical_id = f"risk_event_usgs_eq_{_slug(event_id, max_length=34)}"
+            risk_score = min(0.96, max(0.44, 0.12 + (magnitude / 8.0)))
+            self.add_entity(
+                canonical_id,
+                "risk_event",
+                f"M{magnitude:.1f} earthquake near {place}",
+                "usgs_earthquakes",
+                country=iso2,
+                industry="Earthquake hazard",
+                confidence=0.9,
+                external_ids={
+                    "usgs_event_id": event_id,
+                    "magnitude": f"{magnitude:.1f}",
+                    "place": place,
+                    "time": row.get("time") or "",
+                    "url": row.get("url") or "",
+                    "longitude": row.get("longitude") or "",
+                    "latitude": row.get("latitude") or "",
+                    "depth_km": row.get("depth_km") or "",
+                },
+            )
+            self.add_edge(
+                "dataset_usgs_m45_earthquakes_month",
+                canonical_id,
+                "dataset_observes",
+                "usgs_earthquakes",
+                confidence=0.9,
+                day=9 + index % 17,
+                attributes={"risk_score": risk_score, "weight": 0.92, "magnitude": magnitude},
+            )
+            country_id = self._ensure_country(iso2, "usgs_earthquakes") if iso2 else None
+            if country_id:
+                self.add_edge(
+                    canonical_id,
+                    country_id,
+                    "event_affects",
+                    "usgs_earthquakes",
+                    confidence=0.86,
+                    day=9 + index % 17,
+                    attributes={"risk_score": risk_score, "weight": min(1.0, magnitude / 7.0)},
+                )
+                for target_id in self._country_targets(iso2, limit=4):
+                    self.add_edge(
+                        canonical_id,
+                        target_id,
+                        "risk_transmits_to",
+                        "usgs_earthquakes",
+                        confidence=0.76,
+                        day=9 + index % 17,
+                        attributes={"risk_score": min(0.98, risk_score + 0.08), "weight": min(1.0, magnitude / 6.5)},
+                    )
+
     def add_ofac_nodes(self, rows: list[dict[str, Any]]) -> None:
         self.add_entity(
             "dataset_ofac_sdn_bulk",
@@ -617,6 +691,15 @@ class _BulkCatalogBuilder:
                 return entity_id
         return None
 
+    def _country_targets(self, iso2: str, *, limit: int) -> list[str]:
+        priority_types = {"port", "airport", "firm", "legal_entity"}
+        targets = [
+            entity_id
+            for entity_id, entity in sorted(self.entities.items())
+            if entity.get("country") == iso2 and entity.get("entity_type") in priority_types
+        ]
+        return targets[:limit]
+
 
 def _download_or_seed_sources(
     *,
@@ -633,6 +716,7 @@ def _download_or_seed_sources(
         "gdelt": f"https://api.gdeltproject.org/api/v2/doc/doc?query=supply%20chain%20risk&mode=ArtList&format=json&maxrecords={limits.gdelt_articles}",
         "ofac": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.json",
         "nga_world_port_index": "https://msi.nga.mil/Publications/WPI",
+        "usgs_earthquakes": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson",
     }
     files: dict[str, CachedSourceFile] = {}
     for source_id, url in endpoints.items():
@@ -794,6 +878,39 @@ def _load_ofac_entries(source_files: dict[str, CachedSourceFile], limit: int) ->
     return [row for row in rows if isinstance(row, dict)][:limit]
 
 
+def _load_usgs_earthquakes(source_files: dict[str, CachedSourceFile], limit: int) -> list[dict[str, Any]]:
+    payload = _load_json(source_files["usgs_earthquakes"].path, "usgs_earthquakes")
+    features = payload.get("features", []) if isinstance(payload, dict) else []
+    rows: list[dict[str, Any]] = []
+    for feature in features:
+        if not isinstance(feature, dict):
+            continue
+        properties = feature.get("properties", {}) if isinstance(feature.get("properties"), dict) else {}
+        geometry = feature.get("geometry", {}) if isinstance(feature.get("geometry"), dict) else {}
+        coordinates = geometry.get("coordinates") if isinstance(geometry, dict) else None
+        longitude = latitude = depth_km = ""
+        if isinstance(coordinates, list) and len(coordinates) >= 2:
+            longitude = coordinates[0]
+            latitude = coordinates[1]
+            depth_km = coordinates[2] if len(coordinates) > 2 else ""
+        rows.append(
+            {
+                "id": feature.get("id"),
+                "mag": properties.get("mag"),
+                "place": properties.get("place"),
+                "time": properties.get("time"),
+                "updated": properties.get("updated"),
+                "url": properties.get("url"),
+                "alert": properties.get("alert"),
+                "sig": properties.get("sig"),
+                "longitude": longitude,
+                "latitude": latitude,
+                "depth_km": depth_km,
+            }
+        )
+    return rows[:limit]
+
+
 def _fixture_payload(source_id: str) -> bytes:
     if source_id == "sec_edgar":
         return json.dumps(
@@ -824,6 +941,31 @@ def _fixture_payload(source_id: str) -> bytes:
             {"ports": [{"name": name, "country": country} for name, country in _WPI_PRIORITY_PORTS]},
             sort_keys=True,
         ).encode("utf-8")
+    if source_id == "usgs_earthquakes":
+        return json.dumps(
+            {
+                "type": "FeatureCollection",
+                "metadata": {"title": "USGS M4.5+ earthquakes fixture", "count": len(_USGS_FIXTURE_EARTHQUAKES)},
+                "features": [
+                    {
+                        "type": "Feature",
+                        "id": event_id,
+                        "properties": {
+                            "mag": mag,
+                            "place": place,
+                            "time": 1777500000000 + index * 3600000,
+                            "updated": 1777500000000 + index * 3600000,
+                            "url": "https://earthquake.usgs.gov/earthquakes/eventpage/" + event_id,
+                            "alert": alert,
+                            "sig": int(mag * 100),
+                        },
+                        "geometry": {"type": "Point", "coordinates": [lon, lat, depth]},
+                    }
+                    for index, (event_id, mag, place, alert, lon, lat, depth) in enumerate(_USGS_FIXTURE_EARTHQUAKES)
+                ],
+            },
+            sort_keys=True,
+        ).encode("utf-8")
     return b"{}"
 
 
@@ -832,6 +974,40 @@ def _country_code(value: Any) -> str | None:
     if len(text) == 2 and text != "XX":
         return text
     return None
+
+
+def _country_from_usgs_place(place: str) -> str | None:
+    normalized = place.lower()
+    country_markers = {
+        "taiwan": "TW",
+        "japan": "JP",
+        "philippines": "PH",
+        "indonesia": "ID",
+        "china": "CN",
+        "south korea": "KR",
+        "korea": "KR",
+        "california": "US",
+        "alaska": "US",
+        "mexico": "MX",
+        "chile": "CL",
+        "peru": "PE",
+        "new zealand": "NZ",
+        "fiji": "FJ",
+        "papua new guinea": "PG",
+        "singapore": "SG",
+        "netherlands": "NL",
+    }
+    for marker, iso2 in country_markers.items():
+        if marker in normalized:
+            return iso2
+    return None
+
+
+def _float_or_none(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _slug(value: str, *, max_length: int = 64) -> str:
@@ -857,6 +1033,13 @@ _COUNTRY_NAMES = {
     "CA": "Canada",
     "MX": "Mexico",
     "BR": "Brazil",
+    "PH": "Philippines",
+    "ID": "Indonesia",
+    "CL": "Chile",
+    "PE": "Peru",
+    "NZ": "New Zealand",
+    "FJ": "Fiji",
+    "PG": "Papua New Guinea",
 }
 
 
@@ -940,6 +1123,15 @@ _OFAC_FIXTURE_ENTRIES = [
 ]
 
 
+_USGS_FIXTURE_EARTHQUAKES = [
+    ("usgs-fixture-tw-001", 6.2, "28 km E of Hualien City, Taiwan", "orange", 121.9, 24.0, 18.0),
+    ("usgs-fixture-jp-001", 5.7, "near the east coast of Honshu, Japan", "yellow", 142.1, 37.8, 31.0),
+    ("usgs-fixture-ph-001", 5.5, "Mindanao, Philippines", "yellow", 126.5, 7.1, 45.0),
+    ("usgs-fixture-id-001", 5.9, "Molucca Sea, Indonesia", "orange", 126.2, 1.8, 35.0),
+    ("usgs-fixture-us-001", 4.8, "Central California", "green", -121.1, 36.7, 9.0),
+]
+
+
 _WPI_PRIORITY_PORTS = [
     ("Port of Shanghai", "CN"),
     ("Port of Singapore", "SG"),
@@ -971,6 +1163,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--airport-limit", type=int, default=BulkLimits.ourairports_airports)
     parser.add_argument("--gdelt-limit", type=int, default=BulkLimits.gdelt_articles)
     parser.add_argument("--ofac-limit", type=int, default=BulkLimits.ofac_entries)
+    parser.add_argument("--usgs-earthquake-limit", type=int, default=BulkLimits.usgs_earthquakes)
     args = parser.parse_args(argv)
     limits = BulkLimits(
         sec_companies=args.sec_limit,
@@ -980,6 +1173,7 @@ def main(argv: list[str] | None = None) -> int:
         ourairports_airports=args.airport_limit,
         gdelt_articles=args.gdelt_limit,
         ofac_entries=args.ofac_limit,
+        usgs_earthquakes=args.usgs_earthquake_limit,
     )
     manifest = write_promoted_catalog(
         mode=args.mode,

@@ -1169,6 +1169,46 @@ entities:
     source_id: gleif
     confidence: 0.94
     external_ids: {sector: specialty_chemicals}
+  - canonical_id: data_category_natural_hazards
+    entity_type: data_category
+    display_name: Natural hazard event intelligence
+    country: null
+    industry: Data governance
+    source_id: usgs_earthquakes
+    confidence: 0.98
+    external_ids: {category_type: natural_hazard_event}
+  - canonical_id: data_source_usgs_earthquakes
+    entity_type: data_source
+    display_name: USGS Earthquake Hazards Program
+    country: US
+    industry: Natural hazard source
+    source_id: usgs_earthquakes
+    confidence: 0.98
+    external_ids: {source_id: usgs_earthquakes, url: "https://earthquake.usgs.gov/earthquakes/feed/"}
+  - canonical_id: dataset_usgs_m45_earthquakes_month
+    entity_type: dataset
+    display_name: USGS M4.5+ earthquakes past month GeoJSON
+    country: null
+    industry: Natural hazard event stream
+    source_id: usgs_earthquakes
+    confidence: 0.95
+    external_ids: {endpoint: "earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson", format: json}
+  - canonical_id: risk_event_usgs_taiwan_m62
+    entity_type: risk_event
+    display_name: M6.2 earthquake near Taiwan electronics corridor
+    country: TW
+    industry: Earthquake hazard
+    source_id: usgs_earthquakes
+    confidence: 0.88
+    external_ids: {usgs_event_id: usgs-seed-tw-m62, magnitude: "6.2", place: "near Hualien City, Taiwan"}
+  - canonical_id: risk_event_usgs_japan_m57
+    entity_type: risk_event
+    display_name: M5.7 earthquake near Japan semiconductor logistics corridor
+    country: JP
+    industry: Earthquake hazard
+    source_id: usgs_earthquakes
+    confidence: 0.86
+    external_ids: {usgs_event_id: usgs-seed-jp-m57, magnitude: "5.7", place: "near Honshu, Japan"}
 edges:
   - {source_id: data_source_sec_edgar, target_id: data_category_company_filings, edge_type: categorized_as, source: sec_edgar, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
   - {source_id: data_source_gleif, target_id: data_category_entity_master, edge_type: categorized_as, source: gleif, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
@@ -1177,6 +1217,7 @@ edges:
   - {source_id: data_source_ofac, target_id: data_category_sanctions_policy, edge_type: categorized_as, source: ofac, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
   - {source_id: data_source_ourairports, target_id: data_category_transport_infrastructure, edge_type: categorized_as, source: ourairports, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
   - {source_id: data_source_nga_wpi, target_id: data_category_transport_infrastructure, edge_type: categorized_as, source: nga_world_port_index, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
+  - {source_id: data_source_usgs_earthquakes, target_id: data_category_natural_hazards, edge_type: categorized_as, source: usgs_earthquakes, day: 1, confidence: 1.0, attributes: {weight: 1.0}}
   - {source_id: data_source_sec_edgar, target_id: dataset_sec_company_submissions, edge_type: source_provides, source: sec_edgar, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
   - {source_id: data_source_sec_edgar, target_id: dataset_sec_company_facts, edge_type: source_provides, source: sec_edgar, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
   - {source_id: data_source_gleif, target_id: dataset_gleif_golden_copy, edge_type: source_provides, source: gleif, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
@@ -1187,6 +1228,14 @@ edges:
   - {source_id: data_source_ofac, target_id: dataset_ofac_sanctions, edge_type: source_provides, source: ofac, day: 1, confidence: 0.98, attributes: {weight: 1.0, freshness_sla_hours: 24}}
   - {source_id: data_source_ourairports, target_id: dataset_ourairports_airports, edge_type: source_provides, source: ourairports, day: 1, confidence: 0.94, attributes: {weight: 1.0, freshness_sla_hours: 168}}
   - {source_id: data_source_nga_wpi, target_id: dataset_nga_world_port_index, edge_type: source_provides, source: nga_world_port_index, day: 1, confidence: 0.94, attributes: {weight: 1.0, freshness_sla_hours: 720}}
+  - {source_id: data_source_usgs_earthquakes, target_id: dataset_usgs_m45_earthquakes_month, edge_type: source_provides, source: usgs_earthquakes, day: 1, confidence: 0.95, attributes: {weight: 1.0, freshness_sla_hours: 2}}
+  - {source_id: dataset_usgs_m45_earthquakes_month, target_id: risk_event_usgs_taiwan_m62, edge_type: dataset_observes, source: usgs_earthquakes, day: 6, confidence: 0.9, attributes: {weight: 0.92, risk_score: 0.82, magnitude: 6.2}}
+  - {source_id: dataset_usgs_m45_earthquakes_month, target_id: risk_event_usgs_japan_m57, edge_type: dataset_observes, source: usgs_earthquakes, day: 6, confidence: 0.88, attributes: {weight: 0.88, risk_score: 0.74, magnitude: 5.7}}
+  - {source_id: risk_event_usgs_taiwan_m62, target_id: country_tw, edge_type: event_affects, source: usgs_earthquakes, day: 6, confidence: 0.86, attributes: {weight: 0.88, risk_score: 0.84}}
+  - {source_id: risk_event_usgs_taiwan_m62, target_id: port_kaohsiung, edge_type: risk_transmits_to, source: usgs_earthquakes, day: 6, confidence: 0.82, attributes: {weight: 0.86, risk_score: 0.88}}
+  - {source_id: risk_event_usgs_taiwan_m62, target_id: airport_taoyuan, edge_type: risk_transmits_to, source: usgs_earthquakes, day: 6, confidence: 0.82, attributes: {weight: 0.84, risk_score: 0.86}}
+  - {source_id: risk_event_usgs_japan_m57, target_id: country_jp, edge_type: event_affects, source: usgs_earthquakes, day: 6, confidence: 0.84, attributes: {weight: 0.8, risk_score: 0.72}}
+  - {source_id: risk_event_usgs_japan_m57, target_id: airport_narita, edge_type: risk_transmits_to, source: usgs_earthquakes, day: 6, confidence: 0.8, attributes: {weight: 0.78, risk_score: 0.76}}
   - {source_id: dataset_sec_company_submissions, target_id: firm_apple, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}
   - {source_id: dataset_sec_company_submissions, target_id: firm_tesla, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}
   - {source_id: dataset_sec_company_submissions, target_id: firm_nvidia, edge_type: dataset_observes, source: sec_edgar, day: 1, confidence: 0.98, attributes: {coverage: 1.0, evidence_weight: 0.9}}

@@ -275,12 +275,30 @@ export interface GraphLink {
   level: RiskLevel;
 }
 
+export interface GraphStatCount {
+  kind?: GraphNodeKind;
+  source?: string;
+  count: number;
+}
+
+export interface GraphExplorerStats {
+  totalNodes: number;
+  totalLinks: number;
+  renderedNodeLimit: number;
+  renderedLinkLimit: number;
+  highRiskNodes: number;
+  highRiskLinks: number;
+  byKind: GraphStatCount[];
+  bySource: GraphStatCount[];
+}
+
 export interface GraphExplorerData {
   nodes: GraphNode[];
   links: GraphLink[];
   filters: GraphNodeKind[];
   selectedNodeId: string;
   dataSummary?: DataCatalogSummary;
+  graphStats?: GraphExplorerStats;
 }
 
 export interface SupplierExposure {

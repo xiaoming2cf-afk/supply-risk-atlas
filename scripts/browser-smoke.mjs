@@ -194,7 +194,8 @@ async function main() {
           sourceRegistryDiagnostic.status === "success" &&
           sourceRegistryDiagnostic.mode === "real" &&
           sourceRegistryDiagnostic.data?.manifestRef?.startsWith("manifest_public_real_") &&
-          sourceRegistryDiagnostic.data?.sourceCount >= 7 &&
+          sourceRegistryDiagnostic.data?.sourceCount >= 8 &&
+          sourceRegistryDiagnostic.data?.sources?.some((source) => source.id === "usgs_earthquakes") &&
           sourceRegistryDiagnostic.data?.silverEntityCount >= 140,
       });
 
@@ -209,7 +210,7 @@ async function main() {
           lineageDiagnostic.status === "success" &&
           lineageDiagnostic.mode === "real" &&
           lineageDiagnostic.data?.manifestRef?.startsWith("manifest_public_real_") &&
-          lineageDiagnostic.data?.rawRecordCount >= 7 &&
+          lineageDiagnostic.data?.rawRecordCount >= 8 &&
           lineageDiagnostic.data?.records?.some((record) => record.sourceId === "gdelt" && record.goldEdgeEventIds.length > 0),
       });
 
@@ -280,18 +281,27 @@ async function main() {
     const entitySearchState = await waitFor(
       client,
       () => evaluate(client, `(() => ({
-        graphNodeCount: document.querySelectorAll('.graph-node').length,
+        graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
+        flowNodeCount: document.querySelectorAll('.react-flow__node').length,
+        flowEdgeCount: document.querySelectorAll('.react-flow__edge').length,
         text: document.body.innerText,
         searchValue: document.querySelector('input[type="search"]')?.value ?? ''
       }))()`),
-      (state) => state.searchValue === "0000320193" && state.graphNodeCount === 1 && state.text.includes("Apple Inc."),
+      (state) =>
+        state.searchValue === "0000320193" &&
+        state.graphNodeCount === 1 &&
+        state.flowNodeCount >= 1 &&
+        state.text.includes("Apple Inc."),
     );
     checks.push({
       page: "Graph Explorer entity search",
       graphNodeCount: entitySearchState.graphNodeCount,
+      flowNodeCount: entitySearchState.flowNodeCount,
+      flowEdgeCount: entitySearchState.flowEdgeCount,
       passed:
         entitySearchState.searchValue === "0000320193" &&
         entitySearchState.graphNodeCount === 1 &&
+        entitySearchState.flowNodeCount >= 1 &&
         entitySearchState.text.includes("Apple Inc."),
     });
 
@@ -305,21 +315,27 @@ async function main() {
     const dataNodeSearchState = await waitFor(
       client,
       () => evaluate(client, `(() => ({
-        graphNodeCount: document.querySelectorAll('.graph-node').length,
+        graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
+        flowNodeCount: document.querySelectorAll('.react-flow__node').length,
+        flowEdgeCount: document.querySelectorAll('.react-flow__edge').length,
         text: document.body.innerText,
         searchValue: document.querySelector('input[type="search"]')?.value ?? ''
       }))()`),
       (state) =>
         state.searchValue === "TX.VAL.TECH.MF.ZS" &&
         state.graphNodeCount === 1 &&
+        state.flowNodeCount >= 1 &&
         state.text.includes("High-technology exports percent of manufactured exports"),
     );
     checks.push({
       page: "Graph Explorer data node search",
       graphNodeCount: dataNodeSearchState.graphNodeCount,
+      flowNodeCount: dataNodeSearchState.flowNodeCount,
+      flowEdgeCount: dataNodeSearchState.flowEdgeCount,
       passed:
         dataNodeSearchState.searchValue === "TX.VAL.TECH.MF.ZS" &&
         dataNodeSearchState.graphNodeCount === 1 &&
+        dataNodeSearchState.flowNodeCount >= 1 &&
         dataNodeSearchState.text.includes("High-technology exports percent of manufactured exports"),
     });
 

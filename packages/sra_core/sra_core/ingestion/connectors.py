@@ -98,6 +98,11 @@ class NgaWorldPortIndexConnector(PublicSourceConnector):
         super().__init__("nga_world_port_index")
 
 
+class UsgsEarthquakesConnector(PublicSourceConnector):
+    def __init__(self) -> None:
+        super().__init__("usgs_earthquakes")
+
+
 def connector_for_source(source_id: str) -> PublicSourceConnector:
     connectors: dict[str, type[PublicSourceConnector]] = {
         "sec_edgar": SecEdgarConnector,
@@ -107,6 +112,7 @@ def connector_for_source(source_id: str) -> PublicSourceConnector:
         "ofac": OfacConnector,
         "ourairports": OurAirportsConnector,
         "nga_world_port_index": NgaWorldPortIndexConnector,
+        "usgs_earthquakes": UsgsEarthquakesConnector,
     }
     try:
         return connectors[source_id]()

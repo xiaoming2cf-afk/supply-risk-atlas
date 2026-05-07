@@ -1,5 +1,17 @@
 ﻿import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
+  Background,
+  Controls,
+  Handle,
+  MarkerType,
+  MiniMap,
+  Position,
+  ReactFlow,
+  type Edge as FlowEdge,
+  type Node as FlowNode,
+  type NodeProps
+} from "@xyflow/react";
+import {
   Activity,
   AlertTriangle,
   CheckCircle2,
@@ -188,7 +200,12 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
   );
   const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((node) => node.id)), [visibleNodes]);
   const visibleLinks = graph.links.filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target));
-  const selectedNode = graph.nodes.find((node) => node.id === selectedNodeId) ?? visibleNodes[0] ?? graph.nodes[0];
+  const selectedNode =
+    visibleNodes.find((node) => node.id === selectedNodeId) ??
+    visibleNodes[0] ??
+    graph.nodes.find((node) => node.id === selectedNodeId) ??
+    graph.nodes[0];
+  const graphStats = graph.graphStats;
 
   return (
     <div className="page-grid split-layout">
@@ -208,7 +225,10 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
         <div style={{ marginTop: 16 }} className="inspector-grid">
           <Field label="Visible nodes" value={visibleNodes.length} />
           <Field label="Visible links" value={visibleLinks.length} />
+          <Field label="Total nodes" value={formatCompactNumber(graphStats?.totalNodes ?? graph.nodes.length)} />
+          <Field label="Total links" value={formatCompactNumber(graphStats?.totalLinks ?? graph.links.length)} />
           <Field label="Data nodes" value={graph.dataSummary?.totalDataNodes ?? 0} />
+          <Field label="High-risk edges" value={formatCompactNumber(graphStats?.highRiskLinks ?? 0)} />
           <Field label="Focus score" value={`${selectedNode.score}/100`} />
           <Field label="Focus type" value={selectedNode.kind} />
         </div>
@@ -230,19 +250,12 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
         action={<Button icon={Filter}>Save view</Button>}
       >
         <div className="graph-canvas">
-          <NetworkSvg links={visibleLinks} nodes={graph.nodes} />
-          {visibleNodes.map((node) => (
-            <button
-              className={`graph-node ${riskClassByLevel[node.level]} ${selectedNode.id === node.id ? "is-selected" : ""}`}
-              key={node.id}
-              onClick={() => setSelectedNodeId(node.id)}
-              style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              type="button"
-            >
-              <strong>{node.label}</strong>
-              <span>{t(node.kind)}</span>
-            </button>
-          ))}
+          <GraphNetwork
+            links={visibleLinks}
+            nodes={visibleNodes}
+            onSelectNode={setSelectedNodeId}
+            selectedNodeId={selectedNode.id}
+          />
           {visibleNodes.length === 0 ? <div className="empty-state">{t("No entities match the current filters.")}</div> : null}
         </div>
       </Panel>
@@ -260,6 +273,149 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
       </Panel>
     </div>
   );
+}
+
+type RiskFlowNodeData = {
+  graphNode: GraphNode;
+  selected: boolean;
+};
+
+type RiskFlowNode = FlowNode<RiskFlowNodeData, "risk">;
+type RiskFlowEdge = FlowEdge<{ level: RiskLevel; label: string }>;
+
+const graphKindLanes: GraphNodeKind[] = ["supplier", "company", "facility", "route", "commodity", "country", "data"];
+
+const graphColorByLevel: Record<RiskLevel, string> = {
+  low: "#52d7d0",
+  guarded: "#9fb2a9",
+  elevated: "#f2b84b",
+  severe: "#ff7a4d",
+  critical: "#ff4d6d"
+};
+
+const graphNodeTypes = { risk: RiskFlowNodeCard };
+
+function GraphNetwork({
+  links,
+  nodes,
+  onSelectNode,
+  selectedNodeId
+}: {
+  links: GraphLink[];
+  nodes: GraphNode[];
+  onSelectNode: (nodeId: string) => void;
+  selectedNodeId: string;
+}) {
+  const flowNodes = useMemo<RiskFlowNode[]>(
+    () => layoutGraphNodes(nodes, selectedNodeId),
+    [nodes, selectedNodeId]
+  );
+  const flowEdges = useMemo<RiskFlowEdge[]>(
+    () => layoutGraphEdges(links, new Set(nodes.map((node) => node.id)), selectedNodeId),
+    [links, nodes, selectedNodeId]
+  );
+
+  return (
+    <ReactFlow
+      className="risk-flow"
+      colorMode="dark"
+      defaultEdgeOptions={{ type: "smoothstep" }}
+      edges={flowEdges}
+      fitView
+      fitViewOptions={{ padding: 0.18, maxZoom: 1.1 }}
+      maxZoom={1.65}
+      minZoom={0.24}
+      nodeTypes={graphNodeTypes}
+      nodes={flowNodes}
+      nodesDraggable={false}
+      onNodeClick={(_, node) => onSelectNode(node.id)}
+      proOptions={{ hideAttribution: true }}
+    >
+      <Background color="rgba(238,247,242,0.12)" gap={28} size={1} />
+      <MiniMap
+        className="risk-flow-minimap"
+        nodeColor={(node) => graphColorByLevel[(node.data as RiskFlowNodeData).graphNode.level]}
+        pannable
+        zoomable
+      />
+      <Controls className="risk-flow-controls" fitViewOptions={{ padding: 0.18 }} />
+    </ReactFlow>
+  );
+}
+
+function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
+  const node = data.graphNode;
+  return (
+    <div className={`risk-flow-node ${riskClassByLevel[node.level]} ${data.selected ? "is-selected" : ""}`}>
+      <Handle className="risk-flow-handle" position={Position.Left} type="target" />
+      <Handle className="risk-flow-handle" position={Position.Right} type="source" />
+      <div className="risk-flow-node-topline">
+        <span>{node.kind}</span>
+        <strong>{node.score}</strong>
+      </div>
+      <p>{node.label}</p>
+      <small>{String(node.metadata.source ?? node.metadata.country ?? "public source")}</small>
+    </div>
+  );
+}
+
+function layoutGraphNodes(nodes: GraphNode[], selectedNodeId: string): RiskFlowNode[] {
+  const grouped = new Map<GraphNodeKind, GraphNode[]>();
+  for (const kind of graphKindLanes) {
+    grouped.set(kind, []);
+  }
+  for (const node of nodes) {
+    grouped.get(node.kind)?.push(node);
+  }
+  return graphKindLanes.flatMap((kind, laneIndex) => {
+    const laneNodes = [...(grouped.get(kind) ?? [])].sort((a, b) => {
+      const riskDelta = riskLevelRank(b.level) - riskLevelRank(a.level);
+      return riskDelta || b.score - a.score || a.label.localeCompare(b.label);
+    });
+    const columnCount = laneNodes.length > 24 ? 3 : laneNodes.length > 10 ? 2 : 1;
+    const rowCount = Math.max(1, Math.ceil(laneNodes.length / columnCount));
+    const rowGap = 118;
+    const columnGap = 238;
+    const laneCenter = (laneIndex - (graphKindLanes.length - 1) / 2) * 430;
+    return laneNodes.map((node, rowIndex) => ({
+      id: node.id,
+      type: "risk",
+      position: {
+        x: laneCenter + ((rowIndex % columnCount) - (columnCount - 1) / 2) * columnGap,
+        y: (Math.floor(rowIndex / columnCount) - (rowCount - 1) / 2) * rowGap + (laneIndex % 2 === 0 ? -28 : 28),
+      },
+      data: { graphNode: node, selected: node.id === selectedNodeId },
+      selected: node.id === selectedNodeId,
+    }));
+  });
+}
+
+function layoutGraphEdges(links: GraphLink[], visibleNodeIds: Set<string>, selectedNodeId: string): RiskFlowEdge[] {
+  return links
+    .filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target))
+    .map((link) => {
+      const color = graphColorByLevel[link.level];
+      const isSelectedAdjacency = link.source === selectedNodeId || link.target === selectedNodeId;
+      return {
+        id: link.id,
+        source: link.source,
+        target: link.target,
+        type: "smoothstep",
+        animated: isSelectedAdjacency || link.level === "critical" || link.level === "severe",
+        label: link.level === "critical" || link.level === "severe" ? link.label : undefined,
+        data: { level: link.level, label: link.label },
+        markerEnd: { type: MarkerType.ArrowClosed, color },
+        style: {
+          stroke: color,
+          strokeOpacity: isSelectedAdjacency ? 0.95 : 0.46,
+          strokeWidth: Math.max(1.2, Math.min(4.6, link.weight * 2.8)),
+        },
+      };
+    });
+}
+
+function riskLevelRank(level: RiskLevel) {
+  return { low: 0, guarded: 1, elevated: 2, severe: 3, critical: 4 }[level];
 }
 
 function NetworkSvg({ links, nodes }: { links: GraphLink[]; nodes: GraphNode[] }) {

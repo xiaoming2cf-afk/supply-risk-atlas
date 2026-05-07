@@ -459,6 +459,12 @@ def _real_dashboard_payloads(result: Any) -> dict[str, dict[str, Any]]:
     firm_entities = [entity for entity in result.real.entities if entity.entity_type == "firm"]
     event_entities = [entity for entity in result.real.entities if entity.entity_type in {"risk_event", "policy", "text_artifact"}]
     port_entities = [entity for entity in result.real.entities if entity.entity_type == "port"]
+    graph_payload = _graph_explorer_payload(
+        result,
+        prediction_by_target,
+        firm_entities,
+        source_by_entity_id,
+    )
 
     return {
         "global-risk-cockpit": {
@@ -520,18 +526,7 @@ def _real_dashboard_payloads(result: Any) -> dict[str, dict[str, Any]]:
             "incidents": _dashboard_incidents(result, entity_by_id, source_names),
             "corridors": _dashboard_corridors(top_edges, entity_by_id),
         },
-        "graph-explorer": {
-            "selectedNodeId": _selected_entity_id(prediction_by_target, firm_entities),
-            "filters": ["company", "supplier", "facility", "commodity", "route", "country", "data"],
-            "dataSummary": _data_catalog_payload(result),
-            "nodes": _dashboard_graph_nodes(
-                result.real.entities,
-                result.edge_states,
-                prediction_by_target,
-                source_by_entity_id,
-            ),
-            "links": _dashboard_graph_links(result.edge_states),
-        },
+        "graph-explorer": graph_payload,
         "company-risk-360": {
             "selectedCompanyId": _selected_entity_id(prediction_by_target, firm_entities),
             "companies": _dashboard_companies(firm_entities, result.edge_states, prediction_by_target, entity_by_id),
@@ -644,6 +639,7 @@ def _entity_result_sort_key(entity: Any) -> tuple[int, str]:
         "text_gdelt_",
         "legal_entity_ofac_",
         "port_wpi_",
+        "risk_event_usgs_eq_",
         "schema_field_",
     )
     return (1 if entity.canonical_id.startswith(generated_prefixes) else 0, entity.display_name.lower())
@@ -911,7 +907,7 @@ def _dashboard_kind(entity: Any, edge_states: list[Any]) -> str:
         return "commodity"
     if entity.entity_type in {"risk_event", "text_artifact"}:
         return "route"
-    if entity.entity_type in {"data_source", "data_category", "dataset", "indicator", "industry"}:
+    if _is_data_node(entity.entity_type):
         return "data"
     return "country"
 
@@ -978,6 +974,131 @@ def _dashboard_graph_links(edge_states: list[Any]) -> list[dict[str, Any]]:
         }
         for edge in edge_states
     ]
+
+
+def _graph_explorer_payload(
+    result: Any,
+    prediction_by_target: dict[str, Any],
+    firm_entities: list[Any],
+    source_by_entity_id: dict[str, str],
+) -> dict[str, Any]:
+    selected_node_id = _selected_entity_id(prediction_by_target, firm_entities)
+    all_nodes = _dashboard_graph_nodes(
+        result.real.entities,
+        result.edge_states,
+        prediction_by_target,
+        source_by_entity_id,
+    )
+    all_links = _dashboard_graph_links(result.edge_states)
+    node_limit = 128
+    link_limit = 260
+    selected_node_ids = _select_graph_node_ids(all_nodes, all_links, selected_node_id, node_limit)
+    selected_nodes = [node for node in all_nodes if node["id"] in selected_node_ids]
+    selected_links = [
+        link
+        for link in sorted(all_links, key=lambda item: (risk_rank(item["level"]), item["weight"]), reverse=True)
+        if link["source"] in selected_node_ids and link["target"] in selected_node_ids
+    ][:link_limit]
+    return {
+        "selectedNodeId": selected_node_id if selected_node_id in selected_node_ids else (selected_nodes[0]["id"] if selected_nodes else selected_node_id),
+        "filters": ["company", "supplier", "facility", "commodity", "route", "country", "data"],
+        "dataSummary": _data_catalog_payload(result),
+        "graphStats": _dashboard_graph_stats(all_nodes, all_links, node_limit, link_limit),
+        "nodes": selected_nodes,
+        "links": selected_links,
+    }
+
+
+def _select_graph_node_ids(
+    nodes: list[dict[str, Any]],
+    links: list[dict[str, Any]],
+    selected_node_id: str,
+    limit: int,
+) -> set[str]:
+    node_by_id = {node["id"]: node for node in nodes}
+    adjacency: dict[str, list[dict[str, Any]]] = {}
+    for link in links:
+        adjacency.setdefault(link["source"], []).append(link)
+        adjacency.setdefault(link["target"], []).append(link)
+    selected: set[str] = set()
+    ordered_selected: list[str] = []
+
+    def add_node(node_id: str) -> None:
+        if node_id not in node_by_id or node_id in selected or len(ordered_selected) >= limit:
+            return
+        selected.add(node_id)
+        ordered_selected.append(node_id)
+
+    if selected_node_id in node_by_id:
+        add_node(selected_node_id)
+        for link in sorted(adjacency.get(selected_node_id, []), key=lambda item: risk_rank(item["level"]), reverse=True)[:32]:
+            add_node(link["source"])
+            add_node(link["target"])
+    priority_data_node_ids = [
+        "data_source_usgs_earthquakes",
+        "dataset_usgs_m45_earthquakes_month",
+        "indicator_high_tech_exports",
+        "risk_event_usgs_taiwan_m62",
+        "risk_event_usgs_japan_m57",
+    ]
+    for node_id in priority_data_node_ids:
+        add_node(node_id)
+        for link in sorted(adjacency.get(node_id, []), key=lambda item: risk_rank(item["level"]), reverse=True)[:8]:
+            add_node(link["source"])
+            add_node(link["target"])
+    ranked_nodes = sorted(
+        nodes,
+        key=lambda node: (
+            risk_rank(node["level"]),
+            node["kind"] in {"company", "supplier", "facility", "route"},
+            node["score"],
+            node["label"],
+        ),
+        reverse=True,
+    )
+    for node in ranked_nodes:
+        add_node(node["id"])
+        if len(ordered_selected) >= limit:
+            break
+    for link in sorted(links, key=lambda item: risk_rank(item["level"]), reverse=True):
+        if len(ordered_selected) >= limit:
+            break
+        if link["source"] in selected or link["target"] in selected:
+            add_node(link["source"])
+            add_node(link["target"])
+    return set(ordered_selected)
+
+
+def _dashboard_graph_stats(
+    nodes: list[dict[str, Any]],
+    links: list[dict[str, Any]],
+    node_limit: int,
+    link_limit: int,
+) -> dict[str, Any]:
+    by_kind: dict[str, int] = {}
+    by_source: dict[str, int] = {}
+    high_risk_nodes = 0
+    for node in nodes:
+        by_kind[node["kind"]] = by_kind.get(node["kind"], 0) + 1
+        source = str(node.get("metadata", {}).get("source") or "unknown")
+        by_source[source] = by_source.get(source, 0) + 1
+        if node["level"] in {"severe", "critical"}:
+            high_risk_nodes += 1
+    high_risk_links = sum(1 for link in links if link["level"] in {"severe", "critical"})
+    return {
+        "totalNodes": len(nodes),
+        "totalLinks": len(links),
+        "renderedNodeLimit": node_limit,
+        "renderedLinkLimit": link_limit,
+        "highRiskNodes": high_risk_nodes,
+        "highRiskLinks": high_risk_links,
+        "byKind": [{"kind": kind, "count": count} for kind, count in sorted(by_kind.items())],
+        "bySource": [{"source": source, "count": count} for source, count in sorted(by_source.items())],
+    }
+
+
+def risk_rank(level: str) -> int:
+    return {"critical": 4, "severe": 3, "elevated": 2, "guarded": 1, "low": 0}.get(level, 0)
 
 
 def _dashboard_hotspots(
