@@ -116,11 +116,17 @@ entities:
   - canonical_id: firm_tsmc
     entity_type: firm
     display_name: Taiwan Semiconductor Manufacturing Company Limited
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Semiconductors
     source_id: gleif
     confidence: 0.96
-    external_ids: {ticker: 2330.TW}
+    external_ids: {ticker: 2330.TW, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: firm_asml
     entity_type: firm
     display_name: ASML Holding N.V.
@@ -212,35 +218,59 @@ entities:
   - canonical_id: firm_foxconn
     entity_type: firm
     display_name: Hon Hai Precision Industry Co., Ltd.
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Electronics manufacturing services
     source_id: gleif
     confidence: 0.94
-    external_ids: {ticker: 2317.TW}
+    external_ids: {ticker: 2317.TW, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: firm_pegatron
     entity_type: firm
     display_name: Pegatron Corporation
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Electronics manufacturing services
     source_id: gleif
     confidence: 0.93
-    external_ids: {ticker: 4938.TW}
+    external_ids: {ticker: 4938.TW, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: firm_quanta
     entity_type: firm
     display_name: Quanta Computer Inc.
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Electronics manufacturing services
     source_id: gleif
     confidence: 0.93
-    external_ids: {ticker: 2382.TW}
+    external_ids: {ticker: 2382.TW, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: firm_compal
     entity_type: firm
     display_name: Compal Electronics, Inc.
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Electronics manufacturing services
     source_id: gleif
     confidence: 0.92
-    external_ids: {ticker: 2324.TW}
+    external_ids: {ticker: 2324.TW, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: firm_globalfoundries
     entity_type: firm
     display_name: GlobalFoundries Inc.
@@ -252,11 +282,17 @@ entities:
   - canonical_id: firm_umc
     entity_type: firm
     display_name: United Microelectronics Corporation
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Semiconductor foundry
     source_id: gleif
     confidence: 0.93
-    external_ids: {ticker: UMC}
+    external_ids: {ticker: UMC, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: firm_toyota
     entity_type: firm
     display_name: Toyota Motor Corporation
@@ -393,14 +429,21 @@ entities:
     source_id: world_bank
     confidence: 1.0
     external_ids: {iso2: US}
-  - canonical_id: country_tw
-    entity_type: country
-    display_name: Taiwan
-    country: TW
+  - canonical_id: province_cn_tw
+    entity_type: coverage_area
+    display_name: 中国台湾省
+    displayName: 中国台湾省
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: null
     source_id: world_bank
     confidence: 1.0
-    external_ids: {iso2: TW}
+    external_ids: {countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW, iso3166_2: CN-TW}
   - canonical_id: country_nl
     entity_type: country
     display_name: Netherlands
@@ -428,11 +471,16 @@ entities:
   - canonical_id: country_cn
     entity_type: country
     display_name: China
+    displayName: China
     country: CN
+    geoId: country_cn
+    geoLevel: country
+    countryCode: CN
+    sourceCountryCode: CN
     industry: null
     source_id: world_bank
     confidence: 1.0
-    external_ids: {iso2: CN}
+    external_ids: {iso2: CN, countryCode: CN, geoId: country_cn, geoLevel: country, sourceCountryCode: CN}
   - canonical_id: country_de
     entity_type: country
     display_name: Germany
@@ -548,11 +596,17 @@ entities:
   - canonical_id: port_kaohsiung
     entity_type: port
     display_name: Port of Kaohsiung
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Maritime logistics
     source_id: nga_world_port_index
     confidence: 0.92
-    external_ids: {unlocode: TWKHH}
+    external_ids: {unlocode: TWKHH, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: port_rotterdam
     entity_type: port
     display_name: Port of Rotterdam
@@ -660,11 +714,17 @@ entities:
   - canonical_id: airport_taoyuan
     entity_type: airport
     display_name: Taiwan Taoyuan International Airport
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Air cargo logistics
     source_id: ourairports
     confidence: 0.9
-    external_ids: {iata: TPE, icao: RCTP}
+    external_ids: {iata: TPE, icao: RCTP, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: airport_incheon
     entity_type: airport
     display_name: Incheon International Airport
@@ -868,11 +928,17 @@ entities:
   - canonical_id: risk_event_taiwan_strait_tension
     entity_type: risk_event
     display_name: Taiwan Strait tension
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Geopolitical risk
     source_id: gdelt
     confidence: 0.79
-    external_ids: {source: GDELT}
+    external_ids: {source: GDELT, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: text_gdelt_semiconductor_logistics
     entity_type: text_artifact
     display_name: GDELT semiconductor logistics signal
@@ -1196,11 +1262,17 @@ entities:
   - canonical_id: risk_event_usgs_taiwan_m62
     entity_type: risk_event
     display_name: M6.2 earthquake near Taiwan electronics corridor
-    country: TW
+    country: CN
+    geoId: province_cn_tw
+    geoLevel: province_context
+    countryCode: CN
+    provinceCode: TW
+    parentGeoId: country_cn
+    sourceCountryCode: TW
     industry: Earthquake hazard
     source_id: usgs_earthquakes
     confidence: 0.88
-    external_ids: {usgs_event_id: usgs-seed-tw-m62, magnitude: "6.2", place: "near Hualien City, Taiwan"}
+    external_ids: {usgs_event_id: usgs-seed-tw-m62, magnitude: "6.2", place: "near Hualien City, Taiwan", countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}
   - canonical_id: risk_event_usgs_japan_m57
     entity_type: risk_event
     display_name: M5.7 earthquake near Japan semiconductor logistics corridor
@@ -1231,7 +1303,8 @@ edges:
   - {source_id: data_source_usgs_earthquakes, target_id: dataset_usgs_m45_earthquakes_month, edge_type: source_provides, source: usgs_earthquakes, day: 1, confidence: 0.95, attributes: {weight: 1.0, freshness_sla_hours: 2}}
   - {source_id: dataset_usgs_m45_earthquakes_month, target_id: risk_event_usgs_taiwan_m62, edge_type: dataset_observes, source: usgs_earthquakes, day: 6, confidence: 0.9, attributes: {weight: 0.92, risk_score: 0.82, magnitude: 6.2}}
   - {source_id: dataset_usgs_m45_earthquakes_month, target_id: risk_event_usgs_japan_m57, edge_type: dataset_observes, source: usgs_earthquakes, day: 6, confidence: 0.88, attributes: {weight: 0.88, risk_score: 0.74, magnitude: 5.7}}
-  - {source_id: risk_event_usgs_taiwan_m62, target_id: country_tw, edge_type: event_affects, source: usgs_earthquakes, day: 6, confidence: 0.86, attributes: {weight: 0.88, risk_score: 0.84}}
+  - {source_id: province_cn_tw, target_id: country_cn, edge_type: part_of, source: world_bank, day: 1, confidence: 0.98, attributes: {weight: 1.0}}
+  - {source_id: risk_event_usgs_taiwan_m62, target_id: province_cn_tw, edge_type: event_affects, source: usgs_earthquakes, day: 6, confidence: 0.86, attributes: {weight: 0.88, risk_score: 0.84, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
   - {source_id: risk_event_usgs_taiwan_m62, target_id: port_kaohsiung, edge_type: risk_transmits_to, source: usgs_earthquakes, day: 6, confidence: 0.82, attributes: {weight: 0.86, risk_score: 0.88}}
   - {source_id: risk_event_usgs_taiwan_m62, target_id: airport_taoyuan, edge_type: risk_transmits_to, source: usgs_earthquakes, day: 6, confidence: 0.82, attributes: {weight: 0.84, risk_score: 0.86}}
   - {source_id: risk_event_usgs_japan_m57, target_id: country_jp, edge_type: event_affects, source: usgs_earthquakes, day: 6, confidence: 0.84, attributes: {weight: 0.8, risk_score: 0.72}}
@@ -1271,12 +1344,12 @@ edges:
   - {source_id: dataset_world_bank_indicators, target_id: indicator_air_transport_freight, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.88, update_frequency: annual}}
   - {source_id: dataset_world_bank_indicators, target_id: indicator_lpi_overall, edge_type: dataset_measures, source: world_bank, day: 1, confidence: 0.92, attributes: {coverage: 0.84, update_frequency: periodic}}
   - {source_id: dataset_world_bank_indicators, target_id: country_us, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
-  - {source_id: dataset_world_bank_indicators, target_id: country_tw, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.95, attributes: {coverage: 0.85, freshness: annual}}
+  - {source_id: dataset_world_bank_indicators, target_id: province_cn_tw, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.95, attributes: {coverage: 0.85, freshness: annual, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
   - {source_id: dataset_world_bank_indicators, target_id: country_kr, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
   - {source_id: dataset_world_bank_indicators, target_id: country_jp, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
   - {source_id: dataset_world_bank_indicators, target_id: country_de, edge_type: dataset_covers, source: world_bank, day: 1, confidence: 0.98, attributes: {coverage: 1.0, freshness: annual}}
   - {source_id: indicator_gdp_current_usd, target_id: country_us, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.96, attributes: {coverage: 1.0}}
-  - {source_id: indicator_trade_percent_gdp, target_id: country_tw, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.86}}
+  - {source_id: indicator_trade_percent_gdp, target_id: province_cn_tw, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.86, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
   - {source_id: indicator_high_tech_exports, target_id: country_kr, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.94, attributes: {coverage: 0.86}}
   - {source_id: indicator_container_port_traffic, target_id: country_sg, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.92, attributes: {coverage: 0.84}}
   - {source_id: indicator_air_transport_freight, target_id: country_de, edge_type: indicator_context_for, source: world_bank, day: 1, confidence: 0.92, attributes: {coverage: 0.84}}
@@ -1305,7 +1378,7 @@ edges:
   - {source_id: firm_lam_research, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
   - {source_id: firm_jabil, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
   - {source_id: firm_flex, target_id: country_sg, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
-  - {source_id: firm_tsmc, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
+  - {source_id: firm_tsmc, target_id: province_cn_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.96, attributes: {weight: 1.0, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
   - {source_id: firm_asml, target_id: country_nl, edge_type: located_in, source: gleif, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
   - {source_id: firm_samsung_electronics, target_id: country_kr, edge_type: located_in, source: gleif, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
   - {source_id: firm_sk_hynix, target_id: country_kr, edge_type: located_in, source: gleif, day: 2, confidence: 0.95, attributes: {weight: 1.0}}
@@ -1317,12 +1390,12 @@ edges:
   - {source_id: firm_tokyo_electron, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
   - {source_id: firm_canon, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
   - {source_id: firm_nikon, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
-  - {source_id: firm_foxconn, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
-  - {source_id: firm_pegatron, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
-  - {source_id: firm_quanta, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
-  - {source_id: firm_compal, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0}}
+  - {source_id: firm_foxconn, target_id: province_cn_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
+  - {source_id: firm_pegatron, target_id: province_cn_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
+  - {source_id: firm_quanta, target_id: province_cn_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
+  - {source_id: firm_compal, target_id: province_cn_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.92, attributes: {weight: 1.0, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
   - {source_id: firm_globalfoundries, target_id: country_us, edge_type: located_in, source: sec_edgar, day: 2, confidence: 0.96, attributes: {weight: 1.0}}
-  - {source_id: firm_umc, target_id: country_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}
+  - {source_id: firm_umc, target_id: province_cn_tw, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0, countryCode: CN, provinceCode: TW, parentGeoId: country_cn, sourceCountryCode: TW}}
   - {source_id: firm_toyota, target_id: country_jp, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
   - {source_id: firm_volkswagen, target_id: country_de, edge_type: located_in, source: gleif, day: 2, confidence: 0.94, attributes: {weight: 1.0}}
   - {source_id: firm_byd, target_id: country_cn, edge_type: located_in, source: gleif, day: 2, confidence: 0.93, attributes: {weight: 1.0}}

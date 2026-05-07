@@ -94,9 +94,15 @@ class RawRecord(StrictModel):
 class CanonicalEntity(StrictModel):
     canonical_id: str
     entity_type: str
-    display_name: str
+    display_name: str = Field(alias="displayName")
     country: str | None = None
     industry: str | None = None
+    geo_id: str | None = Field(default=None, alias="geoId")
+    geo_level: str | None = Field(default=None, alias="geoLevel")
+    country_code: str | None = Field(default=None, alias="countryCode", min_length=2, max_length=2)
+    province_code: str | None = Field(default=None, alias="provinceCode", min_length=2, max_length=2)
+    parent_geo_id: str | None = Field(default=None, alias="parentGeoId")
+    source_country_code: str | None = Field(default=None, alias="sourceCountryCode", min_length=2, max_length=2)
     external_ids: dict[str, str] = Field(default_factory=dict)
     confidence: float = Field(ge=0.0, le=1.0)
     created_at: datetime = Field(default_factory=utcnow)

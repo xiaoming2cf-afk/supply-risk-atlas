@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from hashlib import sha256
+from typing import Any
 
 from graph_kernel.path_index import build_path_index
 from sra_core.contracts.domain import CanonicalEntity, EdgeState, FeatureValue, GraphSnapshot
@@ -25,19 +26,56 @@ def compute_features(
         inbound.setdefault(edge.target_id, []).append(edge)
         outbound.setdefault(edge.source_id, []).append(edge)
     paths = build_path_index(edge_states)
-    paths_by_target: dict[str, list[float]] = {}
+    paths_by_target: dict[str, list[Any]] = {}
     for path in paths:
-        paths_by_target.setdefault(path.target_id, []).append(path.path_risk)
+        paths_by_target.setdefault(path.target_id, []).append(path)
+
+    entity_ids = [entity.canonical_id for entity in entities]
+    max_inbound = max([len(edges) for edges in inbound.values()] + [1])
+    max_outbound = max([len(edges) for edges in outbound.values()] + [1])
+    max_total = max(
+        [
+            len(inbound.get(entity_id, [])) + len(outbound.get(entity_id, []))
+            for entity_id in entity_ids
+        ]
+        + [1]
+    )
+    max_path_count = max([len(paths) for paths in paths_by_target.values()] + [1])
+    max_source_diversity = max(
+        [len({edge.source for edge in edges}) for edges in inbound.values()] + [1]
+    )
 
     values: list[FeatureValue] = []
     for entity in entities:
         if entity.entity_type not in {"firm", "port", "product"}:
             continue
+        inbound_edges = inbound.get(entity.canonical_id, [])
+        outbound_edges = outbound.get(entity.canonical_id, [])
+        entity_paths = paths_by_target.get(entity.canonical_id, [])
+        path_scores = [_path_score(path) for path in entity_paths]
+        path_risks = [float(path.path_risk) for path in entity_paths]
+        path_confidences = [float(path.path_confidence) for path in entity_paths]
+        source_count = len({edge.source for edge in inbound_edges})
         features = {
-            "inbound_edge_count": float(len(inbound.get(entity.canonical_id, []))),
-            "outbound_edge_count": float(len(outbound.get(entity.canonical_id, []))),
-            "incoming_risk_mean": _mean([edge.risk_score for edge in inbound.get(entity.canonical_id, [])]),
-            "path_risk_max": max(paths_by_target.get(entity.canonical_id, [0.0])),
+            "inbound_edge_count": float(len(inbound_edges)),
+            "outbound_edge_count": float(len(outbound_edges)),
+            "total_edge_count": float(len(inbound_edges) + len(outbound_edges)),
+            "inbound_degree_norm": len(inbound_edges) / max_inbound,
+            "outbound_degree_norm": len(outbound_edges) / max_outbound,
+            "total_degree_norm": (len(inbound_edges) + len(outbound_edges)) / max_total,
+            "incoming_risk_max": max([edge.risk_score for edge in inbound_edges] + [0.0]),
+            "incoming_risk_mean": _mean([edge.risk_score for edge in inbound_edges]),
+            "incoming_confidence_mean": _mean([edge.confidence for edge in inbound_edges]),
+            "incoming_weight_mean": _mean([_clamp01(edge.weight) for edge in inbound_edges]),
+            "evidence_quality_mean": _mean([_edge_evidence_quality(edge) for edge in inbound_edges]),
+            "source_diversity_norm": source_count / max_source_diversity,
+            "path_count": float(len(entity_paths)),
+            "path_count_norm": len(entity_paths) / max_path_count,
+            "path_risk_max": max(path_risks + [0.0]),
+            "path_risk_mean": _mean(path_risks),
+            "path_score_max": max(path_scores + [0.0]),
+            "path_score_mean": _mean(path_scores),
+            "path_confidence_mean": _mean(path_confidences),
         }
         for name, value in features.items():
             values.append(
@@ -58,3 +96,33 @@ def compute_features(
 
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
+
+
+def _path_score(path: Any) -> float:
+    return _clamp01(
+        float(path.path_risk) * float(path.path_confidence) * _clamp01(path.path_weight)
+    )
+
+
+def _edge_evidence_quality(edge: EdgeState) -> float:
+    explicit_quality = _attribute_float(
+        edge,
+        ("evidence_quality", "source_reliability", "reliability", "quality"),
+    )
+    if explicit_quality is None:
+        return _clamp01(edge.confidence)
+    return _clamp01(edge.confidence * _clamp01(explicit_quality))
+
+
+def _attribute_float(edge: EdgeState, names: tuple[str, ...]) -> float | None:
+    for name in names:
+        if name not in edge.attributes:
+            continue
+        value = edge.attributes[name]
+        if isinstance(value, int | float):
+            return float(value)
+    return None
+
+
+def _clamp01(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))

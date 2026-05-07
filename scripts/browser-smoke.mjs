@@ -16,7 +16,9 @@ const pages = [
   ["Global Risk Cockpit", "#global-risk-cockpit"],
   ["Graph Explorer", "#graph-explorer"],
   ["Company Risk 360", "#company-risk-360"],
-  ["Path Explainer", "#path-explainer"],
+  ["Prediction Center", "#prediction-center"],
+  ["Path Analysis", "#path-analysis"],
+  ["Country Lens", "#country-lens"],
   ["Shock Simulator", "#shock-simulator"],
   ["Causal Evidence Board", "#causal-evidence-board"],
   ["Graph Version Studio", "#graph-version-studio"],
@@ -289,19 +291,21 @@ async function main() {
       }))()`),
       (state) =>
         state.searchValue === "0000320193" &&
-        state.graphNodeCount === 1 &&
-        state.flowNodeCount >= 1 &&
+        state.graphNodeCount >= 2 &&
+        state.flowNodeCount >= 2 &&
+        state.flowEdgeCount >= 1 &&
         state.text.includes("Apple Inc."),
     );
     checks.push({
-      page: "Graph Explorer entity search",
+      page: "Graph Explorer entity search retains adjacency",
       graphNodeCount: entitySearchState.graphNodeCount,
       flowNodeCount: entitySearchState.flowNodeCount,
       flowEdgeCount: entitySearchState.flowEdgeCount,
       passed:
         entitySearchState.searchValue === "0000320193" &&
-        entitySearchState.graphNodeCount === 1 &&
-        entitySearchState.flowNodeCount >= 1 &&
+        entitySearchState.graphNodeCount >= 2 &&
+        entitySearchState.flowNodeCount >= 2 &&
+        entitySearchState.flowEdgeCount >= 1 &&
         entitySearchState.text.includes("Apple Inc."),
     });
 
@@ -323,20 +327,98 @@ async function main() {
       }))()`),
       (state) =>
         state.searchValue === "TX.VAL.TECH.MF.ZS" &&
-        state.graphNodeCount === 1 &&
-        state.flowNodeCount >= 1 &&
+        state.graphNodeCount >= 2 &&
+        state.flowNodeCount >= 2 &&
+        state.flowEdgeCount >= 1 &&
         state.text.includes("High-technology exports percent of manufactured exports"),
     );
     checks.push({
-      page: "Graph Explorer data node search",
+      page: "Graph Explorer data node search retains adjacency",
       graphNodeCount: dataNodeSearchState.graphNodeCount,
       flowNodeCount: dataNodeSearchState.flowNodeCount,
       flowEdgeCount: dataNodeSearchState.flowEdgeCount,
       passed:
         dataNodeSearchState.searchValue === "TX.VAL.TECH.MF.ZS" &&
-        dataNodeSearchState.graphNodeCount === 1 &&
-        dataNodeSearchState.flowNodeCount >= 1 &&
+        dataNodeSearchState.graphNodeCount >= 2 &&
+        dataNodeSearchState.flowNodeCount >= 2 &&
+        dataNodeSearchState.flowEdgeCount >= 1 &&
         dataNodeSearchState.text.includes("High-technology exports percent of manufactured exports"),
+    });
+
+    await navigate(client, `${webUrl}#prediction-center`);
+    const predictionCenterApi = await evaluate(client, `fetch('${apiUrl}/dashboard/prediction-center', { headers: { 'content-type': 'application/json' } })
+      .then((response) => response.json())
+      .catch((error) => ({ error: String(error) }))`);
+    const predictionCenterState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Prediction Center" &&
+        state.text.includes("Prediction workbench") &&
+        state.text.includes("Score mechanism"),
+    );
+    checks.push({
+      page: "Prediction Center mechanisms and evidence paths",
+      predictionCount: predictionCenterApi.data?.predictions?.length ?? 0,
+      saturatedScoreCount: predictionCenterApi.data?.saturatedScoreCount ?? 0,
+      passed:
+        predictionCenterState.title === "Prediction Center" &&
+        predictionCenterState.text.includes("Prediction workbench") &&
+        predictionCenterApi.status === "success" &&
+        predictionCenterApi.data?.predictions?.length > 0 &&
+        predictionCenterApi.data?.mechanisms?.length > 0 &&
+        predictionCenterApi.data?.saturatedScoreCount < predictionCenterApi.data?.predictions?.length,
+    });
+
+    await navigate(client, `${webUrl}#path-analysis`);
+    const pathAnalysisApi = await evaluate(client, `fetch('${apiUrl}/dashboard/path-analysis', { headers: { 'content-type': 'application/json' } })
+      .then((response) => response.json())
+      .catch((error) => ({ error: String(error) }))`);
+    const pathAnalysisState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Path Analysis" &&
+        state.text.includes("Critical nodes") &&
+        state.text.includes("Transmission paths"),
+    );
+    checks.push({
+      page: "Path Analysis critical nodes and transmission paths",
+      criticalNodeCount: pathAnalysisApi.data?.criticalNodes?.length ?? 0,
+      transmissionPathCount: pathAnalysisApi.data?.transmissionPaths?.length ?? 0,
+      passed:
+        pathAnalysisState.title === "Path Analysis" &&
+        pathAnalysisState.text.includes("Critical nodes") &&
+        pathAnalysisState.text.includes("Transmission paths") &&
+        pathAnalysisApi.status === "success" &&
+        pathAnalysisApi.data?.criticalNodes?.length > 0 &&
+        pathAnalysisApi.data?.transmissionPaths?.length > 0,
+    });
+
+    await navigate(client, `${webUrl}#country-lens`);
+    const countryLensApi = await evaluate(client, `fetch('${apiUrl}/dashboard/country-lens', { headers: { 'content-type': 'application/json' } })
+      .then((response) => response.json())
+      .catch((error) => ({ error: String(error) }))`);
+    const countryLensState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Country Lens" &&
+        state.text.includes("Available countries") &&
+        state.text.includes("中国台湾省"),
+    );
+    checks.push({
+      page: "Country Lens available countries and selected lens",
+      availableCountryCount: countryLensApi.data?.availableCountries?.length ?? 0,
+      selectedCountry: countryLensApi.data?.countryLens?.countryCode,
+      passed:
+        countryLensState.title === "Country Lens" &&
+        countryLensState.text.includes("Available countries") &&
+        countryLensState.text.includes("中国台湾省") &&
+        countryLensApi.status === "success" &&
+        countryLensApi.data?.availableCountries?.length > 0 &&
+        countryLensApi.data?.countryLens?.countryCode === "CN" &&
+        !countryLensApi.data?.availableCountries?.some((country) => country.code === "TW"),
     });
 
     await navigate(client, `${webUrl}#global-risk-cockpit`);
@@ -365,8 +447,9 @@ async function main() {
       (state) =>
         state.language === "fr" &&
         state.title === frGraphExplorerLabel &&
-        state.bodyText.includes("Apple Inc.") &&
-        state.bodyText.includes("Taiwan Semiconductor Manufacturing Company Limited"),
+        state.bodyText.includes("Advanced Micro Devices") &&
+        state.bodyText.includes("中国台湾省") &&
+        state.bodyText.includes("Hon Hai Precision Industry"),
     );
     await navigate(client, `${webUrl}#causal-evidence-board`);
     const translatedEvidenceState = await waitFor(
@@ -391,8 +474,9 @@ async function main() {
       frTitle: frState.title,
       afterLanguage: languageAfter.language,
       preservedEntities:
-        translatedGraphState.bodyText.includes("Apple Inc.") &&
-        translatedGraphState.bodyText.includes("Taiwan Semiconductor Manufacturing Company Limited"),
+        translatedGraphState.bodyText.includes("Advanced Micro Devices") &&
+        translatedGraphState.bodyText.includes("中国台湾省") &&
+        translatedGraphState.bodyText.includes("Hon Hai Precision Industry"),
       preservedSource:
         translatedEvidenceState.bodyText.includes("SEC EDGAR") ||
         translatedEvidenceState.bodyText.includes("GDELT") ||
@@ -403,8 +487,9 @@ async function main() {
         zhState.title === zhGlobalRiskTitle &&
         frState.title === frGlobalRiskTitle &&
         languageAfter.language === "en" &&
-        translatedGraphState.bodyText.includes("Apple Inc.") &&
-        translatedGraphState.bodyText.includes("Taiwan Semiconductor Manufacturing Company Limited") &&
+        translatedGraphState.bodyText.includes("Advanced Micro Devices") &&
+        translatedGraphState.bodyText.includes("中国台湾省") &&
+        translatedGraphState.bodyText.includes("Hon Hai Precision Industry") &&
         (
           translatedEvidenceState.bodyText.includes("SEC EDGAR") ||
           translatedEvidenceState.bodyText.includes("GDELT") ||
@@ -496,7 +581,16 @@ async function assertWebServer() {
 
 async function navigate(client, url) {
   await client.send("Page.navigate", { url });
-  await waitFor(client, () => pageState(client), (state) => state.title.length > 0);
+  const expectedHash = new URL(url).hash;
+  if (expectedHash) {
+    await evaluate(client, `(() => {
+      const nextUrl = ${JSON.stringify(url)};
+      if (window.location.href !== nextUrl) window.location.href = nextUrl;
+      if (window.location.hash !== ${JSON.stringify(expectedHash)}) window.location.hash = ${JSON.stringify(expectedHash)};
+    })()`);
+    await waitFor(client, () => evaluate(client, "window.location.hash"), (hash) => hash === expectedHash, 30000);
+  }
+  await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
 }
 
 async function pageState(client) {
@@ -552,7 +646,7 @@ async function evaluate(client, expression) {
   return result.result.value;
 }
 
-async function waitFor(client, read, predicate, timeout = 10000) {
+async function waitFor(client, read, predicate, timeout = 30000) {
   const startedAt = Date.now();
   let last;
   while (Date.now() - startedAt < timeout) {

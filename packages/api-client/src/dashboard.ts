@@ -9,6 +9,7 @@ import type {
   GraphExplorerData,
   GraphVersionStudioData,
   PathExplainerData,
+  PredictionCenterData,
   ShockSimulationInput,
   ShockSimulationResult,
   SystemHealthData,
@@ -24,6 +25,7 @@ export interface SupplyRiskApiClient {
   getGlobalRiskCockpit(): Promise<ApiResult<GlobalRiskCockpitData>>;
   getGraphExplorer(): Promise<ApiResult<GraphExplorerData>>;
   getCompanyRisk360(): Promise<ApiResult<CompanyRisk360Data>>;
+  getPredictionCenter(): Promise<ApiResult<PredictionCenterData>>;
   getPathExplainer(): Promise<ApiResult<PathExplainerData>>;
   runShockSimulation(input: ShockSimulationInput): Promise<ApiResult<ShockSimulationResult>>;
   getCausalEvidenceBoard(): Promise<ApiResult<CausalEvidenceBoardData>>;
@@ -35,6 +37,7 @@ export interface SupplyRiskDashboardData {
   globalRiskCockpit: GlobalRiskCockpitData;
   graphExplorer: GraphExplorerData;
   companyRisk360: CompanyRisk360Data;
+  predictionCenter: PredictionCenterData;
   pathExplainer: PathExplainerData;
   causalEvidenceBoard: CausalEvidenceBoardData;
   graphVersionStudio: GraphVersionStudioData;
@@ -192,6 +195,7 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
     getGlobalRiskCockpit: () => requestJson(baseUrl, "/dashboard/global-risk-cockpit", undefined, clientOptions),
     getGraphExplorer: () => requestJson(baseUrl, "/dashboard/graph-explorer", undefined, clientOptions),
     getCompanyRisk360: () => requestJson(baseUrl, "/dashboard/company-risk-360", undefined, clientOptions),
+    getPredictionCenter: () => requestJson(baseUrl, "/dashboard/prediction-center", undefined, clientOptions),
     getPathExplainer: () => requestJson(baseUrl, "/dashboard/path-explainer", undefined, clientOptions),
     runShockSimulation: (input) =>
       requestJson(

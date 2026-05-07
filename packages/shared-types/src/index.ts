@@ -58,6 +58,43 @@ export interface Entity {
   industry?: string | null;
   external_ids?: Record<string, string>;
   confidence: number;
+  geoId?: string;
+  geoLevel?: "country" | "province" | "region" | "aggregate" | "unknown" | string;
+  countryCode?: string;
+  provinceCode?: string | null;
+  parentGeoId?: string | null;
+  sourceCountryCode?: string | null;
+  displayName?: string;
+}
+
+export interface PredictionScoreComponents {
+  baseline?: number;
+  degree_exposure?: number;
+  graph_propagation?: number;
+  path_transmission?: number;
+  scenario_shock?: number;
+  evidence_coverage?: number;
+  [key: string]: number | undefined;
+}
+
+export interface PredictionDriverContribution {
+  driver: string;
+  score: number;
+  weight: number;
+  contribution: number;
+  pathId?: string;
+}
+
+export interface PredictionPathDetail {
+  pathId: string;
+  nodeSequence: string[];
+  edgeSequence: string[];
+  nodeLabels: string[];
+  edgeTypes: string[];
+  pathRisk: number;
+  pathConfidence: number;
+  transmissionScore: number;
+  evidenceRefs: string[];
 }
 
 export interface Prediction {
@@ -76,6 +113,35 @@ export interface Prediction {
   label_version: string;
   top_drivers: string[];
   top_paths: string[];
+  score_components?: PredictionScoreComponents;
+  driver_contributions?: PredictionDriverContribution[];
+  prediction_form?: string;
+  mechanism?: string;
+  confidence_interval?: {
+    low: number;
+    high: number;
+    horizonDays: number;
+  };
+  path_details?: PredictionPathDetail[];
+  evidence_refs?: string[];
+}
+
+export interface PredictionMechanismSummary {
+  mechanism: string;
+  count: number;
+  maxRisk: number;
+  averageRisk: number;
+}
+
+export interface PredictionCenterData {
+  lastUpdated: string;
+  modelVersion: string;
+  predictionForm: string;
+  predictions: Prediction[];
+  topPredictions: Prediction[];
+  mechanisms: PredictionMechanismSummary[];
+  highConfidenceCount: number;
+  saturatedScoreCount: number;
 }
 
 export interface GraphSnapshotPayload {
@@ -101,7 +167,10 @@ export interface GraphSnapshotPayload {
     source_id: string;
     target_id: string;
     meta_path: string;
+    node_sequence: string[];
+    edge_sequence: string[];
     path_length: number;
+    path_weight: number;
     path_risk: number;
     path_confidence: number;
   }>;
@@ -137,6 +206,9 @@ export type DashboardPageId =
   | "global-risk-cockpit"
   | "graph-explorer"
   | "company-risk-360"
+  | "prediction-center"
+  | "path-analysis"
+  | "country-lens"
   | "path-explainer"
   | "shock-simulator"
   | "causal-evidence-board"
@@ -170,10 +242,22 @@ export const dashboardPages: DashboardPage[] = [
     description: "Company-level exposure, suppliers, and mitigation posture",
   },
   {
-    id: "path-explainer",
-    label: "Path Explainer",
+    id: "prediction-center",
+    label: "Prediction Center",
+    shortLabel: "Predict",
+    description: "Ensemble risk forecasts, mechanism labels, confidence bands, and evidence paths",
+  },
+  {
+    id: "path-analysis",
+    label: "Path Analysis",
     shortLabel: "Paths",
-    description: "Why a risk score moved and which paths carried the signal",
+    description: "Top-K transmission paths with hop-by-hop evidence",
+  },
+  {
+    id: "country-lens",
+    label: "Country Lens",
+    shortLabel: "Country",
+    description: "Country risk, critical nodes, data coverage, and cross-border flow",
   },
   {
     id: "shock-simulator",
@@ -264,6 +348,23 @@ export interface GraphNode {
   x: number;
   y: number;
   metadata: Record<string, string | number>;
+  countryCode?: string;
+  entityType?: string;
+  riskScore?: number;
+  centralityScore?: number;
+  criticalityScore?: number;
+  criticalityRank?: number;
+  inDegree?: number;
+  outDegree?: number;
+  weightedDegree?: number;
+  pathThroughCount?: number;
+  riskDrivers?: string[];
+  geoId?: string;
+  geoLevel?: "country" | "province" | "region" | "aggregate" | "unknown" | string;
+  provinceCode?: string | null;
+  parentGeoId?: string | null;
+  sourceCountryCode?: string | null;
+  displayName?: string;
 }
 
 export interface GraphLink {
@@ -273,6 +374,15 @@ export interface GraphLink {
   label: string;
   weight: number;
   level: RiskLevel;
+  edgeType?: string;
+  riskScore?: number;
+  confidence?: number;
+  sourceId?: string;
+  transmissionWeight?: number;
+  lagDays?: number;
+  sourceCountry?: string;
+  targetCountry?: string;
+  edgeRole?: "transmission" | "governance" | "evidence" | "location" | "classification" | "context" | string;
 }
 
 export interface GraphStatCount {
@@ -292,6 +402,130 @@ export interface GraphExplorerStats {
   bySource: GraphStatCount[];
 }
 
+export interface CriticalGraphNode {
+  id: string;
+  label: string;
+  kind: GraphNodeKind;
+  level: RiskLevel;
+  score: number;
+  countryCode?: string;
+  entityType?: string;
+  riskScore?: number;
+  centralityScore?: number;
+  criticalityScore?: number;
+  criticalityRank?: number;
+  inDegree?: number;
+  outDegree?: number;
+  weightedDegree?: number;
+  pathThroughCount?: number;
+  drivers: string[];
+  riskDrivers?: string[];
+  geoId?: string;
+  geoLevel?: "country" | "province" | "region" | "aggregate" | "unknown" | string;
+  provinceCode?: string | null;
+  parentGeoId?: string | null;
+  sourceCountryCode?: string | null;
+}
+
+export interface TransmissionPathStep {
+  id: string;
+  nodeId: string;
+  label: string;
+  kind: GraphNodeKind | "signal";
+  level: RiskLevel;
+  contribution: number;
+  countryCode?: string;
+  evidence: string;
+  edgeId?: string | null;
+  edgeType?: string | null;
+  confidence?: number;
+  sourceId?: string;
+  geoId?: string;
+  geoLevel?: string;
+  provinceCode?: string | null;
+}
+
+export interface GraphTransmissionPath {
+  id: string;
+  title: string;
+  sourceId: string;
+  targetId: string;
+  sourceLabel: string;
+  targetLabel: string;
+  targetCompany: string;
+  scoreMove: number;
+  confidence: number;
+  pathRisk: number;
+  pathConfidence: number;
+  pathWeight?: number;
+  transmissionScore: number;
+  nodeSequence: string[];
+  edgeSequence: string[];
+  countrySequence: string[];
+  bottleneckEdgeId: string;
+  steps: TransmissionPathStep[];
+  summary: string;
+}
+
+export interface GraphTransmissionSummary {
+  pathCount: number;
+  transmissionEdgeCount: number;
+  maxHops: number;
+  topK: number;
+  contextEdgesSuppressed: number;
+}
+
+export interface CountryRiskSummary {
+  code: string;
+  label: string;
+  countryCode: string;
+  countryName: string;
+  entityCount: number;
+  edgeCount: number;
+  riskScore: number;
+  centralityScore: number;
+  inboundRisk: number;
+  outboundRisk: number;
+  subdivisions?: Array<{
+    geoId: string;
+    label: string;
+    provinceCode?: string;
+    entityCount: number;
+    riskScore: number;
+  }>;
+}
+
+export interface CountryTransmissionEdge {
+  id: string;
+  sourceCountry: string;
+  targetCountry: string;
+  edgeCount: number;
+  riskScore: number;
+  transmissionWeight: number;
+  topEdgeTypes: Array<{ edgeType: string; count: number }>;
+}
+
+export interface CountryDataCoverage {
+  countryCode: string;
+  sourceId: string;
+  nodeCount: number;
+  coverageScore: number;
+}
+
+export interface CountryLensData {
+  selectedCountryCode: string;
+  countries: CountryRiskSummary[];
+  countryEdges: CountryTransmissionEdge[];
+  topCriticalNodes: CriticalGraphNode[];
+  topPaths: GraphTransmissionPath[];
+  dataCoverage: CountryDataCoverage[];
+  countryCode: string;
+  countryName: string;
+  riskScore: number;
+  criticalNodes: CriticalGraphNode[];
+  transmissionPaths: GraphTransmissionPath[];
+}
+
 export interface GraphExplorerData {
   nodes: GraphNode[];
   links: GraphLink[];
@@ -299,6 +533,17 @@ export interface GraphExplorerData {
   selectedNodeId: string;
   dataSummary?: DataCatalogSummary;
   graphStats?: GraphExplorerStats;
+  criticalNodes?: CriticalGraphNode[];
+  transmissionPaths?: GraphTransmissionPath[];
+  transmissionSummary?: GraphTransmissionSummary;
+  countryLens?: CountryLensData;
+  availableCountries?: CountryRiskSummary[];
+  truncated?: {
+    nodes: boolean;
+    links: boolean;
+    renderedNodeLimit: number;
+    renderedLinkLimit: number;
+  };
 }
 
 export interface SupplierExposure {

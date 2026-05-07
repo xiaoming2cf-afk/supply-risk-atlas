@@ -34,6 +34,21 @@ def test_prediction_route_is_versioned() -> None:
     assert_envelope(payload)
     assert payload["data"]
     assert payload["data"][0]["graph_version"] == payload["metadata"]["graph_version"]
+    assert payload["data"][0]["score_components"]
+    assert payload["data"][0]["driver_contributions"]
+    assert payload["data"][0]["prediction_form"] == "public_evidence_graph_ensemble"
+
+
+def test_prediction_center_route_exposes_mechanisms_and_paths() -> None:
+    payload = main.route_dashboard_page(page_id="prediction-center")
+    assert_envelope(payload)
+
+    center = payload["data"]
+    assert center["predictions"]
+    assert center["topPredictions"]
+    assert center["mechanisms"]
+    assert center["saturatedScoreCount"] < len(center["predictions"])
+    assert any(prediction["path_details"] for prediction in center["topPredictions"])
 
 
 def test_sources_route_is_versioned_and_fresh() -> None:
@@ -73,6 +88,53 @@ def test_graph_explorer_returns_renderable_subgraph_with_stats() -> None:
     assert graph["graphStats"]["totalNodes"] >= len(graph["nodes"])
     assert graph["graphStats"]["totalLinks"] >= len(graph["links"])
     assert any(row["source"] == "USGS Earthquake Hazards Program" for row in graph["graphStats"]["bySource"])
+
+    node_ids = {node["id"] for node in graph["nodes"]}
+    assert "firm_apple" in node_ids
+    assert any(link["source"] == "firm_apple" or link["target"] == "firm_apple" for link in graph["links"])
+
+
+def test_path_analysis_route_exposes_critical_nodes_and_transmission_paths() -> None:
+    payload = main.route_dashboard_page(page_id="path-analysis")
+    assert_envelope(payload)
+
+    path_analysis = payload["data"]
+    assert path_analysis["criticalNodes"]
+    assert path_analysis["transmissionPaths"]
+
+    critical_node = path_analysis["criticalNodes"][0]
+    assert {"id", "label", "kind", "level", "score", "drivers"} <= set(critical_node)
+    assert critical_node["level"] in {"critical", "severe", "elevated", "guarded", "low"}
+    assert isinstance(critical_node["drivers"], list)
+
+    transmission_path = path_analysis["transmissionPaths"][0]
+    assert {"id", "sourceId", "targetId", "nodeSequence", "edgeSequence", "pathRisk", "pathConfidence"} <= set(
+        transmission_path
+    )
+    assert len(transmission_path["nodeSequence"]) >= 2
+    assert len(transmission_path["edgeSequence"]) == len(transmission_path["nodeSequence"]) - 1
+    assert 0 <= transmission_path["pathRisk"] <= 1
+    assert 0 <= transmission_path["pathConfidence"] <= 1
+
+
+def test_country_lens_route_exposes_country_options_and_selected_lens() -> None:
+    payload = main.route_dashboard_page(page_id="country-lens")
+    assert_envelope(payload)
+
+    country_data = payload["data"]
+    assert country_data["availableCountries"]
+    assert country_data["countryLens"]
+
+    countries = country_data["availableCountries"]
+    assert all({"code", "label", "entityCount", "riskScore"} <= set(country) for country in countries)
+    assert any(country["code"] == "CN" for country in countries)
+    assert all(country["code"] != "TW" for country in countries)
+
+    lens = country_data["countryLens"]
+    assert {"countryCode", "countryName", "riskScore", "criticalNodes", "transmissionPaths"} <= set(lens)
+    assert lens["countryCode"] in {country["code"] for country in countries}
+    assert lens["criticalNodes"]
+    assert lens["transmissionPaths"]
 
 
 def test_entity_route_supports_query_filter() -> None:

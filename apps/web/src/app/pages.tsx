@@ -1,4 +1,6 @@
 ﻿import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import type { CSSProperties } from "react";
+import type { ElkNode } from "elkjs";
 import {
   Background,
   Controls,
@@ -17,7 +19,6 @@ import {
   CheckCircle2,
   Database,
   Factory,
-  Filter,
   GitBranch,
   Layers3,
   Play,
@@ -29,13 +30,18 @@ import {
 import type { SupplyRiskApiClient, SupplyRiskDashboardData } from "@supply-risk/api-client";
 import type {
   ApiResult,
+  CountryLensData,
+  CountryRiskSummary,
+  CriticalGraphNode,
   DashboardPageId,
   EvidenceItem,
   ExplainedPath,
   GraphLink,
+  GraphTransmissionPath,
   GraphNode,
   GraphNodeKind,
   GraphVersion,
+  Prediction,
   RiskLevel,
   ShockSimulationInput,
   ShockSimulationResult
@@ -54,9 +60,15 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
     case "global-risk-cockpit":
       return <GlobalRiskCockpit data={props.data} />;
     case "graph-explorer":
-      return <GraphExplorer data={props.data} />;
+      return <GraphExplorer data={props.data} initialMode="risk-centrality" />;
     case "company-risk-360":
       return <CompanyRisk360 data={props.data} />;
+    case "prediction-center":
+      return <PredictionCenter data={props.data} />;
+    case "path-analysis":
+      return <GraphExplorer data={props.data} initialMode="path-analysis" />;
+    case "country-lens":
+      return <GraphExplorer data={props.data} initialMode="country-lens" />;
     case "path-explainer":
       return <PathExplainer data={props.data} />;
     case "shock-simulator":
@@ -177,39 +189,245 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskDashboardData }) {
   );
 }
 
-function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
+type GraphExplorerMode = "risk-centrality" | "path-analysis" | "country-lens";
+
+const graphModeOptions: Array<{ id: GraphExplorerMode; label: string }> = [
+  { id: "risk-centrality", label: "Risk + Centrality" },
+  { id: "path-analysis", label: "Path Analysis" },
+  { id: "country-lens", label: "Country Lens" },
+];
+
+function GraphExplorer({
+  data,
+  initialMode = "risk-centrality"
+}: {
+  data: SupplyRiskDashboardData;
+  initialMode?: GraphExplorerMode;
+}) {
   const { t } = useI18n();
   const graph = data.graphExplorer;
+  const [mode, setMode] = useState<GraphExplorerMode>(initialMode);
   const [kind, setKind] = useState<GraphNodeKind | "all">("all");
   const [query, setQuery] = useState("");
   const [selectedNodeId, setSelectedNodeId] = useState(graph.selectedNodeId);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [selectedPathId, setSelectedPathId] = useState(graph.transmissionPaths?.[0]?.id ?? data.pathExplainer.selectedPathId);
+  const [selectedPathStepIndex, setSelectedPathStepIndex] = useState(0);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(
+    graph.countryLens?.selectedCountryCode ?? graph.availableCountries?.[0]?.code ?? "CN",
+  );
   const normalizedQuery = query.trim().toLowerCase();
+  const graphStats = graph.graphStats;
+  const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
+  const linkMap = useMemo(() => new Map(graph.links.map((link) => [link.id, link])), [graph.links]);
+  const criticalNodes = useMemo<CriticalGraphNode[]>(
+    () =>
+      graph.criticalNodes?.length
+        ? graph.criticalNodes
+        : [...graph.nodes]
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 12)
+            .map((node) => ({
+              id: node.id,
+              label: node.label,
+              kind: node.kind,
+              level: node.level,
+              score: node.score,
+              countryCode: node.countryCode,
+              entityType: node.entityType,
+              riskScore: node.riskScore ?? node.score,
+              centralityScore: node.centralityScore ?? 0,
+              criticalityScore: node.criticalityScore ?? node.score,
+              criticalityRank: node.criticalityRank,
+              drivers: node.riskDrivers ?? [],
+            })),
+    [graph.criticalNodes, graph.nodes]
+  );
+  const transmissionPaths = graph.transmissionPaths ?? [];
+  const activePath = transmissionPaths.find((path) => path.id === selectedPathId) ?? transmissionPaths[0];
+  const activePathEdgeIds = useMemo(() => new Set(activePath?.edgeSequence ?? []), [activePath]);
+  const activePathNodeIds = useMemo(() => new Set(activePath?.nodeSequence ?? []), [activePath]);
+  const activePathNodeIndex = useMemo(
+    () => new Map((activePath?.nodeSequence ?? []).map((nodeId, index) => [nodeId, index])),
+    [activePath],
+  );
+  const selectedPathStep =
+    mode === "path-analysis" && activePath ? activePath.steps[Math.min(selectedPathStepIndex, activePath.steps.length - 1)] : undefined;
+  const selectedPathStepEdgeId =
+    mode === "path-analysis" && activePath && selectedPathStepIndex > 0
+      ? activePath.edgeSequence[selectedPathStepIndex - 1]
+      : undefined;
+  const countryLens = graph.countryLens;
+  const availableCountries = graph.availableCountries ?? countryLens?.countries ?? [];
+  const selectedCountry =
+    availableCountries.find((country) => country.code === selectedCountryCode) ??
+    availableCountries.find((country) => country.code === countryLens?.selectedCountryCode) ??
+    availableCountries[0];
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
+
+  useEffect(() => {
+    if (activePath && selectedPathId !== activePath.id) {
+      setSelectedPathId(activePath.id);
+    }
+  }, [activePath, selectedPathId]);
+
+  useEffect(() => {
+    setSelectedPathStepIndex(0);
+  }, [selectedPathId]);
+
+  useEffect(() => {
+    if (activePath && selectedPathStepIndex >= activePath.steps.length) {
+      setSelectedPathStepIndex(Math.max(0, activePath.steps.length - 1));
+    }
+  }, [activePath, selectedPathStepIndex]);
+
+  useEffect(() => {
+    if (selectedCountry && selectedCountry.code !== selectedCountryCode) {
+      setSelectedCountryCode(selectedCountry.code);
+    }
+  }, [selectedCountry, selectedCountryCode]);
+
+  const visibleNodeIds = useMemo(() => {
+    const ids = new Set<string>();
+    const addNode = (nodeId: string | undefined) => {
+      if (nodeId && nodeMap.has(nodeId)) ids.add(nodeId);
+    };
+    const addLinkContext = (link: GraphLink) => {
+      addNode(link.source);
+      addNode(link.target);
+    };
+    const addPathContext = (path: GraphTransmissionPath | undefined) => {
+      path?.nodeSequence.forEach(addNode);
+    };
+    const addFirstNeighborContext = (nodeId: string | undefined) => {
+      if (!nodeId) return;
+      addNode(nodeId);
+      for (const link of graph.links) {
+        if (link.source === nodeId || link.target === nodeId) addLinkContext(link);
+      }
+    };
+    const nodeMatchesSearch = (node: GraphNode) => {
+      if (!normalizedQuery) return true;
+      const metadataValues = Object.values(node.metadata).map((value) => String(value).toLowerCase());
+      return [node.id, node.label, node.kind, node.countryCode ?? "", node.entityType ?? "", ...metadataValues].some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
+      );
+    };
+
+    if (mode === "path-analysis") {
+      addPathContext(activePath);
+      for (const edgeId of activePath?.edgeSequence ?? []) {
+        const link = linkMap.get(edgeId);
+        if (link) addLinkContext(link);
+      }
+      for (const path of transmissionPaths.slice(0, 4)) {
+        addPathContext(path);
+      }
+    } else if (mode === "country-lens" && selectedCountryCode) {
+      for (const node of graph.nodes) {
+        if ((node.countryCode ?? String(node.metadata.country ?? "")).toUpperCase() === selectedCountryCode) {
+          addNode(node.id);
+        }
+      }
+      for (const link of graph.links) {
+        if (link.sourceCountry === selectedCountryCode || link.targetCountry === selectedCountryCode) {
+          addLinkContext(link);
+        }
+      }
+      for (const path of transmissionPaths) {
+        if (path.countrySequence.includes(selectedCountryCode)) addPathContext(path);
+      }
+    } else {
+      for (const node of criticalNodes.slice(0, 18)) {
+        addNode(node.id);
+      }
+      addFirstNeighborContext(selectedNodeId);
+    }
+
+    if (normalizedQuery) {
+      const matchedIds = graph.nodes
+        .filter((node) => (kind === "all" || node.kind === kind) && nodeMatchesSearch(node))
+        .map((node) => node.id);
+      for (const nodeId of matchedIds) {
+        addNode(nodeId);
+        for (const link of graph.links) {
+          if (link.source === nodeId || link.target === nodeId) addLinkContext(link);
+        }
+        for (const path of transmissionPaths) {
+          if (path.nodeSequence.includes(nodeId)) addPathContext(path);
+        }
+      }
+    } else if (kind !== "all") {
+      for (const node of graph.nodes) {
+        if (node.kind === kind) addNode(node.id);
+      }
+    }
+
+    addFirstNeighborContext(selectedNodeId);
+    if (selectedPathStep?.nodeId) addFirstNeighborContext(selectedPathStep.nodeId);
+
+    if (ids.size === 0) {
+      for (const node of graph.nodes.slice(0, 40)) addNode(node.id);
+    }
+    return ids;
+  }, [
+    activePath,
+    criticalNodes,
+    graph.links,
+    graph.nodes,
+    kind,
+    linkMap,
+    mode,
+    nodeMap,
+    normalizedQuery,
+    selectedCountryCode,
+    selectedNodeId,
+    selectedPathStep,
+    transmissionPaths,
+  ]);
 
   const visibleNodes = useMemo(
     () =>
-      graph.nodes.filter((node) => {
-        const kindMatches = kind === "all" || node.kind === kind;
-        if (!kindMatches) return false;
-        if (!normalizedQuery) return true;
-        const metadataValues = Object.values(node.metadata).map((value) => String(value).toLowerCase());
-        return [node.id, node.label, node.kind, ...metadataValues].some((value) =>
-          value.toLowerCase().includes(normalizedQuery),
-        );
-      }),
-    [graph.nodes, kind, normalizedQuery]
+      graph.nodes
+        .filter((node) => visibleNodeIds.has(node.id))
+        .sort((a, b) => {
+          if (activePathNodeIds.has(a.id) !== activePathNodeIds.has(b.id)) return activePathNodeIds.has(a.id) ? -1 : 1;
+          return (b.criticalityScore ?? b.score) - (a.criticalityScore ?? a.score);
+        }),
+    [activePathNodeIds, graph.nodes, visibleNodeIds]
   );
-  const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((node) => node.id)), [visibleNodes]);
-  const visibleLinks = graph.links.filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target));
+  const visibleLinks = useMemo(
+    () => graph.links.filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)),
+    [graph.links, visibleNodeIds]
+  );
   const selectedNode =
-    visibleNodes.find((node) => node.id === selectedNodeId) ??
+    nodeMap.get(selectedNodeId) ??
+    visibleNodes.find((node) => node.id === graph.selectedNodeId) ??
     visibleNodes[0] ??
-    graph.nodes.find((node) => node.id === selectedNodeId) ??
     graph.nodes[0];
-  const graphStats = graph.graphStats;
+  const selectedEdge = selectedEdgeId ? linkMap.get(selectedEdgeId) : undefined;
 
   return (
-    <div className="page-grid split-layout">
-      <Panel title="Graph filters" subtitle="Scope the visible network without losing node context.">
+    <div className="graph-workbench">
+      <Panel title="Graph scope" subtitle="Mode, filters, and ranked critical entities." className="graph-side-panel">
+        <div className="graph-mode-toolbar" aria-label={t("Graph analysis mode")}>
+          {graphModeOptions.map((option) => (
+            <button
+              className={`mode-tab ${mode === option.id ? "is-active" : ""}`}
+              key={option.id}
+              onClick={() => {
+                setMode(option.id);
+                setSelectedEdgeId(null);
+              }}
+              type="button"
+            >
+              {t(option.label)}
+            </button>
+          ))}
+        </div>
         <div className="segmented" aria-label={t("Graph node type")}>
           {(["all", ...graph.filters] as Array<GraphNodeKind | "all">).map((filter) => (
             <button
@@ -222,17 +440,7 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
             </button>
           ))}
         </div>
-        <div style={{ marginTop: 16 }} className="inspector-grid">
-          <Field label="Visible nodes" value={visibleNodes.length} />
-          <Field label="Visible links" value={visibleLinks.length} />
-          <Field label="Total nodes" value={formatCompactNumber(graphStats?.totalNodes ?? graph.nodes.length)} />
-          <Field label="Total links" value={formatCompactNumber(graphStats?.totalLinks ?? graph.links.length)} />
-          <Field label="Data nodes" value={graph.dataSummary?.totalDataNodes ?? 0} />
-          <Field label="High-risk edges" value={formatCompactNumber(graphStats?.highRiskLinks ?? 0)} />
-          <Field label="Focus score" value={`${selectedNode.score}/100`} />
-          <Field label="Focus type" value={selectedNode.kind} />
-        </div>
-        <label className="form-control" style={{ marginTop: 16 }}>
+        <label className="form-control graph-search-control">
           <span>{t("Entity search")}</span>
           <input
             aria-label={t("Entity search")}
@@ -242,35 +450,426 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
             value={query}
           />
         </label>
+        <div className="inspector-grid graph-stat-grid">
+          <Field label="Visible nodes" value={visibleNodes.length} />
+          <Field label="Visible links" value={visibleLinks.length} />
+          <Field label="Total nodes" value={formatCompactNumber(graphStats?.totalNodes ?? graph.nodes.length)} />
+          <Field label="Total links" value={formatCompactNumber(graphStats?.totalLinks ?? graph.links.length)} />
+          <Field label="Critical nodes" value={criticalNodes.length} />
+          <Field label="Transmission paths" value={transmissionPaths.length} />
+        </div>
+
+        <GraphCriticalNodeList
+          nodes={criticalNodes}
+          selectedNodeId={selectedNode.id}
+          onSelect={(nodeId) => {
+            setSelectedNodeId(nodeId);
+            setSelectedEdgeId(null);
+            setMode("risk-centrality");
+          }}
+        />
+
+        {mode === "path-analysis" ? (
+          <GraphPathList
+            paths={transmissionPaths}
+            selectedPathId={activePath?.id}
+            onSelect={(pathId) => {
+              setSelectedPathId(pathId);
+              setSelectedEdgeId(null);
+            }}
+          />
+        ) : null}
+
+        {mode === "country-lens" ? (
+          <GraphCountryList
+            countries={availableCountries}
+            selectedCountryCode={selectedCountry?.code}
+            onSelect={(countryCode) => {
+              setSelectedCountryCode(countryCode);
+              setSelectedEdgeId(null);
+            }}
+          />
+        ) : null}
       </Panel>
 
       <Panel
         title="Entity network"
-        subtitle="Click a node to inspect metadata and high-risk adjacency."
-        action={<Button icon={Filter}>Save view</Button>}
+        subtitle="Click nodes, edges, paths, and countries to inspect risk transmission."
+        className="graph-main-panel"
       >
         <div className="graph-canvas">
           <GraphNetwork
+            activePathEdgeIds={activePathEdgeIds}
+            activePathNodeIds={activePathNodeIds}
             links={visibleLinks}
+            mode={mode}
             nodes={visibleNodes}
-            onSelectNode={setSelectedNodeId}
+            onSelectEdge={(edgeId) => {
+              setSelectedEdgeId(edgeId);
+            }}
+            onSelectNode={(nodeId) => {
+              setSelectedNodeId(nodeId);
+              setSelectedEdgeId(null);
+            }}
+            selectedCountryCode={mode === "country-lens" ? selectedCountry?.code : undefined}
+            selectedEdgeId={selectedEdgeId}
             selectedNodeId={selectedNode.id}
+            selectedPathStepEdgeId={selectedPathStepEdgeId}
+            selectedPathStepNodeId={selectedPathStep?.nodeId}
+            activePathNodeIndex={activePathNodeIndex}
           />
           {visibleNodes.length === 0 ? <div className="empty-state">{t("No entities match the current filters.")}</div> : null}
         </div>
       </Panel>
 
-      <Panel title="Node inspector" subtitle="Live metadata attached to the selected graph node.">
-        <div className="inspector-grid">
-          <Field label="Name" value={selectedNode.label} />
-          <Field label="Risk level" value={<RiskPill level={selectedNode.level} />} />
-          <Field label="Score" value={`${selectedNode.score}/100`} />
-          <Field label="Kind" value={selectedNode.kind} />
-          {Object.entries(selectedNode.metadata).map(([label, value]) => (
-            <Field key={label} label={label} value={String(value)} />
-          ))}
-        </div>
+      <Panel title="Inspector" subtitle="Selection-specific evidence, flow, and country context." className="graph-inspector-panel">
+        <GraphInspector
+          activePath={mode === "path-analysis" ? activePath : undefined}
+          countryLens={countryLens}
+          edge={selectedEdge}
+          node={selectedEdge ? undefined : selectedNode}
+          onSelectPathStep={(index, nodeId) => {
+            setSelectedPathStepIndex(index);
+            if (nodeId) {
+              setSelectedNodeId(nodeId);
+              setSelectedEdgeId(null);
+            }
+          }}
+          selectedCountry={mode === "country-lens" ? selectedCountry : undefined}
+          selectedPathStepIndex={selectedPathStepIndex}
+        />
       </Panel>
+    </div>
+  );
+}
+
+function GraphCriticalNodeList({
+  nodes,
+  onSelect,
+  selectedNodeId
+}: {
+  nodes: CriticalGraphNode[];
+  onSelect: (nodeId: string) => void;
+  selectedNodeId: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="graph-list-section">
+      <div className="section-kicker">{t("Critical nodes")}</div>
+      <ul className="critical-node-list">
+        {nodes.slice(0, 10).map((node) => (
+          <li key={node.id}>
+            <button
+              className={`graph-list-button ${node.id === selectedNodeId ? "is-active" : ""}`}
+              onClick={() => onSelect(node.id)}
+              type="button"
+            >
+              <span>
+                <strong>{node.criticalityRank ? `#${node.criticalityRank} ` : ""}{node.label}</strong>
+                <small>{node.kind} / {node.countryCode ?? "global"}</small>
+              </span>
+              <b>{graphScore(node.criticalityScore ?? node.score)}</b>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function GraphPathList({
+  onSelect,
+  paths,
+  selectedPathId
+}: {
+  onSelect: (pathId: string) => void;
+  paths: GraphTransmissionPath[];
+  selectedPathId?: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="graph-list-section">
+      <div className="section-kicker">{t("Transmission paths")}</div>
+      <ul className="path-list">
+        {paths.slice(0, 8).map((path) => (
+          <li key={path.id}>
+            <button
+              className={`graph-list-button path ${path.id === selectedPathId ? "is-active" : ""}`}
+              onClick={() => onSelect(path.id)}
+              type="button"
+            >
+              <span>
+                <strong>{path.sourceLabel} -&gt; {path.targetLabel}</strong>
+                <small>{path.edgeSequence.length} hops / {path.countrySequence.join(" -> ")}</small>
+              </span>
+              <b>{Math.round(path.transmissionScore * 100)}</b>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function GraphCountryList({
+  countries,
+  onSelect,
+  selectedCountryCode
+}: {
+  countries: CountryRiskSummary[];
+  onSelect: (countryCode: string) => void;
+  selectedCountryCode?: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="graph-list-section">
+      <div className="section-kicker">{t("Available countries")}</div>
+      <ul className="country-list">
+        {countries.slice(0, 12).map((country) => (
+          <li key={country.code}>
+            <button
+              className={`graph-list-button country ${country.code === selectedCountryCode ? "is-active" : ""}`}
+              onClick={() => onSelect(country.code)}
+              type="button"
+            >
+              <span>
+                <strong>{country.label}</strong>
+                <small>{country.entityCount} nodes / {country.edgeCount} edges</small>
+              </span>
+              <b>{graphScore(country.riskScore)}</b>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function GraphInspector({
+  activePath,
+  countryLens,
+  edge,
+  node,
+  onSelectPathStep,
+  selectedCountry,
+  selectedPathStepIndex
+}: {
+  activePath?: GraphTransmissionPath;
+  countryLens?: CountryLensData;
+  edge?: GraphLink;
+  node?: GraphNode;
+  onSelectPathStep?: (index: number, nodeId: string) => void;
+  selectedCountry?: CountryRiskSummary;
+  selectedPathStepIndex?: number;
+}) {
+  if (edge) {
+    return <EdgeInspector edge={edge} />;
+  }
+  if (selectedCountry && countryLens) {
+    return <CountryInspector country={selectedCountry} countryLens={countryLens} />;
+  }
+  if (activePath) {
+    return <PathInspector onSelectStep={onSelectPathStep} path={activePath} selectedStepIndex={selectedPathStepIndex ?? 0} />;
+  }
+  if (node) {
+    return <NodeInspector node={node} />;
+  }
+  return <div className="empty-state">Select an object to inspect.</div>;
+}
+
+function NodeInspector({ node }: { node: GraphNode }) {
+  return (
+    <div className="inspector-stack">
+      <div className="inspector-grid">
+        <Field label="Name" value={node.label} />
+        <Field label="Risk level" value={<RiskPill level={node.level} />} />
+        <Field label="Risk score" value={`${graphScore(node.riskScore ?? node.score)}/100`} />
+        <Field label="Centrality" value={`${graphScore(node.centralityScore ?? 0)}/100`} />
+        <Field label="Criticality" value={`${graphScore(node.criticalityScore ?? node.score)}/100`} />
+        <Field label="Rank" value={node.criticalityRank ? `#${node.criticalityRank}` : "n/a"} />
+        <Field label="In / out degree" value={`${node.inDegree ?? 0} / ${node.outDegree ?? 0}`} />
+        <Field label="Country" value={node.countryCode ?? String(node.metadata.country ?? "global")} />
+      </div>
+      {node.riskDrivers?.length ? (
+        <ul className="evidence-list compact">
+          {node.riskDrivers.slice(0, 4).map((driver) => (
+            <li key={driver}>{driver}</li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="inspector-grid">
+        {Object.entries(node.metadata).slice(0, 8).map(([label, value]) => (
+          <Field key={label} label={label} value={String(value)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EdgeInspector({ edge }: { edge: GraphLink }) {
+  return (
+    <div className="inspector-stack edge-inspector">
+      <div className="inspector-grid">
+        <Field label="Edge type" value={edge.edgeType ?? edge.label} />
+        <Field label="Role" value={edge.edgeRole ?? "context"} />
+        <Field label="Risk score" value={`${edge.riskScore ?? Math.round(edge.weight * 100)}/100`} />
+        <Field label="Weight" value={formatPercent(edge.transmissionWeight ?? edge.weight)} />
+        <Field label="Confidence" value={formatPercent(edge.confidence ?? 0)} />
+        <Field label="Lag days" value={edge.lagDays ?? 0} />
+        <Field label="Source country" value={edge.sourceCountry ?? "global"} />
+        <Field label="Target country" value={edge.targetCountry ?? "global"} />
+      </div>
+      <p className="inspector-note">
+        {edge.source} -&gt; {edge.target} / {edge.sourceId ?? "public source"}
+      </p>
+    </div>
+  );
+}
+
+function PathInspector({
+  onSelectStep,
+  path,
+  selectedStepIndex
+}: {
+  onSelectStep?: (index: number, nodeId: string) => void;
+  path: GraphTransmissionPath;
+  selectedStepIndex: number;
+}) {
+  const boundedStepIndex = Math.min(selectedStepIndex, Math.max(0, path.steps.length - 1));
+  return (
+    <div className="inspector-stack path-inspector">
+      <div className="inspector-grid">
+        <Field label="Path risk" value={`${Math.round(path.pathRisk * 100)}/100`} />
+        <Field label="Transmission" value={`${Math.round(path.transmissionScore * 100)}/100`} />
+        <Field label="Confidence" value={formatPercent(path.pathConfidence)} />
+        <Field label="Hops" value={path.edgeSequence.length} />
+        <Field label="Countries" value={path.countrySequence.join(" -> ")} />
+        <Field label="Bottleneck" value={path.bottleneckEdgeId} />
+      </div>
+      {path.steps.length > 1 ? (
+        <div className="path-scrubber">
+          <button
+            aria-label="Previous path step"
+            disabled={boundedStepIndex === 0}
+            onClick={() => {
+              const nextIndex = Math.max(0, boundedStepIndex - 1);
+              const nextStep = path.steps[nextIndex];
+              if (nextStep) onSelectStep?.(nextIndex, nextStep.nodeId);
+            }}
+            type="button"
+          >
+            Prev
+          </button>
+          <input
+            aria-label="Selected path step"
+            max={path.steps.length - 1}
+            min={0}
+            onChange={(event) => {
+              const nextIndex = Number(event.target.value);
+              const nextStep = path.steps[nextIndex];
+              if (nextStep) onSelectStep?.(nextIndex, nextStep.nodeId);
+            }}
+            step={1}
+            type="range"
+            value={boundedStepIndex}
+          />
+          <button
+            aria-label="Next path step"
+            disabled={boundedStepIndex === path.steps.length - 1}
+            onClick={() => {
+              const nextIndex = Math.min(path.steps.length - 1, boundedStepIndex + 1);
+              const nextStep = path.steps[nextIndex];
+              if (nextStep) onSelectStep?.(nextIndex, nextStep.nodeId);
+            }}
+            type="button"
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
+      <div className="transmission-step-list">
+        {path.steps.map((step, index) => (
+          <button
+            className={`transmission-step ${index === boundedStepIndex ? "is-active" : ""}`}
+            key={step.id}
+            onClick={() => onSelectStep?.(index, step.nodeId)}
+            type="button"
+          >
+            <span>{index + 1}</span>
+            <div>
+              <strong>{step.label}</strong>
+              <small>{step.edgeType ?? "source"} / {step.countryCode ?? "global"} / {step.evidence}</small>
+            </div>
+            <b>{step.contribution}</b>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CountryInspector({
+  country,
+  countryLens
+}: {
+  country: CountryRiskSummary;
+  countryLens: CountryLensData;
+}) {
+  const selectedNodes = countryLens.topCriticalNodes.length ? countryLens.topCriticalNodes : countryLens.criticalNodes;
+  const selectedPaths = countryLens.topPaths.length ? countryLens.topPaths : countryLens.transmissionPaths;
+  return (
+    <div className="inspector-stack country-inspector">
+      <div className="inspector-grid">
+        <Field label="Country" value={country.label} />
+        <Field label="Risk score" value={`${graphScore(country.riskScore)}/100`} />
+        <Field label="Centrality" value={`${graphScore(country.centralityScore)}/100`} />
+        <Field label="Nodes" value={country.entityCount} />
+        <Field label="Inbound risk" value={country.inboundRisk.toFixed(1)} />
+        <Field label="Outbound risk" value={country.outboundRisk.toFixed(1)} />
+      </div>
+      <div className="country-lens-grid">
+        <div>
+          <div className="section-kicker">Top companies / facilities</div>
+          <ul className="evidence-list compact">
+            {selectedNodes.slice(0, 5).map((node) => (
+              <li key={node.id}>{node.label} / {graphScore(node.criticalityScore ?? node.score)}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <div className="section-kicker">High-risk paths</div>
+          <ul className="evidence-list compact">
+            {selectedPaths.slice(0, 4).map((path) => (
+              <li key={path.id}>{path.sourceLabel} -&gt; {path.targetLabel}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {country.subdivisions?.length ? (
+        <div>
+          <div className="section-kicker">Province / region detail</div>
+          <ul className="evidence-list compact">
+            {country.subdivisions.slice(0, 6).map((subdivision) => (
+              <li key={subdivision.geoId}>
+                {subdivision.label}: {subdivision.entityCount} nodes / {graphScore(subdivision.riskScore)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <div>
+        <div className="section-kicker">Data coverage</div>
+        <ul className="evidence-list compact">
+          {countryLens.dataCoverage
+            .filter((coverage) => coverage.countryCode === country.code)
+            .slice(0, 5)
+            .map((coverage) => (
+              <li key={`${coverage.countryCode}-${coverage.sourceId}`}>
+                {coverage.sourceId}: {coverage.nodeCount} nodes
+              </li>
+            ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -278,12 +877,26 @@ function GraphExplorer({ data }: { data: SupplyRiskDashboardData }) {
 type RiskFlowNodeData = {
   graphNode: GraphNode;
   selected: boolean;
+  dimmed: boolean;
+  inActivePath: boolean;
+  isFirstNeighbor: boolean;
+  selectedPathStep: boolean;
 };
 
 type RiskFlowNode = FlowNode<RiskFlowNodeData, "risk">;
-type RiskFlowEdge = FlowEdge<{ level: RiskLevel; label: string }>;
+type RiskFlowEdge = FlowEdge<{ level: RiskLevel; label: string; role?: string; activePath: boolean }>;
 
-const graphKindLanes: GraphNodeKind[] = ["supplier", "company", "facility", "route", "commodity", "country", "data"];
+const graphKindRankHint: Record<GraphNodeKind, number> = {
+  country: 0,
+  route: 1,
+  data: 1,
+  supplier: 2,
+  facility: 2,
+  commodity: 2,
+  company: 3,
+};
+
+type GraphPosition = { x: number; y: number };
 
 const graphColorByLevel: Record<RiskLevel, string> = {
   low: "#52d7d0",
@@ -295,120 +908,461 @@ const graphColorByLevel: Record<RiskLevel, string> = {
 
 const graphNodeTypes = { risk: RiskFlowNodeCard };
 
+type GraphHoverTooltip = {
+  x: number;
+  y: number;
+  title: string;
+  meta: string;
+  detail: string;
+};
+
 function GraphNetwork({
+  activePathEdgeIds,
+  activePathNodeIds,
   links,
+  mode,
   nodes,
+  onSelectEdge,
   onSelectNode,
-  selectedNodeId
+  selectedCountryCode,
+  selectedEdgeId,
+  selectedNodeId,
+  selectedPathStepEdgeId,
+  selectedPathStepNodeId,
+  activePathNodeIndex
 }: {
+  activePathEdgeIds: Set<string>;
+  activePathNodeIds: Set<string>;
   links: GraphLink[];
+  mode: GraphExplorerMode;
   nodes: GraphNode[];
+  onSelectEdge: (edgeId: string) => void;
   onSelectNode: (nodeId: string) => void;
+  selectedCountryCode?: string;
+  selectedEdgeId: string | null;
   selectedNodeId: string;
+  selectedPathStepEdgeId?: string;
+  selectedPathStepNodeId?: string;
+  activePathNodeIndex: Map<string, number>;
 }) {
+  const [tooltip, setTooltip] = useState<GraphHoverTooltip | null>(null);
+  const firstNeighborNodeIds = useMemo(() => {
+    const neighborIds = new Set<string>();
+    for (const link of links) {
+      if (link.source === selectedNodeId) neighborIds.add(link.target);
+      if (link.target === selectedNodeId) neighborIds.add(link.source);
+      if (selectedEdgeId && link.id === selectedEdgeId) {
+        neighborIds.add(link.source);
+        neighborIds.add(link.target);
+      }
+      if (selectedPathStepNodeId && (link.source === selectedPathStepNodeId || link.target === selectedPathStepNodeId)) {
+        neighborIds.add(link.source);
+        neighborIds.add(link.target);
+      }
+    }
+    return neighborIds;
+  }, [links, selectedEdgeId, selectedNodeId, selectedPathStepNodeId]);
+  const topologyPositions = useTopologyPositions(nodes, links, activePathNodeIndex);
   const flowNodes = useMemo<RiskFlowNode[]>(
-    () => layoutGraphNodes(nodes, selectedNodeId),
-    [nodes, selectedNodeId]
+    () =>
+      layoutGraphNodes(nodes, links, {
+        activePathNodeIds,
+        activePathNodeIndex,
+        firstNeighborNodeIds,
+        layoutPositions: topologyPositions,
+        mode,
+        selectedCountryCode,
+        selectedNodeId,
+        selectedPathStepNodeId,
+      }),
+    [activePathNodeIds, activePathNodeIndex, firstNeighborNodeIds, links, mode, nodes, selectedCountryCode, selectedNodeId, selectedPathStepNodeId, topologyPositions]
   );
   const flowEdges = useMemo<RiskFlowEdge[]>(
-    () => layoutGraphEdges(links, new Set(nodes.map((node) => node.id)), selectedNodeId),
-    [links, nodes, selectedNodeId]
+    () =>
+      layoutGraphEdges(links, new Set(nodes.map((node) => node.id)), {
+        activePathEdgeIds,
+        firstNeighborNodeIds,
+        mode,
+        selectedCountryCode,
+        selectedEdgeId,
+        selectedNodeId,
+        selectedPathStepEdgeId,
+        selectedPathStepNodeId,
+      }),
+    [activePathEdgeIds, firstNeighborNodeIds, links, mode, nodes, selectedCountryCode, selectedEdgeId, selectedNodeId, selectedPathStepEdgeId, selectedPathStepNodeId]
   );
 
   return (
-    <ReactFlow
-      className="risk-flow"
-      colorMode="dark"
-      defaultEdgeOptions={{ type: "smoothstep" }}
-      edges={flowEdges}
-      fitView
-      fitViewOptions={{ padding: 0.18, maxZoom: 1.1 }}
-      maxZoom={1.65}
-      minZoom={0.24}
-      nodeTypes={graphNodeTypes}
-      nodes={flowNodes}
-      nodesDraggable={false}
-      onNodeClick={(_, node) => onSelectNode(node.id)}
-      proOptions={{ hideAttribution: true }}
-    >
-      <Background color="rgba(238,247,242,0.12)" gap={28} size={1} />
-      <MiniMap
-        className="risk-flow-minimap"
-        nodeColor={(node) => graphColorByLevel[(node.data as RiskFlowNodeData).graphNode.level]}
-        pannable
-        zoomable
-      />
-      <Controls className="risk-flow-controls" fitViewOptions={{ padding: 0.18 }} />
-    </ReactFlow>
+    <>
+      <ReactFlow
+        className="risk-flow"
+        colorMode="dark"
+        defaultEdgeOptions={{ type: "smoothstep" }}
+        edges={flowEdges}
+        fitView
+        fitViewOptions={{ padding: 0.2, maxZoom: 1.08 }}
+        maxZoom={1.65}
+        minZoom={0.22}
+        nodeTypes={graphNodeTypes}
+        nodes={flowNodes}
+        nodesDraggable={false}
+        onEdgeClick={(_, edge) => onSelectEdge(edge.id)}
+        onEdgeMouseEnter={(event, edge) => {
+          const link = links.find((candidate) => candidate.id === edge.id);
+          setTooltip({
+            x: event.clientX,
+            y: event.clientY,
+            title: edge.label ? String(edge.label) : link?.label ?? edge.id,
+            meta: `${link?.edgeRole ?? link?.edgeType ?? "edge"} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
+            detail: `${link?.sourceCountry ?? "global"} -> ${link?.targetCountry ?? "global"}`,
+          });
+        }}
+        onEdgeMouseLeave={() => setTooltip(null)}
+        onEdgeMouseMove={(event) => setTooltip((current) => (current ? { ...current, x: event.clientX, y: event.clientY } : current))}
+        onNodeClick={(_, node) => onSelectNode(node.id)}
+        onNodeMouseEnter={(event, node) => {
+          const data = node.data as RiskFlowNodeData;
+          setTooltip({
+            x: event.clientX,
+            y: event.clientY,
+            title: data.graphNode.label,
+            meta: `${data.graphNode.kind} / ${data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? "global")}`,
+            detail: `Risk ${graphScore(data.graphNode.riskScore ?? data.graphNode.score)} / centrality ${graphScore(data.graphNode.centralityScore ?? 0)}`,
+          });
+        }}
+        onNodeMouseLeave={() => setTooltip(null)}
+        onNodeMouseMove={(event) => setTooltip((current) => (current ? { ...current, x: event.clientX, y: event.clientY } : current))}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background color="rgba(238,247,242,0.08)" gap={32} size={1} />
+        <MiniMap
+          className="risk-flow-minimap"
+          nodeColor={(node) => graphColorByLevel[(node.data as RiskFlowNodeData).graphNode.level]}
+          pannable
+          zoomable
+        />
+        <Controls className="risk-flow-controls" fitViewOptions={{ padding: 0.2 }} />
+      </ReactFlow>
+      {tooltip ? (
+        <div className="risk-flow-tooltip" style={{ left: tooltip.x + 14, top: tooltip.y + 14 }}>
+          <strong>{tooltip.title}</strong>
+          <span>{tooltip.meta}</span>
+          <small>{tooltip.detail}</small>
+        </div>
+      ) : null}
+    </>
   );
+}
+
+function useTopologyPositions(
+  nodes: GraphNode[],
+  links: GraphLink[],
+  activePathNodeIndex: Map<string, number>,
+): Map<string, GraphPosition> {
+  const fallbackPositions = useMemo(
+    () => computeRankedTopologyLayout(nodes, links, activePathNodeIndex),
+    [nodes, links, activePathNodeIndex]
+  );
+  const [positions, setPositions] = useState<Map<string, GraphPosition>>(fallbackPositions);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPositions(fallbackPositions);
+    if (nodes.length < 2) return;
+
+    computeElkTopologyLayout(nodes, links, activePathNodeIndex, fallbackPositions)
+      .then((layoutPositions) => {
+        if (!cancelled) setPositions(layoutPositions);
+      })
+      .catch(() => {
+        if (!cancelled) setPositions(fallbackPositions);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activePathNodeIndex, fallbackPositions, links, nodes]);
+
+  return positions.size ? positions : fallbackPositions;
 }
 
 function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
   const node = data.graphNode;
   return (
-    <div className={`risk-flow-node ${riskClassByLevel[node.level]} ${data.selected ? "is-selected" : ""}`}>
+    <div
+      className={`risk-flow-node ${riskClassByLevel[node.level]} ${data.selected ? "is-selected" : ""} ${data.dimmed ? "is-dimmed" : ""} ${data.inActivePath ? "is-path-node" : ""} ${data.isFirstNeighbor ? "is-neighbor" : ""} ${data.selectedPathStep ? "is-step-node" : ""}`}
+      style={
+        {
+          "--node-scale": `${1 + Math.min(0.2, graphScore(node.centralityScore ?? 0) / 500)}`,
+          "--critical-ring": `${Math.max(1, Math.min(4, graphScore(node.criticalityScore ?? node.score) / 26))}px`,
+        } as CSSProperties
+      }
+    >
       <Handle className="risk-flow-handle" position={Position.Left} type="target" />
       <Handle className="risk-flow-handle" position={Position.Right} type="source" />
       <div className="risk-flow-node-topline">
         <span>{node.kind}</span>
-        <strong>{node.score}</strong>
+        <strong>{graphScore(node.criticalityScore ?? node.score)}</strong>
       </div>
       <p>{node.label}</p>
-      <small>{String(node.metadata.source ?? node.metadata.country ?? "public source")}</small>
+      <small>
+        R{graphScore(node.riskScore ?? node.score)} / C{graphScore(node.centralityScore ?? 0)} / {node.countryCode ?? String(node.metadata.country ?? "global")}
+      </small>
     </div>
   );
 }
 
-function layoutGraphNodes(nodes: GraphNode[], selectedNodeId: string): RiskFlowNode[] {
-  const grouped = new Map<GraphNodeKind, GraphNode[]>();
-  for (const kind of graphKindLanes) {
-    grouped.set(kind, []);
-  }
+function layoutGraphNodes(
+  nodes: GraphNode[],
+  links: GraphLink[],
+  options: {
+    activePathNodeIds: Set<string>;
+    activePathNodeIndex: Map<string, number>;
+    firstNeighborNodeIds: Set<string>;
+    layoutPositions?: Map<string, GraphPosition>;
+    mode: GraphExplorerMode;
+    selectedCountryCode?: string;
+    selectedNodeId: string;
+    selectedPathStepNodeId?: string;
+  },
+): RiskFlowNode[] {
+  const positions = new Map(options.layoutPositions ?? computeRankedTopologyLayout(nodes, links, options.activePathNodeIndex));
   for (const node of nodes) {
-    grouped.get(node.kind)?.push(node);
+    if (!positions.has(node.id)) positions.set(node.id, { x: 0, y: 0 });
   }
-  return graphKindLanes.flatMap((kind, laneIndex) => {
-    const laneNodes = [...(grouped.get(kind) ?? [])].sort((a, b) => {
-      const riskDelta = riskLevelRank(b.level) - riskLevelRank(a.level);
-      return riskDelta || b.score - a.score || a.label.localeCompare(b.label);
-    });
-    const columnCount = laneNodes.length > 24 ? 3 : laneNodes.length > 10 ? 2 : 1;
-    const rowCount = Math.max(1, Math.ceil(laneNodes.length / columnCount));
-    const rowGap = 118;
-    const columnGap = 238;
-    const laneCenter = (laneIndex - (graphKindLanes.length - 1) / 2) * 430;
-    return laneNodes.map((node, rowIndex) => ({
+  return nodes.map((node) => {
+    const inActivePath = options.activePathNodeIds.has(node.id);
+    const isSelected = node.id === options.selectedNodeId;
+    const isFirstNeighbor = options.firstNeighborNodeIds.has(node.id);
+    const selectedPathStep = node.id === options.selectedPathStepNodeId;
+    const countryMatches = options.selectedCountryCode
+      ? (node.countryCode ?? String(node.metadata.country ?? "")).toUpperCase() === options.selectedCountryCode
+      : true;
+    const isFocused =
+      isSelected ||
+      isFirstNeighbor ||
+      selectedPathStep ||
+      (options.mode === "path-analysis" && inActivePath) ||
+      (options.mode === "country-lens" && countryMatches);
+    const dimmed =
+      (options.mode === "path-analysis" && options.activePathNodeIds.size > 0 && !isFocused) ||
+      (options.mode === "country-lens" && !isFocused) ||
+      (options.mode === "risk-centrality" && !isFocused);
+    return {
       id: node.id,
       type: "risk",
-      position: {
-        x: laneCenter + ((rowIndex % columnCount) - (columnCount - 1) / 2) * columnGap,
-        y: (Math.floor(rowIndex / columnCount) - (rowCount - 1) / 2) * rowGap + (laneIndex % 2 === 0 ? -28 : 28),
-      },
-      data: { graphNode: node, selected: node.id === selectedNodeId },
-      selected: node.id === selectedNodeId,
-    }));
+      position: positions.get(node.id) ?? { x: 0, y: 0 },
+      data: { graphNode: node, selected: isSelected, dimmed, inActivePath, isFirstNeighbor, selectedPathStep },
+      selected: isSelected,
+    };
   });
 }
 
-function layoutGraphEdges(links: GraphLink[], visibleNodeIds: Set<string>, selectedNodeId: string): RiskFlowEdge[] {
+function computeRankedTopologyLayout(
+  nodes: GraphNode[],
+  links: GraphLink[],
+  activePathNodeIndex: Map<string, number>,
+): Map<string, GraphPosition> {
+  const visibleIds = new Set(nodes.map((node) => node.id));
+  const sortedNodes = [...nodes].sort(compareGraphNodesForLayout(activePathNodeIndex));
+  const sortedLinks = [...links]
+    .filter((link) => visibleIds.has(link.source) && visibleIds.has(link.target))
+    .sort((a, b) => a.source.localeCompare(b.source) || a.target.localeCompare(b.target) || a.id.localeCompare(b.id));
+  const outgoing = new Map<string, GraphLink[]>();
+  const indegree = new Map<string, number>();
+  const rankById = new Map<string, number>();
+  for (const node of sortedNodes) {
+    outgoing.set(node.id, []);
+    indegree.set(node.id, 0);
+    rankById.set(node.id, graphKindRankHint[node.kind]);
+  }
+  for (const link of sortedLinks) {
+    outgoing.get(link.source)?.push(link);
+    indegree.set(link.target, (indegree.get(link.target) ?? 0) + 1);
+  }
+
+  const queue = sortedNodes.filter((node) => (indegree.get(node.id) ?? 0) === 0);
+  for (let index = 0; index < queue.length; index += 1) {
+    const node = queue[index];
+    for (const link of outgoing.get(node.id) ?? []) {
+      rankById.set(link.target, Math.max(rankById.get(link.target) ?? 0, (rankById.get(node.id) ?? 0) + 1));
+      indegree.set(link.target, Math.max(0, (indegree.get(link.target) ?? 0) - 1));
+      if (indegree.get(link.target) === 0) {
+        const target = sortedNodes.find((candidate) => candidate.id === link.target);
+        if (target) queue.push(target);
+      }
+    }
+  }
+
+  // Clean replacement point for a future ELK adapter: keep the input/output pure and deterministic.
+  for (const link of sortedLinks) {
+    const sourceRank = rankById.get(link.source) ?? 0;
+    const targetRank = rankById.get(link.target) ?? 0;
+    if (targetRank <= sourceRank) rankById.set(link.target, sourceRank + 1);
+  }
+
+  const compressedRanks = new Map<number, number>();
+  [...new Set([...rankById.values()].sort((a, b) => a - b))].forEach((rank, index) => compressedRanks.set(rank, index));
+  const rankGroups = new Map<number, GraphNode[]>();
+  for (const node of nodes) {
+    const rank = compressedRanks.get(rankById.get(node.id) ?? 0) ?? 0;
+    rankGroups.set(rank, [...(rankGroups.get(rank) ?? []), node]);
+  }
+
+  const maxRank = Math.max(0, ...rankGroups.keys());
+  const positions = new Map<string, GraphPosition>();
+  const rankGap = 310;
+  const rowGap = 120;
+  for (const [rank, rankNodes] of [...rankGroups.entries()].sort((a, b) => a[0] - b[0])) {
+    const ordered = [...rankNodes].sort(compareGraphNodesForLayout(activePathNodeIndex));
+    const count = ordered.length;
+    ordered.forEach((node, index) => {
+      const centerOffset = index - (count - 1) / 2;
+      const denseRankOffset = count > 8 ? ((index % 2) - 0.5) * 46 : 0;
+      positions.set(node.id, {
+        x: (rank - maxRank / 2) * rankGap + denseRankOffset,
+        y: centerOffset * rowGap,
+      });
+    });
+  }
+  return positions;
+}
+
+async function computeElkTopologyLayout(
+  nodes: GraphNode[],
+  links: GraphLink[],
+  activePathNodeIndex: Map<string, number>,
+  fallbackPositions: Map<string, GraphPosition>,
+): Promise<Map<string, GraphPosition>> {
+  const { default: ELK } = await import("elkjs/lib/elk.bundled.js");
+  const visibleIds = new Set(nodes.map((node) => node.id));
+  const sortedNodes = [...nodes].sort(compareGraphNodesForLayout(activePathNodeIndex));
+  const sortedLinks = [...links]
+    .filter((link) => visibleIds.has(link.source) && visibleIds.has(link.target) && link.source !== link.target)
+    .sort((a, b) => a.source.localeCompare(b.source) || a.target.localeCompare(b.target) || a.id.localeCompare(b.id));
+  const nodeWidth = 220;
+  const nodeHeight = 92;
+  const graph: ElkNode = {
+    id: "risk-topology",
+    layoutOptions: {
+      "elk.algorithm": "layered",
+      "elk.direction": "RIGHT",
+      "elk.edgeRouting": "ORTHOGONAL",
+      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+      "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+      "elk.layered.spacing.edgeNodeBetweenLayers": "52",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "112",
+      "elk.spacing.nodeNode": "42",
+    },
+    children: sortedNodes.map((node, index) => ({
+      id: node.id,
+      width: nodeWidth,
+      height: nodeHeight,
+      layoutOptions: {
+        "elk.priority": String((4 - graphKindRankHint[node.kind]) * 100 + sortedNodes.length - index),
+      },
+    })),
+    edges: sortedLinks.map((link) => ({
+      id: link.id,
+      sources: [link.source],
+      targets: [link.target],
+      layoutOptions: {
+        "elk.priority": String(Math.round((link.transmissionWeight ?? link.weight ?? 0.2) * 100)),
+      },
+    })),
+  };
+  const elk = new ELK();
+  const layouted = await elk.layout(graph);
+  const rawPositions = new Map<string, GraphPosition>();
+  for (const child of layouted.children ?? []) {
+    rawPositions.set(child.id, {
+      x: (child.x ?? fallbackPositions.get(child.id)?.x ?? 0) + nodeWidth / 2,
+      y: (child.y ?? fallbackPositions.get(child.id)?.y ?? 0) + nodeHeight / 2,
+    });
+  }
+  if (rawPositions.size < Math.max(1, Math.floor(nodes.length * 0.75))) return fallbackPositions;
+
+  const xs = [...rawPositions.values()].map((position) => position.x);
+  const ys = [...rawPositions.values()].map((position) => position.y);
+  const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const positions = new Map<string, GraphPosition>();
+  for (const node of nodes) {
+    const raw = rawPositions.get(node.id) ?? fallbackPositions.get(node.id) ?? { x: 0, y: 0 };
+    positions.set(node.id, { x: raw.x - centerX, y: raw.y - centerY });
+  }
+  return positions;
+}
+
+function compareGraphNodesForLayout(activePathNodeIndex: Map<string, number>) {
+  return (a: GraphNode, b: GraphNode) => {
+    const aPathIndex = activePathNodeIndex.get(a.id);
+    const bPathIndex = activePathNodeIndex.get(b.id);
+    if (aPathIndex !== undefined || bPathIndex !== undefined) {
+      return (aPathIndex ?? Number.POSITIVE_INFINITY) - (bPathIndex ?? Number.POSITIVE_INFINITY);
+    }
+    return (
+      riskLevelRank(b.level) - riskLevelRank(a.level) ||
+      graphScore(b.criticalityScore ?? b.score) - graphScore(a.criticalityScore ?? a.score) ||
+      graphKindRankHint[a.kind] - graphKindRankHint[b.kind] ||
+      a.label.localeCompare(b.label) ||
+      a.id.localeCompare(b.id)
+    );
+  };
+}
+
+function layoutGraphEdges(
+  links: GraphLink[],
+  visibleNodeIds: Set<string>,
+  options: {
+    activePathEdgeIds: Set<string>;
+    firstNeighborNodeIds: Set<string>;
+    mode: GraphExplorerMode;
+    selectedCountryCode?: string;
+    selectedEdgeId: string | null;
+    selectedNodeId: string;
+    selectedPathStepEdgeId?: string;
+    selectedPathStepNodeId?: string;
+  },
+): RiskFlowEdge[] {
   return links
     .filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target))
     .map((link) => {
       const color = graphColorByLevel[link.level];
-      const isSelectedAdjacency = link.source === selectedNodeId || link.target === selectedNodeId;
+      const isSelectedAdjacency = link.source === options.selectedNodeId || link.target === options.selectedNodeId;
+      const isActivePath = options.activePathEdgeIds.has(link.id);
+      const isSelectedEdge = link.id === options.selectedEdgeId;
+      const isSelectedPathStep = link.id === options.selectedPathStepEdgeId;
+      const isFirstNeighbor =
+        options.firstNeighborNodeIds.has(link.source) ||
+        options.firstNeighborNodeIds.has(link.target) ||
+        link.source === options.selectedPathStepNodeId ||
+        link.target === options.selectedPathStepNodeId;
+      const countryFocused =
+        options.selectedCountryCode &&
+        (link.sourceCountry === options.selectedCountryCode || link.targetCountry === options.selectedCountryCode);
+      const isFocused =
+        isActivePath ||
+        isSelectedEdge ||
+        isSelectedPathStep ||
+        isSelectedAdjacency ||
+        isFirstNeighbor ||
+        (options.mode === "country-lens" && Boolean(countryFocused));
+      const baseWidth = link.transmissionWeight ?? link.weight;
       return {
         id: link.id,
         source: link.source,
         target: link.target,
         type: "smoothstep",
-        animated: isSelectedAdjacency || link.level === "critical" || link.level === "severe",
-        label: link.level === "critical" || link.level === "severe" ? link.label : undefined,
-        data: { level: link.level, label: link.label },
+        animated: isSelectedPathStep || isActivePath,
+        label: isSelectedPathStep || isActivePath || isSelectedEdge || link.level === "critical" ? link.label : undefined,
+        data: { level: link.level, label: link.label, role: link.edgeRole, activePath: isActivePath },
         markerEnd: { type: MarkerType.ArrowClosed, color },
         style: {
           stroke: color,
-          strokeOpacity: isSelectedAdjacency ? 0.95 : 0.46,
-          strokeWidth: Math.max(1.2, Math.min(4.6, link.weight * 2.8)),
+          strokeOpacity: isFocused ? (isSelectedPathStep || isSelectedEdge ? 0.98 : 0.78) : 0.16,
+          strokeWidth: isSelectedPathStep || isActivePath || isSelectedEdge ? 4.8 : Math.max(1.1, Math.min(4.4, baseWidth * 4.8)),
         },
       };
     });
@@ -416,6 +1370,24 @@ function layoutGraphEdges(links: GraphLink[], visibleNodeIds: Set<string>, selec
 
 function riskLevelRank(level: RiskLevel) {
   return { low: 0, guarded: 1, elevated: 2, severe: 3, critical: 4 }[level];
+}
+
+function graphScore(value: number | undefined, fallback = 0) {
+  const score = value ?? fallback;
+  if (!Number.isFinite(score)) return 0;
+  return Math.round(score <= 1 ? score * 100 : score);
+}
+
+function predictionRiskLevelToUi(level?: Prediction["risk_level"], score?: number): RiskLevel {
+  if (level === "critical") return "critical";
+  if (level === "high") return "severe";
+  if (level === "medium") return "elevated";
+  if (level === "low") return "low";
+  const numericScore = score ?? 0;
+  if (numericScore >= 0.88) return "critical";
+  if (numericScore >= 0.65) return "severe";
+  if (numericScore >= 0.35) return "elevated";
+  return "low";
 }
 
 function NetworkSvg({ links, nodes }: { links: GraphLink[]; nodes: GraphNode[] }) {
@@ -548,6 +1520,133 @@ function CompanyRisk360({ data }: { data: SupplyRiskDashboardData }) {
                 ))}
               </tbody>
             </table>
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
+  const { t } = useI18n();
+  const center = data.predictionCenter;
+  const predictions = center.predictions;
+  const [selectedPredictionId, setSelectedPredictionId] = useState(
+    center.topPredictions[0]?.prediction_id ?? predictions[0]?.prediction_id ?? "",
+  );
+  const selectedPrediction =
+    predictions.find((prediction) => prediction.prediction_id === selectedPredictionId) ??
+    center.topPredictions[0] ??
+    predictions[0];
+  const selectedLevel = predictionRiskLevelToUi(selectedPrediction?.risk_level);
+
+  if (!selectedPrediction) {
+    return <div className="empty-state">{t("No predictions are available from the current graph.")}</div>;
+  }
+
+  return (
+    <div className="prediction-center-layout">
+      <Panel title="Forecast queue" subtitle="Public-evidence graph ensemble, sorted by risk and confidence." className="prediction-queue-panel">
+        <div className="inspector-grid prediction-summary-grid">
+          <Field label="Model" value={center.modelVersion} />
+          <Field label="Form" value={center.predictionForm} />
+          <Field label="High confidence" value={center.highConfidenceCount} />
+          <Field label="Saturated scores" value={center.saturatedScoreCount} />
+        </div>
+        <ul className="prediction-list">
+          {center.topPredictions.slice(0, 14).map((prediction) => (
+            <li key={prediction.prediction_id}>
+              <button
+                className={`prediction-row ${prediction.prediction_id === selectedPrediction.prediction_id ? "is-active" : ""}`}
+                onClick={() => setSelectedPredictionId(prediction.prediction_id)}
+                type="button"
+              >
+                <span>
+                  <strong>{prediction.target_id}</strong>
+                  <small>{prediction.mechanism ?? "public_evidence_graph"} / {prediction.horizon}d</small>
+                </span>
+                <b>{Math.round(prediction.risk_score * 100)}</b>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <div className="page-grid">
+        <Panel
+          title="Prediction workbench"
+          subtitle="Mechanism labels, confidence bands, and driver attribution from the active graph."
+          action={<RiskPill level={selectedLevel} />}
+        >
+          <div className="prediction-workbench">
+            <ScoreDial score={Math.round(selectedPrediction.risk_score * 100)} level={selectedLevel} label="Risk score" />
+            <div className="inspector-grid">
+              <Field label="Target" value={selectedPrediction.target_id} />
+              <Field label="Mechanism" value={selectedPrediction.mechanism ?? "public_evidence_graph"} />
+              <Field label="Horizon" value={`${selectedPrediction.horizon} days`} />
+              <Field
+                label="Confidence band"
+                value={`${Math.round(selectedPrediction.confidence_low * 100)}-${Math.round(selectedPrediction.confidence_high * 100)}`}
+              />
+              <Field label="Path count" value={selectedPrediction.path_details?.length ?? selectedPrediction.top_paths.length} />
+              <Field label="Evidence refs" value={selectedPrediction.evidence_refs?.length ?? 0} />
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title="Score mechanism" subtitle="Weighted components explain why the forecast moved.">
+          <div className="component-stack">
+            {Object.entries(selectedPrediction.score_components ?? {}).map(([component, value]) => (
+              <div className="component-row" key={component}>
+                <div>
+                  <strong>{component.replaceAll("_", " ")}</strong>
+                  <small>{Math.round((value ?? 0) * 100)}/100</small>
+                </div>
+                <ProgressBar value={Math.round((value ?? 0) * 100)} level={selectedLevel} />
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Driver attribution" subtitle="Contribution-ranked features and paths.">
+          <ul className="evidence-list compact">
+            {(selectedPrediction.driver_contributions ?? []).slice(0, 8).map((driver) => (
+              <li key={`${driver.driver}-${driver.pathId ?? "component"}`}>
+                {driver.driver.replaceAll("_", " ")}: {Math.round(driver.contribution * 100)} contribution
+                {driver.pathId ? ` / ${driver.pathId}` : ""}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <Panel title="Evidence paths" subtitle="Top transmission paths used by this prediction.">
+          <div className="prediction-path-grid">
+            {(selectedPrediction.path_details ?? []).slice(0, 4).map((path) => (
+              <article className="prediction-path-card" key={path.pathId}>
+                <div className="row-top">
+                  <span className="row-title">{path.nodeLabels.join(" -> ")}</span>
+                  <b>{Math.round(path.transmissionScore * 100)}</b>
+                </div>
+                <small>{path.edgeTypes.join(" -> ")}</small>
+                <div className="lineage-chips">
+                  {path.evidenceRefs.slice(0, 3).map((ref) => (
+                    <span key={ref}>{ref}</span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Mechanism mix" subtitle="Which public-evidence mechanisms are active.">
+          <div className="mechanism-grid">
+            {center.mechanisms.map((mechanism) => (
+              <article className="mechanism-card" key={mechanism.mechanism}>
+                <strong>{mechanism.mechanism.replaceAll("_", " ")}</strong>
+                <span>{mechanism.count} forecasts</span>
+                <ProgressBar value={Math.round(mechanism.maxRisk * 100)} level={predictionRiskLevelToUi(undefined, mechanism.maxRisk)} />
+              </article>
+            ))}
           </div>
         </Panel>
       </div>

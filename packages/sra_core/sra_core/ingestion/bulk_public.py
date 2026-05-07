@@ -210,17 +210,40 @@ class _BulkCatalogBuilder:
     ) -> None:
         if canonical_id in self.entities:
             return
+        geo = _geo_metadata(canonical_id, entity_type, country)
+        external_id_values = {
+            key: str(value)
+            for key, value in (external_ids or {}).items()
+            if value is not None and value != ""
+        }
+        external_id_values.update(
+            {
+                key: str(value)
+                for key, value in {
+                    "geoId": geo.get("geoId"),
+                    "geoLevel": geo.get("geoLevel"),
+                    "countryCode": geo.get("countryCode"),
+                    "provinceCode": geo.get("provinceCode"),
+                    "parentGeoId": geo.get("parentGeoId"),
+                    "sourceCountryCode": geo.get("sourceCountryCode"),
+                }.items()
+                if value is not None and value != ""
+            }
+        )
         self.entities[canonical_id] = {
             "canonical_id": canonical_id,
             "entity_type": entity_type,
             "display_name": display_name,
-            "country": country,
+            "displayName": display_name,
+            "country": geo.get("countryCode") or country,
             "industry": industry,
-            "external_ids": {
-                key: str(value)
-                for key, value in (external_ids or {}).items()
-                if value is not None and value != ""
-            },
+            "geoId": geo.get("geoId"),
+            "geoLevel": geo.get("geoLevel"),
+            "countryCode": geo.get("countryCode"),
+            "provinceCode": geo.get("provinceCode"),
+            "parentGeoId": geo.get("parentGeoId"),
+            "sourceCountryCode": geo.get("sourceCountryCode"),
+            "external_ids": external_id_values,
             "confidence": confidence,
             "source_id": source_id,
         }
@@ -436,13 +459,14 @@ class _BulkCatalogBuilder:
             self.add_edge("dataset_world_bank_indicator_bulk", indicator_id, "dataset_measures", "world_bank", confidence=0.92, day=5 + index % 20)
             if country_ids:
                 target_country = country_ids[index % len(country_ids)]
-                series_id = f"observation_series_wb_{_slug(indicator_code, max_length=34)}_{target_country.replace('country_', '').lower()}"
+                target_source_code = _source_code_for_geo_id(target_country)
+                series_id = f"observation_series_wb_{_slug(indicator_code, max_length=34)}_{_slug(target_country, max_length=24)}"
                 self.add_entity(
                     series_id,
                     "observation_series",
-                    f"{indicator_code} observations for {target_country.replace('country_', '').upper()}",
+                    f"{indicator_code} observations for {target_source_code}",
                     "world_bank",
-                    country=target_country.replace("country_", "").upper(),
+                    country=target_source_code,
                     industry="Macro time series",
                     confidence=0.86,
                     external_ids={"indicator_code": indicator_code, "country_node": target_country},
@@ -673,6 +697,26 @@ class _BulkCatalogBuilder:
         iso2 = _country_code(iso2)
         if not iso2:
             return None
+        if iso2 == "TW":
+            self._ensure_country("CN", source_id, name=_COUNTRY_NAMES["CN"])
+            province_id = "province_cn_tw"
+            self.add_entity(
+                province_id,
+                "coverage_area",
+                _TAIWAN_PROVINCE_DISPLAY_NAME,
+                source_id,
+                country="TW",
+                confidence=0.9,
+                external_ids={
+                    "provinceCode": "TW",
+                    "sourceCountryCode": "TW",
+                    "countryCode": "CN",
+                    "parentGeoId": "country_cn",
+                    "iso3166_2": "CN-TW",
+                },
+            )
+            self.add_edge(province_id, "country_cn", "part_of", source_id, confidence=0.9, day=4)
+            return province_id
         country_id = f"country_{iso2.lower()}"
         self.add_entity(
             country_id,
@@ -692,11 +736,19 @@ class _BulkCatalogBuilder:
         return None
 
     def _country_targets(self, iso2: str, *, limit: int) -> list[str]:
+        source_code = _country_code(iso2)
+        country_code = _sovereign_country_code(source_code)
         priority_types = {"port", "airport", "firm", "legal_entity"}
         targets = [
             entity_id
             for entity_id, entity in sorted(self.entities.items())
-            if entity.get("country") == iso2 and entity.get("entity_type") in priority_types
+            if entity.get("country") == country_code
+            and entity.get("entity_type") in priority_types
+            and (
+                source_code == country_code
+                or (entity.get("external_ids") or {}).get("sourceCountryCode") == source_code
+                or (entity.get("external_ids") or {}).get("provinceCode") == source_code
+            )
         ]
         return targets[:limit]
 
@@ -844,7 +896,7 @@ def _load_world_bank_countries(source_files: dict[str, CachedSourceFile], limit:
             "name": row.get("name"),
         }
         for row in rows
-        if isinstance(row, dict)
+        if isinstance(row, dict) and _is_world_bank_country_row(row)
     ][:limit]
 
 
@@ -976,6 +1028,64 @@ def _country_code(value: Any) -> str | None:
     return None
 
 
+def _sovereign_country_code(source_country_code: str | None) -> str | None:
+    if source_country_code == "TW":
+        return "CN"
+    return source_country_code
+
+
+def _source_code_for_geo_id(geo_id: str) -> str:
+    if geo_id == "province_cn_tw":
+        return "TW"
+    if geo_id.startswith("country_"):
+        return geo_id.replace("country_", "", 1).upper()
+    return geo_id.upper()
+
+
+def _geo_metadata(canonical_id: str, entity_type: str, source_country_code: Any) -> dict[str, str | None]:
+    source_code = _country_code(source_country_code)
+    country_code = _sovereign_country_code(source_code)
+    if not country_code:
+        return {
+            "geoId": None,
+            "geoLevel": None,
+            "countryCode": None,
+            "provinceCode": None,
+            "parentGeoId": None,
+            "sourceCountryCode": None,
+        }
+    if source_code == "TW":
+        return {
+            "geoId": "province_cn_tw",
+            "geoLevel": "province" if canonical_id == "province_cn_tw" else "province_context",
+            "countryCode": "CN",
+            "provinceCode": "TW",
+            "parentGeoId": "country_cn",
+            "sourceCountryCode": "TW",
+        }
+    return {
+        "geoId": canonical_id if entity_type == "country" else f"country_{country_code.lower()}",
+        "geoLevel": "country" if entity_type == "country" else "country_context",
+        "countryCode": country_code,
+        "provinceCode": None,
+        "parentGeoId": None,
+        "sourceCountryCode": source_code,
+    }
+
+
+def _is_world_bank_country_row(row: dict[str, Any]) -> bool:
+    iso2 = _country_code(row.get("iso2Code") or row.get("id"))
+    if not iso2:
+        return False
+    region = row.get("region") if isinstance(row.get("region"), dict) else {}
+    if str(region.get("id") or "").upper() == "NA":
+        return False
+    if str(region.get("value") or "").strip().lower() == "aggregates":
+        return False
+    code = str(row.get("id") or "").upper()
+    return code not in _WORLD_BANK_AGGREGATE_CODES
+
+
 def _country_from_usgs_place(place: str) -> str | None:
     normalized = place.lower()
     country_markers = {
@@ -1021,7 +1131,6 @@ _COUNTRY_NAMES = {
     "CN": "China",
     "JP": "Japan",
     "KR": "South Korea",
-    "TW": "Taiwan",
     "NL": "Netherlands",
     "DE": "Germany",
     "FR": "France",
@@ -1033,13 +1142,92 @@ _COUNTRY_NAMES = {
     "CA": "Canada",
     "MX": "Mexico",
     "BR": "Brazil",
+    "AR": "Argentina",
+    "AT": "Austria",
+    "AU": "Australia",
+    "BD": "Bangladesh",
+    "CH": "Switzerland",
     "PH": "Philippines",
     "ID": "Indonesia",
     "CL": "Chile",
+    "CO": "Colombia",
+    "CZ": "Czechia",
+    "DK": "Denmark",
+    "EG": "Egypt",
+    "ES": "Spain",
+    "FI": "Finland",
+    "GR": "Greece",
+    "IE": "Ireland",
+    "IL": "Israel",
+    "IT": "Italy",
+    "LU": "Luxembourg",
+    "MA": "Morocco",
     "PE": "Peru",
+    "PL": "Poland",
+    "PT": "Portugal",
+    "RO": "Romania",
+    "SA": "Saudi Arabia",
+    "SE": "Sweden",
+    "TH": "Thailand",
+    "TR": "Turkiye",
+    "VN": "Vietnam",
+    "ZA": "South Africa",
     "NZ": "New Zealand",
     "FJ": "Fiji",
     "PG": "Papua New Guinea",
+    "BE": "Belgium",
+    "MY": "Malaysia",
+}
+
+_TAIWAN_PROVINCE_DISPLAY_NAME = "中国台湾省"
+
+_WORLD_BANK_AGGREGATE_CODES = {
+    "ARB",
+    "CEB",
+    "CSS",
+    "EAP",
+    "EAR",
+    "EAS",
+    "ECA",
+    "ECS",
+    "EMU",
+    "EUU",
+    "FCS",
+    "HIC",
+    "HPC",
+    "IBD",
+    "IBT",
+    "IDA",
+    "IDB",
+    "IDX",
+    "LAC",
+    "LCN",
+    "LDC",
+    "LIC",
+    "LMC",
+    "LMY",
+    "LTE",
+    "MEA",
+    "MIC",
+    "MNA",
+    "NAC",
+    "OED",
+    "OSS",
+    "PRE",
+    "PSS",
+    "PST",
+    "SAS",
+    "SSA",
+    "SSF",
+    "SST",
+    "TEA",
+    "TEC",
+    "TLA",
+    "TMN",
+    "TSA",
+    "TSS",
+    "UMC",
+    "WLD",
 }
 
 
@@ -1081,6 +1269,9 @@ _GLEIF_FIXTURE_RECORDS = [
 _WORLD_BANK_FIXTURE_COUNTRIES = [
     {"id": iso2, "iso2Code": iso2, "name": name}
     for iso2, name in sorted(_COUNTRY_NAMES.items())
+] + [
+    {"id": "WLD", "iso2Code": "1W", "name": "World", "region": {"id": "NA", "value": "Aggregates"}},
+    {"id": "EUU", "iso2Code": "EU", "name": "European Union", "region": {"id": "NA", "value": "Aggregates"}},
 ]
 
 

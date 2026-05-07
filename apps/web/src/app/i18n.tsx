@@ -66,6 +66,57 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
       description: "Exposition, fournisseurs et posture d'atténuation par entreprise"
     }
   },
+  "prediction-center": {
+    en: {
+      label: "Prediction Center",
+      shortLabel: "Predict",
+      description: "Ensemble risk forecasts, mechanism labels, confidence bands, and evidence paths"
+    },
+    zh: {
+      label: "Prediction Center",
+      shortLabel: "Predict",
+      description: "Ensemble risk forecasts, mechanism labels, confidence bands, and evidence paths"
+    },
+    fr: {
+      label: "Prediction Center",
+      shortLabel: "Predict",
+      description: "Previsions de risque ensemble, mecanismes, intervalles et chemins de preuve"
+    }
+  },
+  "path-analysis": {
+    en: {
+      label: "Path Analysis",
+      shortLabel: "Paths",
+      description: "Top-K transmission paths with hop-by-hop evidence"
+    },
+    zh: {
+      label: "Path Analysis",
+      shortLabel: "Paths",
+      description: "Top-K transmission paths with hop-by-hop evidence"
+    },
+    fr: {
+      label: "Path Analysis",
+      shortLabel: "Paths",
+      description: "Top-K chemins de transmission avec preuves par etape"
+    }
+  },
+  "country-lens": {
+    en: {
+      label: "Country Lens",
+      shortLabel: "Country",
+      description: "Country risk, critical nodes, data coverage, and cross-border flow"
+    },
+    zh: {
+      label: "Country Lens",
+      shortLabel: "Country",
+      description: "Country risk, critical nodes, data coverage, and cross-border flow"
+    },
+    fr: {
+      label: "Country Lens",
+      shortLabel: "Pays",
+      description: "Risque pays, noeuds critiques, couverture et flux transfrontaliers"
+    }
+  },
   "path-explainer": {
     en: {
       label: "Path Explainer",
@@ -438,7 +489,7 @@ const phraseCopy: Record<string, TranslationPair> = {
   "Central America": { zh: "中美洲", fr: "Amérique centrale" },
   Europe: { zh: "欧洲", fr: "Europe" },
   China: { zh: "中国", fr: "Chine" },
-  Taiwan: { zh: "中国台湾", fr: "Taïwan" },
+  Taiwan: { zh: "中国台湾省", fr: "Taïwan, province de Chine" },
   Germany: { zh: "德国", fr: "Allemagne" },
   "South Korea": { zh: "韩国", fr: "Corée du Sud" },
   Mexico: { zh: "墨西哥", fr: "Mexique" },

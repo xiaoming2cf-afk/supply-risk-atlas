@@ -5,7 +5,7 @@ import pytest
 pytest.importorskip("pydantic")
 from pydantic import ValidationError
 
-from services.api.main import route_health, route_predictions
+from services.api.main import route_dashboard_page, route_health, route_predictions
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from sra_core.contracts.domain import PredictionRequest, ReportRequest
 from sra_core.pipeline import default_metadata, run_synthetic_pipeline
@@ -88,3 +88,52 @@ def test_health_route_exposes_public_real_source_manifest() -> None:
         "nga_world_port_index",
         "usgs_earthquakes",
     }
+
+
+def test_path_analysis_dashboard_contract_uses_planned_field_names() -> None:
+    payload = route_dashboard_page("path-analysis", request_id="req_path_contract")
+
+    assert payload["request_id"] == "req_path_contract"
+    assert payload["status"] == "success"
+    assert payload["metadata"]["data_mode"] == "real"
+
+    data = payload["data"]
+    assert set(data) >= {"criticalNodes", "transmissionPaths"}
+    assert data["criticalNodes"]
+    assert data["transmissionPaths"]
+
+    critical_node = data["criticalNodes"][0]
+    assert set(critical_node) >= {"id", "label", "kind", "level", "score", "drivers"}
+    assert isinstance(critical_node["drivers"], list)
+
+    transmission_path = data["transmissionPaths"][0]
+    assert set(transmission_path) >= {
+        "id",
+        "sourceId",
+        "targetId",
+        "nodeSequence",
+        "edgeSequence",
+        "pathRisk",
+        "pathConfidence",
+    }
+    assert len(transmission_path["edgeSequence"]) == len(transmission_path["nodeSequence"]) - 1
+
+
+def test_country_lens_dashboard_contract_uses_planned_field_names() -> None:
+    payload = route_dashboard_page("country-lens", request_id="req_country_contract")
+
+    assert payload["request_id"] == "req_country_contract"
+    assert payload["status"] == "success"
+    assert payload["metadata"]["data_mode"] == "real"
+
+    data = payload["data"]
+    assert set(data) >= {"availableCountries", "countryLens"}
+    assert data["availableCountries"]
+    assert data["countryLens"]
+
+    country = data["availableCountries"][0]
+    assert set(country) >= {"code", "label", "entityCount", "riskScore"}
+
+    lens = data["countryLens"]
+    assert set(lens) >= {"countryCode", "countryName", "riskScore", "criticalNodes", "transmissionPaths"}
+    assert lens["countryCode"] in {country["code"] for country in data["availableCountries"]}

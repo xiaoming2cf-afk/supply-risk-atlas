@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from graph_kernel.path_index import build_path_index
+from services.api.main import route_dashboard_page
 from sra_core.real_pipeline import run_public_real_pipeline
 from sra_core.ingestion.registry import load_source_registry
-from sra_core.ingestion.bulk_public import BulkLimits, write_promoted_catalog
+from sra_core.ingestion.bulk_public import BulkLimits, build_bulk_catalog, default_catalog_path, write_promoted_catalog
 
 
 def test_public_real_pipeline_end_to_end_is_default_ready() -> None:
@@ -77,6 +79,84 @@ def test_public_real_node_catalog_expands_graph_volume() -> None:
         "event_affects",
         "risk_transmits_to",
     } <= edge_types
+
+
+def test_public_real_pipeline_supports_path_analysis_and_country_lens_views(monkeypatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_REAL_CATALOG_PATH", str(default_catalog_path()))
+    result = run_public_real_pipeline()
+    paths = build_path_index(result.edge_states)
+    countries = {entity.country for entity in result.real.entities if entity.country}
+
+    assert paths
+    assert any(path.path_risk > 0 for path in paths)
+    assert any(len(path.node_sequence) >= 2 for path in paths)
+    assert {"CN", "US"} <= countries
+
+    path_payload = route_dashboard_page("path-analysis")
+    country_payload = route_dashboard_page("country-lens")
+
+    assert path_payload["data"]["criticalNodes"]
+    assert path_payload["data"]["transmissionPaths"]
+    assert country_payload["data"]["availableCountries"]
+    assert country_payload["data"]["countryLens"]
+
+
+def test_public_real_catalog_models_taiwan_as_china_province(monkeypatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_REAL_CATALOG_PATH", str(default_catalog_path()))
+    result = run_public_real_pipeline()
+    entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
+
+    assert "country_tw" not in entity_by_id
+    assert not any(entity.entity_type == "country" and entity.country == "TW" for entity in result.real.entities)
+
+    province = entity_by_id["province_cn_tw"]
+    assert province.entity_type == "coverage_area"
+    assert province.display_name == "中国台湾省"
+    assert province.country == "CN"
+    assert province.external_ids["countryCode"] == "CN"
+    assert province.external_ids["provinceCode"] == "TW"
+    assert province.external_ids["sourceCountryCode"] == "TW"
+    assert province.external_ids["parentGeoId"] == "country_cn"
+
+    taiwan_sourced = entity_by_id["firm_tsmc"]
+    assert taiwan_sourced.country == "CN"
+    assert taiwan_sourced.external_ids["provinceCode"] == "TW"
+    assert any(
+        edge.source_id == "firm_tsmc" and edge.target_id == "province_cn_tw" and edge.edge_type == "located_in"
+        for edge in result.real.edge_events
+    )
+
+
+def test_bulk_fixture_filters_world_bank_aggregates_and_taiwan_country_node(tmp_path) -> None:
+    catalog, _manifest = build_bulk_catalog(
+        mode="fixture",
+        cache_dir=tmp_path / "cache",
+        limits=BulkLimits(sec_companies=20, world_bank_countries=200, world_bank_indicators=20, ourairports_airports=20),
+    )
+    entity_by_id = {entity["canonical_id"]: entity for entity in catalog["entities"]}
+
+    assert "country_tw" not in entity_by_id
+    assert "country_wld" not in entity_by_id
+    assert "country_1w" not in entity_by_id
+    assert "country_eu" not in entity_by_id
+
+    province = entity_by_id["province_cn_tw"]
+    assert province["entity_type"] == "coverage_area"
+    assert province["display_name"] == "中国台湾省"
+    assert province["country"] == "CN"
+    assert province["countryCode"] == "CN"
+    assert province["provinceCode"] == "TW"
+    assert province["parentGeoId"] == "country_cn"
+    assert province["sourceCountryCode"] == "TW"
+    assert "country_be" in entity_by_id
+    assert "country_my" in entity_by_id
+    assert "country_vn" in entity_by_id
+    assert "country_it" in entity_by_id
+
+    assert any(
+        edge["source_id"] == "province_cn_tw" and edge["target_id"] == "country_cn" and edge["edge_type"] == "part_of"
+        for edge in catalog["edges"]
+    )
 
 
 def test_public_real_snapshot_is_deterministic_for_same_manifest() -> None:

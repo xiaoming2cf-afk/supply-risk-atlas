@@ -50,6 +50,9 @@ def test_health_aliases_return_envelope_with_request_id() -> None:
         ("get", "/api/v1/reports", None),
         ("get", "/api/v1/dashboard/global-risk-cockpit", None),
         ("get", "/api/v1/dashboard/graph-explorer", None),
+        ("get", "/api/v1/dashboard/prediction-center", None),
+        ("get", "/api/v1/dashboard/path-analysis", None),
+        ("get", "/api/v1/dashboard/country-lens", None),
         ("post", "/api/v1/predictions", {"target_id": "firm_apple"}),
         ("post", "/api/v1/explanations", {"target_id": "firm_apple"}),
         (
@@ -138,6 +141,64 @@ def test_dashboard_routes_return_envelope_and_view_model() -> None:
     assert shock_payload["status"] == "success"
     assert shock_payload["data"]["input"]["severity"] == 95
     assert shock_payload["data"]["impactScore"] > 70
+
+
+def test_path_analysis_dashboard_exposes_planned_view_model() -> None:
+    client = _client()
+
+    response = client.get("/api/v1/dashboard/path-analysis", headers={"x-request-id": "req_path_analysis"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["request_id"] == "req_path_analysis"
+    assert payload["status"] == "success"
+    assert payload["mode"] == "real"
+
+    data = payload["data"]
+    assert data["criticalNodes"]
+    assert data["transmissionPaths"]
+    assert all(
+        {"id", "label", "kind", "level", "score", "drivers"} <= set(node)
+        for node in data["criticalNodes"]
+    )
+    assert all(
+        {"id", "sourceId", "targetId", "nodeSequence", "edgeSequence", "pathRisk", "pathConfidence"}
+        <= set(path)
+        for path in data["transmissionPaths"]
+    )
+    assert all(
+        len(path["nodeSequence"]) >= 2
+        and len(path["edgeSequence"]) == len(path["nodeSequence"]) - 1
+        for path in data["transmissionPaths"]
+    )
+
+
+def test_country_lens_dashboard_exposes_planned_view_model() -> None:
+    client = _client()
+
+    response = client.get("/api/v1/dashboard/country-lens", headers={"x-request-id": "req_country_lens"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["request_id"] == "req_country_lens"
+    assert payload["status"] == "success"
+    assert payload["mode"] == "real"
+
+    data = payload["data"]
+    assert data["availableCountries"]
+    assert data["countryLens"]
+    assert all(
+        {"code", "label", "entityCount", "riskScore"} <= set(country)
+        for country in data["availableCountries"]
+    )
+    assert any(country["code"] == "CN" for country in data["availableCountries"])
+    assert all(country["code"] != "TW" for country in data["availableCountries"])
+
+    lens = data["countryLens"]
+    assert {"countryCode", "countryName", "riskScore", "criticalNodes", "transmissionPaths"} <= set(lens)
+    assert lens["countryCode"] in {country["code"] for country in data["availableCountries"]}
+    assert lens["criticalNodes"]
+    assert lens["transmissionPaths"]
 
 
 def test_sources_route_exposes_manifest_and_freshness() -> None:

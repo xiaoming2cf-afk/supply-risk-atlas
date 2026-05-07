@@ -6,6 +6,7 @@ import {
   Building2,
   Database,
   Factory,
+  Gauge,
   GitBranch,
   Globe2,
   Layers3,
@@ -33,6 +34,9 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "global-risk-cockpit": Globe2,
   "graph-explorer": Network,
   "company-risk-360": Building2,
+  "prediction-center": Gauge,
+  "path-analysis": Route,
+  "country-lens": Globe2,
   "path-explainer": Route,
   "shock-simulator": SlidersHorizontal,
   "causal-evidence-board": ShieldAlert,
@@ -122,7 +126,12 @@ export function App() {
     [configuredApiBaseUrl]
   );
   const t = (value: string) => translateText(value, language);
-  const activeResultKey: DashboardPageId = pageId === "shock-simulator" ? "global-risk-cockpit" : pageId;
+  const activeResultKey: DashboardPageId =
+    pageId === "shock-simulator"
+      ? "global-risk-cockpit"
+      : pageId === "path-analysis" || pageId === "country-lens"
+        ? "graph-explorer"
+        : pageId;
   const activeResult = dashboardResults[activeResultKey];
   const runtimeModeLabel = configuredApiBaseUrl ? t("API linked") : t("API unavailable");
   const dataStatus = getDataStatus(activeResult, Boolean(configuredApiBaseUrl), error);
@@ -143,6 +152,7 @@ export function App() {
         globalRiskCockpitResult,
         graphExplorerResult,
         companyRisk360Result,
+        predictionCenterResult,
         pathExplainerResult,
         causalEvidenceBoardResult,
         graphVersionStudioResult,
@@ -151,6 +161,7 @@ export function App() {
         apiClient.getGlobalRiskCockpit(),
         apiClient.getGraphExplorer(),
         apiClient.getCompanyRisk360(),
+        apiClient.getPredictionCenter(),
         apiClient.getPathExplainer(),
         apiClient.getCausalEvidenceBoard(),
         apiClient.getGraphVersionStudio(),
@@ -161,6 +172,7 @@ export function App() {
         "global-risk-cockpit": globalRiskCockpitResult,
         "graph-explorer": graphExplorerResult,
         "company-risk-360": companyRisk360Result,
+        "prediction-center": predictionCenterResult,
         "path-explainer": pathExplainerResult,
         "causal-evidence-board": causalEvidenceBoardResult,
         "graph-version-studio": graphVersionStudioResult,
@@ -171,6 +183,7 @@ export function App() {
         isAcceptedRealResult(globalRiskCockpitResult) &&
         isAcceptedRealResult(graphExplorerResult) &&
         isAcceptedRealResult(companyRisk360Result) &&
+        isAcceptedRealResult(predictionCenterResult) &&
         isAcceptedRealResult(pathExplainerResult) &&
         isAcceptedRealResult(causalEvidenceBoardResult) &&
         isAcceptedRealResult(graphVersionStudioResult) &&
@@ -180,6 +193,7 @@ export function App() {
           globalRiskCockpit: globalRiskCockpitResult.data,
           graphExplorer: graphExplorerResult.data,
           companyRisk360: companyRisk360Result.data,
+          predictionCenter: predictionCenterResult.data,
           pathExplainer: pathExplainerResult.data,
           causalEvidenceBoard: causalEvidenceBoardResult.data,
           graphVersionStudio: graphVersionStudioResult.data,

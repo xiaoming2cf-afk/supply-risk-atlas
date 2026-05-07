@@ -211,9 +211,14 @@ class SilverEntity(StrictModel):
         "source_release",
         "observation_series",
     ]
-    display_name: str
+    display_name: str = Field(alias="displayName")
     source_refs: list[SourceReference]
-    country_code: str | None = Field(default=None, min_length=2, max_length=2)
+    country_code: str | None = Field(default=None, alias="countryCode", min_length=2, max_length=2)
+    geo_id: str | None = Field(default=None, alias="geoId")
+    geo_level: str | None = Field(default=None, alias="geoLevel")
+    province_code: str | None = Field(default=None, alias="provinceCode", min_length=2, max_length=2)
+    parent_geo_id: str | None = Field(default=None, alias="parentGeoId")
+    source_country_code: str | None = Field(default=None, alias="sourceCountryCode", min_length=2, max_length=2)
     external_ids: dict[str, str] = Field(default_factory=dict)
     geo: GeoPoint | None = None
     attributes: dict[str, Any] = Field(default_factory=dict)

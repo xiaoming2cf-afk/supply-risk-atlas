@@ -11,7 +11,7 @@ def test_baseline_predictions_are_serializable_and_versioned() -> None:
     assert payload["graph_version"].startswith("g_")
     assert payload["feature_version"].startswith("f_")
     assert payload["label_version"].startswith("l_")
-    assert payload["model_version"] == "baseline_v0.1.0"
+    assert payload["model_version"] == "baseline_v0.2.0"
 
 
 def test_counterfactual_does_not_mutate_base_graph() -> None:
