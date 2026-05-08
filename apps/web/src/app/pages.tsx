@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type ComponentType } from "react";
 import type { CSSProperties } from "react";
 import type { ElkNode } from "elkjs";
 import {
@@ -17,15 +17,22 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle2,
+  Clock3,
   Database,
   Factory,
   GitBranch,
+  Globe2,
   Layers3,
+  Map as MapIcon,
   Play,
+  Route,
   Search,
   ShieldAlert,
+  Share2,
   SlidersHorizontal,
-  TerminalSquare
+  TerminalSquare,
+  Workflow,
+  type LucideIcon
 } from "lucide-react";
 import type { SupplyRiskApiClient, SupplyRiskDashboardData } from "@supply-risk/api-client";
 import type {
@@ -60,15 +67,15 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
     case "global-risk-cockpit":
       return <GlobalRiskCockpit data={props.data} />;
     case "graph-explorer":
-      return <GraphExplorer data={props.data} initialMode="risk-centrality" />;
+      return <GraphExplorer data={props.data} initialMode="supply-chain-flow" />;
     case "company-risk-360":
       return <CompanyRisk360 data={props.data} />;
     case "prediction-center":
       return <PredictionCenter data={props.data} />;
     case "path-analysis":
-      return <GraphExplorer data={props.data} initialMode="path-analysis" />;
+      return <GraphExplorer data={props.data} initialMode="risk-propagation" />;
     case "country-lens":
-      return <GraphExplorer data={props.data} initialMode="country-lens" />;
+      return <GraphExplorer data={props.data} initialMode="geo-aggregate" />;
     case "path-explainer":
       return <PathExplainer data={props.data} />;
     case "shock-simulator":
@@ -189,17 +196,55 @@ function GlobalRiskCockpit({ data }: { data: SupplyRiskDashboardData }) {
   );
 }
 
-type GraphExplorerMode = "risk-centrality" | "path-analysis" | "country-lens";
+type GraphExplorerMode =
+  | "supply-chain-flow"
+  | "upstream-downstream"
+  | "geo-aggregate"
+  | "risk-propagation"
+  | "event-timeline";
 
-const graphModeOptions: Array<{ id: GraphExplorerMode; label: string }> = [
-  { id: "risk-centrality", label: "Risk + Centrality" },
-  { id: "path-analysis", label: "Path Analysis" },
-  { id: "country-lens", label: "Country Lens" },
+const graphModeOptions: Array<{ id: GraphExplorerMode; label: string; description: string; icon: LucideIcon }> = [
+  {
+    id: "supply-chain-flow",
+    label: "Supply Chain Flow",
+    description: "Directed supplier, facility, commodity, route, and company flow.",
+    icon: Workflow,
+  },
+  {
+    id: "upstream-downstream",
+    label: "Upstream / Downstream",
+    description: "Expand one selected entity through incoming and outgoing neighbors.",
+    icon: Share2,
+  },
+  {
+    id: "geo-aggregate",
+    label: "Country / Province",
+    description: "Aggregate nodes and paths by country and province context.",
+    icon: MapIcon,
+  },
+  {
+    id: "risk-propagation",
+    label: "Risk Propagation",
+    description: "Explain the active transmission path and bottleneck edges.",
+    icon: Route,
+  },
+  {
+    id: "event-timeline",
+    label: "Event Time Spread",
+    description: "Scrub event propagation by hop order and lag days.",
+    icon: Clock3,
+  },
 ];
+
+function graphModeUsesPath(mode: GraphExplorerMode) {
+  return mode === "risk-propagation" || mode === "event-timeline";
+}
+
+type ReagraphCanvasComponent = ComponentType<Record<string, unknown>>;
 
 function GraphExplorer({
   data,
-  initialMode = "risk-centrality"
+  initialMode = "supply-chain-flow"
 }: {
   data: SupplyRiskDashboardData;
   initialMode?: GraphExplorerMode;
@@ -211,6 +256,7 @@ function GraphExplorer({
   const [query, setQuery] = useState("");
   const [selectedNodeId, setSelectedNodeId] = useState(graph.selectedNodeId);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [inspectorSubject, setInspectorSubject] = useState<"node" | "edge" | "path" | "country">("node");
   const [selectedPathId, setSelectedPathId] = useState(graph.transmissionPaths?.[0]?.id ?? data.pathExplainer.selectedPathId);
   const [selectedPathStepIndex, setSelectedPathStepIndex] = useState(0);
   const [selectedCountryCode, setSelectedCountryCode] = useState(
@@ -251,10 +297,17 @@ function GraphExplorer({
     () => new Map((activePath?.nodeSequence ?? []).map((nodeId, index) => [nodeId, index])),
     [activePath],
   );
+  const modeUsesPath = graphModeUsesPath(mode);
+  const displayedActivePathEdgeIds = useMemo(() => (modeUsesPath ? activePathEdgeIds : new Set<string>()), [activePathEdgeIds, modeUsesPath]);
+  const displayedActivePathNodeIds = useMemo(() => (modeUsesPath ? activePathNodeIds : new Set<string>()), [activePathNodeIds, modeUsesPath]);
+  const displayedActivePathNodeIndex = useMemo(
+    () => (modeUsesPath ? activePathNodeIndex : new Map<string, number>()),
+    [activePathNodeIndex, modeUsesPath],
+  );
   const selectedPathStep =
-    mode === "path-analysis" && activePath ? activePath.steps[Math.min(selectedPathStepIndex, activePath.steps.length - 1)] : undefined;
+    modeUsesPath && activePath ? activePath.steps[Math.min(selectedPathStepIndex, activePath.steps.length - 1)] : undefined;
   const selectedPathStepEdgeId =
-    mode === "path-analysis" && activePath && selectedPathStepIndex > 0
+    modeUsesPath && activePath && selectedPathStepIndex > 0
       ? activePath.edgeSequence[selectedPathStepIndex - 1]
       : undefined;
   const countryLens = graph.countryLens;
@@ -266,6 +319,7 @@ function GraphExplorer({
 
   useEffect(() => {
     setMode(initialMode);
+    setInspectorSubject(initialMode === "geo-aggregate" ? "country" : graphModeUsesPath(initialMode) ? "path" : "node");
   }, [initialMode]);
 
   useEffect(() => {
@@ -309,6 +363,52 @@ function GraphExplorer({
         if (link.source === nodeId || link.target === nodeId) addLinkContext(link);
       }
     };
+    const addDirectionalContext = (nodeId: string | undefined, direction: "incoming" | "outgoing" | "both", depth: number) => {
+      if (!nodeId || depth < 0) return;
+      const frontier = new Set([nodeId]);
+      const visited = new Set<string>();
+      for (let hop = 0; hop <= depth; hop += 1) {
+        const next = new Set<string>();
+        for (const currentId of frontier) {
+          if (visited.has(currentId)) continue;
+          visited.add(currentId);
+          addNode(currentId);
+          for (const link of graph.links) {
+            const followsIncoming = direction !== "outgoing" && link.target === currentId;
+            const followsOutgoing = direction !== "incoming" && link.source === currentId;
+            if (!followsIncoming && !followsOutgoing) continue;
+            addLinkContext(link);
+            next.add(followsIncoming ? link.source : link.target);
+          }
+        }
+        frontier.clear();
+        next.forEach((id) => frontier.add(id));
+      }
+    };
+    const addCountryContext = (countryCode: string | undefined) => {
+      if (!countryCode) return;
+      const normalizedCountryCode = countryCode.toUpperCase();
+      for (const node of graph.nodes) {
+        if ((node.countryCode ?? String(node.metadata.country ?? "")).toUpperCase() === normalizedCountryCode) {
+          addNode(node.id);
+        }
+      }
+      for (const link of graph.links) {
+        if (link.sourceCountry === normalizedCountryCode || link.targetCountry === normalizedCountryCode) {
+          addLinkContext(link);
+        }
+      }
+      for (const path of transmissionPaths) {
+        if (path.countrySequence.includes(normalizedCountryCode)) addPathContext(path);
+      }
+    };
+    const addHighSignalLinks = (limit: number, predicate: (link: GraphLink) => boolean = () => true) => {
+      [...graph.links]
+        .filter(predicate)
+        .sort((a, b) => (b.transmissionWeight ?? b.weight) - (a.transmissionWeight ?? a.weight))
+        .slice(0, limit)
+        .forEach(addLinkContext);
+    };
     const nodeMatchesSearch = (node: GraphNode) => {
       if (!normalizedQuery) return true;
       const metadataValues = Object.values(node.metadata).map((value) => String(value).toLowerCase());
@@ -317,7 +417,7 @@ function GraphExplorer({
       );
     };
 
-    if (mode === "path-analysis") {
+    if (mode === "risk-propagation") {
       addPathContext(activePath);
       for (const edgeId of activePath?.edgeSequence ?? []) {
         const link = linkMap.get(edgeId);
@@ -326,24 +426,27 @@ function GraphExplorer({
       for (const path of transmissionPaths.slice(0, 4)) {
         addPathContext(path);
       }
-    } else if (mode === "country-lens" && selectedCountryCode) {
-      for (const node of graph.nodes) {
-        if ((node.countryCode ?? String(node.metadata.country ?? "")).toUpperCase() === selectedCountryCode) {
-          addNode(node.id);
-        }
+    } else if (mode === "event-timeline") {
+      addPathContext(activePath);
+      [...graph.links]
+        .filter((link) => typeof link.lagDays === "number")
+        .sort((a, b) => (a.lagDays ?? 0) - (b.lagDays ?? 0))
+        .slice(0, 16)
+        .forEach(addLinkContext);
+      for (const edgeId of activePath?.edgeSequence ?? []) {
+        const link = linkMap.get(edgeId);
+        if (link) addLinkContext(link);
       }
-      for (const link of graph.links) {
-        if (link.sourceCountry === selectedCountryCode || link.targetCountry === selectedCountryCode) {
-          addLinkContext(link);
-        }
-      }
-      for (const path of transmissionPaths) {
-        if (path.countrySequence.includes(selectedCountryCode)) addPathContext(path);
-      }
+    } else if (mode === "geo-aggregate") {
+      addCountryContext(selectedCountryCode);
+    } else if (mode === "upstream-downstream") {
+      addDirectionalContext(selectedNodeId, "both", 2);
+      addFirstNeighborContext(selectedNodeId);
     } else {
       for (const node of criticalNodes.slice(0, 18)) {
         addNode(node.id);
       }
+      addHighSignalLinks(22, (link) => link.edgeRole === "transmission" || (link.transmissionWeight ?? link.weight) >= 0.32);
       addFirstNeighborContext(selectedNodeId);
     }
 
@@ -380,6 +483,7 @@ function GraphExplorer({
     graph.nodes,
     kind,
     linkMap,
+    modeUsesPath,
     mode,
     nodeMap,
     normalizedQuery,
@@ -394,10 +498,10 @@ function GraphExplorer({
       graph.nodes
         .filter((node) => visibleNodeIds.has(node.id))
         .sort((a, b) => {
-          if (activePathNodeIds.has(a.id) !== activePathNodeIds.has(b.id)) return activePathNodeIds.has(a.id) ? -1 : 1;
+          if (displayedActivePathNodeIds.has(a.id) !== displayedActivePathNodeIds.has(b.id)) return displayedActivePathNodeIds.has(a.id) ? -1 : 1;
           return (b.criticalityScore ?? b.score) - (a.criticalityScore ?? a.score);
         }),
-    [activePathNodeIds, graph.nodes, visibleNodeIds]
+    [displayedActivePathNodeIds, graph.nodes, visibleNodeIds]
   );
   const visibleLinks = useMemo(
     () => graph.links.filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)),
@@ -414,19 +518,29 @@ function GraphExplorer({
     <div className="graph-workbench">
       <Panel title="Graph scope" subtitle="Mode, filters, and ranked critical entities." className="graph-side-panel">
         <div className="graph-mode-toolbar" aria-label={t("Graph analysis mode")}>
-          {graphModeOptions.map((option) => (
+          {graphModeOptions.map((option) => {
+            const Icon = option.icon;
+            return (
             <button
               className={`mode-tab ${mode === option.id ? "is-active" : ""}`}
               key={option.id}
               onClick={() => {
                 setMode(option.id);
                 setSelectedEdgeId(null);
+                setInspectorSubject(
+                  option.id === "geo-aggregate" ? "country" : graphModeUsesPath(option.id) ? "path" : "node",
+                );
               }}
               type="button"
             >
-              {t(option.label)}
+              <Icon aria-hidden="true" />
+              <span>
+                <strong>{t(option.label)}</strong>
+                <small>{t(option.description)}</small>
+              </span>
             </button>
-          ))}
+            );
+          })}
         </div>
         <div className="segmented" aria-label={t("Graph node type")}>
           {(["all", ...graph.filters] as Array<GraphNodeKind | "all">).map((filter) => (
@@ -465,28 +579,31 @@ function GraphExplorer({
           onSelect={(nodeId) => {
             setSelectedNodeId(nodeId);
             setSelectedEdgeId(null);
-            setMode("risk-centrality");
+            setInspectorSubject("node");
+            setMode("upstream-downstream");
           }}
         />
 
-        {mode === "path-analysis" ? (
+        {modeUsesPath ? (
           <GraphPathList
             paths={transmissionPaths}
             selectedPathId={activePath?.id}
             onSelect={(pathId) => {
               setSelectedPathId(pathId);
               setSelectedEdgeId(null);
+              setInspectorSubject("path");
             }}
           />
         ) : null}
 
-        {mode === "country-lens" ? (
+        {mode === "geo-aggregate" ? (
           <GraphCountryList
             countries={availableCountries}
             selectedCountryCode={selectedCountry?.code}
             onSelect={(countryCode) => {
               setSelectedCountryCode(countryCode);
               setSelectedEdgeId(null);
+              setInspectorSubject("country");
             }}
           />
         ) : null}
@@ -497,26 +614,55 @@ function GraphExplorer({
         subtitle="Click nodes, edges, paths, and countries to inspect risk transmission."
         className="graph-main-panel"
       >
+        <GraphOverview
+          activePath={activePath}
+          countries={availableCountries}
+          links={graph.links}
+          mode={mode}
+          nodes={graph.nodes}
+          onSelectCountry={(countryCode) => {
+            setSelectedCountryCode(countryCode);
+            setSelectedEdgeId(null);
+            setInspectorSubject("country");
+            setMode("geo-aggregate");
+          }}
+          onSelectNode={(nodeId) => {
+            setSelectedNodeId(nodeId);
+            setSelectedEdgeId(null);
+            setInspectorSubject("node");
+          }}
+          onSelectPath={(pathId) => {
+            setSelectedPathId(pathId);
+            setSelectedEdgeId(null);
+            setInspectorSubject("path");
+            setMode("risk-propagation");
+          }}
+          selectedCountryCode={selectedCountry?.code}
+          selectedNodeId={selectedNode.id}
+          transmissionPaths={transmissionPaths}
+        />
         <div className="graph-canvas">
           <GraphNetwork
-            activePathEdgeIds={activePathEdgeIds}
-            activePathNodeIds={activePathNodeIds}
+            activePathEdgeIds={displayedActivePathEdgeIds}
+            activePathNodeIds={displayedActivePathNodeIds}
             links={visibleLinks}
             mode={mode}
             nodes={visibleNodes}
             onSelectEdge={(edgeId) => {
               setSelectedEdgeId(edgeId);
+              setInspectorSubject("edge");
             }}
             onSelectNode={(nodeId) => {
               setSelectedNodeId(nodeId);
               setSelectedEdgeId(null);
+              setInspectorSubject("node");
             }}
-            selectedCountryCode={mode === "country-lens" ? selectedCountry?.code : undefined}
+            selectedCountryCode={mode === "geo-aggregate" ? selectedCountry?.code : undefined}
             selectedEdgeId={selectedEdgeId}
             selectedNodeId={selectedNode.id}
             selectedPathStepEdgeId={selectedPathStepEdgeId}
             selectedPathStepNodeId={selectedPathStep?.nodeId}
-            activePathNodeIndex={activePathNodeIndex}
+            activePathNodeIndex={displayedActivePathNodeIndex}
           />
           {visibleNodes.length === 0 ? <div className="empty-state">{t("No entities match the current filters.")}</div> : null}
         </div>
@@ -524,7 +670,7 @@ function GraphExplorer({
 
       <Panel title="Inspector" subtitle="Selection-specific evidence, flow, and country context." className="graph-inspector-panel">
         <GraphInspector
-          activePath={mode === "path-analysis" ? activePath : undefined}
+          activePath={modeUsesPath ? activePath : undefined}
           countryLens={countryLens}
           edge={selectedEdge}
           node={selectedEdge ? undefined : selectedNode}
@@ -533,9 +679,11 @@ function GraphExplorer({
             if (nodeId) {
               setSelectedNodeId(nodeId);
               setSelectedEdgeId(null);
+              setInspectorSubject("path");
             }
           }}
-          selectedCountry={mode === "country-lens" ? selectedCountry : undefined}
+          selectedCountry={inspectorSubject === "country" ? selectedCountry : undefined}
+          selectedPath={inspectorSubject === "path"}
           selectedPathStepIndex={selectedPathStepIndex}
         />
       </Panel>
@@ -645,6 +793,204 @@ function GraphCountryList({
   );
 }
 
+function GraphOverview({
+  activePath,
+  countries,
+  links,
+  mode,
+  nodes,
+  onSelectCountry,
+  onSelectNode,
+  onSelectPath,
+  selectedCountryCode,
+  selectedNodeId,
+  transmissionPaths
+}: {
+  activePath?: GraphTransmissionPath;
+  countries: CountryRiskSummary[];
+  links: GraphLink[];
+  mode: GraphExplorerMode;
+  nodes: GraphNode[];
+  onSelectCountry: (countryCode: string) => void;
+  onSelectNode: (nodeId: string) => void;
+  onSelectPath: (pathId: string) => void;
+  selectedCountryCode?: string;
+  selectedNodeId: string;
+  transmissionPaths: GraphTransmissionPath[];
+}) {
+  const { t } = useI18n();
+  const activePathNodeIds = new Set(activePath?.nodeSequence ?? []);
+  const overviewNodes = [...nodes]
+    .sort((a, b) => {
+      if (a.id === selectedNodeId) return -1;
+      if (b.id === selectedNodeId) return 1;
+      if (activePathNodeIds.has(a.id) !== activePathNodeIds.has(b.id)) return activePathNodeIds.has(a.id) ? -1 : 1;
+      return graphScore(b.criticalityScore ?? b.score) - graphScore(a.criticalityScore ?? a.score);
+    })
+    .slice(0, 32);
+  const overviewNodeIds = new Set(overviewNodes.map((node) => node.id));
+  const overviewLinks = links
+    .filter((link) => overviewNodeIds.has(link.source) && overviewNodeIds.has(link.target))
+    .sort((a, b) => (b.transmissionWeight ?? b.weight) - (a.transmissionWeight ?? a.weight))
+    .slice(0, 42);
+  const overviewNodeById = new Map(overviewNodes.map((node) => [node.id, node]));
+  const topCountries = [...countries].sort((a, b) => b.riskScore - a.riskScore).slice(0, 6);
+  const [GraphCanvas, setGraphCanvas] = useState<ReagraphCanvasComponent | null>(null);
+  const [webglStatus, setWebglStatus] = useState<"loading" | "ready" | "fallback">("loading");
+
+  useEffect(() => {
+    let mounted = true;
+    const isAutomatedBrowser =
+      typeof navigator !== "undefined" && (navigator.webdriver || navigator.userAgent.includes("HeadlessChrome"));
+    const hasWebgl = (() => {
+      if (typeof document === "undefined") return false;
+      const canvas = document.createElement("canvas");
+      return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+    })();
+    if (isAutomatedBrowser || !hasWebgl) {
+      setWebglStatus("fallback");
+      return () => {
+        mounted = false;
+      };
+    }
+    import("reagraph")
+      .then((module) => {
+        if (!mounted) return;
+        setGraphCanvas(() => module.GraphCanvas as unknown as ReagraphCanvasComponent);
+        setWebglStatus("ready");
+      })
+      .catch(() => {
+        if (mounted) setWebglStatus("fallback");
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const reagraphNodes = overviewNodes.map((node) => ({
+    id: node.id,
+    label: node.label,
+    subLabel: `${node.kind} / ${node.countryCode ?? "global"}`,
+    size: Math.max(5, Math.min(18, graphScore(node.centralityScore ?? node.criticalityScore ?? node.score) / 6)),
+    fill: graphColorByLevel[node.level],
+    cluster: node.countryCode ?? node.kind,
+    data: { kind: node.kind, level: node.level },
+  }));
+  const reagraphEdges = overviewLinks.map((link) => ({
+    id: link.id,
+    source: link.source,
+    target: link.target,
+    label: link.edgeType ?? link.label,
+    fill: graphColorByLevel[link.level],
+    size: Math.max(1, Math.min(5, (link.transmissionWeight ?? link.weight) * 6)),
+    dashed: link.edgeRole !== "transmission",
+    data: { edgeType: link.edgeType, role: link.edgeRole },
+  }));
+  const webglActives = [...activePathNodeIds].filter((nodeId) => overviewNodeIds.has(nodeId)).slice(0, 18);
+
+  return (
+    <div className="graph-overview" aria-label={t("Graph overview")}>
+      <div className="graph-overview-map" role="img" aria-label={t("Topology overview")}>
+        {GraphCanvas ? (
+          <div className="graph-webgl-overview" data-graph-engine="reagraph">
+            <GraphCanvas
+              actives={webglActives}
+              animated
+              cameraMode="pan"
+              clusterAttribute="cluster"
+              defaultNodeSize={8}
+              draggable
+              edgeArrowPosition="end"
+              edgeInterpolation="curved"
+              edges={reagraphEdges}
+              labelType="auto"
+              layoutType="forceatlas2"
+              maxNodeSize={18}
+              minNodeSize={5}
+              nodes={reagraphNodes}
+              onNodeClick={(node: { id: string }) => onSelectNode(node.id)}
+              selections={[selectedNodeId]}
+              sizingAttribute="size"
+              sizingType="attribute"
+            />
+          </div>
+        ) : (
+          <div className="graph-overview-svg-fallback" data-graph-engine="svg-fallback">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              {overviewLinks.map((link) => {
+                const source = overviewNodeById.get(link.source);
+                const target = overviewNodeById.get(link.target);
+                if (!source || !target) return null;
+                const isActive = activePath?.edgeSequence.includes(link.id) || link.id === activePath?.bottleneckEdgeId;
+                return (
+                  <line
+                    key={link.id}
+                    x1={source.x}
+                    y1={source.y}
+                    x2={target.x}
+                    y2={target.y}
+                    stroke={graphColorByLevel[link.level]}
+                    strokeLinecap="round"
+                    strokeOpacity={isActive ? 0.78 : 0.22}
+                    strokeWidth={isActive ? 1.1 : 0.45 + Math.min(0.8, link.weight)}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                );
+              })}
+            </svg>
+            {overviewNodes.map((node) => (
+              <button
+                aria-label={`${t("Inspect")} ${node.label}`}
+                className={`graph-overview-node ${riskClassByLevel[node.level]} ${node.id === selectedNodeId ? "is-active" : ""} ${activePathNodeIds.has(node.id) ? "is-path-node" : ""}`}
+                key={node.id}
+                onClick={() => onSelectNode(node.id)}
+                style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                title={node.label}
+                type="button"
+              />
+            ))}
+          </div>
+        )}
+        <span className={`graph-overview-engine ${webglStatus === "ready" ? "" : "is-fallback"}`}>
+          {webglStatus === "ready" ? "WebGL overview" : "SVG fallback"}
+        </span>
+      </div>
+      <div className="graph-overview-side">
+        <div className="graph-overview-heading">
+          <Globe2 aria-hidden="true" />
+          <span>{t(graphModeOptions.find((option) => option.id === mode)?.label ?? "Graph overview")}</span>
+        </div>
+        <div className="graph-overview-countries">
+          {topCountries.map((country) => (
+            <button
+              className={`graph-overview-country ${country.code === selectedCountryCode ? "is-active" : ""}`}
+              key={country.code}
+              onClick={() => onSelectCountry(country.code)}
+              type="button"
+            >
+              <span>{country.code}</span>
+              <b>{graphScore(country.riskScore)}</b>
+            </button>
+          ))}
+        </div>
+        <div className="graph-overview-paths">
+          {transmissionPaths.slice(0, 3).map((path) => (
+            <button
+              className={`graph-overview-path ${path.id === activePath?.id ? "is-active" : ""}`}
+              key={path.id}
+              onClick={() => onSelectPath(path.id)}
+              type="button"
+            >
+              <span>{path.sourceLabel} -&gt; {path.targetLabel}</span>
+              <b>{Math.round(path.transmissionScore * 100)}</b>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GraphInspector({
   activePath,
   countryLens,
@@ -652,6 +998,7 @@ function GraphInspector({
   node,
   onSelectPathStep,
   selectedCountry,
+  selectedPath,
   selectedPathStepIndex
 }: {
   activePath?: GraphTransmissionPath;
@@ -660,6 +1007,7 @@ function GraphInspector({
   node?: GraphNode;
   onSelectPathStep?: (index: number, nodeId: string) => void;
   selectedCountry?: CountryRiskSummary;
+  selectedPath?: boolean;
   selectedPathStepIndex?: number;
 }) {
   if (edge) {
@@ -668,7 +1016,7 @@ function GraphInspector({
   if (selectedCountry && countryLens) {
     return <CountryInspector country={selectedCountry} countryLens={countryLens} />;
   }
-  if (activePath) {
+  if (selectedPath && activePath) {
     return <PathInspector onSelectStep={onSelectPathStep} path={activePath} selectedStepIndex={selectedPathStepIndex ?? 0} />;
   }
   if (node) {
@@ -889,9 +1237,17 @@ type RiskFlowEdge = FlowEdge<{ level: RiskLevel; label: string; role?: string; a
 const graphKindRankHint: Record<GraphNodeKind, number> = {
   country: 0,
   route: 1,
+  route_lane: 1,
+  carrier: 1,
   data: 1,
+  raw_material: 2,
+  component: 2,
+  product_grade: 2,
+  supplier_tier: 2,
   supplier: 2,
   facility: 2,
+  factory: 2,
+  warehouse: 2,
   commodity: 2,
   company: 3,
 };
@@ -996,7 +1352,7 @@ function GraphNetwork({
     <>
       <ReactFlow
         className="risk-flow"
-        colorMode="dark"
+        colorMode="light"
         defaultEdgeOptions={{ type: "smoothstep" }}
         edges={flowEdges}
         fitView
@@ -1034,7 +1390,7 @@ function GraphNetwork({
         onNodeMouseMove={(event) => setTooltip((current) => (current ? { ...current, x: event.clientX, y: event.clientY } : current))}
         proOptions={{ hideAttribution: true }}
       >
-        <Background color="rgba(238,247,242,0.08)" gap={32} size={1} />
+        <Background color="rgba(22,28,22,0.08)" gap={32} size={1} />
         <MiniMap
           className="risk-flow-minimap"
           nodeColor={(node) => graphColorByLevel[(node.data as RiskFlowNodeData).graphNode.level]}
@@ -1142,12 +1498,12 @@ function layoutGraphNodes(
       isSelected ||
       isFirstNeighbor ||
       selectedPathStep ||
-      (options.mode === "path-analysis" && inActivePath) ||
-      (options.mode === "country-lens" && countryMatches);
+      (graphModeUsesPath(options.mode) && inActivePath) ||
+      (options.mode === "geo-aggregate" && countryMatches);
     const dimmed =
-      (options.mode === "path-analysis" && options.activePathNodeIds.size > 0 && !isFocused) ||
-      (options.mode === "country-lens" && !isFocused) ||
-      (options.mode === "risk-centrality" && !isFocused);
+      (graphModeUsesPath(options.mode) && options.activePathNodeIds.size > 0 && !isFocused) ||
+      (options.mode === "geo-aggregate" && !isFocused) ||
+      ((options.mode === "supply-chain-flow" || options.mode === "upstream-downstream") && !isFocused);
     return {
       id: node.id,
       type: "risk",
@@ -1348,7 +1704,7 @@ function layoutGraphEdges(
         isSelectedPathStep ||
         isSelectedAdjacency ||
         isFirstNeighbor ||
-        (options.mode === "country-lens" && Boolean(countryFocused));
+        (options.mode === "geo-aggregate" && Boolean(countryFocused));
       const baseWidth = link.transmissionWeight ?? link.weight;
       return {
         id: link.id,
@@ -1422,13 +1778,21 @@ function NetworkSvg({ links, nodes }: { links: GraphLink[]; nodes: GraphNode[] }
 function CompanyRisk360({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const companyData = data.companyRisk360;
+  const watchlistAlertsEnabled = companyData.featureGates?.watchlistAlertsDefaultEnabled === true;
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyData.selectedCompanyId);
   const selectedCompany =
     companyData.companies.find((company) => company.id === selectedCompanyId) ?? companyData.companies[0];
 
   return (
     <div className="page-grid split-layout">
-      <Panel title="Company watchlist" subtitle="Board-level exposure by target company.">
+      <Panel
+        title={watchlistAlertsEnabled ? "Company watchlist" : "Company exposure"}
+        subtitle={
+          watchlistAlertsEnabled
+            ? "Board-level exposure by target company."
+            : "Watchlist and alert defaults are gated until the quality gate is passed."
+        }
+      >
         <div className="company-list">
           {companyData.companies.map((company) => (
             <button
@@ -1458,7 +1822,7 @@ function CompanyRisk360({ data }: { data: SupplyRiskDashboardData }) {
           subtitle={`${selectedCompany.headquarters}; ${t("confidence")} ${formatPercent(selectedCompany.confidence)}.`}
           translateTitle={false}
           translateSubtitle={false}
-          action={<Button icon={ShieldAlert}>Create watch</Button>}
+          action={<Button icon={ShieldAlert}>{watchlistAlertsEnabled ? "Create watch" : "Experimental watch"}</Button>}
         >
           <div className="driver-grid">
             <ScoreDial score={selectedCompany.riskScore} level={selectedCompany.level} label="Risk score" />
@@ -1590,6 +1954,11 @@ function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
               />
               <Field label="Path count" value={selectedPrediction.path_details?.length ?? selectedPrediction.top_paths.length} />
               <Field label="Evidence refs" value={selectedPrediction.evidence_refs?.length ?? 0} />
+              <Field
+                label="Source coverage"
+                value={`${Math.round((selectedPrediction.source_coverage?.coverageScore ?? 0) * 100)}%`}
+              />
+              <Field label="Sensitivity tests" value={selectedPrediction.sensitivity_diagnostics?.length ?? 0} />
             </div>
           </div>
         </Panel>
@@ -1619,6 +1988,18 @@ function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
           </ul>
         </Panel>
 
+        <Panel title="Sensitivity diagnostics" subtitle="Local perturbation checks over components and bottleneck edges.">
+          <ul className="evidence-list compact">
+            {(selectedPrediction.sensitivity_diagnostics ?? []).slice(0, 8).map((diagnostic) => (
+              <li key={`${diagnostic.factor}-${diagnostic.edgeId ?? diagnostic.pathId ?? "component"}`}>
+                {diagnostic.factor.replaceAll("_", " ")}: {Math.round(diagnostic.deltaIfIncreased10Pct * 100)} up /
+                {" "}{Math.round(diagnostic.deltaIfReduced10Pct * 100)} down
+                {diagnostic.edgeId ? ` / ${diagnostic.edgeId}` : ""}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
         <Panel title="Evidence paths" subtitle="Top transmission paths used by this prediction.">
           <div className="prediction-path-grid">
             {(selectedPrediction.path_details ?? []).slice(0, 4).map((path) => (
@@ -1628,6 +2009,7 @@ function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
                   <b>{Math.round(path.transmissionScore * 100)}</b>
                 </div>
                 <small>{path.edgeTypes.join(" -> ")}</small>
+                {path.bottleneckEdgeId ? <small>{t("Bottleneck")}: {path.bottleneckEdgeId}</small> : null}
                 <div className="lineage-chips">
                   {path.evidenceRefs.slice(0, 3).map((ref) => (
                     <span key={ref}>{ref}</span>
@@ -1719,6 +2101,8 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
   const [input, setInput] = useState<ShockSimulationInput>({
     region: "Taiwan Strait",
     commodity: "advanced semiconductor components",
+    supplier: "",
+    route: "",
     severity: 72,
     durationDays: 28,
     scope: "regional"
@@ -1790,6 +2174,24 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
             </select>
           </label>
           <label className="form-control">
+            <span>{t("Supplier")}</span>
+            <input
+              onChange={(event) => setInput((current) => ({ ...current, supplier: event.target.value }))}
+              placeholder={t("Optional supplier id or name")}
+              type="text"
+              value={input.supplier ?? ""}
+            />
+          </label>
+          <label className="form-control">
+            <span>{t("Route")}</span>
+            <input
+              onChange={(event) => setInput((current) => ({ ...current, route: event.target.value }))}
+              placeholder={t("Optional port, lane, or route")}
+              type="text"
+              value={input.route ?? ""}
+            />
+          </label>
+          <label className="form-control">
             <span>{t("Severity")}: {input.severity}</span>
             <input min="10" max="100" onChange={setNumber("severity")} type="range" value={input.severity} />
           </label>
@@ -1844,6 +2246,33 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
                   </li>
                 ))}
               </ul>
+            </Panel>
+
+            <Panel title="Scenario deltas" subtitle="Graph-propagated target risk movement.">
+              <ul className="timeline-list">
+                {(result.scenario_delta ?? []).slice(0, 8).map((delta) => (
+                  <li className="data-row" key={delta.targetId}>
+                    <div className="row-top">
+                      <span className="row-title">{delta.targetLabel}</span>
+                      <RiskPill level={delta.level} />
+                    </div>
+                    <div className="row-meta">
+                      <span>{t("Baseline")}: {Math.round(delta.baselineRisk * 100)}</span>
+                      <span>{t("Scenario")}: {Math.round(delta.scenarioRisk * 100)}</span>
+                      <span>{delta.delta >= 0 ? "+" : ""}{Math.round(delta.delta * 100)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+
+            <Panel title="Propagation diagnostics" subtitle="Scenario engine coverage and graph propagation counts.">
+              <div className="inspector-grid">
+                <Field label="Engine" value={String(result.diagnostics?.engine ?? "graph_propagation_v1")} />
+                <Field label="Matched edges" value={String(result.diagnostics?.matchedEdges ?? 0)} />
+                <Field label="Changed paths" value={String(result.diagnostics?.propagatedPathCount ?? 0)} />
+                <Field label="Max hops" value={String(result.diagnostics?.maxHops ?? 0)} />
+              </div>
             </Panel>
 
             <Panel title="Mitigation queue" subtitle="Operational actions ranked by speed-to-impact.">

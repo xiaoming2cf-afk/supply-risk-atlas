@@ -1,6 +1,7 @@
 from sra_core.pipeline import run_synthetic_pipeline
 from ml.models.dchgt_sc import DCHGTSCSkeleton
 from ml.simulation.counterfactual import build_counterfactual_edges
+from ml.simulation.scenario import ScenarioShock, build_scenario_simulation, normalize_scenario_shock, _terms
 
 
 def test_baseline_predictions_are_serializable_and_versioned() -> None:
@@ -25,6 +26,41 @@ def test_counterfactual_does_not_mutate_base_graph() -> None:
     )
     assert [edge.graph_version for edge in result.edge_states] == base_versions
     assert counterfactual.counterfactual_graph_version != result.snapshot.graph_version
+
+
+def test_scenario_engine_returns_graph_propagation_diagnostics_without_mutating_base_graph() -> None:
+    result = run_synthetic_pipeline()
+    base_risks = [edge.risk_score for edge in result.edge_states]
+    simulation = build_scenario_simulation(
+        base_graph_version=result.snapshot.graph_version,
+        edge_states=result.edge_states,
+        entities=result.real.entities if hasattr(result, "real") else result.synthetic.entities,
+        predictions=result.predictions,
+        shock=ScenarioShock(region="Taiwan Strait", commodity="semiconductor", severity=90),
+    )
+
+    assert [edge.risk_score for edge in result.edge_states] == base_risks
+    assert simulation["diagnostics"]["engine"] == "graph_propagation_v1"
+    assert "scenario_delta" in simulation
+    assert "top_changed_paths" in simulation
+
+
+def test_scenario_shock_text_inputs_are_bounded() -> None:
+    long_text = " ".join(["semiconductor"] * 200)
+    shock = normalize_scenario_shock(
+        {
+            "region": long_text,
+            "commodity": long_text,
+            "supplier": long_text,
+            "route": long_text,
+        }
+    )
+
+    assert len(shock.region) <= 160
+    assert len(shock.commodity) <= 160
+    assert shock.supplier is not None and len(shock.supplier) <= 160
+    assert shock.route is not None and len(shock.route) <= 160
+    assert len(_terms(long_text)) <= 25
 
 
 def test_dchgt_sc_skeleton_lists_required_modules() -> None:

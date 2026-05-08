@@ -23,6 +23,14 @@ from graph_kernel.graph_diff import diff_edge_states
 from graph_kernel.path_index import build_path_index
 from ml.models.dchgt_sc import DCHGTSCSkeleton
 from ml.simulation.counterfactual import build_counterfactual_edges
+from ml.simulation.scenario import build_scenario_simulation, normalize_scenario_shock
+from services.api.prediction_center import (
+    build_prediction_center_payload,
+    build_prediction_payloads,
+    classify_prediction_mechanism,
+    path_transmission_score,
+    ranked_paths_for_target,
+)
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
 from sra_core.contracts.domain import (
@@ -40,6 +48,9 @@ TAIWAN_PROVINCE_DISPLAY = "中国台湾省"
 TAIWAN_RAW_CODES = {"TW", "TWN"}
 DASHBOARD_PAYLOAD_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 DASHBOARD_PAYLOAD_CACHE_LOCK = Lock()
+PATH_DIRECTIONS = {"upstream", "downstream", "both"}
+MAX_DASHBOARD_QUERY_LIST_ITEMS = 32
+MAX_DASHBOARD_QUERY_TOKEN_LENGTH = 80
 
 
 def metadata_for_result(result: Any) -> VersionMetadata:
@@ -294,7 +305,7 @@ def route_predictions(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     result = run_public_real_pipeline()
-    prediction_payloads = _prediction_payloads(result, prediction_request)
+    prediction_payloads = build_prediction_payloads(result, prediction_request)
     if prediction_request and prediction_request.target_id:
         if not prediction_payloads:
             raise LookupError(f"Predictions not found for target: {prediction_request.target_id}")
@@ -341,9 +352,39 @@ def route_explanations(
 def route_simulations(
     intervention_type: str = "close_port",
     target_id: str = "port_kaohsiung",
+    scenario_payload: dict[str, Any] | None = None,
     request_id: str | None = None,
 ) -> dict[str, Any]:
     result = run_public_real_pipeline()
+    if intervention_type in {"region_shock", "commodity_shock", "supplier_shock", "route_shock"}:
+        payload = {
+            **(scenario_payload or {}),
+            "region": (scenario_payload or {}).get("region") or target_id,
+        }
+        shock = normalize_scenario_shock(payload)
+        simulation = build_scenario_simulation(
+            base_graph_version=result.snapshot.graph_version,
+            edge_states=result.edge_states,
+            entities=result.real.entities,
+            predictions=result.predictions,
+            shock=shock,
+        )
+        return make_envelope(
+            {
+                "intervention_type": intervention_type,
+                "target_id": target_id,
+                "base_graph_version": result.snapshot.graph_version,
+                "counterfactual_graph_version": simulation["diagnostics"]["scenarioGraphVersion"],
+                "removed_edges": [],
+                "risk_delta": max(
+                    (float(row["delta"]) for row in simulation["scenario_delta"]),
+                    default=0.0,
+                ),
+                **simulation,
+            },
+            metadata=metadata_for_result(result),
+            request_id=request_id,
+        )
     counterfactual = build_counterfactual_edges(
         base_graph_version=result.snapshot.graph_version,
         edge_states=result.edge_states,
@@ -408,219 +449,19 @@ def route_reports(
     )
 
 
-def _path_transmission_score(path: Any) -> float:
-    return _clamp_float(path.path_risk) * _clamp_float(path.path_confidence) * max(0.12, float(path.path_weight or 0.0))
-
-
-def _ranked_paths_for_target(paths: list[Any], edge_states: list[Any], target_id: str, *, top_k: int = 5) -> list[Any]:
-    edge_by_id = {edge.edge_id: edge for edge in edge_states}
-    candidates: list[Any] = []
-    for path in paths:
-        if path.target_id != target_id:
-            continue
-        if len(set(path.node_sequence)) != len(path.node_sequence):
-            continue
-        edges = [edge_by_id.get(edge_id) for edge_id in path.edge_sequence]
-        if not edges or any(edge is None for edge in edges):
-            continue
-        edge_types = [edge.edge_type for edge in edges if edge]
-        if not any(edge_type in PRIMARY_TRANSMISSION_EDGE_TYPES for edge_type in edge_types):
-            continue
-        if any(edge_type in GOVERNANCE_EDGE_TYPES or edge_type.startswith("dataset_") for edge_type in edge_types):
-            continue
-        candidates.append(path)
-    return sorted(candidates, key=lambda path: (_path_transmission_score(path), path.path_risk), reverse=True)[:top_k]
-
-
-def _prediction_mechanism(top_paths: list[Any]) -> str:
-    edge_types = {edge_type for path in top_paths for edge_type in path.meta_path.split(">")}
-    if "event_affects" in edge_types:
-        return "event_shock"
-    if {"ships_through", "route_connects"} & edge_types:
-        return "logistics_corridor"
-    if "risk_transmits_to" in edge_types:
-        return "supplier_dependency"
-    if "policy_targets" in edge_types:
-        return "policy_exposure"
-    if "located_in" in edge_types:
-        return "country_context"
-    return "public_evidence_graph"
-
-
-def _prediction_score_components(prediction: Any, sample: Any | None, top_paths: list[Any]) -> dict[str, float]:
-    node_features = sample.node_features if sample else {}
-    edge_features = sample.edge_features if sample else {}
-    degree_signal = min(
-        1.0,
-        (
-            float(node_features.get("inbound_edge_count", 0.0))
-            + float(node_features.get("outbound_edge_count", 0.0))
-        )
-        / 40.0,
-    )
-    graph_signal = max(
-        _clamp_float(node_features.get("incoming_risk_mean", 0.0)),
-        _clamp_float(edge_features.get("incoming_risk_max", 0.0)),
-    )
-    path_signal = max((_path_transmission_score(path) for path in top_paths), default=_clamp_float(node_features.get("path_risk_max", 0.0)))
-    event_signal = max((path.path_risk for path in top_paths if "event_affects" in path.meta_path), default=0.0)
-    evidence_signal = min(1.0, (len([value for value in node_features.values() if value]) + len(top_paths)) / 10.0)
-    baseline = _clamp_float(prediction.risk_score)
-    return {
-        "baseline": round(baseline, 4),
-        "degree_exposure": round(degree_signal, 4),
-        "graph_propagation": round(graph_signal, 4),
-        "path_transmission": round(_clamp_float(path_signal), 4),
-        "scenario_shock": round(_clamp_float(event_signal), 4),
-        "evidence_coverage": round(evidence_signal, 4),
-    }
-
-
-def _prediction_driver_contributions(components: dict[str, float], top_paths: list[Any]) -> list[dict[str, Any]]:
-    weights = {
-        "baseline": 0.22,
-        "degree_exposure": 0.12,
-        "graph_propagation": 0.24,
-        "path_transmission": 0.24,
-        "scenario_shock": 0.12,
-        "evidence_coverage": 0.06,
-    }
-    rows = [
-        {
-            "driver": key,
-            "score": round(value, 4),
-            "weight": weights[key],
-            "contribution": round(value * weights[key], 4),
-        }
-        for key, value in components.items()
-    ]
-    if top_paths:
-        rows.append(
-            {
-                "driver": "top_path",
-                "pathId": top_paths[0].path_id,
-                "score": round(_path_transmission_score(top_paths[0]), 4),
-                "weight": 0.18,
-                "contribution": round(_path_transmission_score(top_paths[0]) * 0.18, 4),
-            }
-        )
-    return sorted(rows, key=lambda item: item["contribution"], reverse=True)
-
-
-def _prediction_path_details(paths: list[Any], edge_states: list[Any], entity_by_id: dict[str, Any]) -> list[dict[str, Any]]:
-    edge_by_id = {edge.edge_id: edge for edge in edge_states}
-    details = []
-    for path in paths:
-        edge_sequence = [edge_by_id[edge_id] for edge_id in path.edge_sequence if edge_id in edge_by_id]
-        details.append(
-            {
-                "pathId": path.path_id,
-                "nodeSequence": list(path.node_sequence),
-                "edgeSequence": list(path.edge_sequence),
-                "nodeLabels": [_entity_label(entity_by_id, node_id) for node_id in path.node_sequence],
-                "edgeTypes": [edge.edge_type for edge in edge_sequence],
-                "pathRisk": round(path.path_risk, 4),
-                "pathConfidence": round(path.path_confidence, 4),
-                "transmissionScore": round(_path_transmission_score(path), 4),
-                "evidenceRefs": sorted({edge.source for edge in edge_sequence}),
-            }
-        )
-    return details
-
-
-def _prediction_payloads(result: Any, prediction_request: PredictionRequest | None = None) -> list[dict[str, Any]]:
-    paths = build_path_index(result.edge_states, max_hops=4)
-    entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
-    samples_by_target = {sample.target_id: sample for sample in result.samples}
-    payloads = []
-    for prediction in result.predictions:
-        if prediction_request and prediction_request.target_id and prediction.target_id != prediction_request.target_id:
-            continue
-        top_paths = _ranked_paths_for_target(paths, result.edge_states, prediction.target_id)
-        components = _prediction_score_components(prediction, samples_by_target.get(prediction.target_id), top_paths)
-        payload = prediction.model_dump(mode="json")
-        payload["top_paths"] = [path.path_id for path in top_paths] or payload.get("top_paths", [])
-        payload["score_components"] = components
-        payload["driver_contributions"] = _prediction_driver_contributions(components, top_paths)
-        payload["prediction_form"] = "public_evidence_graph_ensemble"
-        payload["mechanism"] = _prediction_mechanism(top_paths)
-        payload["confidence_interval"] = {
-            "low": payload["confidence_low"],
-            "high": payload["confidence_high"],
-            "horizonDays": prediction_request.horizon if prediction_request else prediction.horizon,
-        }
-        payload["path_details"] = _prediction_path_details(top_paths, result.edge_states, entity_by_id)
-        payload["evidence_refs"] = sorted(
-            {
-                result.real.source_manifest_ref,
-                "point_in_time_public_graph",
-                "feature_factory",
-                *[
-                    evidence_ref
-                    for path_detail in payload["path_details"]
-                    for evidence_ref in path_detail["evidenceRefs"]
-                ],
-            }
-        )
-        payloads.append(payload)
-    return payloads
-
-
-def _prediction_center_payload(result: Any) -> dict[str, Any]:
-    prediction_payloads = _prediction_payloads(result)
-    top_predictions = sorted(
-        prediction_payloads,
-        key=lambda prediction: (
-            prediction.get("risk_score", 0.0),
-            prediction.get("confidence_high", 0.0) - prediction.get("confidence_low", 0.0),
-        ),
-        reverse=True,
-    )[:24]
-    mechanism_buckets: dict[str, list[dict[str, Any]]] = {}
-    for prediction in prediction_payloads:
-        mechanism = str(prediction.get("mechanism") or "public_evidence_graph")
-        mechanism_buckets.setdefault(mechanism, []).append(prediction)
-    mechanisms = []
-    for mechanism, bucket in sorted(mechanism_buckets.items()):
-        risks = [float(prediction.get("risk_score", 0.0)) for prediction in bucket]
-        mechanisms.append(
-            {
-                "mechanism": mechanism,
-                "count": len(bucket),
-                "maxRisk": round(max(risks, default=0.0), 4),
-                "averageRisk": round(sum(risks) / len(risks), 4) if risks else 0.0,
-            }
-        )
-    mechanisms = sorted(mechanisms, key=lambda item: (item["maxRisk"], item["count"]), reverse=True)
-    return {
-        "lastUpdated": result.snapshot.as_of_time.isoformat(),
-        "modelVersion": result.predictions[0].model_version if result.predictions else "model_none",
-        "predictionForm": "public_evidence_graph_ensemble",
-        "predictions": prediction_payloads,
-        "topPredictions": top_predictions,
-        "mechanisms": mechanisms,
-        "highConfidenceCount": sum(
-            1
-            for prediction in prediction_payloads
-            if float(prediction.get("confidence_high", 1.0)) - float(prediction.get("confidence_low", 0.0)) <= 0.22
-        ),
-        "saturatedScoreCount": sum(1 for prediction in prediction_payloads if float(prediction.get("risk_score", 0.0)) >= 0.995),
-    }
-
-
 def _explanation_payloads(result: Any) -> list[dict[str, Any]]:
     paths = build_path_index(result.edge_states, max_hops=4)
     edge_by_id = {edge.edge_id: edge for edge in result.edge_states}
     entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
     explanations: list[dict[str, Any]] = []
     for prediction in result.predictions:
-        top_paths = _ranked_paths_for_target(paths, result.edge_states, prediction.target_id, top_k=3)
+        top_paths = ranked_paths_for_target(paths, result.edge_states, prediction.target_id, top_k=3)
         if not top_paths:
             explanations.extend(explanation.model_dump(mode="json") for explanation in result.explanations if explanation.prediction_id == prediction.prediction_id)
             continue
         for rank, path in enumerate(top_paths, start=1):
             edges = [edge_by_id[edge_id] for edge_id in path.edge_sequence if edge_id in edge_by_id]
-            contribution = _path_transmission_score(path)
+            contribution = path_transmission_score(path)
             explanations.append(
                 {
                     "explanation_id": f"explain_{prediction.prediction_id.removeprefix('pred_')}_{rank}",
@@ -634,7 +475,7 @@ def _explanation_payloads(result: Any) -> list[dict[str, Any]]:
                     "contribution_score": round(contribution, 4),
                     "causal_score": round(min(1.0, contribution + 0.08), 4),
                     "confidence": round(path.path_confidence, 4),
-                    "mechanism": _prediction_mechanism([path]),
+                    "mechanism": classify_prediction_mechanism([path]),
                     "evidence": sorted({edge.source for edge in edges} | {result.real.source_manifest_ref}),
                     "steps": [
                         {
@@ -660,9 +501,29 @@ def route_model_lab(request_id: str | None = None) -> dict[str, Any]:
     return make_envelope(DCHGTSCSkeleton().describe(), request_id=request_id)
 
 
-def route_dashboard_page(page_id: str, request_id: str | None = None) -> dict[str, Any]:
+def route_dashboard_page(
+    page_id: str,
+    request_id: str | None = None,
+    *,
+    selected_node_id: str | None = None,
+    path_direction: str = "both",
+    country_code: str | None = None,
+    province_code: str | None = None,
+    geo_id: str | None = None,
+    node_kinds: list[str] | None = None,
+    edge_types: list[str] | None = None,
+) -> dict[str, Any]:
     result = run_public_real_pipeline()
-    payloads = _dashboard_payloads(result)
+    query = _dashboard_query(
+        selected_node_id=selected_node_id,
+        path_direction=path_direction,
+        country_code=country_code,
+        province_code=province_code,
+        geo_id=geo_id,
+        node_kinds=node_kinds,
+        edge_types=edge_types,
+    )
+    payloads = _dashboard_payloads(result) if not query else _real_dashboard_payloads(result, query=query)
     if page_id not in payloads:
         raise LookupError(f"Dashboard page not found: {page_id}")
     return make_envelope(
@@ -671,6 +532,28 @@ def route_dashboard_page(page_id: str, request_id: str | None = None) -> dict[st
         request_id=request_id,
         warnings=_real_data_warnings(result),
     )
+
+
+def _dashboard_query(**values: Any) -> dict[str, Any]:
+    direction = str(values.get("path_direction") or "both").strip().lower()
+    if direction not in PATH_DIRECTIONS:
+        direction = "both"
+    raw_country = _raw_country_code(values.get("country_code"))
+    province_code = _raw_country_code(values.get("province_code"))
+    geo_id = str(values.get("geo_id") or "").strip() or None
+    if raw_country == "TW":
+        province_code = "TW"
+        geo_id = geo_id or "province_cn_tw"
+    query = {
+        "selected_node_id": str(values.get("selected_node_id") or "").strip() or None,
+        "path_direction": direction,
+        "country_code": _country_code(raw_country),
+        "province_code": province_code,
+        "geo_id": geo_id,
+        "node_kinds": sorted({str(item).strip() for item in (values.get("node_kinds") or []) if str(item).strip()}),
+        "edge_types": sorted({str(item).strip() for item in (values.get("edge_types") or []) if str(item).strip()}),
+    }
+    return {key: value for key, value in query.items() if value not in (None, "", []) and not (key == "path_direction" and value == "both")}
 
 
 def route_shock_simulator(
@@ -718,7 +601,7 @@ def _dashboard_payloads(result: Any) -> dict[str, dict[str, Any]]:
         return cached
 
 
-def _real_dashboard_payloads(result: Any) -> dict[str, dict[str, Any]]:
+def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]:
     entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
     source_names = {source.source_id: source.source_name for source in result.real.sources}
     source_by_entity_id = _source_names_by_entity(result)
@@ -740,9 +623,10 @@ def _real_dashboard_payloads(result: Any) -> dict[str, dict[str, Any]]:
         firm_entities,
         source_by_entity_id,
         paths,
+        query=query,
     )
     path_explainer_paths = _dashboard_paths(paths, result.edge_states, entity_by_id)
-    prediction_payload = _prediction_center_payload(result)
+    prediction_payload = build_prediction_center_payload(result)
 
     return {
         "global-risk-cockpit": {
@@ -810,6 +694,11 @@ def _real_dashboard_payloads(result: Any) -> dict[str, dict[str, Any]]:
         "company-risk-360": {
             "selectedCompanyId": _selected_entity_id(prediction_by_target, firm_entities),
             "companies": _dashboard_companies(firm_entities, result.edge_states, prediction_by_target, entity_by_id),
+            "featureGates": {
+                "watchlistAlertsDefaultEnabled": False,
+                "watchlistAlertsMode": "experimental",
+                "reason": "watchlist_alerts_require_passing_quality_gate_before_default_display",
+            },
         },
         "prediction-center": prediction_payload,
         "path-explainer": {
@@ -1170,6 +1059,18 @@ TRANSMISSION_EDGE_TYPES = {
     "ships_through",
     "route_connects",
     "produces",
+    "supplies_to",
+    "component_of",
+    "input_to",
+    "material_processed_into",
+    "manufactured_at",
+    "stored_at",
+    "ships_to",
+    "route_leg",
+    "handled_at",
+    "used_by",
+    "substitutes",
+    "qualified_alternative_to",
     "located_in",
 }
 
@@ -1212,7 +1113,7 @@ def _clamp_float(value: Any, lower: float = 0.0, upper: float = 1.0) -> float:
 
 def _raw_country_code(value: Any) -> str | None:
     text = str(value or "").strip().upper()
-    return text if len(text) == 2 and text != "XX" else None
+    return text if len(text) == 2 and text.isalpha() and text != "XX" else None
 
 
 def _country_code(value: Any) -> str | None:
@@ -1407,8 +1308,14 @@ def _dashboard_kind(entity: Any, edge_states: list[Any]) -> str:
         return "supplier" if sends_risk_to_firm else "company"
     if entity.entity_type in {"port", "airport"}:
         return "facility"
-    if entity.entity_type == "product":
+    if entity.entity_type in {"factory", "warehouse", "carrier"}:
+        return "facility"
+    if entity.entity_type in {"product", "raw_material", "component", "product_grade"}:
         return "commodity"
+    if entity.entity_type == "supplier_tier":
+        return "supplier"
+    if entity.entity_type == "route_lane":
+        return "route"
     if entity.entity_type in {"risk_event", "text_artifact"}:
         return "route"
     if _is_data_node(entity.entity_type):
@@ -1699,6 +1606,7 @@ def _transmission_paths_payload(
         steps = []
         for index, node_id in enumerate(path.node_sequence):
             entity = entity_by_id.get(node_id)
+            geo_context = _geo_context_from_entity(entity)
             incoming_edge = edge_sequence[index - 1] if index > 0 else None
             contribution = incoming_edge.risk_score * incoming_edge.confidence * incoming_edge.weight if incoming_edge else path.path_risk
             steps.append(
@@ -1710,6 +1618,9 @@ def _transmission_paths_payload(
                     "level": _dashboard_risk_level(round((incoming_edge.risk_score if incoming_edge else path.path_risk) * 100)),
                     "contribution": round(contribution * 100),
                     "countryCode": country_sequence[index],
+                    "geoId": geo_context.get("geoId"),
+                    "geoLevel": geo_context.get("geoLevel"),
+                    "provinceCode": geo_context.get("provinceCode"),
                     "evidence": f"{incoming_edge.source} {incoming_edge.edge_type}" if incoming_edge else path.meta_path,
                     "edgeId": incoming_edge.edge_id if incoming_edge else None,
                     "edgeType": incoming_edge.edge_type if incoming_edge else None,
@@ -1743,12 +1654,32 @@ def _transmission_paths_payload(
     return rendered_paths
 
 
+def _node_matches_geo(
+    node: dict[str, Any],
+    country_code: str,
+    *,
+    selected_province_code: str | None = None,
+    selected_geo_id: str | None = None,
+) -> bool:
+    if str(node.get("countryCode") or node.get("metadata", {}).get("country") or "unknown").upper() != country_code:
+        return False
+    if selected_province_code and str(node.get("provinceCode") or node.get("metadata", {}).get("provinceCode") or "").upper() != selected_province_code:
+        return False
+    if selected_geo_id and str(node.get("geoId") or node.get("metadata", {}).get("geoId") or "") != selected_geo_id:
+        return False
+    return True
+
+
 def _country_lens_payload(
     nodes: list[dict[str, Any]],
     links: list[dict[str, Any]],
     critical_nodes: list[dict[str, Any]],
     transmission_paths: list[dict[str, Any]],
     entity_by_id: dict[str, Any],
+    *,
+    selected_country_code: str | None = None,
+    selected_province_code: str | None = None,
+    selected_geo_id: str | None = None,
 ) -> dict[str, Any]:
     country_nodes: dict[str, list[dict[str, Any]]] = {}
     country_source_counts: dict[str, dict[str, int]] = {}
@@ -1830,9 +1761,16 @@ def _country_lens_payload(
             }
         )
     countries = sorted(countries, key=lambda country: (country["riskScore"], country["edgeCount"], country["entityCount"]), reverse=True)
-    selected_country = next((country for country in countries if country["code"] == "CN"), countries[0] if countries else {"code": "unknown", "label": "Unknown"})
+    selected_country = next(
+        (country for country in countries if selected_country_code and country["code"] == selected_country_code),
+        next((country for country in countries if country["code"] == "CN"), countries[0] if countries else {"code": "unknown", "label": "Unknown"}),
+    )
     selected_code = selected_country["code"]
-    selected_nodes = [node for node in critical_nodes if (node.get("countryCode") or "unknown") == selected_code]
+    selected_nodes = [
+        node
+        for node in critical_nodes
+        if _node_matches_geo(node, selected_code, selected_province_code=selected_province_code, selected_geo_id=selected_geo_id)
+    ]
     if not selected_nodes:
         selected_nodes = [
             {
@@ -1847,12 +1785,28 @@ def _country_lens_payload(
                 "drivers": node.get("riskDrivers", []),
             }
             for node in sorted(
-                country_nodes.get(selected_code, []),
+                [
+                    node
+                    for node in country_nodes.get(selected_code, [])
+                    if _node_matches_geo(node, selected_code, selected_province_code=selected_province_code, selected_geo_id=selected_geo_id)
+                ],
                 key=lambda item: (item.get("criticalityScore", 0), item.get("riskScore", 0)),
                 reverse=True,
             )[:8]
         ]
-    selected_paths = [path for path in transmission_paths if selected_code in path.get("countrySequence", [])][:6]
+    selected_paths = [
+        path
+        for path in transmission_paths
+        if selected_code in path.get("countrySequence", [])
+        and (
+            not selected_province_code
+            or any(str(step.get("provinceCode") or "").upper() == selected_province_code for step in path.get("steps", []))
+        )
+        and (
+            not selected_geo_id
+            or any(str(step.get("geoId") or "") == selected_geo_id for step in path.get("steps", []))
+        )
+    ][:6]
     coverage = [
         {
             "countryCode": code,
@@ -1873,6 +1827,8 @@ def _country_lens_payload(
         country_edges.append(edge)
     return {
         "selectedCountryCode": selected_code,
+        "selectedProvinceCode": selected_province_code,
+        "selectedGeoId": selected_geo_id,
         "countries": countries,
         "countryEdges": sorted(country_edges, key=lambda item: (item["riskScore"], item["transmissionWeight"]), reverse=True)[:28],
         "topCriticalNodes": selected_nodes[:8],
@@ -1886,14 +1842,90 @@ def _country_lens_payload(
     }
 
 
+def _filter_transmission_paths(
+    transmission_paths: list[dict[str, Any]],
+    selected_node_id: str,
+    path_direction: str,
+) -> list[dict[str, Any]]:
+    if not selected_node_id:
+        return transmission_paths
+    direction = path_direction if path_direction in PATH_DIRECTIONS else "both"
+    filtered = []
+    for path in transmission_paths:
+        sequence = list(path.get("nodeSequence") or [])
+        if selected_node_id not in sequence:
+            continue
+        if direction == "upstream" and path.get("targetId") != selected_node_id:
+            continue
+        if direction == "downstream" and path.get("sourceId") != selected_node_id:
+            continue
+        filtered.append(path)
+    return filtered
+
+
+def _filter_paths_by_geo(
+    transmission_paths: list[dict[str, Any]],
+    *,
+    country_code: str | None = None,
+    province_code: str | None = None,
+    geo_id: str | None = None,
+) -> list[dict[str, Any]]:
+    if not country_code and not province_code and not geo_id:
+        return transmission_paths
+    filtered = []
+    for path in transmission_paths:
+        if country_code and country_code not in path.get("countrySequence", []):
+            continue
+        if province_code and not any(str(step.get("provinceCode") or "").upper() == province_code for step in path.get("steps", [])):
+            continue
+        if geo_id and not any(str(step.get("geoId") or "") == geo_id for step in path.get("steps", [])):
+            continue
+        filtered.append(path)
+    return filtered
+
+
+def _filter_graph_nodes(
+    nodes: list[dict[str, Any]],
+    *,
+    country_code: str | None = None,
+    province_code: str | None = None,
+    geo_id: str | None = None,
+    node_kinds: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    kind_filter = set(node_kinds or [])
+
+    def matches_kind(node: dict[str, Any]) -> bool:
+        if not kind_filter:
+            return True
+        metadata = node.get("metadata", {}) or {}
+        return (
+            str(node.get("kind") or "") in kind_filter
+            or str(node.get("entityType") or "") in kind_filter
+            or str(metadata.get("entity_type") or "") in kind_filter
+        )
+
+    return [
+        node
+        for node in nodes
+        if matches_kind(node)
+        and (not country_code or _node_matches_geo(node, country_code, selected_province_code=province_code, selected_geo_id=geo_id))
+        and (country_code or not province_code or str(node.get("provinceCode") or node.get("metadata", {}).get("provinceCode") or "").upper() == province_code)
+        and (country_code or not geo_id or str(node.get("geoId") or node.get("metadata", {}).get("geoId") or "") == geo_id)
+    ]
+
+
 def _graph_explorer_payload(
     result: Any,
     prediction_by_target: dict[str, Any],
     firm_entities: list[Any],
     source_by_entity_id: dict[str, str],
     paths: list[Any],
+    *,
+    query: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    selected_node_id = _selected_entity_id(prediction_by_target, firm_entities)
+    has_query = bool(query)
+    query = query or {}
+    selected_node_id = str(query.get("selected_node_id") or _selected_entity_id(prediction_by_target, firm_entities))
     entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
     active_edges = _active_edge_states(result.edge_states)
     node_country_by_id = _node_country_index(result.real.entities, active_edges)
@@ -1914,29 +1946,92 @@ def _graph_explorer_payload(
     )
     all_links = _dashboard_graph_links(active_edges, node_country_by_id)
     critical_nodes = _critical_nodes_payload(all_nodes)
-    transmission_paths = _transmission_paths_payload(paths, active_edges, entity_by_id, node_country_by_id)
-    country_lens = _country_lens_payload(all_nodes, all_links, critical_nodes, transmission_paths, entity_by_id)
+    transmission_paths = _transmission_paths_payload(paths, active_edges, entity_by_id, node_country_by_id, top_k=180 if has_query else 12)
+    selected_country_code = query.get("country_code")
+    selected_province_code = query.get("province_code")
+    selected_geo_id = query.get("geo_id")
+    filtered_paths = _filter_transmission_paths(transmission_paths, selected_node_id, str(query.get("path_direction") or "both")) if has_query else transmission_paths
+    filtered_paths = _filter_paths_by_geo(filtered_paths, country_code=selected_country_code, province_code=selected_province_code, geo_id=selected_geo_id)
+    if not filtered_paths and not has_query:
+        filtered_paths = transmission_paths
+    country_lens = _country_lens_payload(
+        all_nodes,
+        all_links,
+        critical_nodes,
+        filtered_paths or transmission_paths,
+        entity_by_id,
+        selected_country_code=selected_country_code,
+        selected_province_code=selected_province_code,
+        selected_geo_id=selected_geo_id,
+    )
+    filtered_nodes = _filter_graph_nodes(
+        all_nodes,
+        country_code=selected_country_code,
+        province_code=selected_province_code,
+        geo_id=selected_geo_id,
+        node_kinds=query.get("node_kinds") or [],
+    )
+    matched_node_ids = {node["id"] for node in filtered_nodes}
+    if query.get("node_kinds") and matched_node_ids:
+        expanded_node_ids = set(matched_node_ids)
+        requested_edge_types = set(query.get("edge_types") or [])
+        for link in all_links:
+            if link["source"] not in matched_node_ids and link["target"] not in matched_node_ids:
+                continue
+            if requested_edge_types and link.get("edgeType") not in requested_edge_types:
+                continue
+            if link.get("edgeRole") == "governance":
+                continue
+            expanded_node_ids.add(link["source"])
+            expanded_node_ids.add(link["target"])
+        filtered_nodes = [node for node in all_nodes if node["id"] in expanded_node_ids]
+    if query.get("edge_types"):
+        requested_edge_types = set(query.get("edge_types") or [])
+        expanded_node_ids = {node["id"] for node in filtered_nodes}
+        for link in all_links:
+            if link.get("edgeType") not in requested_edge_types:
+                continue
+            expanded_node_ids.add(link["source"])
+            expanded_node_ids.add(link["target"])
+        filtered_nodes = [node for node in all_nodes if node["id"] in expanded_node_ids]
+    filtered_node_ids = {node["id"] for node in filtered_nodes}
+    filtered_links = [
+        link
+        for link in all_links
+        if link["source"] in filtered_node_ids
+        and link["target"] in filtered_node_ids
+        and (not query.get("edge_types") or link.get("edgeType") in query.get("edge_types"))
+    ]
+    if selected_node_id and selected_node_id not in filtered_node_ids:
+        selected_node_id = filtered_nodes[0]["id"] if filtered_nodes else selected_node_id
     node_limit = 128
     link_limit = 260
-    selected_node_ids = _select_graph_node_ids(all_nodes, all_links, selected_node_id, node_limit)
+    selected_node_ids = _select_graph_node_ids(filtered_nodes, filtered_links, selected_node_id, node_limit)
+    if query.get("node_kinds"):
+        selected_node_ids.update(matched_node_ids)
+        for link in filtered_links:
+            if link["source"] in matched_node_ids or link["target"] in matched_node_ids:
+                selected_node_ids.add(link["source"])
+                selected_node_ids.add(link["target"])
     for node in critical_nodes[:14]:
-        selected_node_ids.add(node["id"])
-    for path in transmission_paths[:8]:
+        if node["id"] in filtered_node_ids:
+            selected_node_ids.add(node["id"])
+    for path in filtered_paths[:8]:
         selected_node_ids.update(path["nodeSequence"])
     selected_node_ids.update(node["id"] for node in country_lens["topCriticalNodes"][:8])
     if len(selected_node_ids) > node_limit:
         priority_ids = set()
         priority_ids.update(node["id"] for node in critical_nodes[:18])
-        for path in transmission_paths[:10]:
+        for path in filtered_paths[:10]:
             priority_ids.update(path["nodeSequence"])
         priority_ids.update(node["id"] for node in country_lens["topCriticalNodes"][:8])
-        trimmed = [node["id"] for node in all_nodes if node["id"] in priority_ids][:node_limit]
+        trimmed = [node["id"] for node in filtered_nodes if node["id"] in priority_ids][:node_limit]
         selected_node_ids = set(trimmed)
-    selected_nodes = [node for node in all_nodes if node["id"] in selected_node_ids]
+    selected_nodes = [node for node in filtered_nodes if node["id"] in selected_node_ids]
     selected_links = [
         link
         for link in sorted(
-            all_links,
+            filtered_links,
             key=lambda item: (
                 item.get("edgeRole") == "transmission",
                 risk_rank(item["level"]),
@@ -1946,26 +2041,36 @@ def _graph_explorer_payload(
         )
         if link["source"] in selected_node_ids and link["target"] in selected_node_ids
     ][:link_limit]
-    transmission_edge_count = sum(1 for link in all_links if link.get("edgeRole") == "transmission")
+    transmission_edge_count = sum(1 for link in filtered_links if link.get("edgeRole") == "transmission")
     return {
         "selectedNodeId": selected_node_id if selected_node_id in selected_node_ids else (selected_nodes[0]["id"] if selected_nodes else selected_node_id),
+        "query": {
+            "selectedNodeId": selected_node_id,
+            "pathDirection": str(query.get("path_direction") or "both"),
+            "countryCode": selected_country_code,
+            "provinceCode": selected_province_code,
+            "geoId": selected_geo_id,
+            "nodeKinds": query.get("node_kinds") or [],
+            "edgeTypes": query.get("edge_types") or [],
+        },
         "filters": ["company", "supplier", "facility", "commodity", "route", "country", "data"],
         "dataSummary": _data_catalog_payload(result),
-        "graphStats": _dashboard_graph_stats(all_nodes, all_links, node_limit, link_limit),
-        "criticalNodes": critical_nodes,
-        "transmissionPaths": transmission_paths,
+        "graphStats": _dashboard_graph_stats(filtered_nodes, filtered_links, node_limit, link_limit),
+        "criticalNodes": [node for node in critical_nodes if node["id"] in filtered_node_ids],
+        "transmissionPaths": filtered_paths,
         "transmissionSummary": {
-            "pathCount": len(transmission_paths),
+            "pathCount": len(filtered_paths),
             "transmissionEdgeCount": transmission_edge_count,
             "maxHops": 4,
             "topK": 12,
-            "contextEdgesSuppressed": sum(1 for link in all_links if link.get("edgeRole") != "transmission"),
+            "pathDirection": str(query.get("path_direction") or "both"),
+            "contextEdgesSuppressed": sum(1 for link in filtered_links if link.get("edgeRole") != "transmission"),
         },
         "countryLens": country_lens,
         "availableCountries": country_lens["countries"],
         "truncated": {
-            "nodes": len(all_nodes) > len(selected_nodes),
-            "links": len(all_links) > len(selected_links),
+            "nodes": len(filtered_nodes) > len(selected_nodes),
+            "links": len(filtered_links) > len(selected_links),
             "renderedNodeLimit": node_limit,
             "renderedLinkLimit": link_limit,
         },
@@ -2303,51 +2408,41 @@ def _dashboard_services(result: Any) -> list[dict[str, Any]]:
 
 
 def _calculate_dashboard_shock(payload: dict[str, Any], result: Any) -> dict[str, Any]:
-    input_payload = {
-        "region": str(payload.get("region") or "Red Sea / East Asia corridor"),
-        "commodity": str(payload.get("commodity") or "advanced semiconductor components"),
-        "severity": _clamp_int(payload.get("severity"), 10, 100, 72),
-        "durationDays": _clamp_int(payload.get("durationDays"), 3, 90, 28),
-        "scope": payload.get("scope") if payload.get("scope") in {"facility", "regional", "global"} else "regional",
-    }
+    shock = normalize_scenario_shock(payload)
     entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
-    scope_multiplier = {"facility": 0.78, "regional": 1.1, "global": 1.35}[input_payload["scope"]]
-    duration_factor = min(1.6, input_payload["durationDays"] / 35)
-    max_graph_risk = max((edge.risk_score for edge in result.edge_states), default=0.0)
-    impact_score = min(
-        99,
-        round(input_payload["severity"] * 0.44 * scope_multiplier + duration_factor * 12 + max_graph_risk * 35),
+    simulation = build_scenario_simulation(
+        base_graph_version=result.snapshot.graph_version,
+        edge_states=result.edge_states,
+        entities=result.real.entities,
+        predictions=result.predictions,
+        shock=shock,
     )
-    level = _dashboard_risk_level(impact_score)
-    top_edges = sorted(result.edge_states, key=lambda edge: edge.risk_score, reverse=True)[:3]
+    changed_paths = simulation["top_changed_paths"]
     affected_firms = {
-        edge.source_id
-        for edge in top_edges
-        if entity_by_id.get(edge.source_id) and entity_by_id[edge.source_id].entity_type == "firm"
-    } | {
-        edge.target_id
-        for edge in top_edges
-        if entity_by_id.get(edge.target_id) and entity_by_id[edge.target_id].entity_type == "firm"
+        node_id
+        for path in changed_paths
+        for node_id in path["nodeSequence"]
+        if entity_by_id.get(node_id) and entity_by_id[node_id].entity_type == "firm"
     }
+    affected_paths = [
+        {
+            "id": path["pathId"],
+            "label": f"{path['sourceLabel']} -> {path['targetLabel']}",
+            "impact": max(12, min(100, round(abs(float(path["delta"])) * 100))),
+            "level": path["level"],
+        }
+        for path in changed_paths[:6]
+    ]
     return {
-        "input": input_payload,
-        "impactScore": impact_score,
+        **simulation,
         "ebitdaAtRiskUsd": 0,
-        "timeToRecoveryDays": round(input_payload["durationDays"] * (0.9 + scope_multiplier / 3)),
+        "timeToRecoveryDays": round(shock.duration_days * {"facility": 1.08, "regional": 1.22, "global": 1.38}[shock.scope]),
         "affectedCompanies": len(affected_firms),
-        "affectedPaths": [
-            {
-                "id": edge.edge_id,
-                "label": f"{_entity_label(entity_by_id, edge.source_id)} -> {_entity_label(entity_by_id, edge.target_id)}",
-                "impact": max(12, round(edge.risk_score * 100)),
-                "level": _dashboard_risk_level(round(edge.risk_score * 100)),
-            }
-            for edge in top_edges
-        ],
+        "affectedPaths": affected_paths,
         "recommendations": [
             "Validate public evidence against private supplier master data before operational action",
             "Monitor GDELT, OFAC, and port reference deltas for the next graph promotion",
-            "Add licensed trade or AIS sources before revenue-at-risk attribution",
+            "Use scenario deltas for triage only until licensed trade or AIS sources are attached",
         ],
     }
 
@@ -2609,6 +2704,13 @@ def create_app() -> Any:
         return route_simulations(
             intervention_type=payload.intervention_type,
             target_id=payload.target_id,
+            scenario_payload={
+                "region": payload.region,
+                "commodity": payload.commodity,
+                "supplier": payload.supplier,
+                "route": payload.route,
+                **payload.parameters,
+            },
             request_id=x_request_id,
         )
 
@@ -2643,9 +2745,26 @@ def create_app() -> Any:
     @app.get("/api/v1/dashboard/{page_id}")
     def http_dashboard_page(
         page_id: str,
+        selected_node_id: str | None = Query(default=None),
+        path_direction: str = Query(default="both"),
+        country_code: str | None = Query(default=None),
+        province_code: str | None = Query(default=None),
+        geo_id: str | None = Query(default=None),
+        node_kinds: str | None = Query(default=None),
+        edge_types: str | None = Query(default=None),
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
-        return route_dashboard_page(page_id=page_id, request_id=x_request_id)
+        return route_dashboard_page(
+            page_id=page_id,
+            request_id=x_request_id,
+            selected_node_id=selected_node_id,
+            path_direction=path_direction,
+            country_code=country_code,
+            province_code=province_code,
+            geo_id=geo_id,
+            node_kinds=_split_csv_query(node_kinds),
+            edge_types=_split_csv_query(edge_types),
+        )
 
     @app.post("/api/v1/dashboard/shock-simulator")
     def http_dashboard_shock_simulator(
@@ -2662,6 +2781,17 @@ def _find_entity(result: Any, entity_id: str) -> Any | None:
         (entity for entity in entities_for_result(result) if entity.canonical_id == entity_id),
         None,
     )
+
+
+def _split_csv_query(value: str | None) -> list[str] | None:
+    if value is None:
+        return None
+    items = [
+        item.strip()[:MAX_DASHBOARD_QUERY_TOKEN_LENGTH]
+        for item in value.split(",")[:MAX_DASHBOARD_QUERY_LIST_ITEMS]
+        if item.strip()
+    ]
+    return items or None
 
 
 def _request_id_from_request(request: Request) -> str | None:

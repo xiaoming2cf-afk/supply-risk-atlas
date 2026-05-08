@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_HOSTPORT = process.env.SUPPLY_RISK_API_HOSTPORT;
 const API_ORIGIN = process.env.SUPPLY_RISK_API_ORIGIN ?? (API_HOSTPORT ? `http://${API_HOSTPORT}` : undefined);
+const MAX_PROXY_PATH_SEGMENTS = 8;
+const MAX_PROXY_PATH_SEGMENT_LENGTH = 120;
 
 type RouteContext = {
   params: Promise<{
@@ -59,7 +61,12 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   }
 
   const params = await context.params;
-  const path = params.path?.join("/") ?? "";
+  const pathSegments = params.path ?? [];
+  const pathError = validateProxyPath(pathSegments);
+  if (pathError) {
+    return proxyErrorResponse("api_proxy_invalid_path", pathError, 400);
+  }
+  const path = pathSegments.map((segment) => encodeURIComponent(segment)).join("/");
   const upstreamUrl = new URL(`/api/v1/${path}${request.nextUrl.search}`, API_ORIGIN);
   let upstreamResponse: Response;
   try {
@@ -110,6 +117,53 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
       "content-type": upstreamResponse.headers.get("content-type") ?? "application/json; charset=utf-8"
     }
   });
+}
+
+function validateProxyPath(pathSegments: string[]): string | null {
+  if (pathSegments.length > MAX_PROXY_PATH_SEGMENTS) {
+    return "SupplyRiskAtlas API proxy path has too many segments.";
+  }
+  for (const segment of pathSegments) {
+    if (
+      !segment ||
+      segment === "." ||
+      segment === ".." ||
+      segment.includes("/") ||
+      segment.includes("\\") ||
+      segment.length > MAX_PROXY_PATH_SEGMENT_LENGTH
+    ) {
+      return "SupplyRiskAtlas API proxy path contains an invalid segment.";
+    }
+  }
+  return null;
+}
+
+function proxyErrorResponse(code: string, message: string, status: number) {
+  return NextResponse.json(
+    {
+      request_id: crypto.randomUUID(),
+      status: "error",
+      data: null,
+      metadata: {
+        graph_version: "unavailable",
+        feature_version: "unavailable",
+        label_version: "unavailable",
+        model_version: "unavailable",
+        as_of_time: new Date().toISOString(),
+        data_mode: "real",
+        freshness_status: "unavailable"
+      },
+      warnings: [message],
+      errors: [{ code, message }],
+      mode: "real",
+      source_status: "unavailable",
+      source: {
+        name: "SupplyRiskAtlas API proxy",
+        lineage_ref: "proxy://invalid-path"
+      }
+    },
+    { status, headers: corsHeaders() }
+  );
 }
 
 function forwardHeaders(request: NextRequest): Headers {

@@ -40,9 +40,36 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
 def load_ontology(root: Path) -> Ontology:
     ontology_dir = root / "configs" / "ontology"
+    node_types = load_yaml(ontology_dir / "node_types.yaml")["node_types"]
+    edge_types = load_yaml(ontology_dir / "edge_types.yaml")["edge_types"]
+    node_types.update(_CURATED_NODE_TYPE_EXTENSIONS)
+    edge_types.update(_CURATED_EDGE_TYPE_EXTENSIONS)
     return Ontology(
-        node_types=load_yaml(ontology_dir / "node_types.yaml")["node_types"],
-        edge_types=load_yaml(ontology_dir / "edge_types.yaml")["edge_types"],
+        node_types=node_types,
+        edge_types=edge_types,
         event_types=load_yaml(ontology_dir / "event_types.yaml")["event_types"],
         labels=load_yaml(ontology_dir / "risk_labels.yaml")["labels"],
     )
+
+
+_CURATED_NODE_TYPE_EXTENSIONS: dict[str, dict[str, Any]] = {
+    "component": {"description": "Intermediate component or bill-of-material node.", "required_fields": ["canonical_id", "name"], "temporal": True},
+    "product_grade": {"description": "Qualified grade or variant of a product.", "required_fields": ["canonical_id", "name"], "temporal": True},
+    "supplier_tier": {"description": "Tier taxonomy for direct and upstream suppliers.", "required_fields": ["canonical_id", "name"], "temporal": False},
+    "route_lane": {"description": "Named logistics lane across route legs.", "required_fields": ["canonical_id", "name"], "temporal": True},
+    "carrier": {"description": "Ocean, air, rail, or trucking carrier.", "required_fields": ["canonical_id", "name"], "temporal": True},
+}
+
+
+_CURATED_EDGE_TYPE_EXTENSIONS: dict[str, dict[str, Any]] = {
+    "component_of": {"source": "component", "target": "product", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["bom_share", "qualification_status"]},
+    "input_to": {"source": "raw_material", "target": "component", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["input_share", "dependency_ratio"]},
+    "material_processed_into": {"source": "raw_material", "target": "component", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["yield", "processing_location"]},
+    "manufactured_at": {"source": "product", "target": "factory", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["capacity_share", "utilization"]},
+    "stored_at": {"source": "component", "target": "warehouse", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["inventory_days", "buffer_stock"]},
+    "ships_to": {"source": "factory", "target": "warehouse", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["lead_time", "volume"]},
+    "route_leg": {"source": "route_lane", "target": "port", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["sequence", "distance"]},
+    "handled_at": {"source": "carrier", "target": "route_lane", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["capacity_share", "service_frequency"]},
+    "used_by": {"source": "factory", "target": "firm", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["capacity_share", "ownership_signal"]},
+    "qualified_alternative_to": {"source": "product_grade", "target": "product", "directed": True, "temporal": True, "required_fields": ["weight", "confidence", "valid_from"], "features": ["qualification_time", "substitutability"]},
+}

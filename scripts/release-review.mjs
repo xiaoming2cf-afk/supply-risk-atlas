@@ -10,12 +10,30 @@ const checks = [];
 async function main() {
   const health = await fetchJson(`${apiUrl}/health`, "API health");
   const graph = await fetchJson(`${apiUrl}/dashboard/graph-explorer`, "Graph Explorer payload");
+  const expansionNodeKinds = "raw_material,component,product_grade,supplier_tier,factory,warehouse,route_lane,carrier";
+  const expansionEdgeTypes = "supplies_to,component_of,input_to,material_processed_into,manufactured_at,stored_at,ships_to,route_leg,handled_at,used_by,substitutes,qualified_alternative_to";
+  const expandedGraph = await fetchJson(
+    `${apiUrl}/dashboard/graph-explorer?node_kinds=${expansionNodeKinds}&edge_types=${expansionEdgeTypes}&path_direction=both`,
+    "Supply-chain expansion payload",
+  );
   const predictions = await fetchJson(`${apiUrl}/dashboard/prediction-center`, "Prediction Center payload");
+  const scenario = await fetchJson(`${apiUrl}/dashboard/shock-simulator`, "Scenario shock payload", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      region: "Taiwan Strait",
+      commodity: "advanced semiconductor components",
+      severity: 86,
+      durationDays: 28,
+      scope: "regional",
+    }),
+  });
   const usgs = await fetchJson(`${apiUrl}/sources/usgs_earthquakes`, "USGS source payload");
 
   checkHealth(health);
-  checkGraphExplorer(graph);
+  checkGraphExplorer(graph, expandedGraph);
   checkPredictionCenter(predictions);
+  checkScenarioShock(scenario);
   checkUsgsSource(usgs);
   if (requireWeb) await checkWebShell();
 
@@ -44,7 +62,7 @@ function checkHealth(envelope) {
   );
 }
 
-function checkGraphExplorer(envelope) {
+function checkGraphExplorer(envelope, expandedEnvelope) {
   const data = envelope.data ?? {};
   const payloadText = JSON.stringify(data);
   const countries = data.availableCountries ?? data.countryLens?.countries ?? [];
@@ -53,6 +71,10 @@ function checkGraphExplorer(envelope) {
   const totalLinks = Number(graphStats.totalLinks ?? graphStats.fullEdgeCount ?? data.links?.length ?? 0);
   const paths = data.transmissionPaths ?? [];
   const countryLens = data.countryLens ?? {};
+  const expanded = expandedEnvelope?.data ?? {};
+  const expandedText = JSON.stringify(expanded);
+  const requiredKinds = ["raw_material", "component", "product_grade", "supplier_tier", "factory", "warehouse", "route_lane", "carrier"];
+  const requiredEdgeTypes = ["supplies_to", "component_of", "input_to", "material_processed_into", "manufactured_at", "stored_at", "ships_to", "route_leg", "handled_at", "used_by", "substitutes", "qualified_alternative_to"];
 
   addCheck("Graph Explorer country coverage is broad", countries.length >= minCountries, `countries=${countries.length}`);
   addCheck("Graph Explorer full graph has enough nodes", totalNodes >= minNodes, `nodes=${totalNodes}`);
@@ -66,6 +88,21 @@ function checkGraphExplorer(envelope) {
   addCheck("country top critical nodes are populated", (countryLens.topCriticalNodes ?? []).length > 0, `topCritical=${countryLens.topCriticalNodes?.length ?? 0}`);
   addCheck("country top paths are populated", (countryLens.topPaths ?? []).length > 0, `topPaths=${countryLens.topPaths?.length ?? 0}`);
   addCheck("country data coverage is populated", Object.keys(countryLens.dataCoverage ?? {}).length > 0, "dataCoverage");
+  addCheck(
+    "expanded supply-chain node families are exposed",
+    requiredKinds.every((kind) => expandedText.includes(`\"kind\":\"${kind}\"`) || expandedText.includes(`\"entityType\":\"${kind}\"`)),
+    requiredKinds.join(","),
+  );
+  addCheck(
+    "expanded supply-chain edge families are exposed",
+    requiredEdgeTypes.every((edgeType) => expandedText.includes(edgeType) || payloadText.includes(edgeType)),
+    requiredEdgeTypes.join(","),
+  );
+  addCheck(
+    "Graph Explorer supports path direction query",
+    ["both", undefined].includes(expanded.query?.pathDirection) || expanded.transmissionSummary?.pathDirection === "both",
+    `pathDirection=${expanded.query?.pathDirection ?? expanded.transmissionSummary?.pathDirection}`,
+  );
 
   const linkIds = new Set((data.links ?? []).map((link) => link.id));
   const pathStructureOk = paths.every((path) => {
@@ -115,6 +152,17 @@ function checkPredictionCenter(envelope) {
   );
 }
 
+
+function checkScenarioShock(envelope) {
+  const data = envelope.data ?? {};
+  const deltas = data.scenario_delta ?? data.scenarioDelta ?? [];
+  const changedPaths = data.top_changed_paths ?? data.topChangedPaths ?? [];
+  const diagnostics = data.diagnostics ?? {};
+  addCheck("Scenario shock returns risk deltas", deltas.length > 0, `deltas=${deltas.length}`);
+  addCheck("Scenario shock returns changed paths", changedPaths.length > 0, `paths=${changedPaths.length}`);
+  addCheck("Scenario shock exposes graph propagation diagnostics", diagnostics.engine === "graph_propagation_v1", `engine=${diagnostics.engine}`);
+  addCheck("Scenario shock avoids fictional revenue attribution", String(diagnostics.revenueAtRiskMode ?? "").includes("not_estimated"), String(diagnostics.revenueAtRiskMode ?? ""));
+}
 function checkUsgsSource(envelope) {
   const sources = envelope.data?.sources ?? [];
   const source = sources.find((candidate) => candidate.id === "usgs_earthquakes" || candidate.source_id === "usgs_earthquakes");
@@ -127,10 +175,11 @@ async function checkWebShell() {
   const text = await response.text();
   addCheck("web shell responds", response.ok, `status=${response.status}`);
   addCheck("web shell title is present", text.includes("SupplyRiskAtlas"), "title=SupplyRiskAtlas");
+  addCheck("web bundle includes graph workbench", text.includes("__next") || text.includes("Graph Explorer"), "Next shell");
 }
 
-async function fetchJson(url, label) {
-  const response = await fetch(url, { headers: { accept: "application/json" } });
+async function fetchJson(url, label, init = undefined) {
+  const response = await fetch(url, { headers: { accept: "application/json", ...(init?.headers ?? {}) }, ...init });
   const text = await response.text();
   if (!response.ok) {
     throw new Error(`${label} failed: HTTP ${response.status} ${text.slice(0, 180)}`);

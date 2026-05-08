@@ -2,6 +2,8 @@ import type {
   ApiEnvelope,
   Entity,
   EvidenceLineageSummary,
+  GraphExplorerData,
+  GraphExplorerQuery,
   GraphSnapshotPayload,
   Prediction,
   SimulationResult,
@@ -14,6 +16,8 @@ export interface SupplyRiskClient {
   sources(sourceId?: string): Promise<ApiEnvelope<SourceRegistrySummary>>;
   lineage(options?: { sourceId?: string; targetId?: string }): Promise<ApiEnvelope<EvidenceLineageSummary>>;
   graphSnapshot(): Promise<ApiEnvelope<GraphSnapshotPayload>>;
+  graphExplorer(options?: GraphExplorerQuery): Promise<ApiEnvelope<GraphExplorerData>>;
+  countryLens(options?: Pick<GraphExplorerQuery, "countryCode" | "provinceCode" | "geoId">): Promise<ApiEnvelope<GraphExplorerData>>;
   predictions(): Promise<ApiEnvelope<Prediction[]>>;
   simulations(): Promise<ApiEnvelope<SimulationResult>>;
   reports(): Promise<ApiEnvelope<Record<string, unknown>>>;
@@ -60,6 +64,28 @@ export function createSupplyRiskClient(baseUrl = "http://127.0.0.1:8000"): Suppl
         })}`,
       ),
     graphSnapshot: () => request(baseUrl, "/api/v1/graph/snapshots"),
+    graphExplorer: (options) =>
+      request(
+        baseUrl,
+        `/api/v1/dashboard/graph-explorer${queryString({
+          selected_node_id: options?.selectedNodeId,
+          path_direction: options?.pathDirection,
+          country_code: options?.countryCode ?? undefined,
+          province_code: options?.provinceCode ?? undefined,
+          geo_id: options?.geoId ?? undefined,
+          node_kinds: options?.nodeKinds?.join(","),
+          edge_types: options?.edgeTypes?.join(","),
+        })}`,
+      ),
+    countryLens: (options) =>
+      request(
+        baseUrl,
+        `/api/v1/dashboard/country-lens${queryString({
+          country_code: options?.countryCode ?? undefined,
+          province_code: options?.provinceCode ?? undefined,
+          geo_id: options?.geoId ?? undefined,
+        })}`,
+      ),
     predictions: () => request(baseUrl, "/api/v1/predictions"),
     simulations: () => request(baseUrl, "/api/v1/simulations"),
     reports: () => request(baseUrl, "/api/v1/reports"),

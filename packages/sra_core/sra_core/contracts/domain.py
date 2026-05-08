@@ -349,8 +349,16 @@ class SimulationRequest(StrictModel):
         "increase_tariff",
         "replace_supplier",
         "increase_inventory_buffer",
+        "region_shock",
+        "commodity_shock",
+        "supplier_shock",
+        "route_shock",
     ] = "close_port"
     target_id: str = "port_kaohsiung"
+    region: str | None = None
+    commodity: str | None = None
+    supplier: str | None = None
+    route: str | None = None
     parameters: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -381,6 +389,10 @@ class InterventionRun(StrictModel):
         "increase_tariff",
         "replace_supplier",
         "increase_inventory_buffer",
+        "region_shock",
+        "commodity_shock",
+        "supplier_shock",
+        "route_shock",
     ]
     target_id: str
     parameters: dict[str, Any] = Field(default_factory=dict)

@@ -94,7 +94,30 @@ export interface PredictionPathDetail {
   pathRisk: number;
   pathConfidence: number;
   transmissionScore: number;
+  pathContribution?: number;
+  bottleneckEdgeId?: string | null;
+  bottleneckEdgeType?: string | null;
+  bottleneckScore?: number | null;
   evidenceRefs: string[];
+}
+
+export interface PredictionSourceCoverage {
+  sourceCount: number;
+  coveredSourceCount: number;
+  coverageScore: number;
+  coveredSources: string[];
+  manifestRef: string;
+}
+
+export interface PredictionSensitivityDiagnostic {
+  factor: string;
+  baselineValue: number;
+  direction: "up" | "down" | "flat" | string;
+  deltaIfReduced10Pct: number;
+  deltaIfIncreased10Pct: number;
+  pathId?: string;
+  edgeId?: string;
+  edgeType?: string;
 }
 
 export interface Prediction {
@@ -124,6 +147,8 @@ export interface Prediction {
   };
   path_details?: PredictionPathDetail[];
   evidence_refs?: string[];
+  source_coverage?: PredictionSourceCoverage;
+  sensitivity_diagnostics?: PredictionSensitivityDiagnostic[];
 }
 
 export interface PredictionMechanismSummary {
@@ -131,6 +156,7 @@ export interface PredictionMechanismSummary {
   count: number;
   maxRisk: number;
   averageRisk: number;
+  averageSourceCoverage?: number;
 }
 
 export interface PredictionCenterData {
@@ -337,7 +363,34 @@ export interface GlobalRiskCockpitData {
   corridors: CorridorRisk[];
 }
 
-export type GraphNodeKind = "company" | "supplier" | "facility" | "commodity" | "route" | "country" | "data";
+export type GraphNodeKind =
+  | "company"
+  | "supplier"
+  | "facility"
+  | "commodity"
+  | "route"
+  | "country"
+  | "data"
+  | "raw_material"
+  | "component"
+  | "product_grade"
+  | "supplier_tier"
+  | "factory"
+  | "warehouse"
+  | "route_lane"
+  | "carrier";
+
+export type GraphPathDirection = "upstream" | "downstream" | "both";
+
+export interface GraphExplorerQuery {
+  selectedNodeId?: string;
+  pathDirection?: GraphPathDirection;
+  countryCode?: string | null;
+  provinceCode?: string | null;
+  geoId?: string | null;
+  nodeKinds?: GraphNodeKind[];
+  edgeTypes?: string[];
+}
 
 export interface GraphNode {
   id: string;
@@ -472,6 +525,7 @@ export interface GraphTransmissionSummary {
   transmissionEdgeCount: number;
   maxHops: number;
   topK: number;
+  pathDirection?: GraphPathDirection;
   contextEdgesSuppressed: number;
 }
 
@@ -514,6 +568,8 @@ export interface CountryDataCoverage {
 
 export interface CountryLensData {
   selectedCountryCode: string;
+  selectedProvinceCode?: string | null;
+  selectedGeoId?: string | null;
   countries: CountryRiskSummary[];
   countryEdges: CountryTransmissionEdge[];
   topCriticalNodes: CriticalGraphNode[];
@@ -530,6 +586,7 @@ export interface GraphExplorerData {
   nodes: GraphNode[];
   links: GraphLink[];
   filters: GraphNodeKind[];
+  query?: GraphExplorerQuery;
   selectedNodeId: string;
   dataSummary?: DataCatalogSummary;
   graphStats?: GraphExplorerStats;
@@ -575,6 +632,11 @@ export interface CompanyRiskProfile {
 export interface CompanyRisk360Data {
   companies: CompanyRiskProfile[];
   selectedCompanyId: string;
+  featureGates?: {
+    watchlistAlertsDefaultEnabled: boolean;
+    watchlistAlertsMode: "default" | "experimental" | string;
+    reason: string;
+  };
 }
 
 export interface PathStep {
@@ -604,6 +666,8 @@ export interface PathExplainerData {
 export interface ShockSimulationInput {
   region: string;
   commodity: string;
+  supplier?: string | null;
+  route?: string | null;
   severity: number;
   durationDays: number;
   scope: "facility" | "regional" | "global";
@@ -616,6 +680,30 @@ export interface ShockAffectedPath {
   level: RiskLevel;
 }
 
+export interface ScenarioDelta {
+  targetId: string;
+  targetLabel: string;
+  baselineRisk: number;
+  scenarioRisk: number;
+  delta: number;
+  level: RiskLevel;
+}
+
+export interface ScenarioChangedPath {
+  pathId: string;
+  sourceId: string;
+  targetId: string;
+  sourceLabel: string;
+  targetLabel: string;
+  nodeSequence: string[];
+  edgeSequence: string[];
+  changedEdges: string[];
+  baseScore: number;
+  scenarioScore: number;
+  delta: number;
+  level: RiskLevel;
+}
+
 export interface ShockSimulationResult {
   input: ShockSimulationInput;
   impactScore: number;
@@ -623,6 +711,9 @@ export interface ShockSimulationResult {
   timeToRecoveryDays: number;
   affectedCompanies: number;
   affectedPaths: ShockAffectedPath[];
+  scenario_delta?: ScenarioDelta[];
+  top_changed_paths?: ScenarioChangedPath[];
+  diagnostics?: Record<string, string | number | boolean>;
   recommendations: string[];
 }
 

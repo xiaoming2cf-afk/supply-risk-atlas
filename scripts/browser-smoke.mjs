@@ -600,14 +600,14 @@ async function pageState(client) {
     navCount: document.querySelectorAll('.nav-button').length,
     modeText: Array.from(document.querySelectorAll('.mode-strip')).map((item) => item.textContent?.trim() ?? '').join(' | '),
     lineageText: document.querySelector('.data-lineage-banner')?.textContent?.trim() ?? '',
-    text: document.body.innerText,
+    text: document.body?.innerText ?? '',
     overflowSafe: document.documentElement.scrollWidth <= window.innerWidth + 1
   }))()`);
 }
 
 async function shockState(client) {
   return evaluate(client, `(() => {
-    const text = document.body.innerText;
+    const text = document.body?.innerText ?? '';
     const severity = document.querySelector('input[type="range"]')?.value ?? '';
     const impactScore = document.querySelector('.big-result strong')?.textContent?.trim() ?? '';
     return { severity, impactScore, hasImpact: text.includes('Impact score') };
@@ -622,7 +622,7 @@ async function pageLanguageState(client) {
       htmlLang: document.documentElement.lang,
       navText: Array.from(document.querySelectorAll('.nav-label')).map((item) => item.textContent?.trim() ?? '').join(' | '),
       panelText: Array.from(document.querySelectorAll('.panel-title')).map((item) => item.textContent?.trim() ?? '').join(' | '),
-      bodyText: document.body.innerText
+      bodyText: document.body?.innerText ?? ''
     };
   })()`);
 }
@@ -642,7 +642,13 @@ async function evaluate(client, expression) {
     returnByValue: true,
   });
   if (result.exceptionDetails) {
-    throw new Error(result.exceptionDetails.text ?? "Runtime.evaluate failed");
+    const exception = result.exceptionDetails.exception;
+    throw new Error(
+      exception?.description
+        ?? exception?.value
+        ?? result.exceptionDetails.text
+        ?? "Runtime.evaluate failed",
+    );
   }
   return result.result.value;
 }

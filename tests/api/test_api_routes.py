@@ -37,6 +37,8 @@ def test_prediction_route_is_versioned() -> None:
     assert payload["data"][0]["score_components"]
     assert payload["data"][0]["driver_contributions"]
     assert payload["data"][0]["prediction_form"] == "public_evidence_graph_ensemble"
+    assert payload["data"][0]["source_coverage"]["sourceCount"] >= 1
+    assert payload["data"][0]["sensitivity_diagnostics"]
 
 
 def test_prediction_center_route_exposes_mechanisms_and_paths() -> None:
@@ -49,6 +51,30 @@ def test_prediction_center_route_exposes_mechanisms_and_paths() -> None:
     assert center["mechanisms"]
     assert center["saturatedScoreCount"] < len(center["predictions"])
     assert any(prediction["path_details"] for prediction in center["topPredictions"])
+    assert any(
+        path.get("bottleneckEdgeId")
+        for prediction in center["topPredictions"]
+        for path in prediction["path_details"]
+    )
+
+
+def test_dashboard_shock_uses_graph_propagation_scenario_engine() -> None:
+    payload = main.route_shock_simulator(
+        {
+            "region": "Taiwan Strait",
+            "commodity": "advanced semiconductor components",
+            "severity": 95,
+            "durationDays": 28,
+            "scope": "regional",
+        }
+    )
+    assert_envelope(payload)
+    data = payload["data"]
+    assert data["impactScore"] > 70
+    assert data["scenario_delta"]
+    assert data["top_changed_paths"]
+    assert data["diagnostics"]["engine"] == "graph_propagation_v1"
+    assert data["diagnostics"]["matchedEdges"] >= 1
 
 
 def test_sources_route_is_versioned_and_fresh() -> None:
@@ -135,6 +161,15 @@ def test_country_lens_route_exposes_country_options_and_selected_lens() -> None:
     assert lens["countryCode"] in {country["code"] for country in countries}
     assert lens["criticalNodes"]
     assert lens["transmissionPaths"]
+
+
+def test_dashboard_csv_query_filters_are_bounded() -> None:
+    value = ",".join(["x" * 200 for _ in range(80)])
+    items = main._split_csv_query(value)
+
+    assert items is not None
+    assert len(items) == 32
+    assert all(len(item) <= 80 for item in items)
 
 
 def test_entity_route_supports_query_filter() -> None:

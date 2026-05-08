@@ -7,6 +7,7 @@ import type {
   CompanyRisk360Data,
   GlobalRiskCockpitData,
   GraphExplorerData,
+  GraphExplorerQuery,
   GraphVersionStudioData,
   PathExplainerData,
   PredictionCenterData,
@@ -23,7 +24,8 @@ export interface SupplyRiskApiClientOptions {
 export interface SupplyRiskApiClient {
   readonly mode: ApiMode;
   getGlobalRiskCockpit(): Promise<ApiResult<GlobalRiskCockpitData>>;
-  getGraphExplorer(): Promise<ApiResult<GraphExplorerData>>;
+  getGraphExplorer(options?: GraphExplorerQuery): Promise<ApiResult<GraphExplorerData>>;
+  getCountryLens(options?: Pick<GraphExplorerQuery, "countryCode" | "provinceCode" | "geoId">): Promise<ApiResult<GraphExplorerData>>;
   getCompanyRisk360(): Promise<ApiResult<CompanyRisk360Data>>;
   getPredictionCenter(): Promise<ApiResult<PredictionCenterData>>;
   getPathExplainer(): Promise<ApiResult<PathExplainerData>>;
@@ -177,6 +179,15 @@ function createUnavailableResult<T>(
   };
 }
 
+function queryString(params: Record<string, string | number | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") search.set(key, String(value));
+  }
+  const text = search.toString();
+  return text ? `?${text}` : "";
+}
+
 export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = {}): SupplyRiskApiClient {
   const baseUrl = options.baseUrl?.trim();
   let effectiveMode: ApiMode = "real";
@@ -193,7 +204,22 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       return effectiveMode;
     },
     getGlobalRiskCockpit: () => requestJson(baseUrl, "/dashboard/global-risk-cockpit", undefined, clientOptions),
-    getGraphExplorer: () => requestJson(baseUrl, "/dashboard/graph-explorer", undefined, clientOptions),
+    getGraphExplorer: (options) =>
+      requestJson(baseUrl, `/dashboard/graph-explorer${queryString({
+        selected_node_id: options?.selectedNodeId,
+        path_direction: options?.pathDirection,
+        country_code: options?.countryCode ?? undefined,
+        province_code: options?.provinceCode ?? undefined,
+        geo_id: options?.geoId ?? undefined,
+        node_kinds: options?.nodeKinds?.join(","),
+        edge_types: options?.edgeTypes?.join(","),
+      })}`, undefined, clientOptions),
+    getCountryLens: (options) =>
+      requestJson(baseUrl, `/dashboard/country-lens${queryString({
+        country_code: options?.countryCode ?? undefined,
+        province_code: options?.provinceCode ?? undefined,
+        geo_id: options?.geoId ?? undefined,
+      })}`, undefined, clientOptions),
     getCompanyRisk360: () => requestJson(baseUrl, "/dashboard/company-risk-360", undefined, clientOptions),
     getPredictionCenter: () => requestJson(baseUrl, "/dashboard/prediction-center", undefined, clientOptions),
     getPathExplainer: () => requestJson(baseUrl, "/dashboard/path-explainer", undefined, clientOptions),
