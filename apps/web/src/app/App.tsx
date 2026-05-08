@@ -2,14 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Activity,
   Building2,
   Database,
   Factory,
   Gauge,
   GitBranch,
   Globe2,
-  Layers3,
   Network,
   RefreshCw,
   Route,
@@ -19,7 +17,7 @@ import {
 } from "lucide-react";
 import { createSupplyRiskApiClient, type SupplyRiskDashboardData } from "@supply-risk/api-client";
 import { dashboardPages, type ApiResult, type DashboardPageId } from "@supply-risk/shared-types";
-import { Button, IconButton } from "./components";
+import { Button } from "./components";
 import {
   I18nProvider,
   pageLanguages,
@@ -45,8 +43,20 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
 };
 
 const deploymentTarget = "supply-risk-atlas-web.onrender.com";
+const publicPageIds = new Set<DashboardPageId>([
+  "global-risk-cockpit",
+  "graph-explorer",
+  "company-risk-360",
+  "prediction-center",
+  "path-analysis",
+  "country-lens",
+  "shock-simulator",
+  "causal-evidence-board",
+]);
+const publicDashboardPages = dashboardPages.filter((page) => publicPageIds.has(page.id));
 
 type DashboardResultMap = Partial<Record<DashboardPageId, ApiResult<unknown>>>;
+type DashboardDataState = Partial<SupplyRiskDashboardData>;
 
 function resolveApiBaseUrl(hostname: string | null) {
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
@@ -60,9 +70,9 @@ function resolveApiBaseUrl(hostname: string | null) {
     return configured;
   }
   if (hostname === "127.0.0.1" || hostname === "localhost") {
-    return "http://127.0.0.1:8000/api/v1";
+    return "/api/v1";
   }
-  return configured;
+  return "/api/v1";
 }
 
 function getHashPage(): DashboardPageId {
@@ -70,7 +80,7 @@ function getHashPage(): DashboardPageId {
     return "global-risk-cockpit";
   }
   const hash = window.location.hash.replace("#", "");
-  return dashboardPages.some((page) => page.id === hash) ? (hash as DashboardPageId) : "global-risk-cockpit";
+  return publicDashboardPages.some((page) => page.id === hash) ? (hash as DashboardPageId) : "global-risk-cockpit";
 }
 
 function useHashPage() {
@@ -104,15 +114,15 @@ function getInitialLanguage(): PageLanguage {
 export function App() {
   const [pageId, setPageId] = useHashPage();
   const [language, setLanguageState] = useState<PageLanguage>("en");
-  const [data, setData] = useState<SupplyRiskDashboardData | null>(null);
+  const [data, setData] = useState<DashboardDataState | null>(null);
   const [dashboardResults, setDashboardResults] = useState<DashboardResultMap>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState("booting");
   const [error, setError] = useState<string | null>(null);
   const [runtimeHostname, setRuntimeHostname] = useState<string | null>(null);
-  const activePageDefinition = dashboardPages.find((page) => page.id === pageId) ?? dashboardPages[0];
+  const activePageDefinition = publicDashboardPages.find((page) => page.id === pageId) ?? publicDashboardPages[0];
   const localizedPages = useMemo(
-    () => dashboardPages.map((page) => translateDashboardPage(page, language)),
+    () => publicDashboardPages.map((page) => translateDashboardPage(page, language)),
     [language]
   );
   const activePage = translateDashboardPage(activePageDefinition, language);
@@ -133,9 +143,9 @@ export function App() {
         ? "graph-explorer"
         : pageId;
   const activeResult = dashboardResults[activeResultKey];
-  const runtimeModeLabel = configuredApiBaseUrl ? t("API linked") : t("API unavailable");
+  const runtimeModeLabel = configuredApiBaseUrl ? t("Public data") : t("Data unavailable");
   const dataStatus = getDataStatus(activeResult, Boolean(configuredApiBaseUrl), error);
-  const canRenderBusinessData = data !== null && isAcceptedRealResult(activeResult);
+  const canRenderBusinessData = canRenderPageData(activePage.id, data, activeResult, Boolean(configuredApiBaseUrl));
 
   const setLanguage = (nextLanguage: PageLanguage) => {
     setLanguageState(nextLanguage);
@@ -154,18 +164,14 @@ export function App() {
         companyRisk360Result,
         predictionCenterResult,
         pathExplainerResult,
-        causalEvidenceBoardResult,
-        graphVersionStudioResult,
-        systemHealthCenterResult
+        causalEvidenceBoardResult
       ] = await Promise.all([
         apiClient.getGlobalRiskCockpit(),
         apiClient.getGraphExplorer(),
         apiClient.getCompanyRisk360(),
         apiClient.getPredictionCenter(),
         apiClient.getPathExplainer(),
-        apiClient.getCausalEvidenceBoard(),
-        apiClient.getGraphVersionStudio(),
-        apiClient.getSystemHealthCenter()
+        apiClient.getCausalEvidenceBoard()
       ]);
 
       const nextResults: DashboardResultMap = {
@@ -174,38 +180,22 @@ export function App() {
         "company-risk-360": companyRisk360Result,
         "prediction-center": predictionCenterResult,
         "path-explainer": pathExplainerResult,
-        "causal-evidence-board": causalEvidenceBoardResult,
-        "graph-version-studio": graphVersionStudioResult,
-        "system-health-center": systemHealthCenterResult
+        "causal-evidence-board": causalEvidenceBoardResult
       };
       setDashboardResults(nextResults);
-      if (
-        isAcceptedRealResult(globalRiskCockpitResult) &&
-        isAcceptedRealResult(graphExplorerResult) &&
-        isAcceptedRealResult(companyRisk360Result) &&
-        isAcceptedRealResult(predictionCenterResult) &&
-        isAcceptedRealResult(pathExplainerResult) &&
-        isAcceptedRealResult(causalEvidenceBoardResult) &&
-        isAcceptedRealResult(graphVersionStudioResult) &&
-        isAcceptedRealResult(systemHealthCenterResult)
-      ) {
-        setData({
-          globalRiskCockpit: globalRiskCockpitResult.data,
-          graphExplorer: graphExplorerResult.data,
-          companyRisk360: companyRisk360Result.data,
-          predictionCenter: predictionCenterResult.data,
-          pathExplainer: pathExplainerResult.data,
-          causalEvidenceBoard: causalEvidenceBoardResult.data,
-          graphVersionStudio: graphVersionStudioResult.data,
-          systemHealthCenter: systemHealthCenterResult.data
-        });
-      } else {
-        setData(null);
-      }
+      setData((current) => {
+        const nextData: DashboardDataState = { ...(current ?? {}) };
+        if (isAcceptedRealResult(globalRiskCockpitResult)) nextData.globalRiskCockpit = globalRiskCockpitResult.data;
+        if (isAcceptedRealResult(graphExplorerResult)) nextData.graphExplorer = graphExplorerResult.data;
+        if (isAcceptedRealResult(companyRisk360Result)) nextData.companyRisk360 = companyRisk360Result.data;
+        if (isAcceptedRealResult(predictionCenterResult)) nextData.predictionCenter = predictionCenterResult.data;
+        if (isAcceptedRealResult(pathExplainerResult)) nextData.pathExplainer = pathExplainerResult.data;
+        if (isAcceptedRealResult(causalEvidenceBoardResult)) nextData.causalEvidenceBoard = causalEvidenceBoardResult.data;
+        return Object.keys(nextData).length > 0 ? nextData : null;
+      });
       setLastRefresh(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-    } catch (caughtError) {
-      setData(null);
-      setError(caughtError instanceof Error ? caughtError.message : "Failed to refresh SupplyRiskAtlas data.");
+    } catch {
+      setError("Public data is temporarily unavailable. Refresh to retry.");
     } finally {
       setIsRefreshing(false);
     }
@@ -301,9 +291,6 @@ export function App() {
             <p className="page-description">{error ? t(error) : activePage.description}</p>
           </div>
           <div className="top-actions">
-            <IconButton icon={Activity} label="Open live monitor" />
-            <IconButton icon={Layers3} label="Open layer catalog" />
-            <Button icon={Database}>Graph build</Button>
             <Button disabled={isRefreshing} icon={RefreshCw} onClick={() => void refreshData()} variant="primary">
               {isRefreshing ? "Refreshing" : "Refresh"}
             </Button>
@@ -314,7 +301,7 @@ export function App() {
 
         <div className="content">
           {canRenderBusinessData ? (
-            renderPage(activePage.id, { data: data as SupplyRiskDashboardData, apiClient })
+            renderPage(activePage.id, { data: data ?? {}, apiClient })
           ) : (
             <RealDataRequiredPanel status={dataStatus} isRefreshing={isRefreshing} />
           )}
@@ -335,13 +322,11 @@ function RealDataRequiredPanel({ status, isRefreshing }: { status: DataStatus; i
         <span className="empty-state-mark" aria-hidden="true">
           <Database size={22} />
         </span>
-        <h2>{t(isRefreshing ? "Loading real API data" : "Real API data required")}</h2>
+        <h2>{t(isRefreshing ? "Loading public data" : "Data temporarily unavailable")}</h2>
         <p>{t(status.message)}</p>
-        <div className="lineage-chips" aria-label={t("Data lineage")}>
-          <span>{t("Mode")}: {status.mode}</span>
-          <span>{t("Freshness")}: {status.freshness}</span>
-          <span>{t("Source")}: {status.sourceName}</span>
-          <span>{t("Request")}: {status.requestId}</span>
+        <div className="lineage-chips public-status-chips" aria-label={t("Data status")}>
+          <span>{t("Coverage")}: {t(publicCoverageLabel(status.sourceStatus))}</span>
+          <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
         </div>
       </div>
     </section>
@@ -366,20 +351,11 @@ function DataLineageBanner({ status }: { status: DataStatus }) {
         </div>
         <p>{t(status.message)}</p>
       </div>
-      <div className="lineage-chips" aria-label={t("Data lineage")}>
-        <span>{t("Mode")}: {status.mode}</span>
-        <span>{t("Freshness")}: {status.freshness}</span>
-        <span>{t("Source")}: {status.sourceName}</span>
-        <span>{t("Lineage")}: {status.lineage}</span>
-        <span>{t("Request")}: {status.requestId}</span>
+      <div className="lineage-chips public-status-chips" aria-label={t("Data status")}>
+        <span>{t("Coverage")}: {t(publicCoverageLabel(status.sourceStatus))}</span>
+        <span>{t("Updated")}: {formatPublicFreshness(status.freshness)}</span>
+        <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
       </div>
-      {status.details.length > 0 ? (
-        <ul className="lineage-messages">
-          {status.details.map((detail) => (
-            <li key={detail}>{detail}</li>
-          ))}
-        </ul>
-      ) : null}
     </section>
   );
 }
@@ -401,10 +377,10 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
   if (!result) {
     return {
       tone: hasApiBaseUrl ? "partial" : "blocked",
-      title: hasApiBaseUrl ? "Waiting for API envelope" : "REAL API REQUIRED",
+      title: hasApiBaseUrl ? "Connecting to public data" : "Public data unavailable",
       message: hasApiBaseUrl
-        ? "The dashboard is waiting for request metadata before treating data as live."
-        : "No accepted real API envelope is available, so business graph tables are blocked.",
+        ? "The page is connecting to the public evidence graph."
+        : "Public data is temporarily unavailable. Refresh or try again shortly.",
       mode: hasApiBaseUrl ? "pending" : "unavailable",
       sourceStatus: hasApiBaseUrl ? "partial" : "unavailable",
       freshness: "unknown",
@@ -433,23 +409,25 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
   const isFallback = sourceStatus === "fallback" || sourceStatus === "unauthorized" || isUnavailable;
   const title =
     sourceStatus === "unauthorized"
-      ? "UNAUTHORIZED API - REAL DATA BLOCKED"
+      ? "Public data unavailable"
       : isUnavailable
-        ? "UNAVAILABLE REAL DATA"
+        ? "Public data unavailable"
       : isFallback
-        ? "REAL DATA FALLBACK BLOCKED"
+        ? "Public data unavailable"
         : sourceStatus === "stale"
-          ? "STALE REAL DATA"
+          ? "Public data updating"
           : sourceStatus === "partial"
-            ? "PARTIAL REAL DATA"
-            : "REAL API DATA";
+            ? "Partial public data"
+            : "Public data connected";
 
   return {
     tone,
     title,
     message: isFallback
-      ? "No accepted real API envelope is available, so business graph tables are blocked."
-      : "Envelope metadata, source, and lineage are preserved from the API response.",
+      ? "Public data is temporarily unavailable. Refresh or try again shortly."
+      : sourceStatus === "partial" || sourceStatus === "stale"
+        ? "Public source data is connected with limited freshness or coverage."
+        : "Public source data is connected and ready for analysis.",
     mode: result.mode,
     sourceStatus,
     freshness: envelope.metadata?.as_of_time ?? result.receivedAt,
@@ -458,6 +436,53 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
     requestId: envelope.request_id,
     details: [...(envelope.warnings ?? []), ...(envelope.errors ?? []).map((item) => `${item.code}: ${item.message}`)],
   };
+}
+
+function canRenderPageData(
+  pageId: DashboardPageId,
+  data: DashboardDataState | null,
+  activeResult: ApiResult<unknown> | undefined,
+  hasApiBaseUrl: boolean,
+) {
+  if (pageId === "shock-simulator") return hasApiBaseUrl;
+  if (!data || !isAcceptedRealResult(activeResult)) return false;
+  switch (pageId) {
+    case "global-risk-cockpit":
+      return Boolean(data.globalRiskCockpit);
+    case "graph-explorer":
+    case "path-analysis":
+    case "country-lens":
+      return Boolean(data.graphExplorer && data.pathExplainer);
+    case "company-risk-360":
+      return Boolean(data.companyRisk360);
+    case "prediction-center":
+      return Boolean(data.predictionCenter);
+    case "causal-evidence-board":
+      return Boolean(data.causalEvidenceBoard);
+    default:
+      return false;
+  }
+}
+
+function publicCoverageLabel(sourceStatus: string) {
+  if (sourceStatus === "fresh") return "Current";
+  if (sourceStatus === "partial" || sourceStatus === "stale") return "Limited";
+  if (sourceStatus === "unavailable" || sourceStatus === "error" || sourceStatus === "unauthorized") return "Unavailable";
+  return "Checking";
+}
+
+function publicSourceLabel(sourceName: string) {
+  if (!sourceName || sourceName === "not configured") return "Public evidence graph";
+  if (sourceName.includes("SupplyRiskAtlas")) return "Public evidence graph";
+  if (sourceName.includes("Public")) return "Public evidence graph";
+  return sourceName;
+}
+
+function formatPublicFreshness(value: string) {
+  if (!value || ["unknown", "unavailable", "pending"].includes(value)) return "Checking";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Checking";
+  return parsed.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function isAcceptedRealResult<T>(result: ApiResult<T> | undefined): result is ApiResult<T> & { data: T } {

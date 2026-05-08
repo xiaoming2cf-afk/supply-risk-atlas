@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import type { CSSProperties } from "react";
 import type { ElkNode } from "elkjs";
 import {
@@ -21,7 +21,6 @@ import {
   Database,
   Factory,
   GitBranch,
-  Globe2,
   Layers3,
   Map as MapIcon,
   Play,
@@ -58,34 +57,46 @@ import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, Sc
 import { useI18n } from "./i18n";
 
 export interface PageRenderProps {
-  data: SupplyRiskDashboardData;
+  data: Partial<SupplyRiskDashboardData>;
   apiClient: SupplyRiskApiClient;
 }
 
 export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
   switch (pageId) {
     case "global-risk-cockpit":
-      return <GlobalRiskCockpit data={props.data} />;
+      return props.data.globalRiskCockpit ? <GlobalRiskCockpit data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-explorer":
-      return <GraphExplorer data={props.data} initialMode="supply-chain-flow" />;
+      return props.data.graphExplorer && props.data.pathExplainer ? (
+        <GraphExplorer data={props.data as SupplyRiskDashboardData} initialMode="supply-chain-flow" />
+      ) : (
+        <PageDataUnavailable />
+      );
     case "company-risk-360":
-      return <CompanyRisk360 data={props.data} />;
+      return props.data.companyRisk360 ? <CompanyRisk360 data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "prediction-center":
-      return <PredictionCenter data={props.data} />;
+      return props.data.predictionCenter ? <PredictionCenter data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "path-analysis":
-      return <GraphExplorer data={props.data} initialMode="risk-propagation" />;
+      return props.data.graphExplorer && props.data.pathExplainer ? (
+        <GraphExplorer data={props.data as SupplyRiskDashboardData} initialMode="risk-propagation" />
+      ) : (
+        <PageDataUnavailable />
+      );
     case "country-lens":
-      return <GraphExplorer data={props.data} initialMode="geo-aggregate" />;
+      return props.data.graphExplorer && props.data.pathExplainer ? (
+        <GraphExplorer data={props.data as SupplyRiskDashboardData} initialMode="geo-aggregate" />
+      ) : (
+        <PageDataUnavailable />
+      );
     case "path-explainer":
-      return <PathExplainer data={props.data} />;
+      return props.data.pathExplainer ? <PathExplainer data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "shock-simulator":
       return <ShockSimulator apiClient={props.apiClient} />;
     case "causal-evidence-board":
-      return <CausalEvidenceBoard data={props.data} />;
+      return props.data.causalEvidenceBoard ? <CausalEvidenceBoard data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-version-studio":
-      return <GraphVersionStudio data={props.data} />;
+      return <PageDataUnavailable title="This workspace is not available in the public view." />;
     case "system-health-center":
-      return <SystemHealthCenter data={props.data} />;
+      return <PageDataUnavailable title="This workspace is not available in the public view." />;
     default:
       return (
         <div className="empty-state">
@@ -93,6 +104,17 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
         </div>
       );
   }
+}
+
+function PageDataUnavailable({ title = "Data temporarily unavailable" }: { title?: string }) {
+  return (
+    <section className="empty-state">
+      <div className="empty-state-shell">
+        <h2>{title}</h2>
+        <p>Refresh once the public evidence graph is available.</p>
+      </div>
+    </section>
+  );
 }
 
 function isAcceptedRealApiResult<T>(result: ApiResult<T>): result is ApiResult<T> & { data: T } {
@@ -239,8 +261,6 @@ const graphModeOptions: Array<{ id: GraphExplorerMode; label: string; descriptio
 function graphModeUsesPath(mode: GraphExplorerMode) {
   return mode === "risk-propagation" || mode === "event-timeline";
 }
-
-type ReagraphCanvasComponent = ComponentType<Record<string, unknown>>;
 
 function GraphExplorer({
   data,
@@ -443,10 +463,10 @@ function GraphExplorer({
       addDirectionalContext(selectedNodeId, "both", 2);
       addFirstNeighborContext(selectedNodeId);
     } else {
-      for (const node of criticalNodes.slice(0, 18)) {
+      for (const node of criticalNodes.slice(0, 12)) {
         addNode(node.id);
       }
-      addHighSignalLinks(22, (link) => link.edgeRole === "transmission" || (link.transmissionWeight ?? link.weight) >= 0.32);
+      addHighSignalLinks(12, (link) => link.edgeRole === "transmission" || (link.transmissionWeight ?? link.weight) >= 0.4);
       addFirstNeighborContext(selectedNodeId);
     }
 
@@ -493,19 +513,46 @@ function GraphExplorer({
     transmissionPaths,
   ]);
 
+  const priorityNodeIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (selectedNodeId) ids.add(selectedNodeId);
+    if (graph.selectedNodeId) ids.add(graph.selectedNodeId);
+    if (selectedPathStep?.nodeId) ids.add(selectedPathStep.nodeId);
+    for (const nodeId of activePath?.nodeSequence ?? []) ids.add(nodeId);
+    for (const node of criticalNodes.slice(0, 18)) ids.add(node.id);
+    return ids;
+  }, [activePath, criticalNodes, graph.selectedNodeId, selectedNodeId, selectedPathStep]);
+
   const visibleNodes = useMemo(
     () =>
       graph.nodes
         .filter((node) => visibleNodeIds.has(node.id))
         .sort((a, b) => {
+          if (priorityNodeIds.has(a.id) !== priorityNodeIds.has(b.id)) return priorityNodeIds.has(a.id) ? -1 : 1;
           if (displayedActivePathNodeIds.has(a.id) !== displayedActivePathNodeIds.has(b.id)) return displayedActivePathNodeIds.has(a.id) ? -1 : 1;
           return (b.criticalityScore ?? b.score) - (a.criticalityScore ?? a.score);
-        }),
-    [displayedActivePathNodeIds, graph.nodes, visibleNodeIds]
+        })
+        .slice(0, maxRenderedGraphNodes),
+    [displayedActivePathNodeIds, graph.nodes, priorityNodeIds, visibleNodeIds]
   );
+  const cappedVisibleNodeIds = useMemo(() => new Set(visibleNodes.map((node) => node.id)), [visibleNodes]);
   const visibleLinks = useMemo(
-    () => graph.links.filter((link) => visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)),
-    [graph.links, visibleNodeIds]
+    () =>
+      graph.links
+        .filter((link) => cappedVisibleNodeIds.has(link.source) && cappedVisibleNodeIds.has(link.target))
+        .sort((a, b) => {
+          const aPriority =
+            (displayedActivePathEdgeIds.has(a.id) ? 100 : 0) +
+            (a.source === selectedNodeId || a.target === selectedNodeId ? 20 : 0) +
+            ((a.transmissionWeight ?? a.weight) * 10);
+          const bPriority =
+            (displayedActivePathEdgeIds.has(b.id) ? 100 : 0) +
+            (b.source === selectedNodeId || b.target === selectedNodeId ? 20 : 0) +
+            ((b.transmissionWeight ?? b.weight) * 10);
+          return bPriority - aPriority || a.id.localeCompare(b.id);
+        })
+        .slice(0, maxRenderedGraphLinks),
+    [cappedVisibleNodeIds, displayedActivePathEdgeIds, graph.links, selectedNodeId]
   );
   const selectedNode =
     nodeMap.get(selectedNodeId) ??
@@ -614,33 +661,6 @@ function GraphExplorer({
         subtitle="Click nodes, edges, paths, and countries to inspect risk transmission."
         className="graph-main-panel"
       >
-        <GraphOverview
-          activePath={activePath}
-          countries={availableCountries}
-          links={graph.links}
-          mode={mode}
-          nodes={graph.nodes}
-          onSelectCountry={(countryCode) => {
-            setSelectedCountryCode(countryCode);
-            setSelectedEdgeId(null);
-            setInspectorSubject("country");
-            setMode("geo-aggregate");
-          }}
-          onSelectNode={(nodeId) => {
-            setSelectedNodeId(nodeId);
-            setSelectedEdgeId(null);
-            setInspectorSubject("node");
-          }}
-          onSelectPath={(pathId) => {
-            setSelectedPathId(pathId);
-            setSelectedEdgeId(null);
-            setInspectorSubject("path");
-            setMode("risk-propagation");
-          }}
-          selectedCountryCode={selectedCountry?.code}
-          selectedNodeId={selectedNode.id}
-          transmissionPaths={transmissionPaths}
-        />
         <div className="graph-canvas">
           <GraphNetwork
             activePathEdgeIds={displayedActivePathEdgeIds}
@@ -789,204 +809,6 @@ function GraphCountryList({
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function GraphOverview({
-  activePath,
-  countries,
-  links,
-  mode,
-  nodes,
-  onSelectCountry,
-  onSelectNode,
-  onSelectPath,
-  selectedCountryCode,
-  selectedNodeId,
-  transmissionPaths
-}: {
-  activePath?: GraphTransmissionPath;
-  countries: CountryRiskSummary[];
-  links: GraphLink[];
-  mode: GraphExplorerMode;
-  nodes: GraphNode[];
-  onSelectCountry: (countryCode: string) => void;
-  onSelectNode: (nodeId: string) => void;
-  onSelectPath: (pathId: string) => void;
-  selectedCountryCode?: string;
-  selectedNodeId: string;
-  transmissionPaths: GraphTransmissionPath[];
-}) {
-  const { t } = useI18n();
-  const activePathNodeIds = new Set(activePath?.nodeSequence ?? []);
-  const overviewNodes = [...nodes]
-    .sort((a, b) => {
-      if (a.id === selectedNodeId) return -1;
-      if (b.id === selectedNodeId) return 1;
-      if (activePathNodeIds.has(a.id) !== activePathNodeIds.has(b.id)) return activePathNodeIds.has(a.id) ? -1 : 1;
-      return graphScore(b.criticalityScore ?? b.score) - graphScore(a.criticalityScore ?? a.score);
-    })
-    .slice(0, 32);
-  const overviewNodeIds = new Set(overviewNodes.map((node) => node.id));
-  const overviewLinks = links
-    .filter((link) => overviewNodeIds.has(link.source) && overviewNodeIds.has(link.target))
-    .sort((a, b) => (b.transmissionWeight ?? b.weight) - (a.transmissionWeight ?? a.weight))
-    .slice(0, 42);
-  const overviewNodeById = new Map(overviewNodes.map((node) => [node.id, node]));
-  const topCountries = [...countries].sort((a, b) => b.riskScore - a.riskScore).slice(0, 6);
-  const [GraphCanvas, setGraphCanvas] = useState<ReagraphCanvasComponent | null>(null);
-  const [webglStatus, setWebglStatus] = useState<"loading" | "ready" | "fallback">("loading");
-
-  useEffect(() => {
-    let mounted = true;
-    const isAutomatedBrowser =
-      typeof navigator !== "undefined" && (navigator.webdriver || navigator.userAgent.includes("HeadlessChrome"));
-    const hasWebgl = (() => {
-      if (typeof document === "undefined") return false;
-      const canvas = document.createElement("canvas");
-      return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
-    })();
-    if (isAutomatedBrowser || !hasWebgl) {
-      setWebglStatus("fallback");
-      return () => {
-        mounted = false;
-      };
-    }
-    import("reagraph")
-      .then((module) => {
-        if (!mounted) return;
-        setGraphCanvas(() => module.GraphCanvas as unknown as ReagraphCanvasComponent);
-        setWebglStatus("ready");
-      })
-      .catch(() => {
-        if (mounted) setWebglStatus("fallback");
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const reagraphNodes = overviewNodes.map((node) => ({
-    id: node.id,
-    label: node.label,
-    subLabel: `${node.kind} / ${node.countryCode ?? "global"}`,
-    size: Math.max(5, Math.min(18, graphScore(node.centralityScore ?? node.criticalityScore ?? node.score) / 6)),
-    fill: graphColorByLevel[node.level],
-    cluster: node.countryCode ?? node.kind,
-    data: { kind: node.kind, level: node.level },
-  }));
-  const reagraphEdges = overviewLinks.map((link) => ({
-    id: link.id,
-    source: link.source,
-    target: link.target,
-    label: link.edgeType ?? link.label,
-    fill: graphColorByLevel[link.level],
-    size: Math.max(1, Math.min(5, (link.transmissionWeight ?? link.weight) * 6)),
-    dashed: link.edgeRole !== "transmission",
-    data: { edgeType: link.edgeType, role: link.edgeRole },
-  }));
-  const webglActives = [...activePathNodeIds].filter((nodeId) => overviewNodeIds.has(nodeId)).slice(0, 18);
-
-  return (
-    <div className="graph-overview" aria-label={t("Graph overview")}>
-      <div className="graph-overview-map" role="img" aria-label={t("Topology overview")}>
-        {GraphCanvas ? (
-          <div className="graph-webgl-overview" data-graph-engine="reagraph">
-            <GraphCanvas
-              actives={webglActives}
-              animated
-              cameraMode="pan"
-              clusterAttribute="cluster"
-              defaultNodeSize={8}
-              draggable
-              edgeArrowPosition="end"
-              edgeInterpolation="curved"
-              edges={reagraphEdges}
-              labelType="auto"
-              layoutType="forceatlas2"
-              maxNodeSize={18}
-              minNodeSize={5}
-              nodes={reagraphNodes}
-              onNodeClick={(node: { id: string }) => onSelectNode(node.id)}
-              selections={[selectedNodeId]}
-              sizingAttribute="size"
-              sizingType="attribute"
-            />
-          </div>
-        ) : (
-          <div className="graph-overview-svg-fallback" data-graph-engine="svg-fallback">
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              {overviewLinks.map((link) => {
-                const source = overviewNodeById.get(link.source);
-                const target = overviewNodeById.get(link.target);
-                if (!source || !target) return null;
-                const isActive = activePath?.edgeSequence.includes(link.id) || link.id === activePath?.bottleneckEdgeId;
-                return (
-                  <line
-                    key={link.id}
-                    x1={source.x}
-                    y1={source.y}
-                    x2={target.x}
-                    y2={target.y}
-                    stroke={graphColorByLevel[link.level]}
-                    strokeLinecap="round"
-                    strokeOpacity={isActive ? 0.78 : 0.22}
-                    strokeWidth={isActive ? 1.1 : 0.45 + Math.min(0.8, link.weight)}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                );
-              })}
-            </svg>
-            {overviewNodes.map((node) => (
-              <button
-                aria-label={`${t("Inspect")} ${node.label}`}
-                className={`graph-overview-node ${riskClassByLevel[node.level]} ${node.id === selectedNodeId ? "is-active" : ""} ${activePathNodeIds.has(node.id) ? "is-path-node" : ""}`}
-                key={node.id}
-                onClick={() => onSelectNode(node.id)}
-                style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                title={node.label}
-                type="button"
-              />
-            ))}
-          </div>
-        )}
-        <span className={`graph-overview-engine ${webglStatus === "ready" ? "" : "is-fallback"}`}>
-          {webglStatus === "ready" ? "WebGL overview" : "SVG fallback"}
-        </span>
-      </div>
-      <div className="graph-overview-side">
-        <div className="graph-overview-heading">
-          <Globe2 aria-hidden="true" />
-          <span>{t(graphModeOptions.find((option) => option.id === mode)?.label ?? "Graph overview")}</span>
-        </div>
-        <div className="graph-overview-countries">
-          {topCountries.map((country) => (
-            <button
-              className={`graph-overview-country ${country.code === selectedCountryCode ? "is-active" : ""}`}
-              key={country.code}
-              onClick={() => onSelectCountry(country.code)}
-              type="button"
-            >
-              <span>{country.code}</span>
-              <b>{graphScore(country.riskScore)}</b>
-            </button>
-          ))}
-        </div>
-        <div className="graph-overview-paths">
-          {transmissionPaths.slice(0, 3).map((path) => (
-            <button
-              className={`graph-overview-path ${path.id === activePath?.id ? "is-active" : ""}`}
-              key={path.id}
-              onClick={() => onSelectPath(path.id)}
-              type="button"
-            >
-              <span>{path.sourceLabel} -&gt; {path.targetLabel}</span>
-              <b>{Math.round(path.transmissionScore * 100)}</b>
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -1231,8 +1053,27 @@ type RiskFlowNodeData = {
   selectedPathStep: boolean;
 };
 
+type RiskFlowLinkNodeData = {
+  graphLink: GraphLink;
+  activePath: boolean;
+  angle: number;
+  color: string;
+  dimmed: boolean;
+  labelVisible: boolean;
+  length: number;
+  selected: boolean;
+  width: number;
+};
+
 type RiskFlowNode = FlowNode<RiskFlowNodeData, "risk">;
+type RiskFlowRelationNode = FlowNode<RiskFlowLinkNodeData, "relation">;
+type RiskFlowRenderNode = RiskFlowNode | RiskFlowRelationNode;
 type RiskFlowEdge = FlowEdge<{ level: RiskLevel; label: string; role?: string; activePath: boolean }>;
+
+const maxRenderedGraphNodes = 72;
+const maxRenderedGraphLinks = 120;
+const maxElkLayoutNodes = 72;
+const maxElkLayoutLinks = 140;
 
 const graphKindRankHint: Record<GraphNodeKind, number> = {
   country: 0,
@@ -1262,7 +1103,7 @@ const graphColorByLevel: Record<RiskLevel, string> = {
   critical: "#ff4d6d"
 };
 
-const graphNodeTypes = { risk: RiskFlowNodeCard };
+const graphNodeTypes = { risk: RiskFlowNodeCard, relation: RiskFlowLinkNodeCard };
 
 type GraphHoverTooltip = {
   x: number;
@@ -1319,9 +1160,19 @@ function GraphNetwork({
     return neighborIds;
   }, [links, selectedEdgeId, selectedNodeId, selectedPathStepNodeId]);
   const topologyPositions = useTopologyPositions(nodes, links, activePathNodeIndex);
-  const flowNodes = useMemo<RiskFlowNode[]>(
-    () =>
-      layoutGraphNodes(nodes, links, {
+  const flowNodes = useMemo<RiskFlowRenderNode[]>(
+    () => {
+      const relationNodes = layoutGraphRelationNodes(links, topologyPositions, {
+        activePathEdgeIds,
+        firstNeighborNodeIds,
+        mode,
+        selectedCountryCode,
+        selectedEdgeId,
+        selectedNodeId,
+        selectedPathStepEdgeId,
+        selectedPathStepNodeId,
+      });
+      const entityNodes = layoutGraphNodes(nodes, links, {
         activePathNodeIds,
         activePathNodeIndex,
         firstNeighborNodeIds,
@@ -1330,8 +1181,24 @@ function GraphNetwork({
         selectedCountryCode,
         selectedNodeId,
         selectedPathStepNodeId,
-      }),
-    [activePathNodeIds, activePathNodeIndex, firstNeighborNodeIds, links, mode, nodes, selectedCountryCode, selectedNodeId, selectedPathStepNodeId, topologyPositions]
+      });
+      return [...relationNodes, ...entityNodes];
+    },
+    [
+      activePathEdgeIds,
+      activePathNodeIds,
+      activePathNodeIndex,
+      firstNeighborNodeIds,
+      links,
+      mode,
+      nodes,
+      selectedCountryCode,
+      selectedEdgeId,
+      selectedNodeId,
+      selectedPathStepEdgeId,
+      selectedPathStepNodeId,
+      topologyPositions,
+    ]
   );
   const flowEdges = useMemo<RiskFlowEdge[]>(
     () =>
@@ -1347,17 +1214,40 @@ function GraphNetwork({
       }),
     [activePathEdgeIds, firstNeighborNodeIds, links, mode, nodes, selectedCountryCode, selectedEdgeId, selectedNodeId, selectedPathStepEdgeId, selectedPathStepNodeId]
   );
+  const flowLayoutKey = useMemo(
+    () =>
+      [
+        mode,
+        nodes.map((node) => node.id).join("|"),
+        links.map((link) => link.id).join("|"),
+        [...topologyPositions.entries()]
+          .slice(0, 8)
+          .map(([id, position]) => `${id}:${Math.round(position.x)},${Math.round(position.y)}`)
+          .join("|"),
+      ].join("::"),
+    [links, mode, nodes, topologyPositions],
+  );
 
   return (
     <>
+      <span
+        aria-hidden="true"
+        className="risk-flow-render-metrics"
+        data-flow-edge-count={flowEdges.length}
+        data-flow-node-count={flowNodes.length}
+        data-input-link-count={links.length}
+        data-position-count={topologyPositions.size}
+        data-relation-link-count={flowNodes.filter((node) => node.type === "relation").length}
+      />
       <ReactFlow
         className="risk-flow"
         colorMode="light"
         defaultEdgeOptions={{ type: "smoothstep" }}
         edges={flowEdges}
         fitView
-        fitViewOptions={{ padding: 0.2, maxZoom: 1.08 }}
-        maxZoom={1.65}
+        fitViewOptions={{ padding: 0.12, maxZoom: 1.55 }}
+        key={flowLayoutKey}
+        maxZoom={2.2}
         minZoom={0.22}
         nodeTypes={graphNodeTypes}
         nodes={flowNodes}
@@ -1375,8 +1265,25 @@ function GraphNetwork({
         }}
         onEdgeMouseLeave={() => setTooltip(null)}
         onEdgeMouseMove={(event) => setTooltip((current) => (current ? { ...current, x: event.clientX, y: event.clientY } : current))}
-        onNodeClick={(_, node) => onSelectNode(node.id)}
+        onNodeClick={(_, node) => {
+          if (node.type === "relation") {
+            onSelectEdge((node.data as RiskFlowLinkNodeData).graphLink.id);
+            return;
+          }
+          onSelectNode(node.id);
+        }}
         onNodeMouseEnter={(event, node) => {
+          if (node.type === "relation") {
+            const data = node.data as RiskFlowLinkNodeData;
+            setTooltip({
+              x: event.clientX,
+              y: event.clientY,
+              title: data.graphLink.label,
+              meta: `${data.graphLink.edgeRole ?? data.graphLink.edgeType ?? "edge"} / ${formatPercent(data.graphLink.transmissionWeight ?? data.graphLink.weight ?? 0)}`,
+              detail: `${data.graphLink.sourceCountry ?? "global"} -> ${data.graphLink.targetCountry ?? "global"}`,
+            });
+            return;
+          }
           const data = node.data as RiskFlowNodeData;
           setTooltip({
             x: event.clientX,
@@ -1393,14 +1300,22 @@ function GraphNetwork({
         <Background color="rgba(22,28,22,0.08)" gap={32} size={1} />
         <MiniMap
           className="risk-flow-minimap"
-          nodeColor={(node) => graphColorByLevel[(node.data as RiskFlowNodeData).graphNode.level]}
+          nodeColor={(node) =>
+            node.type === "relation" ? "rgba(15,118,110,0.26)" : graphColorByLevel[(node.data as RiskFlowNodeData).graphNode.level]
+          }
           pannable
           zoomable
         />
         <Controls className="risk-flow-controls" fitViewOptions={{ padding: 0.2 }} />
       </ReactFlow>
       {tooltip ? (
-        <div className="risk-flow-tooltip" style={{ left: tooltip.x + 14, top: tooltip.y + 14 }}>
+        <div
+          className="risk-flow-tooltip"
+          style={{
+            left: `clamp(8px, ${tooltip.x + 14}px, calc(100vw - 300px))`,
+            top: `clamp(8px, ${tooltip.y + 14}px, calc(100vh - 132px))`,
+          }}
+        >
           <strong>{tooltip.title}</strong>
           <span>{tooltip.meta}</span>
           <small>{tooltip.detail}</small>
@@ -1424,7 +1339,7 @@ function useTopologyPositions(
   useEffect(() => {
     let cancelled = false;
     setPositions(fallbackPositions);
-    if (nodes.length < 2) return;
+    if (nodes.length < 2 || nodes.length > maxElkLayoutNodes || links.length > maxElkLayoutLinks) return;
 
     computeElkTopologyLayout(nodes, links, activePathNodeIndex, fallbackPositions)
       .then((layoutPositions) => {
@@ -1454,8 +1369,8 @@ function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
         } as CSSProperties
       }
     >
-      <Handle className="risk-flow-handle" position={Position.Left} type="target" />
-      <Handle className="risk-flow-handle" position={Position.Right} type="source" />
+      <Handle className="risk-flow-handle" id="target" position={Position.Left} type="target" />
+      <Handle className="risk-flow-handle" id="source" position={Position.Right} type="source" />
       <div className="risk-flow-node-topline">
         <span>{node.kind}</span>
         <strong>{graphScore(node.criticalityScore ?? node.score)}</strong>
@@ -1465,6 +1380,28 @@ function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
         R{graphScore(node.riskScore ?? node.score)} / C{graphScore(node.centralityScore ?? 0)} / {node.countryCode ?? String(node.metadata.country ?? "global")}
       </small>
     </div>
+  );
+}
+
+function RiskFlowLinkNodeCard({ data }: NodeProps<RiskFlowRelationNode>) {
+  const link = data.graphLink;
+  return (
+    <button
+      aria-label={`${link.label}: ${link.source} to ${link.target}`}
+      className={`risk-flow-link-node ${data.activePath ? "is-path-link" : ""} ${data.selected ? "is-selected" : ""} ${data.dimmed ? "is-dimmed" : ""}`}
+      style={
+        {
+          "--link-angle": `${data.angle}rad`,
+          "--link-color": data.color,
+          "--link-length": `${data.length}px`,
+          "--link-width": `${data.width}px`,
+        } as CSSProperties
+      }
+      type="button"
+    >
+      <span className="risk-flow-link-line" />
+      {data.labelVisible ? <span className="risk-flow-link-label">{link.label}</span> : null}
+    </button>
   );
 }
 
@@ -1512,6 +1449,82 @@ function layoutGraphNodes(
       selected: isSelected,
     };
   });
+}
+
+function layoutGraphRelationNodes(
+  links: GraphLink[],
+  layoutPositions: Map<string, GraphPosition>,
+  options: {
+    activePathEdgeIds: Set<string>;
+    firstNeighborNodeIds: Set<string>;
+    mode: GraphExplorerMode;
+    selectedCountryCode?: string;
+    selectedEdgeId: string | null;
+    selectedNodeId: string;
+    selectedPathStepEdgeId?: string;
+    selectedPathStepNodeId?: string;
+  },
+): RiskFlowRelationNode[] {
+  const relationNodes: RiskFlowRelationNode[] = [];
+  for (const link of links) {
+    const sourcePosition = layoutPositions.get(link.source);
+    const targetPosition = layoutPositions.get(link.target);
+    if (!sourcePosition || !targetPosition) continue;
+    const source = { x: sourcePosition.x + 82, y: sourcePosition.y + 34 };
+    const target = { x: targetPosition.x + 82, y: targetPosition.y + 34 };
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (!Number.isFinite(distance) || distance < 16) continue;
+
+    const isSelectedAdjacency = link.source === options.selectedNodeId || link.target === options.selectedNodeId;
+    const activePath = options.activePathEdgeIds.has(link.id);
+    const selected = link.id === options.selectedEdgeId;
+    const selectedPathStep = link.id === options.selectedPathStepEdgeId;
+    const firstNeighbor =
+      options.firstNeighborNodeIds.has(link.source) ||
+      options.firstNeighborNodeIds.has(link.target) ||
+      link.source === options.selectedPathStepNodeId ||
+      link.target === options.selectedPathStepNodeId;
+    const countryFocused =
+      options.selectedCountryCode &&
+      (link.sourceCountry === options.selectedCountryCode || link.targetCountry === options.selectedCountryCode);
+    const focused =
+      activePath ||
+      selected ||
+      selectedPathStep ||
+      isSelectedAdjacency ||
+      firstNeighbor ||
+      (options.mode === "geo-aggregate" && Boolean(countryFocused));
+    const dimmed =
+      (graphModeUsesPath(options.mode) && options.activePathEdgeIds.size > 0 && !focused) ||
+      (options.mode === "geo-aggregate" && !focused) ||
+      ((options.mode === "supply-chain-flow" || options.mode === "upstream-downstream") && !focused);
+    const baseWidth = link.transmissionWeight ?? link.weight;
+
+    relationNodes.push({
+      id: `relation-${link.id}`,
+      type: "relation",
+      position: {
+        x: source.x + dx / 2,
+        y: source.y + dy / 2,
+      },
+      selectable: true,
+      data: {
+        graphLink: link,
+        activePath,
+        angle: Math.atan2(dy, dx),
+        color: graphColorByLevel[link.level],
+        dimmed,
+        labelVisible: selectedPathStep || activePath || selected || link.level === "critical",
+        length: Math.max(48, distance - 150),
+        selected,
+        width: selectedPathStep || activePath || selected ? 5.2 : Math.max(1.4, Math.min(4.4, baseWidth * 4.8)),
+      },
+      selected,
+    });
+  }
+  return relationNodes;
 }
 
 function computeRankedTopologyLayout(
@@ -1567,8 +1580,8 @@ function computeRankedTopologyLayout(
 
   const maxRank = Math.max(0, ...rankGroups.keys());
   const positions = new Map<string, GraphPosition>();
-  const rankGap = 310;
-  const rowGap = 120;
+  const rankGap = 240;
+  const rowGap = 88;
   for (const [rank, rankNodes] of [...rankGroups.entries()].sort((a, b) => a[0] - b[0])) {
     const ordered = [...rankNodes].sort(compareGraphNodesForLayout(activePathNodeIndex));
     const count = ordered.length;
@@ -1596,8 +1609,8 @@ async function computeElkTopologyLayout(
   const sortedLinks = [...links]
     .filter((link) => visibleIds.has(link.source) && visibleIds.has(link.target) && link.source !== link.target)
     .sort((a, b) => a.source.localeCompare(b.source) || a.target.localeCompare(b.target) || a.id.localeCompare(b.id));
-  const nodeWidth = 220;
-  const nodeHeight = 92;
+  const nodeWidth = 174;
+  const nodeHeight = 72;
   const graph: ElkNode = {
     id: "risk-topology",
     layoutOptions: {
@@ -1607,9 +1620,9 @@ async function computeElkTopologyLayout(
       "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
       "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
       "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
-      "elk.layered.spacing.edgeNodeBetweenLayers": "52",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "112",
-      "elk.spacing.nodeNode": "42",
+      "elk.layered.spacing.edgeNodeBetweenLayers": "28",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "68",
+      "elk.spacing.nodeNode": "28",
     },
     children: sortedNodes.map((node, index) => ({
       id: node.id,
@@ -1709,8 +1722,11 @@ function layoutGraphEdges(
       return {
         id: link.id,
         source: link.source,
+        sourceHandle: "source",
         target: link.target,
+        targetHandle: "target",
         type: "smoothstep",
+        interactionWidth: 18,
         animated: isSelectedPathStep || isActivePath,
         label: isSelectedPathStep || isActivePath || isSelectedEdge || link.level === "critical" ? link.label : undefined,
         data: { level: link.level, label: link.label, role: link.edgeRole, activePath: isActivePath },
@@ -1958,7 +1974,7 @@ function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
                 label="Source coverage"
                 value={`${Math.round((selectedPrediction.source_coverage?.coverageScore ?? 0) * 100)}%`}
               />
-              <Field label="Sensitivity tests" value={selectedPrediction.sensitivity_diagnostics?.length ?? 0} />
+              <Field label="Scenario checks" value={selectedPrediction.sensitivity_diagnostics?.length ?? 0} />
             </div>
           </div>
         </Panel>
@@ -1982,19 +1998,17 @@ function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
             {(selectedPrediction.driver_contributions ?? []).slice(0, 8).map((driver) => (
               <li key={`${driver.driver}-${driver.pathId ?? "component"}`}>
                 {driver.driver.replaceAll("_", " ")}: {Math.round(driver.contribution * 100)} contribution
-                {driver.pathId ? ` / ${driver.pathId}` : ""}
               </li>
             ))}
           </ul>
         </Panel>
 
-        <Panel title="Sensitivity diagnostics" subtitle="Local perturbation checks over components and bottleneck edges.">
+        <Panel title="Scenario sensitivity" subtitle="How the score responds when major drivers move.">
           <ul className="evidence-list compact">
             {(selectedPrediction.sensitivity_diagnostics ?? []).slice(0, 8).map((diagnostic) => (
               <li key={`${diagnostic.factor}-${diagnostic.edgeId ?? diagnostic.pathId ?? "component"}`}>
                 {diagnostic.factor.replaceAll("_", " ")}: {Math.round(diagnostic.deltaIfIncreased10Pct * 100)} up /
                 {" "}{Math.round(diagnostic.deltaIfReduced10Pct * 100)} down
-                {diagnostic.edgeId ? ` / ${diagnostic.edgeId}` : ""}
               </li>
             ))}
           </ul>
@@ -2009,11 +2023,9 @@ function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
                   <b>{Math.round(path.transmissionScore * 100)}</b>
                 </div>
                 <small>{path.edgeTypes.join(" -> ")}</small>
-                {path.bottleneckEdgeId ? <small>{t("Bottleneck")}: {path.bottleneckEdgeId}</small> : null}
                 <div className="lineage-chips">
-                  {path.evidenceRefs.slice(0, 3).map((ref) => (
-                    <span key={ref}>{ref}</span>
-                  ))}
+                  <span>{path.evidenceRefs.length} public evidence inputs</span>
+                  {path.bottleneckEdgeId ? <span>{t("Bottleneck path segment identified")}</span> : null}
                 </div>
               </article>
             ))}
@@ -2124,12 +2136,12 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
           return;
         }
         setResult(null);
-        setSimulationWarning("Simulation requires a real API envelope before results are rendered.");
+        setSimulationWarning("Simulation is waiting for verified public data before results are rendered.");
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (!isActive) return;
         setResult(null);
-        setSimulationWarning(error instanceof Error ? error.message : "Simulation API request failed.");
+        setSimulationWarning("Simulation data is temporarily unavailable. Refresh to retry.");
       })
       .finally(() => {
         if (isActive) setIsRunning(false);
@@ -2211,7 +2223,7 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
       </Panel>
 
       <div className="page-grid">
-        <Panel title="Projected impact" subtitle="Rendered only from an accepted real API envelope.">
+        <Panel title="Projected impact" subtitle="Scenario results are rendered from verified public graph data.">
           {result ? (
             <div className="three-column page-grid">
               <div className={`big-result ${riskClassByLevel[result.affectedPaths[0]?.level ?? "guarded"]}`}>
@@ -2266,12 +2278,12 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
               </ul>
             </Panel>
 
-            <Panel title="Propagation diagnostics" subtitle="Scenario engine coverage and graph propagation counts.">
+            <Panel title="Evidence coverage" subtitle="Public graph coverage used by this scenario.">
               <div className="inspector-grid">
-                <Field label="Engine" value={String(result.diagnostics?.engine ?? "graph_propagation_v1")} />
-                <Field label="Matched edges" value={String(result.diagnostics?.matchedEdges ?? 0)} />
-                <Field label="Changed paths" value={String(result.diagnostics?.propagatedPathCount ?? 0)} />
-                <Field label="Max hops" value={String(result.diagnostics?.maxHops ?? 0)} />
+                <Field label="Matched relationships" value={String(result.diagnostics?.matchedEdges ?? 0)} />
+                <Field label="Affected paths" value={String(result.diagnostics?.propagatedPathCount ?? 0)} />
+                <Field label="Transmission depth" value={String(result.diagnostics?.maxHops ?? 0)} />
+                <Field label="Evidence mode" value="Public graph" />
               </div>
             </Panel>
 

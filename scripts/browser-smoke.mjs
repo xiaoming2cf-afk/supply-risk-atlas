@@ -8,7 +8,7 @@ import path from "node:path";
 const root = process.cwd();
 const webUrl = process.env.SUPPLY_RISK_WEB_URL ?? "http://127.0.0.1:3000";
 const expectedMode = process.env.SUPPLY_RISK_EXPECT_MODE;
-const apiUrl = process.env.SUPPLY_RISK_API_URL ?? "http://127.0.0.1:8000/api/v1";
+const apiUrl = process.env.SUPPLY_RISK_API_URL ?? new URL("/api/v1", webUrl).toString();
 const apiUrlLiteral = JSON.stringify(apiUrl.replace(/\/$/, ""));
 const artifactDir = path.join(root, "artifacts", "browser-smoke");
 const reportPath = path.join(artifactDir, "report.json");
@@ -22,8 +22,6 @@ const pages = [
   ["Country Lens", "#country-lens"],
   ["Shock Simulator", "#shock-simulator"],
   ["Causal Evidence Board", "#causal-evidence-board"],
-  ["Graph Version Studio", "#graph-version-studio"],
-  ["System Health Center", "#system-health-center"],
 ];
 
 const zhGlobalRiskTitle = "\u5168\u7403\u98ce\u9669\u9a7e\u9a76\u8231";
@@ -80,7 +78,7 @@ async function main() {
     }
 
     if (expectedMode) {
-      const expectedModeText = { real: "API linked", mock: "API unavailable", fallback: "API fallback" }[expectedMode];
+      const expectedModeText = { real: "Public data", mock: "Data unavailable", fallback: "Data unavailable" }[expectedMode];
       if (!expectedModeText) throw new Error(`Unsupported SUPPLY_RISK_EXPECT_MODE: ${expectedMode}`);
       await navigate(client, `${webUrl}#global-risk-cockpit`);
       const modeState = await pageState(client);
@@ -101,7 +99,11 @@ async function main() {
         lineageText: modeState.lineageText,
         apiDiagnostic,
         shockDiagnostic,
-        passed: modeState.modeText.includes(expectedModeText) && modeState.lineageText.includes("Mode:"),
+        passed:
+          modeState.modeText.includes(expectedModeText) &&
+          modeState.lineageText.includes("Coverage:") &&
+          !modeState.lineageText.includes("Request:") &&
+          !modeState.lineageText.includes("Lineage:"),
       });
     }
 
@@ -125,21 +127,23 @@ async function main() {
       client,
       () => pageState(client),
       (state) =>
-        state.lineageText.includes("Mode:") &&
-        state.lineageText.includes("Freshness:") &&
+        state.lineageText.includes("Coverage:") &&
+        state.lineageText.includes("Updated:") &&
         state.lineageText.includes("Source:") &&
-        state.lineageText.includes("Lineage:") &&
-        state.lineageText.includes("Request:"),
+        !state.lineageText.includes("Lineage:") &&
+        !state.lineageText.includes("Request:") &&
+        !state.lineageText.includes("api-unavailable://"),
     );
     checks.push({
-      page: "metadata and fallback visibility",
+      page: "public data status hides internal diagnostics",
       lineageText: lineageState.lineageText,
       passed:
-        lineageState.lineageText.includes("Mode:") &&
-        lineageState.lineageText.includes("Freshness:") &&
+        lineageState.lineageText.includes("Coverage:") &&
+        lineageState.lineageText.includes("Updated:") &&
         lineageState.lineageText.includes("Source:") &&
-        lineageState.lineageText.includes("Lineage:") &&
-        lineageState.lineageText.includes("Request:"),
+        !lineageState.lineageText.includes("Lineage:") &&
+        !lineageState.lineageText.includes("Request:") &&
+        !lineageState.lineageText.includes("api-unavailable://"),
     });
 
     const deniedDemoStrings = [
@@ -247,30 +251,12 @@ async function main() {
     }
 
     await navigate(client, `${webUrl}#system-health-center`);
-    const sourceRegistryState = await waitFor(
-      client,
-      () => pageLanguageState(client),
-      (state) =>
-        state.bodyText.includes("Source registry") &&
-        state.bodyText.includes("Entity resolution") &&
-        state.bodyText.includes("Evidence lineage") &&
-        state.bodyText.includes("raw to silver to gold") &&
-        state.bodyText.includes("silver entities") &&
-        state.bodyText.includes("SEC EDGAR") &&
-        state.bodyText.includes("GLEIF") &&
-        state.bodyText.includes("manifest_public_real_"),
-    );
+    const hiddenAdminState = await waitFor(client, () => pageState(client), (state) => state.title === "Global Risk Cockpit");
     checks.push({
-      page: "System Health source registry",
-      passed:
-        sourceRegistryState.bodyText.includes("Source registry") &&
-        sourceRegistryState.bodyText.includes("Entity resolution") &&
-        sourceRegistryState.bodyText.includes("Evidence lineage") &&
-        sourceRegistryState.bodyText.includes("raw to silver to gold") &&
-        sourceRegistryState.bodyText.includes("silver entities") &&
-        sourceRegistryState.bodyText.includes("SEC EDGAR") &&
-        sourceRegistryState.bodyText.includes("GLEIF") &&
-        sourceRegistryState.bodyText.includes("manifest_public_real_"),
+      page: "admin hash is not exposed publicly",
+      title: hiddenAdminState.title,
+      navCount: hiddenAdminState.navCount,
+      passed: hiddenAdminState.title === "Global Risk Cockpit" && hiddenAdminState.navCount === pages.length,
     });
 
     await navigate(client, `${webUrl}#graph-explorer`);
@@ -286,7 +272,7 @@ async function main() {
       () => evaluate(client, `(() => ({
         graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
         flowNodeCount: document.querySelectorAll('.react-flow__node').length,
-        flowEdgeCount: document.querySelectorAll('.react-flow__edge').length,
+        flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
         text: document.body.innerText,
         searchValue: document.querySelector('input[type="search"]')?.value ?? ''
       }))()`),
@@ -322,7 +308,7 @@ async function main() {
       () => evaluate(client, `(() => ({
         graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
         flowNodeCount: document.querySelectorAll('.react-flow__node').length,
-        flowEdgeCount: document.querySelectorAll('.react-flow__edge').length,
+        flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
         text: document.body.innerText,
         searchValue: document.querySelector('input[type="search"]')?.value ?? ''
       }))()`),
@@ -547,13 +533,21 @@ async function main() {
       deviceScaleFactor: 2,
       mobile: true,
     });
-    await navigate(client, `${webUrl}#system-health-center`);
-    const mobile = await waitFor(client, () => pageState(client), (state) => state.title === "System Health Center");
+    await navigate(client, `${webUrl}#graph-explorer`);
+    const mobile = await waitFor(client, () => pageState(client), (state) => state.title === "Graph Explorer");
     checks.push({
-      page: "mobile System Health Center",
+      page: "mobile Graph Explorer",
       title: mobile.title,
       overflowSafe: mobile.overflowSafe,
-      passed: mobile.title === "System Health Center" && mobile.overflowSafe,
+      graphNodeCount: mobile.graphNodeCount,
+      flowNodeCount: mobile.flowNodeCount,
+      flowEdgeCount: mobile.flowEdgeCount,
+      passed:
+        mobile.title === "Graph Explorer" &&
+        mobile.overflowSafe &&
+        mobile.graphNodeCount >= 2 &&
+        mobile.flowNodeCount >= 2 &&
+        mobile.flowEdgeCount >= 1,
     });
   } finally {
     if (client) client.close();
@@ -586,23 +580,36 @@ async function navigate(client, url) {
   if (expectedHash) {
     await evaluate(client, `(() => {
       const nextUrl = ${JSON.stringify(url)};
-      if (window.location.href !== nextUrl) window.location.href = nextUrl;
-      if (window.location.hash !== ${JSON.stringify(expectedHash)}) window.location.hash = ${JSON.stringify(expectedHash)};
+      const oldUrl = window.location.href;
+      const next = new URL(nextUrl);
+      if (window.location.href !== nextUrl) {
+        window.history.pushState(null, '', next.pathname + next.search + next.hash);
+      }
+      if (window.location.hash !== ${JSON.stringify(expectedHash)}) {
+        window.location.hash = ${JSON.stringify(expectedHash)};
+      }
+      window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL: oldUrl, newURL: window.location.href }));
     })()`);
-    await waitFor(client, () => evaluate(client, "window.location.hash"), (hash) => hash === expectedHash, 30000);
+    await sleep(100);
   }
   await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
 }
 
 async function pageState(client) {
-  return evaluate(client, `(() => ({
-    title: document.querySelector('h1')?.textContent?.trim() ?? '',
-    navCount: document.querySelectorAll('.nav-button').length,
-    modeText: Array.from(document.querySelectorAll('.mode-strip')).map((item) => item.textContent?.trim() ?? '').join(' | '),
-    lineageText: document.querySelector('.data-lineage-banner')?.textContent?.trim() ?? '',
-    text: document.body?.innerText ?? '',
-    overflowSafe: document.documentElement.scrollWidth <= window.innerWidth + 1
-  }))()`);
+  return evaluate(client, `(() => {
+    const root = document.documentElement;
+    return {
+      title: document.querySelector('h1')?.textContent?.trim() ?? '',
+      navCount: document.querySelectorAll('.nav-button').length,
+      modeText: Array.from(document.querySelectorAll('.mode-strip')).map((item) => item.textContent?.trim() ?? '').join(' | '),
+      lineageText: document.querySelector('.data-lineage-banner')?.textContent?.trim() ?? '',
+      text: document.body?.innerText ?? '',
+      graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
+      flowNodeCount: document.querySelectorAll('.react-flow__node').length,
+      flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
+      overflowSafe: root ? root.scrollWidth <= window.innerWidth + 1 : false
+    };
+  })()`);
 }
 
 async function shockState(client) {

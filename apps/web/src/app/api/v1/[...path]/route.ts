@@ -42,17 +42,17 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
           data_mode: "real",
           freshness_status: "unavailable"
         },
-        warnings: ["SUPPLY_RISK_API_ORIGIN or SUPPLY_RISK_API_HOSTPORT is not configured."],
+        warnings: ["Public data service is temporarily unavailable."],
         errors: [
           {
             code: "api_proxy_unconfigured",
-            message: "SupplyRiskAtlas API proxy is not configured."
+            message: "Public data service is temporarily unavailable."
           }
         ],
         mode: "real",
         source_status: "unavailable",
         source: {
-          name: "SupplyRiskAtlas API proxy",
+          name: "SupplyRiskAtlas public data service",
           lineage_ref: "proxy://unconfigured"
         }
       },
@@ -76,7 +76,7 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
       body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
       cache: "no-store"
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         request_id: crypto.randomUUID(),
@@ -91,18 +91,17 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
           data_mode: "real",
           freshness_status: "unavailable"
         },
-        warnings: [`Unable to reach SupplyRiskAtlas API at ${API_ORIGIN}.`],
+        warnings: ["Public data service is temporarily unavailable."],
         errors: [
           {
             code: "api_proxy_upstream_unreachable",
-            message: error instanceof Error ? error.message : "SupplyRiskAtlas API proxy upstream failed."
+            message: "Public data service is temporarily unavailable."
           }
         ],
         mode: "real",
         source_status: "unavailable",
         source: {
-          name: "SupplyRiskAtlas API proxy",
-          url: API_ORIGIN,
+          name: "SupplyRiskAtlas public data service",
           lineage_ref: "proxy://upstream-unreachable"
         }
       },
@@ -121,7 +120,7 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
 
 function validateProxyPath(pathSegments: string[]): string | null {
   if (pathSegments.length > MAX_PROXY_PATH_SEGMENTS) {
-    return "SupplyRiskAtlas API proxy path has too many segments.";
+    return "Requested public data path is not available.";
   }
   for (const segment of pathSegments) {
     if (
@@ -132,7 +131,7 @@ function validateProxyPath(pathSegments: string[]): string | null {
       segment.includes("\\") ||
       segment.length > MAX_PROXY_PATH_SEGMENT_LENGTH
     ) {
-      return "SupplyRiskAtlas API proxy path contains an invalid segment.";
+      return "Requested public data path is not available.";
     }
   }
   return null;
@@ -158,7 +157,7 @@ function proxyErrorResponse(code: string, message: string, status: number) {
       mode: "real",
       source_status: "unavailable",
       source: {
-        name: "SupplyRiskAtlas API proxy",
+        name: "SupplyRiskAtlas public data service",
         lineage_ref: "proxy://invalid-path"
       }
     },

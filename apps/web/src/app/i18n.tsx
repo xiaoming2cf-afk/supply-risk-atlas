@@ -251,7 +251,7 @@ const phraseCopy: Record<string, TranslationPair> = {
   },
   "STALE REAL DATA": { zh: "\u8fc7\u65f6\u7684\u771f\u5b9e\u6570\u636e", fr: "DONNEES REELLES PERIMEES" },
   "PARTIAL REAL DATA": { zh: "\u90e8\u5206\u771f\u5b9e\u6570\u636e", fr: "DONNEES REELLES PARTIELLES" },
-  "Waiting for API envelope": { zh: "\u7b49\u5f85 API \u5c01\u5957", fr: "En attente de l'enveloppe API" },
+  "Waiting for public data": { zh: "\u7b49\u5f85\u516c\u5f00\u6570\u636e", fr: "En attente des donnees publiques" },
   "The dashboard is waiting for request metadata before treating data as live.": {
     zh: "\u4eea\u8868\u677f\u6b63\u5728\u7b49\u5f85\u8bf7\u6c42\u5143\u6570\u636e\uff0c\u7136\u540e\u624d\u5c06\u6570\u636e\u89c6\u4e3a\u5b9e\u65f6\u3002",
     fr: "Le tableau attend les metadonnees de requete avant de traiter les donnees comme actives."
@@ -260,7 +260,7 @@ const phraseCopy: Record<string, TranslationPair> = {
     zh: "未配置 API 基础 URL；业务图表已阻断，直到真实 API 信封可用。",
     fr: "Aucune URL API n'est configuree ; les vues metier sont bloquees jusqu'a reception d'une enveloppe API reelle."
   },
-  "No accepted real API envelope is available, so business graph tables are blocked.": {
+  "No verified public data is available, so business graph views are paused.": {
     zh: "\u6ca1\u6709\u53ef\u63a5\u53d7\u7684\u771f\u5b9e API \u5c01\u5957\uff0c\u56e0\u6b64\u5df2\u963b\u65ad\u4e1a\u52a1\u56fe\u8c31\u8868\u683c\u3002",
     fr: "Aucune enveloppe API reelle acceptee n'est disponible ; les tables de graphe metier sont bloquees."
   },
@@ -268,7 +268,7 @@ const phraseCopy: Record<string, TranslationPair> = {
     zh: "\u6b64\u9875\u9762\u4e0d\u7531\u65b0\u9c9c\u4e14\u5df2\u6388\u6743\u7684 API \u6570\u636e\u652f\u6491\uff1b\u8fd0\u8425\u4f7f\u7528\u524d\u8bf7\u6838\u9a8c\u3002",
     fr: "La page n'est pas adossee a des donnees API fraiches et autorisees ; verifiez avant usage operationnel."
   },
-  "Envelope metadata, source, and lineage are preserved from the API response.": {
+  "Public evidence coverage is preserved from the source response.": {
     zh: "\u5df2\u4fdd\u7559 API \u54cd\u5e94\u4e2d\u7684\u5c01\u5957\u5143\u6570\u636e\u3001\u6765\u6e90\u548c\u8840\u7edf\u3002",
     fr: "Les metadonnees d'enveloppe, la source et la lignee sont conservees depuis la reponse API."
   },
@@ -383,7 +383,7 @@ const phraseCopy: Record<string, TranslationPair> = {
   Regional: { zh: "区域", fr: "Régional" },
   Global: { zh: "全球", fr: "Mondial" },
   "Projected impact": { zh: "预测影响", fr: "Impact projeté" },
-  "Rendered only from an accepted real API envelope.": {
+  "Scenario results are rendered from verified public graph data.": {
     zh: "仅在真实 API 信封通过验收后渲染。",
     fr: "Affiché uniquement depuis une enveloppe API réelle acceptée."
   },
@@ -391,11 +391,14 @@ const phraseCopy: Record<string, TranslationPair> = {
   "EBITDA at risk": { zh: "风险 EBITDA", fr: "EBITDA à risque" },
   "Recovery time": { zh: "恢复时间", fr: "Temps de reprise" },
   "Awaiting simulation result.": { zh: "等待模拟结果。", fr: "En attente du résultat de simulation." },
-  "Simulation requires a real API envelope before results are rendered.": {
+  "Simulation is waiting for verified public data before results are rendered.": {
     zh: "模拟结果需要真实 API 信封通过验收后才会渲染。",
     fr: "La simulation exige une enveloppe API réelle avant tout affichage des résultats."
   },
-  "Simulation API request failed.": { zh: "模拟 API 请求失败。", fr: "La requête API de simulation a échoué." },
+  "Simulation data is temporarily unavailable. Refresh to retry.": {
+    zh: "\u6a21\u62df\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u8bf7\u5237\u65b0\u540e\u91cd\u8bd5\u3002",
+    fr: "Les donnees de simulation sont temporairement indisponibles. Actualisez pour reessayer."
+  },
   "Affected paths": { zh: "受影响路径", fr: "Chemins affectés" },
   "Mitigation queue": { zh: "缓释队列", fr: "File d'atténuation" },
   "Operational actions ranked by speed-to-impact.": {
