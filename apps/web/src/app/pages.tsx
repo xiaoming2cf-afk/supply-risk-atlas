@@ -23,6 +23,7 @@ import {
   GitBranch,
   Layers3,
   Map as MapIcon,
+  Pause,
   Play,
   Route,
   Search,
@@ -49,6 +50,8 @@ import type {
   GraphVersion,
   Prediction,
   RiskLevel,
+  ScenarioChangedPath,
+  ScenarioGraphOverlay,
   ShockSimulationInput,
   ShockSimulationResult
 } from "@supply-risk/shared-types";
@@ -1074,6 +1077,9 @@ const maxRenderedGraphNodes = 72;
 const maxRenderedGraphLinks = 120;
 const maxElkLayoutNodes = 72;
 const maxElkLayoutLinks = 140;
+const riskFlowNodeWidth = 208;
+const riskFlowNodeHeight = 96;
+const riskFlowNodeGap = 24;
 
 const graphKindRankHint: Record<GraphNodeKind, number> = {
   country: 0,
@@ -1081,6 +1087,7 @@ const graphKindRankHint: Record<GraphNodeKind, number> = {
   route_lane: 1,
   carrier: 1,
   data: 1,
+  risk: 1,
   raw_material: 2,
   component: 2,
   product_grade: 2,
@@ -1092,6 +1099,10 @@ const graphKindRankHint: Record<GraphNodeKind, number> = {
   commodity: 2,
   company: 3,
 };
+
+function graphKindRank(kind: GraphNodeKind | string) {
+  return graphKindRankHint[kind as GraphNodeKind] ?? 1;
+}
 
 type GraphPosition = { x: number; y: number };
 
@@ -1236,6 +1247,7 @@ function GraphNetwork({
         data-flow-edge-count={flowEdges.length}
         data-flow-node-count={flowNodes.length}
         data-input-link-count={links.length}
+        data-layout-overlap-count={countGraphPositionOverlaps(nodes, topologyPositions)}
         data-position-count={topologyPositions.size}
         data-relation-link-count={flowNodes.filter((node) => node.type === "relation").length}
       />
@@ -1543,7 +1555,7 @@ function computeRankedTopologyLayout(
   for (const node of sortedNodes) {
     outgoing.set(node.id, []);
     indegree.set(node.id, 0);
-    rankById.set(node.id, graphKindRankHint[node.kind]);
+    rankById.set(node.id, graphKindRank(node.kind));
   }
   for (const link of sortedLinks) {
     outgoing.get(link.source)?.push(link);
@@ -1594,7 +1606,7 @@ function computeRankedTopologyLayout(
       });
     });
   }
-  return positions;
+  return resolveGraphNodeCollisions(nodes, positions);
 }
 
 async function computeElkTopologyLayout(
@@ -1629,7 +1641,7 @@ async function computeElkTopologyLayout(
       width: nodeWidth,
       height: nodeHeight,
       layoutOptions: {
-        "elk.priority": String((4 - graphKindRankHint[node.kind]) * 100 + sortedNodes.length - index),
+        "elk.priority": String((4 - graphKindRank(node.kind)) * 100 + sortedNodes.length - index),
       },
     })),
     edges: sortedLinks.map((link) => ({
@@ -1661,7 +1673,62 @@ async function computeElkTopologyLayout(
     const raw = rawPositions.get(node.id) ?? fallbackPositions.get(node.id) ?? { x: 0, y: 0 };
     positions.set(node.id, { x: raw.x - centerX, y: raw.y - centerY });
   }
+  return resolveGraphNodeCollisions(nodes, positions);
+}
+
+function resolveGraphNodeCollisions(
+  nodes: GraphNode[],
+  initialPositions: Map<string, GraphPosition>,
+): Map<string, GraphPosition> {
+  const positions = new Map(initialPositions);
+  const ordered = [...nodes].sort((a, b) => a.id.localeCompare(b.id));
+  for (let pass = 0; pass < 18; pass += 1) {
+    let moved = false;
+    for (let leftIndex = 0; leftIndex < ordered.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < ordered.length; rightIndex += 1) {
+        const left = ordered[leftIndex];
+        const right = ordered[rightIndex];
+        const leftPosition = positions.get(left.id);
+        const rightPosition = positions.get(right.id);
+        if (!leftPosition || !rightPosition) continue;
+        const dx = rightPosition.x - leftPosition.x;
+        const dy = rightPosition.y - leftPosition.y;
+        const overlapX = riskFlowNodeWidth + riskFlowNodeGap - Math.abs(dx);
+        const overlapY = riskFlowNodeHeight + riskFlowNodeGap - Math.abs(dy);
+        if (overlapX <= 0 || overlapY <= 0) continue;
+        moved = true;
+        if (overlapX < overlapY) {
+          const direction = dx >= 0 ? 1 : -1;
+          positions.set(right.id, { ...rightPosition, x: rightPosition.x + direction * (overlapX / 2 + 4) });
+          positions.set(left.id, { ...leftPosition, x: leftPosition.x - direction * (overlapX / 2 + 4) });
+        } else {
+          const direction = dy >= 0 ? 1 : -1;
+          positions.set(right.id, { ...rightPosition, y: rightPosition.y + direction * (overlapY / 2 + 4) });
+          positions.set(left.id, { ...leftPosition, y: leftPosition.y - direction * (overlapY / 2 + 4) });
+        }
+      }
+    }
+    if (!moved) break;
+  }
   return positions;
+}
+
+function countGraphPositionOverlaps(
+  nodes: GraphNode[],
+  positions: Map<string, GraphPosition>,
+): number {
+  let count = 0;
+  for (let leftIndex = 0; leftIndex < nodes.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < nodes.length; rightIndex += 1) {
+      const left = positions.get(nodes[leftIndex].id);
+      const right = positions.get(nodes[rightIndex].id);
+      if (!left || !right) continue;
+      const overlapX = riskFlowNodeWidth - Math.abs(right.x - left.x);
+      const overlapY = riskFlowNodeHeight - Math.abs(right.y - left.y);
+      if (overlapX > 0 && overlapY > 0) count += 1;
+    }
+  }
+  return count;
 }
 
 function compareGraphNodesForLayout(activePathNodeIndex: Map<string, number>) {
@@ -1674,7 +1741,7 @@ function compareGraphNodesForLayout(activePathNodeIndex: Map<string, number>) {
     return (
       riskLevelRank(b.level) - riskLevelRank(a.level) ||
       graphScore(b.criticalityScore ?? b.score) - graphScore(a.criticalityScore ?? a.score) ||
-      graphKindRankHint[a.kind] - graphKindRankHint[b.kind] ||
+      graphKindRank(a.kind) - graphKindRank(b.kind) ||
       a.label.localeCompare(b.label) ||
       a.id.localeCompare(b.id)
     );
@@ -2111,7 +2178,7 @@ function PathStrip({ path }: { path: ExplainedPath }) {
 function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
   const { t } = useI18n();
   const [input, setInput] = useState<ShockSimulationInput>({
-    region: "Taiwan Strait",
+    region: "China Taiwan Province semiconductor corridor",
     commodity: "advanced semiconductor components",
     supplier: "",
     route: "",
@@ -2156,18 +2223,23 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
     setInput((current) => ({ ...current, [key]: Number(event.target.value) }));
   };
 
+  const grossImpact = result?.grossImpactScore ?? result?.impactScore ?? 0;
+  const netImpact = result?.netImpactScore ?? result?.impactScore ?? 0;
+  const offsetPct = (result?.offsetAmountPct ?? 0) * 100;
+  const impactLevel = riskLevelForScore(netImpact);
+
   return (
     <div className="page-grid split-layout">
       <Panel
         title="Shock controls"
-        subtitle="Change the scenario and the impact model recalculates against the active graph."
-        action={<Button icon={Play} variant="primary">{isRunning ? "Running" : "Run"}</Button>}
+        subtitle="Deterministic gross-to-net shock simulation using public graph evidence and mitigation offsets."
+        action={<Button disabled={isRunning} icon={Play} variant="primary">{isRunning ? "Running" : "Run"}</Button>}
       >
         <div className="form-grid">
           <label className="form-control">
             <span>{t("Region")}</span>
             <select value={input.region} onChange={(event) => setInput((current) => ({ ...current, region: event.target.value }))}>
-              <option value="Taiwan Strait">Taiwan Strait</option>
+              <option value="China Taiwan Province semiconductor corridor">中国台湾省 semiconductor corridor</option>
               <option value="Red Sea / Suez">Red Sea / Suez</option>
               <option value="Panama Canal">Panama Canal</option>
               <option value="Rhine Industrial Belt">Rhine Industrial Belt</option>
@@ -2226,18 +2298,21 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
         <Panel title="Projected impact" subtitle="Scenario results are rendered from verified public graph data.">
           {result ? (
             <div className="three-column page-grid">
-              <div className={`big-result ${riskClassByLevel[result.affectedPaths[0]?.level ?? "guarded"]}`}>
-                <span>{t("Impact score")}</span>
-                <strong>{result.impactScore}</strong>
-              </div>
-              <div className="big-result tone-elevated">
-                <span>{t("EBITDA at risk")}</span>
-                <strong>{formatUsdCompact(result.ebitdaAtRiskUsd)}</strong>
+              <div className={`big-result ${riskClassByLevel[riskLevelForScore(grossImpact)]}`}>
+                <span>{t("Gross impact")}</span>
+                <strong>{grossImpact}</strong>
               </div>
               <div className="big-result tone-guarded">
-                <span>{t("Recovery time")}</span>
-                <strong>{t(`${result.timeToRecoveryDays}d`)}</strong>
+                <span>{t("Mitigation offset")}</span>
+                <strong>{offsetPct.toFixed(1)}%</strong>
               </div>
+              <div className={`big-result ${riskClassByLevel[impactLevel]}`}>
+                <span>{t("Net impact")}</span>
+                <strong>{netImpact}</strong>
+              </div>
+              <p className="public-data-note">
+                {t(result.mitigationStandard?.monetaryAmountPolicy ?? "No dollar offset is produced without private exposure data.")}
+              </p>
             </div>
           ) : (
             <div className="empty-state">{t(simulationWarning ?? "Awaiting simulation result.")}</div>
@@ -2246,6 +2321,33 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
 
         {result ? (
           <>
+            <Panel
+              title="Dynamic transmission path"
+              subtitle="The active path is highlighted hop by hop; gross pressure and mitigation context stay in the same graph."
+              className="scenario-transmission-panel"
+            >
+              <ScenarioTransmissionGraph overlay={result.scenarioGraphOverlay} paths={result.changedPathDetails ?? result.top_changed_paths ?? []} />
+            </Panel>
+
+            <Panel title="Mitigation offset" subtitle={result.mitigationStandard?.framework ?? "Evidence-backed deterministic offset."}>
+              <div className="offset-breakdown-grid">
+                {(result.offsetBreakdown ?? []).map((item) => (
+                  <article className="offset-breakdown-card" key={item.key}>
+                    <div className="row-top">
+                      <span className="row-title">{item.label}</span>
+                      <span className="metric-chip">{(item.offsetPctContribution * 100).toFixed(1)}%</span>
+                    </div>
+                    <ProgressBar value={Math.round(item.score * 100)} level={riskLevelForScore(item.score * 100)} />
+                    <div className="row-meta">
+                      <span>{t("Confidence")}: {Math.round(item.confidence * 100)}%</span>
+                      <span>{item.dataSource}</span>
+                    </div>
+                    <span className="row-subtitle">{item.standardRef}</span>
+                  </article>
+                ))}
+              </div>
+            </Panel>
+
             <Panel title="Affected paths" subtitle={`${result.affectedCompanies} companies touched by this scenario.`}>
               <ul className="timeline-list">
                 {result.affectedPaths.map((path) => (
@@ -2254,40 +2356,59 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
                       <span className="row-title">{path.label}</span>
                       <RiskPill level={path.level} />
                     </div>
+                    <div className="row-meta">
+                      <span>{t("Gross")}: {path.grossImpact ?? path.impact}</span>
+                      <span>{t("Net")}: {path.netImpact ?? path.impact}</span>
+                      <span>{t("Offset")}: {Math.round((path.offsetAppliedPct ?? result.offsetAmountPct ?? 0) * 100)}%</span>
+                    </div>
                     <ProgressBar value={path.impact} level={path.level} />
                   </li>
                 ))}
               </ul>
             </Panel>
 
-            <Panel title="Scenario deltas" subtitle="Graph-propagated target risk movement.">
-              <ul className="timeline-list">
-                {(result.scenario_delta ?? []).slice(0, 8).map((delta) => (
-                  <li className="data-row" key={delta.targetId}>
-                    <div className="row-top">
-                      <span className="row-title">{delta.targetLabel}</span>
-                      <RiskPill level={delta.level} />
-                    </div>
-                    <div className="row-meta">
-                      <span>{t("Baseline")}: {Math.round(delta.baselineRisk * 100)}</span>
-                      <span>{t("Scenario")}: {Math.round(delta.scenarioRisk * 100)}</span>
-                      <span>{delta.delta >= 0 ? "+" : ""}{Math.round(delta.delta * 100)}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </Panel>
-
-            <Panel title="Evidence coverage" subtitle="Public graph coverage used by this scenario.">
-              <div className="inspector-grid">
-                <Field label="Matched relationships" value={String(result.diagnostics?.matchedEdges ?? 0)} />
-                <Field label="Affected paths" value={String(result.diagnostics?.propagatedPathCount ?? 0)} />
-                <Field label="Transmission depth" value={String(result.diagnostics?.maxHops ?? 0)} />
-                <Field label="Evidence mode" value="Public graph" />
+            <Panel title="Company and country impact" subtitle="Ranked by net public-evidence impact after mitigation offset.">
+              <div className="impact-rank-grid">
+                <div>
+                  <div className="section-kicker">{t("Companies")}</div>
+                  <ul className="timeline-list compact">
+                    {(result.companyImpact ?? []).slice(0, 6).map((company) => (
+                      <li className="data-row" key={company.companyId}>
+                        <div className="row-top">
+                          <span className="row-title">{company.companyLabel}</span>
+                          <RiskPill level={company.level} />
+                        </div>
+                        <div className="row-meta">
+                          <span>{company.countryCode ?? "global"}</span>
+                          <span>{t("Net")}: {company.netImpactScore.toFixed(1)}</span>
+                          <span>{t("Gross")}: {company.grossImpactScore.toFixed(1)}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="section-kicker">{t("Countries")}</div>
+                  <ul className="timeline-list compact">
+                    {(result.countryImpact ?? []).slice(0, 6).map((country) => (
+                      <li className="data-row" key={country.countryCode}>
+                        <div className="row-top">
+                          <span className="row-title">{country.countryName}</span>
+                          <RiskPill level={country.level} />
+                        </div>
+                        <div className="row-meta">
+                          <span>{country.countryCode}</span>
+                          <span>{t("Net")}: {country.netImpactScore.toFixed(1)}</span>
+                          <span>{t("Paths")}: {country.pathCount}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </Panel>
 
-            <Panel title="Mitigation queue" subtitle="Operational actions ranked by speed-to-impact.">
+            <Panel title="Mitigation queue" subtitle="Actions are shown only when they can be explained by public graph evidence.">
               <ul className="recommendation-list">
                 {result.recommendations.map((recommendation) => (
                   <li className="data-row" key={recommendation}>
@@ -2301,6 +2422,120 @@ function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
       </div>
     </div>
   );
+}
+
+function ScenarioTransmissionGraph({
+  overlay,
+  paths,
+}: {
+  overlay?: ScenarioGraphOverlay;
+  paths: ScenarioChangedPath[];
+}) {
+  const { t } = useI18n();
+  const [activeHop, setActiveHop] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+
+  const activePathNodeIds = overlay?.activePathNodeIds ?? paths[0]?.nodeSequence ?? [];
+  const activePathEdgeIds = overlay?.activePathEdgeIds ?? paths[0]?.edgeSequence ?? [];
+  const maxHop = Math.max(0, activePathNodeIds.length - 1);
+  const activePathNodeIdSet = useMemo(() => new Set(activePathNodeIds), [activePathNodeIds]);
+  const activePathEdgeIdSet = useMemo(() => new Set(activePathEdgeIds), [activePathEdgeIds]);
+  const activePathNodeIndex = useMemo(
+    () => new Map(activePathNodeIds.map((nodeId, index) => [nodeId, index] as const)),
+    [activePathNodeIds],
+  );
+
+  useEffect(() => {
+    if (!isPlaying || maxHop <= 0) return;
+    const timer = window.setInterval(() => {
+      setActiveHop((current) => (current >= maxHop ? 0 : current + 1));
+    }, 1100);
+    return () => window.clearInterval(timer);
+  }, [isPlaying, maxHop]);
+
+  useEffect(() => {
+    setActiveHop(0);
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+  }, [overlay?.activePathId]);
+
+  const nodes = useMemo<GraphNode[]>(() => {
+    const sourceNodes = overlay?.nodes ?? [];
+    return sourceNodes.map((node, index) => ({
+      ...node,
+      kind: node.kind ?? "data",
+      level: node.level ?? "guarded",
+      score: node.score ?? 0,
+      x: node.x ?? index * 180,
+      y: node.y ?? (index % 3) * 90,
+      metadata: node.metadata ?? {},
+    })) as GraphNode[];
+  }, [overlay?.nodes]);
+
+  const links = useMemo<GraphLink[]>(() => overlay?.links ?? [], [overlay?.links]);
+
+  if (!overlay || nodes.length === 0 || links.length === 0) {
+    return <div className="empty-state">{t("No transmission overlay is available for this shock.")}</div>;
+  }
+
+  const selectedStepNodeId = activePathNodeIds[activeHop];
+  const selectedStepEdgeId = activeHop > 0 ? activePathEdgeIds[activeHop - 1] : activePathEdgeIds[0];
+
+  return (
+    <div className="scenario-graph-shell">
+      <div className="scenario-graph-toolbar">
+        <IconButton
+          icon={isPlaying ? Pause : Play}
+          label={isPlaying ? "Pause path animation" : "Play path animation"}
+          onClick={() => setIsPlaying((current) => !current)}
+        />
+        <label className="scenario-hop-slider">
+          <span>{t("Hop")} {activeHop + 1}/{maxHop + 1}</span>
+          <input
+            max={maxHop}
+            min="0"
+            onChange={(event) => setActiveHop(Number(event.target.value))}
+            type="range"
+            value={activeHop}
+          />
+        </label>
+        <span className="metric-chip">{t("Dynamic net path")}</span>
+      </div>
+      <div className="scenario-flow-canvas">
+        <GraphNetwork
+          activePathEdgeIds={activePathEdgeIdSet}
+          activePathNodeIds={activePathNodeIdSet}
+          links={links}
+          mode="risk-propagation"
+          nodes={nodes}
+          onSelectEdge={(edgeId) => {
+            setSelectedEdgeId(edgeId);
+            setSelectedNodeId(null);
+          }}
+          onSelectNode={(nodeId) => {
+            setSelectedNodeId(nodeId);
+            setSelectedEdgeId(null);
+          }}
+          selectedCountryCode={undefined}
+          selectedEdgeId={selectedEdgeId}
+          selectedNodeId={selectedNodeId ?? ""}
+          selectedPathStepEdgeId={selectedStepEdgeId}
+          selectedPathStepNodeId={selectedStepNodeId}
+          activePathNodeIndex={activePathNodeIndex}
+        />
+      </div>
+    </div>
+  );
+}
+
+function riskLevelForScore(score: number): RiskLevel {
+  if (score >= 88) return "critical";
+  if (score >= 74) return "severe";
+  if (score >= 58) return "elevated";
+  if (score >= 40) return "guarded";
+  return "low";
 }
 
 function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData }) {

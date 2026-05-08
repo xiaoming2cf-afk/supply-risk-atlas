@@ -64,7 +64,7 @@ def test_health_aliases_return_envelope_with_request_id() -> None:
             "post",
             "/api/v1/dashboard/shock-simulator",
             {
-                "region": "Taiwan Strait",
+                "region": "China Taiwan Province semiconductor corridor",
                 "commodity": "advanced semiconductor components",
                 "severity": 95,
                 "durationDays": 28,
@@ -126,7 +126,7 @@ def test_dashboard_routes_return_envelope_and_view_model() -> None:
     shock = client.post(
         "/api/v1/dashboard/shock-simulator",
         json={
-            "region": "Taiwan Strait",
+            "region": "China Taiwan Province semiconductor corridor",
             "commodity": "advanced semiconductor components",
             "severity": 95,
             "durationDays": 28,
@@ -141,6 +141,12 @@ def test_dashboard_routes_return_envelope_and_view_model() -> None:
     assert shock_payload["status"] == "success"
     assert shock_payload["data"]["input"]["severity"] == 95
     assert shock_payload["data"]["impactScore"] > 70
+    assert shock_payload["data"]["grossImpactScore"] >= shock_payload["data"]["netImpactScore"]
+    assert shock_payload["data"]["offsetAmountPct"] <= 0.45
+    assert shock_payload["data"]["offsetBreakdown"]
+    assert shock_payload["data"]["companyImpact"]
+    assert shock_payload["data"]["countryImpact"]
+    assert shock_payload["data"]["scenarioGraphOverlay"]["links"]
 
 
 def test_path_analysis_dashboard_exposes_planned_view_model() -> None:

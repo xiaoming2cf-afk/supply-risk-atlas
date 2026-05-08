@@ -28,7 +28,7 @@ def test_counterfactual_does_not_mutate_base_graph() -> None:
     assert counterfactual.counterfactual_graph_version != result.snapshot.graph_version
 
 
-def test_scenario_engine_returns_graph_propagation_diagnostics_without_mutating_base_graph() -> None:
+def test_scenario_engine_returns_deterministic_offset_without_mutating_base_graph() -> None:
     result = run_synthetic_pipeline()
     base_risks = [edge.risk_score for edge in result.edge_states]
     simulation = build_scenario_simulation(
@@ -36,13 +36,28 @@ def test_scenario_engine_returns_graph_propagation_diagnostics_without_mutating_
         edge_states=result.edge_states,
         entities=result.real.entities if hasattr(result, "real") else result.synthetic.entities,
         predictions=result.predictions,
-        shock=ScenarioShock(region="Taiwan Strait", commodity="semiconductor", severity=90),
+        shock=ScenarioShock(region="China Taiwan Province semiconductor corridor", commodity="semiconductor", severity=90),
     )
 
     assert [edge.risk_score for edge in result.edge_states] == base_risks
-    assert simulation["diagnostics"]["engine"] == "graph_propagation_v1"
+    assert simulation["diagnostics"]["calculationMode"] == "deterministic_public_evidence_mitigation_offset_v1"
+    assert simulation["netImpactScore"] <= simulation["grossImpactScore"]
+    assert 0 <= simulation["offsetAmountPct"] <= 0.45
+    assert simulation["ebitdaAtRiskUsd"] == 0 if "ebitdaAtRiskUsd" in simulation else True
+    assert {item["key"] for item in simulation["offsetBreakdown"]} == {
+        "supplierDiversification",
+        "routeRedundancy",
+        "inventoryRecovery",
+        "substitutionReadiness",
+        "countryResilience",
+        "evidenceCoverage",
+    }
+    assert all(item["evidenceRef"] and item["dataSource"] and item["confidence"] > 0 for item in simulation["offsetBreakdown"])
     assert "scenario_delta" in simulation
     assert "top_changed_paths" in simulation
+    assert "changedPathDetails" in simulation
+    assert simulation["scenarioGraphOverlay"]["nodes"]
+    assert simulation["scenarioGraphOverlay"]["links"]
 
 
 def test_scenario_shock_text_inputs_are_bounded() -> None:

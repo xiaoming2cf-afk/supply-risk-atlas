@@ -43,14 +43,14 @@ class PayloadTooLargeError(ValueError):
 
 @dataclass(frozen=True)
 class BulkLimits:
-    sec_companies: int = 300
-    gleif_legal_entities: int = 200
-    world_bank_indicators: int = 180
-    world_bank_countries: int = 120
-    ourairports_airports: int = 300
-    gdelt_articles: int = 60
-    ofac_entries: int = 100
-    usgs_earthquakes: int = 80
+    sec_companies: int = 800
+    gleif_legal_entities: int = 450
+    world_bank_indicators: int = 450
+    world_bank_countries: int = 260
+    ourairports_airports: int = 800
+    gdelt_articles: int = 120
+    ofac_entries: int = 160
+    usgs_earthquakes: int = 120
 
 
 @dataclass(frozen=True)

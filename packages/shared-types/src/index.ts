@@ -370,6 +370,7 @@ export type GraphNodeKind =
   | "commodity"
   | "route"
   | "country"
+  | "risk"
   | "data"
   | "raw_material"
   | "component"
@@ -677,6 +678,9 @@ export interface ShockAffectedPath {
   id: string;
   label: string;
   impact: number;
+  grossImpact?: number;
+  netImpact?: number;
+  offsetAppliedPct?: number;
   level: RiskLevel;
 }
 
@@ -684,9 +688,63 @@ export interface ScenarioDelta {
   targetId: string;
   targetLabel: string;
   baselineRisk: number;
+  grossScenarioRisk?: number;
   scenarioRisk: number;
+  netScenarioRisk?: number;
+  grossDelta?: number;
   delta: number;
+  offsetAppliedPct?: number;
   level: RiskLevel;
+}
+
+export type OffsetBreakdownKey =
+  | "supplierDiversification"
+  | "routeRedundancy"
+  | "inventoryRecovery"
+  | "substitutionReadiness"
+  | "countryResilience"
+  | "evidenceCoverage";
+
+export interface OffsetBreakdownItem {
+  key: OffsetBreakdownKey;
+  label: string;
+  score: number;
+  weight: number;
+  weightedScore: number;
+  offsetPctContribution: number;
+  confidence: number;
+  standardRef: string;
+  evidenceRef: string;
+  dataSource: string;
+}
+
+export interface MitigationStandard {
+  name: string;
+  framework: string;
+  calculation: string;
+  standardCap: number;
+  references: string[];
+  monetaryAmountPolicy: string;
+}
+
+export interface ScenarioPathStepDetail {
+  hop: number;
+  nodeId: string;
+  label: string;
+  countryCode?: string;
+  incomingEdgeId?: string | null;
+  outgoingEdgeId?: string | null;
+  grossContribution?: number;
+}
+
+export interface ScenarioEdgeDelta {
+  edgeId: string;
+  edgeType?: string;
+  grossDelta: number;
+  netDelta: number;
+  offsetAppliedPct: number;
+  confidence: number;
+  evidenceRef?: string;
 }
 
 export interface ScenarioChangedPath {
@@ -698,21 +756,70 @@ export interface ScenarioChangedPath {
   nodeSequence: string[];
   edgeSequence: string[];
   changedEdges: string[];
+  edgeDeltas?: ScenarioEdgeDelta[];
+  steps?: ScenarioPathStepDetail[];
+  bottleneckEdgeId?: string | null;
   baseScore: number;
+  grossScenarioScore?: number;
   scenarioScore: number;
+  netScenarioScore?: number;
+  grossDelta?: number;
   delta: number;
+  offsetAppliedPct?: number;
+  standardRefs?: string[];
   level: RiskLevel;
+}
+
+export interface ShockCountryImpact {
+  countryCode: string;
+  countryName: string;
+  grossImpactScore: number;
+  netImpactScore: number;
+  offsetAmountPct: number;
+  pathCount: number;
+  affectedCompanies: number;
+  level: RiskLevel;
+}
+
+export interface ShockCompanyImpact {
+  companyId: string;
+  companyLabel: string;
+  countryCode?: string;
+  industry?: string | null;
+  grossImpactScore: number;
+  netImpactScore: number;
+  offsetAmountPct: number;
+  level: RiskLevel;
+}
+
+export interface ScenarioGraphOverlay {
+  activePathId?: string | null;
+  activePathNodeIds: string[];
+  activePathEdgeIds: string[];
+  nodes: Array<Omit<GraphNode, "x" | "y" | "metadata"> & { x?: number; y?: number; metadata?: GraphNode["metadata"] }>;
+  links: GraphLink[];
+  edgeDeltaById?: Record<string, { grossDelta?: number; riskDelta?: number; weightDelta?: number }>;
 }
 
 export interface ShockSimulationResult {
   input: ShockSimulationInput;
   impactScore: number;
+  grossImpactScore?: number;
+  netImpactScore?: number;
+  offsetScore?: number;
+  offsetAmountPct?: number;
+  offsetBreakdown?: OffsetBreakdownItem[];
+  mitigationStandard?: MitigationStandard;
   ebitdaAtRiskUsd: number;
   timeToRecoveryDays: number;
   affectedCompanies: number;
   affectedPaths: ShockAffectedPath[];
   scenario_delta?: ScenarioDelta[];
   top_changed_paths?: ScenarioChangedPath[];
+  changedPathDetails?: ScenarioChangedPath[];
+  countryImpact?: ShockCountryImpact[];
+  companyImpact?: ShockCompanyImpact[];
+  scenarioGraphOverlay?: ScenarioGraphOverlay;
   diagnostics?: Record<string, string | number | boolean>;
   recommendations: string[];
 }

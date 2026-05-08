@@ -58,10 +58,10 @@ def test_prediction_center_route_exposes_mechanisms_and_paths() -> None:
     )
 
 
-def test_dashboard_shock_uses_graph_propagation_scenario_engine() -> None:
+def test_dashboard_shock_uses_deterministic_mitigation_offset_engine() -> None:
     payload = main.route_shock_simulator(
         {
-            "region": "Taiwan Strait",
+            "region": "China Taiwan Province semiconductor corridor",
             "commodity": "advanced semiconductor components",
             "severity": 95,
             "durationDays": 28,
@@ -71,10 +71,27 @@ def test_dashboard_shock_uses_graph_propagation_scenario_engine() -> None:
     assert_envelope(payload)
     data = payload["data"]
     assert data["impactScore"] > 70
+    assert data["grossImpactScore"] >= data["netImpactScore"] == data["impactScore"]
+    assert 0 <= data["offsetAmountPct"] <= 0.45
+    assert {item["key"] for item in data["offsetBreakdown"]} == {
+        "supplierDiversification",
+        "routeRedundancy",
+        "inventoryRecovery",
+        "substitutionReadiness",
+        "countryResilience",
+        "evidenceCoverage",
+    }
+    assert all(item["evidenceRef"] and item["dataSource"] and item["confidence"] > 0 for item in data["offsetBreakdown"])
     assert data["scenario_delta"]
     assert data["top_changed_paths"]
-    assert data["diagnostics"]["engine"] == "graph_propagation_v1"
+    assert data["changedPathDetails"]
+    assert data["companyImpact"]
+    assert data["countryImpact"]
+    assert data["scenarioGraphOverlay"]["nodes"]
+    assert data["scenarioGraphOverlay"]["links"]
+    assert data["diagnostics"]["calculationMode"] == "deterministic_public_evidence_mitigation_offset_v1"
     assert data["diagnostics"]["matchedEdges"] >= 1
+    assert data["ebitdaAtRiskUsd"] == 0
 
 
 def test_sources_route_is_versioned_and_fresh() -> None:

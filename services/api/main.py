@@ -2417,18 +2417,22 @@ def _calculate_dashboard_shock(payload: dict[str, Any], result: Any) -> dict[str
         predictions=result.predictions,
         shock=shock,
     )
-    changed_paths = simulation["top_changed_paths"]
+    changed_paths = simulation.get("changedPathDetails") or simulation["top_changed_paths"]
     affected_firms = {
         node_id
         for path in changed_paths
         for node_id in path["nodeSequence"]
-        if entity_by_id.get(node_id) and entity_by_id[node_id].entity_type == "firm"
+        if entity_by_id.get(node_id)
+        and entity_by_id[node_id].entity_type in {"firm", "legal_entity", "company", "facility"}
     }
     affected_paths = [
         {
             "id": path["pathId"],
             "label": f"{path['sourceLabel']} -> {path['targetLabel']}",
             "impact": max(12, min(100, round(abs(float(path["delta"])) * 100))),
+            "grossImpact": max(12, min(100, round(abs(float(path.get("grossDelta", path["delta"]))) * 100))),
+            "netImpact": max(0, min(100, round(abs(float(path["delta"])) * 100))),
+            "offsetAppliedPct": path.get("offsetAppliedPct", simulation.get("offsetAmountPct", 0)),
             "level": path["level"],
         }
         for path in changed_paths[:6]
@@ -2437,12 +2441,12 @@ def _calculate_dashboard_shock(payload: dict[str, Any], result: Any) -> dict[str
         **simulation,
         "ebitdaAtRiskUsd": 0,
         "timeToRecoveryDays": round(shock.duration_days * {"facility": 1.08, "regional": 1.22, "global": 1.38}[shock.scope]),
-        "affectedCompanies": len(affected_firms),
+        "affectedCompanies": max(len(affected_firms), len(simulation.get("companyImpact", []))),
         "affectedPaths": affected_paths,
         "recommendations": [
-            "Validate public evidence against private supplier master data before operational action",
-            "Monitor GDELT, OFAC, and port reference deltas for the next graph promotion",
-            "Use scenario deltas for triage only until licensed trade or AIS sources are attached",
+            "Use gross and net impact together: gross shows the shock pressure, net applies only evidence-backed mitigation offsets",
+            "Validate public graph evidence against private supplier master data before operational action",
+            "Attach exposureAmountUsd only when licensed financial exposure data is available; public mode reports risk points and percentages",
         ],
     }
 

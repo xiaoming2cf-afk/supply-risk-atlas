@@ -88,7 +88,7 @@ async function main() {
       const shockDiagnostic = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/shock-simulator', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ region: 'Taiwan Strait', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
+          body: JSON.stringify({ region: 'China Taiwan Province semiconductor corridor', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
         })
         .then(async (response) => ({ ok: response.ok, status: response.status, bodyPrefix: (await response.text()).slice(0, 80) }))
         .catch((error) => ({ error: String(error) }))`);
@@ -235,7 +235,7 @@ async function main() {
       const shockPayloadText = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/shock-simulator', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ region: 'Taiwan Strait', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
+          body: JSON.stringify({ region: 'China Taiwan Province semiconductor corridor', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
         })
         .then((response) => response.text())
         .catch((error) => String(error))`);
@@ -524,7 +524,15 @@ async function main() {
       afterSeverity: Number(after.severity),
       beforeImpact: before.impactScore,
       afterImpact: after.impactScore,
-      passed: Number(after.severity) >= 90 && after.impactScore !== before.impactScore,
+      hasOffset: after.hasOffset,
+      hasTransmissionGraph: after.hasTransmissionGraph,
+      layoutOverlapCount: after.layoutOverlapCount,
+      passed:
+        Number(after.severity) >= 90 &&
+        after.impactScore !== before.impactScore &&
+        after.hasOffset &&
+        after.hasTransmissionGraph &&
+        after.layoutOverlapCount === 0,
     });
 
     await client.send("Emulation.setDeviceMetricsOverride", {
@@ -542,12 +550,14 @@ async function main() {
       graphNodeCount: mobile.graphNodeCount,
       flowNodeCount: mobile.flowNodeCount,
       flowEdgeCount: mobile.flowEdgeCount,
+      layoutOverlapCount: mobile.layoutOverlapCount,
       passed:
         mobile.title === "Graph Explorer" &&
         mobile.overflowSafe &&
         mobile.graphNodeCount >= 2 &&
         mobile.flowNodeCount >= 2 &&
-        mobile.flowEdgeCount >= 1,
+        mobile.flowEdgeCount >= 1 &&
+        mobile.layoutOverlapCount === 0,
     });
   } finally {
     if (client) client.close();
@@ -607,6 +617,7 @@ async function pageState(client) {
       graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
       flowNodeCount: document.querySelectorAll('.react-flow__node').length,
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
+      layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
       overflowSafe: root ? root.scrollWidth <= window.innerWidth + 1 : false
     };
   })()`);
@@ -616,8 +627,17 @@ async function shockState(client) {
   return evaluate(client, `(() => {
     const text = document.body?.innerText ?? '';
     const severity = document.querySelector('input[type="range"]')?.value ?? '';
-    const impactScore = document.querySelector('.big-result strong')?.textContent?.trim() ?? '';
-    return { severity, impactScore, hasImpact: text.includes('Impact score') };
+    const resultValues = Array.from(document.querySelectorAll('.big-result strong')).map((item) => item.textContent?.trim() ?? '');
+    const impactScore = resultValues[2] ?? resultValues[0] ?? '';
+    const layoutOverlapCount = Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0)));
+    return {
+      severity,
+      impactScore,
+      layoutOverlapCount,
+      hasImpact: text.includes('Gross impact') && text.includes('Net impact'),
+      hasOffset: text.includes('Mitigation offset') && text.includes('No dollar offset'),
+      hasTransmissionGraph: text.includes('Dynamic transmission path') && document.querySelectorAll('.risk-flow-node').length >= 2
+    };
   })()`);
 }
 

@@ -1,7 +1,7 @@
 const apiUrl = normalizeBaseUrl(process.env.SUPPLY_RISK_API_URL ?? "http://127.0.0.1:8000/api/v1", "SUPPLY_RISK_API_URL");
 const webUrl = normalizeBaseUrl(process.env.SUPPLY_RISK_WEB_URL ?? "http://localhost:3000", "SUPPLY_RISK_WEB_URL");
 const requireWeb = process.env.SUPPLY_RISK_REVIEW_SKIP_WEB !== "1";
-const minCountries = Number(process.env.SUPPLY_RISK_REVIEW_MIN_COUNTRIES ?? 75);
+const minCountries = Number(process.env.SUPPLY_RISK_REVIEW_MIN_COUNTRIES ?? 150);
 const minNodes = Number(process.env.SUPPLY_RISK_REVIEW_MIN_NODES ?? 3000);
 const minLinks = Number(process.env.SUPPLY_RISK_REVIEW_MIN_LINKS ?? 6000);
 
@@ -21,7 +21,7 @@ async function main() {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      region: "Taiwan Strait",
+      region: "China Taiwan Province semiconductor corridor",
       commodity: "advanced semiconductor components",
       severity: 86,
       durationDays: 28,
@@ -156,12 +156,56 @@ function checkPredictionCenter(envelope) {
 function checkScenarioShock(envelope) {
   const data = envelope.data ?? {};
   const deltas = data.scenario_delta ?? data.scenarioDelta ?? [];
-  const changedPaths = data.top_changed_paths ?? data.topChangedPaths ?? [];
+  const changedPaths = data.changedPathDetails ?? data.top_changed_paths ?? data.topChangedPaths ?? [];
   const diagnostics = data.diagnostics ?? {};
+  const breakdown = data.offsetBreakdown ?? [];
+  const requiredOffsetKeys = [
+    "supplierDiversification",
+    "routeRedundancy",
+    "inventoryRecovery",
+    "substitutionReadiness",
+    "countryResilience",
+    "evidenceCoverage",
+  ];
+  const overlay = data.scenarioGraphOverlay ?? {};
+  const gross = Number(data.grossImpactScore ?? data.impactScore ?? 0);
+  const net = Number(data.netImpactScore ?? data.impactScore ?? 0);
+  const offsetPct = Number(data.offsetAmountPct ?? 0);
   addCheck("Scenario shock returns risk deltas", deltas.length > 0, `deltas=${deltas.length}`);
   addCheck("Scenario shock returns changed paths", changedPaths.length > 0, `paths=${changedPaths.length}`);
-  addCheck("Scenario shock exposes graph propagation diagnostics", diagnostics.engine === "graph_propagation_v1", `engine=${diagnostics.engine}`);
-  addCheck("Scenario shock avoids fictional revenue attribution", String(diagnostics.revenueAtRiskMode ?? "").includes("not_estimated"), String(diagnostics.revenueAtRiskMode ?? ""));
+  addCheck("Scenario shock computes gross and net impact", gross >= net && gross > 0 && net > 0, `gross=${gross} net=${net}`);
+  addCheck("Scenario shock offset cap is enforced", offsetPct >= 0 && offsetPct <= 0.45, `offset=${offsetPct}`);
+  addCheck(
+    "Scenario shock offset breakdown is complete",
+    requiredOffsetKeys.every((key) => breakdown.some((item) => item.key === key && item.evidenceRef && item.dataSource && Number(item.confidence) > 0)),
+    `keys=${breakdown.map((item) => item.key).join(",")}`,
+  );
+  addCheck(
+    "Scenario shock uses deterministic public-evidence calculation",
+    String(diagnostics.calculationMode ?? "").includes("deterministic_public_evidence_mitigation_offset"),
+    String(diagnostics.calculationMode ?? ""),
+  );
+  addCheck(
+    "Scenario shock avoids fictional monetary offset",
+    Number(data.ebitdaAtRiskUsd ?? 0) === 0 && String(data.mitigationStandard?.monetaryAmountPolicy ?? diagnostics.monetaryOffsetMode ?? "").includes("No dollar offset"),
+    String(data.mitigationStandard?.monetaryAmountPolicy ?? diagnostics.monetaryOffsetMode ?? ""),
+  );
+  addCheck("Scenario shock company impact is populated", (data.companyImpact ?? []).length > 0, `companies=${data.companyImpact?.length ?? 0}`);
+  addCheck("Scenario shock country impact is populated", (data.countryImpact ?? []).length > 0, `countries=${data.countryImpact?.length ?? 0}`);
+  addCheck(
+    "Scenario shock dynamic path overlay is populated",
+    (overlay.nodes ?? []).length > 0 && (overlay.links ?? []).length > 0 && (overlay.activePathEdgeIds ?? []).length > 0,
+    `nodes=${overlay.nodes?.length ?? 0} links=${overlay.links?.length ?? 0}`,
+  );
+  addCheck(
+    "Scenario shock changed paths have complete acyclic sequences",
+    changedPaths.every((path) => {
+      const nodeSequence = path.nodeSequence ?? [];
+      const edgeSequence = path.edgeSequence ?? [];
+      return nodeSequence.length === edgeSequence.length + 1 && new Set(nodeSequence).size === nodeSequence.length;
+    }),
+    "nodes=edge+1",
+  );
 }
 function checkUsgsSource(envelope) {
   const sources = envelope.data?.sources ?? [];
