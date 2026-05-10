@@ -8,7 +8,11 @@ import path from "node:path";
 const root = process.cwd();
 const webUrl = process.env.SUPPLY_RISK_WEB_URL ?? "http://127.0.0.1:3000";
 const expectedMode = process.env.SUPPLY_RISK_EXPECT_MODE;
-const apiUrl = process.env.SUPPLY_RISK_API_URL ?? new URL("/api/v1", webUrl).toString();
+const apiUrl =
+  process.env.SUPPLY_RISK_API_URL ??
+  process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL ??
+  new URL("/api/v1", webUrl).toString();
+const apiBase = apiUrl.replace(/\/$/, "");
 const apiUrlLiteral = JSON.stringify(apiUrl.replace(/\/$/, ""));
 const artifactDir = path.join(root, "artifacts", "browser-smoke");
 const reportPath = path.join(artifactDir, "report.json");
@@ -72,6 +76,33 @@ async function main() {
     await client.send("Page.enable");
     await client.send("Runtime.enable");
 
+    const apiCapabilities = {
+      systemHealth: await fetchApiJson("/dashboard/system-health-center"),
+      graphSnapshot: await fetchApiJson("/graph/snapshot"),
+      graphNeighborhood: await fetchApiJson("/graph/neighborhood?node_id=company:tsmc&depth=1"),
+      entityRisk: await fetchApiJson("/risk/entities/company:tsmc"),
+      riskPortfolio: await fetchApiJson("/risk/portfolio?node_type=company&limit=3"),
+    };
+    const semiriskSystemHealthReady =
+      isSuccessfulEnvelope(apiCapabilities.systemHealth) &&
+      Boolean(apiCapabilities.systemHealth.body?.data?.semiconductorGraph);
+    const semiriskRiskReady =
+      isSuccessfulEnvelope(apiCapabilities.entityRisk) &&
+      isSuccessfulEnvelope(apiCapabilities.riskPortfolio);
+    const semiriskGraphReady =
+      isSuccessfulEnvelope(apiCapabilities.graphSnapshot) &&
+      isSuccessfulEnvelope(apiCapabilities.graphNeighborhood);
+    checks.push({
+      page: "SemiRisk API capability",
+      apiBase,
+      systemHealthStatus: apiCapabilities.systemHealth.status,
+      graphSnapshotStatus: apiCapabilities.graphSnapshot.status,
+      graphNeighborhoodStatus: apiCapabilities.graphNeighborhood.status,
+      entityRiskStatus: apiCapabilities.entityRisk.status,
+      riskPortfolioStatus: apiCapabilities.riskPortfolio.status,
+      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady : true,
+    });
+
     for (const [page, hash] of pages) {
       await navigate(client, `${webUrl}${hash}`);
       const result = await waitFor(client, () => pageState(client), (state) => state.title === page);
@@ -89,16 +120,29 @@ async function main() {
     }
 
     await navigate(client, `${webUrl}#system-health-center`);
+    const healthSemiriskTerms = [
+      "SemiRisk-KG v0.1 fixture graph",
+      "graphVersion",
+      "sourceManifestId",
+      "nodeCount",
+      "edgeCount",
+      "registryReady",
+      "ontologyReady",
+      "fixtureGraph",
+      "fixture_graph:not_production_ready",
+    ];
     const healthState = await waitFor(
       client,
       () => pageState(client),
       (state) =>
         state.title === "System Health Center" &&
-        (
-          state.text.includes("Source registry") ||
-          state.text.includes("Data temporarily unavailable") ||
-          state.text.includes("Public data unavailable")
-        ),
+        (semiriskSystemHealthReady
+          ? healthSemiriskTerms.every((term) => state.text.includes(term))
+          : (
+              state.text.includes("Source registry") ||
+              state.text.includes("Data temporarily unavailable") ||
+              state.text.includes("Public data unavailable")
+            )),
     );
     const healthHasRegistryEvidence =
       healthState.text.includes("Source registry") &&
@@ -114,16 +158,64 @@ async function main() {
       healthState.text.includes("Public data unavailable") ||
       healthState.text.includes("Partial public data") ||
       /unavailable|degraded/i.test(healthState.text);
+    const healthHasSemiriskEvidence = healthSemiriskTerms.every((term) => healthState.text.includes(term));
     checks.push({
       page: "System Health Center public route",
       title: healthState.title,
       firstNavId: healthState.firstNavId,
       hasRegistryEvidence: healthHasRegistryEvidence,
+      hasSemiriskEvidence: healthHasSemiriskEvidence,
       hasControlledDegradedState: healthHasControlledDegradedState,
+      evidenceExcerpt: textExcerpt(healthState.text, healthSemiriskTerms),
       passed:
         healthState.title === "System Health Center" &&
         healthState.firstNavId === "system-health-center" &&
-        (healthHasRegistryEvidence || healthHasControlledDegradedState),
+        (semiriskSystemHealthReady ? healthHasSemiriskEvidence : healthHasControlledDegradedState),
+    });
+
+    await navigate(client, `${webUrl}#company-risk-360`);
+    const riskEvidenceTerms = [
+      "company:tsmc",
+      "58.33",
+      "elevated",
+      "exposure_score",
+      "criticality_score",
+      "substitution_gap",
+      "policy_risk",
+      "event_pressure",
+      "market_pressure",
+      "evidence_refs",
+      "semirisk_risk_score_v0.1",
+      "graph_version",
+      "source_manifest_id",
+      "fixture_graph:not_production_ready",
+    ];
+    const riskState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Entity Risk 360" &&
+        (semiriskRiskReady
+          ? riskEvidenceTerms.every((term) => state.text.includes(term))
+          : (
+              state.text.includes("Entity Risk 360 unavailable") ||
+              state.text.includes("Risk score unavailable")
+            )),
+    );
+    const riskHasScoreEvidence = riskEvidenceTerms.every((term) => riskState.text.includes(term));
+    const riskHasControlledDegradedState =
+      riskState.text.includes("Entity Risk 360 unavailable") &&
+      riskState.text.includes("failed_endpoint") &&
+      riskState.text.includes("source_status");
+    checks.push({
+      page: "Entity Risk 360 Risk Score v0",
+      title: riskState.title,
+      hasScoreEvidence: riskHasScoreEvidence,
+      hasControlledDegradedState: riskHasControlledDegradedState,
+      evidenceExcerpt: textExcerpt(riskState.text, riskEvidenceTerms),
+      passed:
+        riskState.title === "Entity Risk 360" &&
+        (semiriskRiskReady ? riskHasScoreEvidence : riskHasControlledDegradedState),
     });
 
     if (expectedMode) {
@@ -624,6 +716,52 @@ async function assertWebServer() {
   if (!response.ok) {
     throw new Error(`Web server is not ready at ${webUrl}: ${response.status}`);
   }
+}
+
+async function fetchApiJson(pathname, init = undefined) {
+  const url = `${apiBase}${pathname}`;
+  try {
+    const response = await fetch(url, {
+      headers: { "content-type": "application/json" },
+      ...init,
+    });
+    const bodyText = await response.text();
+    let body = null;
+    try {
+      body = bodyText ? JSON.parse(bodyText) : null;
+    } catch {
+      body = null;
+    }
+    return {
+      ok: response.ok,
+      status: response.status,
+      body,
+      bodyPrefix: bodyText.slice(0, 160),
+      url,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: null,
+      body: null,
+      error: String(error),
+      url,
+    };
+  }
+}
+
+function isSuccessfulEnvelope(result) {
+  return Boolean(result?.status === 200 && result?.body?.status === "success" && result?.body?.data);
+}
+
+function textExcerpt(text, terms) {
+  const normalized = String(text ?? "").replace(/\s+/g, " ").trim();
+  const indexes = terms
+    .map((term) => normalized.indexOf(term))
+    .filter((index) => index >= 0)
+    .sort((left, right) => left - right);
+  const start = Math.max(0, (indexes[0] ?? 0) - 120);
+  return normalized.slice(start, start + 700);
 }
 
 async function navigate(client, url) {

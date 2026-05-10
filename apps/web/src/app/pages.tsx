@@ -1923,6 +1923,14 @@ function CompanyRisk360({
       riskResult?.envelope.warnings?.[0] ??
       "Risk Score v0 is unavailable until the SemiRisk fixture graph API is reachable."
     : "";
+  const failedRiskEndpoint =
+    riskResult?.envelope.source?.lineage_ref ??
+    riskResult?.envelope.metadata?.lineage_ref ??
+    `api-unavailable://risk/entities/${selectedNodeId}`;
+  const failedPortfolioEndpoint =
+    portfolioResult?.envelope.source?.lineage_ref ??
+    portfolioResult?.envelope.metadata?.lineage_ref ??
+    "api-unavailable://risk/portfolio";
 
   return (
     <div className="page-grid split-layout">
@@ -1973,14 +1981,22 @@ function CompanyRisk360({
               <div className="driver-grid">
                 <ScoreDial score={risk.score} level={risk.level} label="Risk Score v0" />
                 <div className="inspector-grid">
-                  <Field label="Node type" value={risk.entity.node_type} />
-                  <Field label="Confidence" value={formatPercent(risk.entity.confidence)} />
-                  <Field label="Feature version" value={risk.feature_version} />
-                  <Field label="As of time" value={formatDateTime(risk.as_of_time)} />
-                  <Field label="Source manifest" value={risk.source_manifest_id} />
-                  <Field label="Evidence refs" value={formatCompactNumber(risk.evidence_refs.length)} />
+                  <Field label="selected_entity" value={risk.node_id} />
+                  <Field label="score" value={risk.score.toFixed(2)} />
+                  <Field label="level" value={risk.level} />
+                  <Field label="node_type" value={risk.entity.node_type} />
+                  <Field label="confidence" value={formatPercent(risk.entity.confidence)} />
+                  <Field label="feature_version" value={risk.feature_version} />
+                  <Field label="graph_version" value={risk.graph_version} />
+                  <Field label="source_manifest_id" value={risk.source_manifest_id} />
+                  <Field label="as_of_time" value={formatDateTime(risk.as_of_time)} />
+                  <Field label="fixture_graph" value={risk.fixture_graph ? "true" : "false"} />
+                  <Field label="evidence_refs" value={formatCompactNumber(risk.evidence_refs.length)} />
                 </div>
               </div>
+              <p className="row-subtitle" style={{ marginTop: 16 }}>
+                {`selected_entity: ${risk.node_id}; score: ${risk.score.toFixed(2)}; level: ${risk.level}; feature_version: ${risk.feature_version}; graph_version: ${risk.graph_version}; source_manifest_id: ${risk.source_manifest_id}; fixture_graph: ${String(risk.fixture_graph)}; evidence_refs: ${risk.evidence_refs.length}`}
+              </p>
             </Panel>
 
             <Panel title="Score components" subtitle="Evidence-backed component values with normalized weighted contributions.">
@@ -2014,7 +2030,7 @@ function CompanyRisk360({
               </div>
             </Panel>
 
-            <Panel title="Evidence refs" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
+            <Panel title="evidence_refs" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
               <div className="table-wrap">
                 <table className="data-table">
                   <thead>
@@ -2051,15 +2067,22 @@ function CompanyRisk360({
               <h3>{isLoadingRisk ? "Loading Risk Score v0" : "Risk score unavailable"}</h3>
               <p>{degradedMessage}</p>
             </div>
+            <div className="inspector-grid" style={{ marginTop: 16 }}>
+              <Field label="selected_entity" value={selectedNodeId} />
+              <Field label="failed_endpoint" value={failedRiskEndpoint} />
+              <Field label="source_status" value={riskResult?.sourceStatus ?? "pending"} />
+              <Field label="portfolio_endpoint" value={failedPortfolioEndpoint} />
+              <Field label="portfolio_source_status" value={portfolioResult?.sourceStatus ?? "pending"} />
+            </div>
           </Panel>
         )}
 
         <Panel title="Version and freshness" subtitle="Every displayed score is tied to graph, feature, and source manifest metadata.">
           <div className="inspector-grid">
-            <Field label="Graph version" value={risk?.graph_version ?? portfolio?.graph_version ?? "unavailable"} />
-            <Field label="Source manifest" value={risk?.source_manifest_id ?? portfolio?.source_manifest_id ?? "unavailable"} />
-            <Field label="Feature version" value={risk?.feature_version ?? portfolio?.feature_version ?? "unavailable"} />
-            <Field label="Fixture graph" value={risk?.fixture_graph || portfolio?.fixture_graph ? "yes" : "unavailable"} />
+            <Field label="graph_version" value={risk?.graph_version ?? portfolio?.graph_version ?? "unavailable"} />
+            <Field label="source_manifest_id" value={risk?.source_manifest_id ?? portfolio?.source_manifest_id ?? "unavailable"} />
+            <Field label="feature_version" value={risk?.feature_version ?? portfolio?.feature_version ?? "unavailable"} />
+            <Field label="fixture_graph" value={risk?.fixture_graph || portfolio?.fixture_graph ? "true" : "unavailable"} />
           </div>
           <ul className="health-list" style={{ marginTop: 16 }}>
             {Array.from(new Set(warnings.length ? warnings : ["fixture_graph:not_production_ready"])).map((warning) => (
@@ -2995,15 +3018,21 @@ function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) {
                 subtitle={`${health.semiconductorGraph.sourceManifestId}; graph ${health.semiconductorGraph.graphVersion}; fixture/promoted test graph, not production readiness.`}
                 translateSubtitle={false}
               >
+                <p className="row-subtitle" style={{ marginBottom: 16 }}>
+                  {`registryReady: ${String(health.semiconductorGraph.registryReady)}; ontologyReady: ${String(health.semiconductorGraph.ontologyReady)}; fixtureGraph: ${String(health.semiconductorGraph.fixtureGraph)}; graphVersion: ${health.semiconductorGraph.graphVersion}; sourceManifestId: ${health.semiconductorGraph.sourceManifestId}; nodeCount: ${health.semiconductorGraph.nodeCount}; edgeCount: ${health.semiconductorGraph.edgeCount}`}
+                </p>
                 <div className="inspector-grid" style={{ marginBottom: 16 }}>
-                  <Field label="Registry ready" value={health.semiconductorGraph.registryReady ? "yes" : "no"} />
-                  <Field label="Ontology ready" value={health.semiconductorGraph.ontologyReady ? "yes" : "no"} />
-                  <Field label="Fixture manifest" value={health.semiconductorGraph.fixtureManifestReady ? "loaded" : "unavailable"} />
-                  <Field label="Fixture graph" value={health.semiconductorGraph.fixtureGraphReady ? "loaded" : "unavailable"} />
-                  <Field label="Nodes" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />
-                  <Field label="Edges" value={formatCompactNumber(health.semiconductorGraph.edgeCount)} />
-                  <Field label="Stale sources" value={health.semiconductorGraph.staleSourceCount} />
-                  <Field label="Unresolved entities" value={health.semiconductorGraph.unresolvedEntityCount} />
+                  <Field label="registryReady" value={health.semiconductorGraph.registryReady ? "true" : "false"} />
+                  <Field label="ontologyReady" value={health.semiconductorGraph.ontologyReady ? "true" : "false"} />
+                  <Field label="fixtureManifestReady" value={health.semiconductorGraph.fixtureManifestReady ? "true" : "false"} />
+                  <Field label="fixtureGraph" value={health.semiconductorGraph.fixtureGraph ? "true" : "false"} />
+                  <Field label="fixtureGraphReady" value={health.semiconductorGraph.fixtureGraphReady ? "true" : "false"} />
+                  <Field label="graphVersion" value={health.semiconductorGraph.graphVersion} />
+                  <Field label="sourceManifestId" value={health.semiconductorGraph.sourceManifestId} />
+                  <Field label="nodeCount" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />
+                  <Field label="edgeCount" value={formatCompactNumber(health.semiconductorGraph.edgeCount)} />
+                  <Field label="staleSourceCount" value={health.semiconductorGraph.staleSourceCount} />
+                  <Field label="unresolvedEntityCount" value={health.semiconductorGraph.unresolvedEntityCount} />
                 </div>
                 <div className="driver-grid">
                   <div className="table-wrap">

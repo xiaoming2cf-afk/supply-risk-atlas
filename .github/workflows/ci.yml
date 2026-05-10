@@ -60,6 +60,7 @@ jobs:
       - name: Start web dev server in real API mode
         run: |
           NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 \
+          SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000 \
             npm --workspace apps/web run dev -- --hostname 127.0.0.1 --port 3000 \
             > artifacts/runtime/web-ci-real.out.log 2> artifacts/runtime/web-ci-real.err.log &
           echo $! > artifacts/runtime/web-ci.pid
@@ -73,7 +74,7 @@ jobs:
           exit 1
       - name: Browser smoke real API mode
         run: |
-          SUPPLY_RISK_EXPECT_MODE=real npm run smoke:web
+          SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_EXPECT_MODE=real npm run smoke:web
           cp artifacts/browser-smoke/report.json artifacts/browser-smoke/report.real.json
       - name: Upload smoke artifacts
         if: always()

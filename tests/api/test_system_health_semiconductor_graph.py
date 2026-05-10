@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import threading
+import urllib.request
+from http.server import ThreadingHTTPServer
 
 import pytest
 
 from services.api import main
+from services.api.dev_server import Handler
 
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
@@ -14,6 +18,25 @@ def _assert_no_raw_payload(payload: object) -> None:
     text = json.dumps(payload, sort_keys=True)
     assert "raw_payload" not in text
     assert "article body" not in text.lower()
+
+
+def _get_json(base_url: str, path: str) -> tuple[int, dict[str, object]]:
+    with urllib.request.urlopen(f"{base_url}{path}", timeout=10) as response:
+        return response.status, json.loads(response.read().decode("utf-8"))
+
+
+@pytest.fixture()
+def dev_server_base_url() -> str:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+    try:
+        yield f"http://{host}:{port}"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
 
 
 def test_fastapi_semiconductor_graph_endpoints_are_registered() -> None:
@@ -93,3 +116,22 @@ def test_semiconductor_graph_neighborhood_missing_node_is_explicit_error() -> No
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == "semiconductor_graph_node_not_found"
     assert payload["warnings"] == ["fixture_graph:not_production_ready"]
+
+
+def test_dev_server_semirisk_graph_and_health_routes(dev_server_base_url: str) -> None:
+    health_status, health = _get_json(dev_server_base_url, "/api/v1/dashboard/system-health-center")
+    snapshot_status, snapshot = _get_json(dev_server_base_url, "/api/v1/graph/snapshot")
+    neighborhood_status, neighborhood = _get_json(
+        dev_server_base_url,
+        "/api/v1/graph/neighborhood?node_id=company:tsmc&depth=1",
+    )
+
+    assert health_status == 200
+    assert snapshot_status == 200
+    assert neighborhood_status == 200
+    assert health["data"]["semiconductorGraph"]["graphVersion"].startswith("semirisk_kg_v0_1_")
+    assert snapshot["data"]["graph_version"] == health["data"]["semiconductorGraph"]["graphVersion"]
+    assert neighborhood["data"]["node_id"] == "company:tsmc"
+    _assert_no_raw_payload(health)
+    _assert_no_raw_payload(snapshot)
+    _assert_no_raw_payload(neighborhood)

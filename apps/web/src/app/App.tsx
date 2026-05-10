@@ -158,34 +158,46 @@ export function App() {
   const refreshData = useCallback(async () => {
     setIsRefreshing(true);
     setError(null);
-    try {
-      const [
-        systemHealthCenterResult,
-        globalRiskCockpitResult,
-        graphExplorerResult,
-        companyRisk360Result,
-        predictionCenterResult,
-        pathExplainerResult,
-        causalEvidenceBoardResult
-      ] = await Promise.all([
-        apiClient.getSystemHealthCenter(),
-        apiClient.getGlobalRiskCockpit(),
-        apiClient.getGraphExplorer(),
-        apiClient.getCompanyRisk360(),
-        apiClient.getPredictionCenter(),
-        apiClient.getPathExplainer(),
-        apiClient.getCausalEvidenceBoard()
-      ]);
+    const requests: Array<[DashboardPageId, Promise<ApiResult<unknown>>]> = [
+      ["system-health-center", apiClient.getSystemHealthCenter() as Promise<ApiResult<unknown>>],
+      ["global-risk-cockpit", apiClient.getGlobalRiskCockpit() as Promise<ApiResult<unknown>>],
+      ["graph-explorer", apiClient.getGraphExplorer() as Promise<ApiResult<unknown>>],
+      ["company-risk-360", apiClient.getCompanyRisk360() as Promise<ApiResult<unknown>>],
+      ["prediction-center", apiClient.getPredictionCenter() as Promise<ApiResult<unknown>>],
+      ["path-explainer", apiClient.getPathExplainer() as Promise<ApiResult<unknown>>],
+      ["causal-evidence-board", apiClient.getCausalEvidenceBoard() as Promise<ApiResult<unknown>>]
+    ];
 
-      const nextResults: DashboardResultMap = {
-        "system-health-center": systemHealthCenterResult,
-        "global-risk-cockpit": globalRiskCockpitResult,
-        "graph-explorer": graphExplorerResult,
-        "company-risk-360": companyRisk360Result,
-        "prediction-center": predictionCenterResult,
-        "path-explainer": pathExplainerResult,
-        "causal-evidence-board": causalEvidenceBoardResult
-      };
+    try {
+      const settledResults = await Promise.allSettled(
+        requests.map(async ([requestPageId, request]) => [requestPageId, await request] as const)
+      );
+
+      const nextResults: DashboardResultMap = {};
+      let rejectedCount = 0;
+      for (const settledResult of settledResults) {
+        if (settledResult.status === "fulfilled") {
+          const [requestPageId, result] = settledResult.value;
+          nextResults[requestPageId] = result;
+        } else {
+          rejectedCount += 1;
+        }
+      }
+      const systemHealthCenterResult =
+        nextResults["system-health-center"] as ApiResult<SupplyRiskDashboardData["systemHealthCenter"]> | undefined;
+      const globalRiskCockpitResult =
+        nextResults["global-risk-cockpit"] as ApiResult<SupplyRiskDashboardData["globalRiskCockpit"]> | undefined;
+      const graphExplorerResult =
+        nextResults["graph-explorer"] as ApiResult<SupplyRiskDashboardData["graphExplorer"]> | undefined;
+      const companyRisk360Result =
+        nextResults["company-risk-360"] as ApiResult<SupplyRiskDashboardData["companyRisk360"]> | undefined;
+      const predictionCenterResult =
+        nextResults["prediction-center"] as ApiResult<SupplyRiskDashboardData["predictionCenter"]> | undefined;
+      const pathExplainerResult =
+        nextResults["path-explainer"] as ApiResult<SupplyRiskDashboardData["pathExplainer"]> | undefined;
+      const causalEvidenceBoardResult =
+        nextResults["causal-evidence-board"] as ApiResult<SupplyRiskDashboardData["causalEvidenceBoard"]> | undefined;
+
       setDashboardResults(nextResults);
       setData((current) => {
         const nextData: DashboardDataState = { ...(current ?? {}) };
@@ -198,6 +210,11 @@ export function App() {
         if (isAcceptedRealResult(causalEvidenceBoardResult)) nextData.causalEvidenceBoard = causalEvidenceBoardResult.data;
         return Object.keys(nextData).length > 0 ? nextData : null;
       });
+      if (rejectedCount === requests.length) {
+        setError("All public dashboard endpoints are unavailable. Page panels show the failed source status.");
+      } else if (rejectedCount > 0) {
+        setError(`${rejectedCount} public dashboard endpoint(s) did not return. Page panels show degraded source status where needed.`);
+      }
       setLastRefresh(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     } catch {
       setError("Public data is temporarily unavailable. Refresh to retry.");

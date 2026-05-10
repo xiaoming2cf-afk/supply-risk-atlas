@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import threading
+import urllib.request
+from http.server import ThreadingHTTPServer
 
 import pytest
 
 from services.api import main
+from services.api.dev_server import Handler
 
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
@@ -15,6 +19,25 @@ def _assert_no_raw_payload(payload: object) -> None:
     assert "raw_payload" not in text
     assert "article body" not in text.lower()
     assert "private_diagnostics" not in text
+
+
+def _get_json(base_url: str, path: str) -> tuple[int, dict[str, object]]:
+    with urllib.request.urlopen(f"{base_url}{path}", timeout=10) as response:
+        return response.status, json.loads(response.read().decode("utf-8"))
+
+
+@pytest.fixture()
+def dev_server_base_url() -> str:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+    try:
+        yield f"http://{host}:{port}"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
 
 
 def test_semirisk_entity_risk_route_returns_envelope() -> None:
@@ -78,3 +101,17 @@ def test_fastapi_risk_endpoints_are_registered() -> None:
     assert portfolio.json()["data"]["scores"][0]["node_id"] == "company:tsmc"
     _assert_no_raw_payload(entity.json())
     _assert_no_raw_payload(portfolio.json())
+
+
+def test_dev_server_risk_endpoints_are_registered(dev_server_base_url: str) -> None:
+    entity_status, entity = _get_json(dev_server_base_url, "/api/v1/risk/entities/company:tsmc")
+    portfolio_status, portfolio = _get_json(dev_server_base_url, "/api/v1/risk/portfolio?node_type=company&limit=3")
+
+    assert entity_status == 200
+    assert portfolio_status == 200
+    assert entity["data"]["node_id"] == "company:tsmc"
+    assert entity["data"]["score"] == 58.33
+    assert entity["data"]["level"] == "elevated"
+    assert portfolio["data"]["scores"][0]["node_id"] == "company:tsmc"
+    _assert_no_raw_payload(entity)
+    _assert_no_raw_payload(portfolio)

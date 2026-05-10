@@ -9,7 +9,7 @@ SupplyRiskAtlas deploys to Render as two Git-backed web services managed by the 
 | `supply-risk-atlas-api` | Python | FastAPI-compatible API envelope routes under `/api/v1/*` |
 | `supply-risk-atlas-web` | Node.js | Next.js web app and same-origin API proxy |
 
-The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1` on Render so browser requests can call the API directly through CORS. The Next.js `/api/v1/*` proxy remains available for same-origin deployments and uses `SUPPLY_RISK_API_ORIGIN`, with `SUPPLY_RISK_API_HOSTPORT` retained as a private-network fallback.
+The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1` on Render so browser requests can call the API directly through CORS. The Next.js `/api/v1/*` proxy remains available for same-origin deployments and uses `SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com`, with `SUPPLY_RISK_API_HOSTPORT` retained as a private-network fallback.
 The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds. The API build also runs `python -m sra_core.ingestion.bulk_public --mode online ...` so Render creates `data/promoted/public_real/latest/catalog.json` during deployment without committing raw source downloads to Git.
 
 ## Deploy From GitHub
@@ -40,8 +40,14 @@ input-manifest evidence recorded before deployment. Production secrets, private
 source credentials, and paid data feeds are deferred until a separate
 secrets-management gate is approved.
 
-The web service receives `NEXT_PUBLIC_SUPPLY_RISK_API_URL=/api/v1` and proxies
-same-origin API requests to the API service through `SUPPLY_RISK_API_HOSTPORT`.
+The web service must receive both:
+
+```text
+NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1
+SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com
+```
+
+`SUPPLY_RISK_API_HOSTPORT` is optional and is used only as a private-network fallback for the same-origin proxy. Keep the direct public API URL configured so browser smoke diagnostics and runtime pages do not depend on the proxy path.
 
 ## Data Hygiene
 
@@ -70,5 +76,17 @@ The local web app can still connect directly to the local API with:
 
 ```powershell
 $env:NEXT_PUBLIC_SUPPLY_RISK_API_URL='http://127.0.0.1:8000/api/v1'
+$env:SUPPLY_RISK_API_ORIGIN='http://127.0.0.1:8000'
 npm --workspace apps/web run dev -- --hostname 127.0.0.1 --port 3000
+```
+
+Post-deploy SemiRisk fixture graph checks:
+
+```powershell
+Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/graph/snapshot
+Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/risk/entities/company:tsmc
+$env:SUPPLY_RISK_WEB_URL='https://supply-risk-atlas-web.onrender.com'
+$env:SUPPLY_RISK_API_URL='https://supply-risk-atlas-api.onrender.com/api/v1'
+$env:SUPPLY_RISK_EXPECT_MODE='real'
+npm run smoke:web
 ```

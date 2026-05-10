@@ -23,6 +23,7 @@ import type {
 export interface SupplyRiskApiClientOptions {
   baseUrl?: string;
   fetcher?: typeof fetch;
+  requestTimeoutMs?: number;
 }
 
 export interface SupplyRiskApiClient {
@@ -57,6 +58,7 @@ export interface SupplyRiskDashboardData {
 interface RequestJsonOptions {
   fetcher: typeof fetch;
   setEffectiveMode: (mode: ApiMode) => void;
+  requestTimeoutMs: number;
 }
 
 async function requestJson<T>(
@@ -70,10 +72,18 @@ async function requestJson<T>(
     return createUnavailableResult(endpoint, "unavailable", "No dashboard API base URL configured.");
   }
 
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
+  const timeoutHandle = controller
+    ? globalThis.setTimeout(() => controller.abort(), options.requestTimeoutMs)
+    : undefined;
+
   try {
+    const headers = new Headers(init?.headers);
+    if (!headers.has("content-type")) headers.set("content-type", "application/json");
     const response = await options.fetcher(`${baseUrl.replace(/\/$/, "")}${endpoint}`, {
-      headers: { "content-type": "application/json" },
       ...init,
+      headers,
+      signal: init?.signal ?? controller?.signal,
     });
     const payload = await response.json().catch(() => null);
     if (payload && typeof payload === "object" && "status" in payload && "data" in payload) {
@@ -87,8 +97,15 @@ async function requestJson<T>(
   } catch (error) {
     options.setEffectiveMode("real");
     const sourceStatus = error instanceof DashboardApiHttpError && (error.status === 401 || error.status === 403) ? "unauthorized" : "unavailable";
-    const message = error instanceof Error ? error.message : "Dashboard API request failed.";
+    const message =
+      typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "AbortError"
+        ? `SupplyRiskAtlas API request timed out after ${options.requestTimeoutMs} ms at ${endpoint}`
+        : error instanceof Error
+          ? error.message
+          : "Dashboard API request failed.";
     return createUnavailableResult(endpoint, sourceStatus, message, error);
+  } finally {
+    if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
   }
 }
 
@@ -204,6 +221,7 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
   };
   const clientOptions = {
     fetcher: options.fetcher ?? ((input, init) => globalThis.fetch(input, init)),
+    requestTimeoutMs: Math.max(1000, options.requestTimeoutMs ?? 12000),
     setEffectiveMode,
   };
 

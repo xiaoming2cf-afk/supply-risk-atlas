@@ -665,7 +665,20 @@ def route_dashboard_page(
     node_kinds: list[str] | None = None,
     edge_types: list[str] | None = None,
 ) -> dict[str, Any]:
-    result = run_public_real_pipeline()
+    try:
+        result = run_public_real_pipeline()
+    except Exception as exc:
+        if page_id == "system-health-center":
+            return make_envelope(
+                _semiconductor_only_system_health_payload(exc),
+                metadata=semiconductor_metadata(),
+                request_id=request_id,
+                warnings=[
+                    f"public_real_pipeline_unavailable:{type(exc).__name__}",
+                    "semirisk_fixture_graph:partial_system_health",
+                ],
+            )
+        raise
     query = _dashboard_query(
         selected_node_id=selected_node_id,
         path_direction=path_direction,
@@ -684,6 +697,71 @@ def route_dashboard_page(
         request_id=request_id,
         warnings=_real_data_warnings(result),
     )
+
+
+def _semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
+    graph_health = _semiconductor_graph_health_payload()
+    now = _semiconductor_default_time().isoformat()
+    return {
+        "services": [
+            {
+                "id": "semirisk-fixture-graph",
+                "service": "SemiRisk-KG fixture graph",
+                "owner": "platform",
+                "status": "degraded" if graph_health["status"] != "unavailable" else "down",
+                "latencyMs": 0,
+                "freshnessMinutes": 0,
+                "errorRate": 0.0 if graph_health["status"] != "unavailable" else 1.0,
+            },
+            {
+                "id": "public-real-pipeline",
+                "service": "Public evidence graph pipeline",
+                "owner": "platform",
+                "status": "down",
+                "latencyMs": 0,
+                "freshnessMinutes": 0,
+                "errorRate": 1.0,
+            },
+        ],
+        "stages": [
+            {"id": "stage-semiconductor-fixture", "label": "SemiRisk fixture graph build", "status": "complete" if graph_health["status"] != "unavailable" else "blocked", "processed": 1 if graph_health["status"] != "unavailable" else 0, "total": 1},
+            {"id": "stage-public-real", "label": "Public evidence graph pipeline", "status": "blocked", "processed": 0, "total": 1},
+        ],
+        "logs": [
+            f"{now} semirisk fixture graph readiness returned while public pipeline was unavailable",
+            f"{now} public_real_pipeline_unavailable:{type(exc).__name__}",
+        ],
+        "sourceRegistry": {
+            "manifestRef": graph_health["sourceManifestId"],
+            "checksum": graph_health["sourceManifestId"],
+            "asOfTime": now,
+            "catalogSource": "semirisk_fixture_graph",
+            "promotedGraph": {"status": "partial", "manifest": None},
+            "sourceCount": 0,
+            "rawRecordCount": 0,
+            "silverEntityCount": 0,
+            "silverEventCount": 0,
+            "goldEdgeEventCount": 0,
+            "dataNodeCount": 0,
+            "sources": [],
+        },
+        "entityResolution": {
+            "totalEntities": 0,
+            "averageConfidence": 0.0,
+            "byEntityType": [],
+            "bySource": [],
+        },
+        "evidenceLineage": {
+            "manifestRef": graph_health["sourceManifestId"],
+            "checksum": graph_health["sourceManifestId"],
+            "asOfTime": now,
+            "rawRecordCount": 0,
+            "silverEventCount": 0,
+            "goldEdgeEventCount": 0,
+            "records": [],
+        },
+        "semiconductorGraph": graph_health,
+    }
 
 
 def _dashboard_query(**values: Any) -> dict[str, Any]:
