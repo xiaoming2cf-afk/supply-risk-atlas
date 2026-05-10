@@ -54,6 +54,7 @@ from services.api.prediction_center import (
     path_transmission_score,
     ranked_paths_for_target,
 )
+from sra_core.reports.investigation import REPORT_VERSION, generate_investigation_report
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
 from sra_core.contracts.domain import (
@@ -512,6 +513,29 @@ def route_intervention_optimization(
     return make_envelope(
         result,
         metadata=semiconductor_metadata(snapshot, feature_version=OPTIMIZATION_VERSION),
+        request_id=request_id,
+        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
+    )
+
+
+def route_investigation_report(
+    payload: dict[str, Any] | None = None,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+        result = generate_investigation_report(payload or {})
+    except Exception as exc:
+        return make_error_envelope(
+            "investigation_report_unavailable",
+            "Investigation report could not be generated from the SemiRisk fixture graph.",
+            metadata=semiconductor_metadata(feature_version=REPORT_VERSION),
+            request_id=request_id,
+            warnings=[f"report_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
+        )
+    return make_envelope(
+        result,
+        metadata=semiconductor_metadata(snapshot, feature_version=REPORT_VERSION),
         request_id=request_id,
         warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
@@ -3189,6 +3213,13 @@ def create_app() -> Any:
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
         return route_intervention_optimization(payload=payload, request_id=x_request_id)
+
+    @app.post("/api/v1/reports/investigation")
+    def http_investigation_report(
+        payload: dict[str, Any] | None = Body(default=None),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_investigation_report(payload=payload, request_id=x_request_id)
 
     @app.get("/reports", include_in_schema=False)
     @app.get("/api/v1/reports")

@@ -162,3 +162,32 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Evidence: Smoke covers `#intervention-optimizer`, clicks `Run optimizer`, and verifies `recommended_actions`, before/after expected loss and CVaR95, cost, ROI, baselines, run ID, graph version, source manifest, and optimizer version.
 - Known limitations: Optimizer is a deterministic greedy fixture baseline; action effects are normalized planning estimates.
 - Next gate decision: Proceed to Gate 8.
+
+## Gate 8 - Investigation Report Export v1
+
+- Files changed:
+  - `packages/sra_core/sra_core/reports/__init__.py`
+  - `packages/sra_core/sra_core/reports/investigation.py`
+  - `services/api/main.py`
+  - `services/api/dev_server.py`
+  - `packages/shared-types/src/index.ts`
+  - `packages/api-client/src/index.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `apps/web/src/app/App.tsx`
+  - `apps/web/src/app/i18n.tsx`
+  - `apps/web/src/app/pages.tsx`
+  - `scripts/browser-smoke.mjs`
+  - `tests/reports/test_investigation_report.py`
+  - `tests/api/test_report_export.py`
+  - `docs/model/investigation-report-export.md`
+- Commands run:
+  - `python -m pytest tests/reports tests/api/test_report_export.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run build`
+  - local direct smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+  - local proxy smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+- Result: Pass. Report API and model tests passed `5 passed`; typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `26 checks`.
+- Evidence: `POST /api/v1/reports/investigation` returns `report_id`, `report_version: semirisk_investigation_report_v0.1`, version metadata, evidence summary, graph context, warnings, limitations, `raw_payload_excluded: true`, and `private_diagnostics_excluded: true`. Smoke covers `#investigation-report`, clicks `Generate JSON report`, and verifies the report metadata plus exclusion flags.
+- Known limitations: Reports are generated synchronously and returned directly; persistent report storage is deferred.
+- Next gate decision: Defer Gate 9 prediction cleanup unless final stability checks reveal a narrow required fix; proceed to Gate 10 documentation and final acceptance checks.

@@ -5,6 +5,8 @@ import type {
   GraphExplorerData,
   GraphExplorerQuery,
   GraphSnapshotPayload,
+  InvestigationReportData,
+  InvestigationReportInput,
   Prediction,
   SemiriskEntityRiskScore,
   SemiriskRiskPortfolioData,
@@ -23,12 +25,25 @@ export interface SupplyRiskClient {
   predictions(): Promise<ApiEnvelope<Prediction[]>>;
   simulations(): Promise<ApiEnvelope<SimulationResult>>;
   reports(): Promise<ApiEnvelope<Record<string, unknown>>>;
+  investigationReport(input: InvestigationReportInput): Promise<ApiEnvelope<InvestigationReportData>>;
   semiriskEntityRisk(entityId: string): Promise<ApiEnvelope<SemiriskEntityRiskScore>>;
   semiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiEnvelope<SemiriskRiskPortfolioData>>;
 }
 
 async function request<T>(baseUrl: string, path: string): Promise<ApiEnvelope<T>> {
   const response = await fetch(`${baseUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+  }
+  return (await response.json()) as ApiEnvelope<T>;
+}
+
+async function post<T>(baseUrl: string, path: string, body: unknown): Promise<ApiEnvelope<T>> {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status} ${response.statusText}`);
   }
@@ -93,6 +108,7 @@ export function createSupplyRiskClient(baseUrl = "http://127.0.0.1:8000"): Suppl
     predictions: () => request(baseUrl, "/api/v1/predictions"),
     simulations: () => request(baseUrl, "/api/v1/simulations"),
     reports: () => request(baseUrl, "/api/v1/reports"),
+    investigationReport: (input) => post(baseUrl, "/api/v1/reports/investigation", input),
     semiriskEntityRisk: (entityId) =>
       request(baseUrl, `/api/v1/risk/entities/${encodeURIComponent(entityId)}`),
     semiriskRiskPortfolio: (options) =>

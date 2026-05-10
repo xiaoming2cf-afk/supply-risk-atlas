@@ -52,6 +52,8 @@ import type {
   GraphVersion,
   InterventionOptimizationInput,
   InterventionOptimizationResult,
+  InvestigationReportData,
+  InvestigationReportInput,
   Prediction,
   RiskLevel,
   ReverseStressInput,
@@ -106,6 +108,8 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return <ReverseStressLab apiClient={props.apiClient} />;
     case "intervention-optimizer":
       return <InterventionOptimizer apiClient={props.apiClient} />;
+    case "investigation-report":
+      return <InvestigationReport apiClient={props.apiClient} />;
     case "causal-evidence-board":
       return props.data.causalEvidenceBoard ? <CausalEvidenceBoard data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-version-studio":
@@ -2877,6 +2881,228 @@ function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiClient }
               </div>
             ) : (
               <div className="empty-state">{t("No optimization run yet.")}</div>
+            )}
+          </Panel>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiClient }) {
+  const { t } = useI18n();
+  const [input, setInput] = useState<InvestigationReportInput>({
+    entity_id: "company:tsmc",
+    include_entity_risk: true,
+    forward_scenario_payload: null,
+    reverse_stress_payload: null,
+    optimization_payload: null,
+    format: "json",
+  });
+  const [result, setResult] = useState<InvestigationReportData | null>(null);
+  const [failure, setFailure] = useState<ApiResult<InvestigationReportData> | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const defaultForwardPayload: ForwardScenarioInput = {
+    scenario_type: "earthquake",
+    targets: [input.entity_id],
+    severity_distribution: { type: "fixed", params: { value: 0.72 } },
+    duration_days_distribution: { type: "fixed", params: { value: 28 } },
+    iterations: 80,
+    seed: 42,
+    as_of_time: "2026-05-01T00:00:00Z",
+    assumptions: ["fixture report export run"],
+  };
+  const defaultReversePayload: ReverseStressInput = {
+    target_metric: "cvar95_loss",
+    failure_threshold: 35,
+    candidate_scope: {
+      node_types: ["company", "equipment", "material", "chemical", "process_stage", "product_grade"],
+      edge_types: [],
+    },
+    max_combination_size: 2,
+    beam_width: 4,
+    iterations_per_candidate: 30,
+    seed: 42,
+    as_of_time: "2026-05-01T00:00:00Z",
+    allowed_shock_types: [],
+    forbidden_shock_types: [],
+  };
+  const defaultOptimizationPayload: InterventionOptimizationInput = {
+    budget: 70,
+    allowed_intervention_types: ["add_alternative_supplier", "increase_inventory_buffer", "add_policy_monitoring"],
+    max_actions: 3,
+    risk_aversion_beta: 0.7,
+    compliance_constraints: { no_export_control_evasion: true, no_sanctions_circumvention: true },
+    seed: 42,
+    as_of_time: "2026-05-01T00:00:00Z",
+  };
+
+  const runReport = (format: InvestigationReportInput["format"]) => {
+    setIsRunning(true);
+    setFailure(null);
+    apiClient
+      .generateInvestigationReport({ ...input, format })
+      .then((response) => {
+        if (isAcceptedRealApiResult(response)) {
+          setResult(response.data);
+          setInput((current) => ({ ...current, format }));
+          return;
+        }
+        setResult(null);
+        setFailure(response);
+      })
+      .catch((error) => {
+        setResult(null);
+        setFailure({
+          data: null,
+          envelope: {
+            request_id: "client-investigation-report",
+            status: "error",
+            data: null,
+            metadata: {
+              graph_version: "unavailable",
+              feature_version: "unavailable",
+              label_version: "unavailable",
+              model_version: "unavailable",
+              as_of_time: new Date().toISOString(),
+              lineage_ref: "api-unavailable://reports/investigation",
+              data_mode: "real",
+              freshness_status: "unavailable",
+            },
+            warnings: [error instanceof Error ? error.message : "Investigation report request failed."],
+            errors: [],
+          },
+          mode: "real",
+          sourceStatus: "unavailable",
+          receivedAt: new Date().toISOString(),
+        });
+      })
+      .finally(() => setIsRunning(false));
+  };
+
+  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://reports/investigation";
+  const sourceStatus = failure?.sourceStatus ?? "unavailable";
+
+  return (
+    <div className="page-grid split-layout">
+      <Panel
+        title="Investigation Report"
+        subtitle="Generate an auditable fixture graph report. No raw source payloads or private diagnostics are exported."
+        action={
+          <div className="action-group">
+            <Button disabled={isRunning} icon={Database} onClick={() => runReport("json")} variant="primary">
+              {isRunning ? "Generating" : "Generate JSON report"}
+            </Button>
+            <Button disabled={isRunning} icon={TerminalSquare} onClick={() => runReport("markdown")}>
+              Export Markdown
+            </Button>
+          </div>
+        }
+      >
+        <div className="form-grid">
+          <label className="form-control">
+            <span>{t("entity_id")}</span>
+            <select value={input.entity_id} onChange={(event) => setInput((current) => ({ ...current, entity_id: event.target.value }))}>
+              <option value="company:tsmc">company:tsmc</option>
+              <option value="company:asml">company:asml</option>
+              <option value="company:samsung">company:samsung</option>
+              <option value="company:intel">company:intel</option>
+              <option value="company:applied_materials">company:applied_materials</option>
+            </select>
+          </label>
+        </div>
+        <div className="checkbox-grid">
+          <label className="checkbox-control">
+            <input
+              checked={input.include_entity_risk}
+              onChange={(event) => setInput((current) => ({ ...current, include_entity_risk: event.target.checked }))}
+              type="checkbox"
+            />
+            <span>include_entity_risk</span>
+          </label>
+          <label className="checkbox-control">
+            <input
+              checked={Boolean(input.forward_scenario_payload)}
+              onChange={(event) => setInput((current) => ({ ...current, forward_scenario_payload: event.target.checked ? defaultForwardPayload : null }))}
+              type="checkbox"
+            />
+            <span>include_forward_stress</span>
+          </label>
+          <label className="checkbox-control">
+            <input
+              checked={Boolean(input.reverse_stress_payload)}
+              onChange={(event) => setInput((current) => ({ ...current, reverse_stress_payload: event.target.checked ? defaultReversePayload : null }))}
+              type="checkbox"
+            />
+            <span>include_reverse_stress</span>
+          </label>
+          <label className="checkbox-control">
+            <input
+              checked={Boolean(input.optimization_payload)}
+              onChange={(event) => setInput((current) => ({ ...current, optimization_payload: event.target.checked ? defaultOptimizationPayload : null }))}
+              type="checkbox"
+            />
+            <span>include_intervention_optimization</span>
+          </label>
+        </div>
+        <p className="public-data-note">
+          fixture_graph:not_production_ready 路 report_version semirisk_investigation_report_v0.1 路 approved resilience planning and compliance review only
+        </p>
+      </Panel>
+
+      <div className="page-grid">
+        {result ? (
+          <>
+            <Panel title="Report export" subtitle={`${result.report_id}; ${result.report_version}.`} translateSubtitle={false}>
+              <div className="field-grid">
+                <Field label="report_id" value={result.report_id} />
+                <Field label="format" value={result.format} />
+                <Field label="report_version" value={result.report_version} />
+                <Field label="graph_version" value={result.versions.graph_version} />
+                <Field label="source_manifest_id" value={result.versions.source_manifest_id} />
+                <Field label="feature_version" value={result.versions.feature_version ?? "not included"} />
+                <Field label="simulation_version" value={result.versions.simulation_version ?? "not included"} />
+                <Field label="optimization_version" value={result.versions.optimization_version ?? "not included"} />
+                <Field label="raw_payload_excluded" value={String(result.raw_payload_excluded)} />
+                <Field label="private_diagnostics_excluded" value={String(result.private_diagnostics_excluded)} />
+              </div>
+              <p className="public-data-note">
+                evidence_summary {result.evidence_summary.length}; graph_context {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges; {result.warnings.join(" | ")}
+              </p>
+            </Panel>
+            <Panel title="Evidence and limitations" subtitle="Report sections are omitted unless selected; no placeholder findings are inserted.">
+              <ul className="timeline-list">
+                {result.evidence_summary.map((row, index) => (
+                  <li className="data-row" key={`${row.section}-${index}`}>
+                    <div className="row-top">
+                      <span className="row-title">{String(row.section ?? "section")}</span>
+                      <span className="metric-chip">evidence_refs {String(row.evidence_ref_count ?? 0)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="public-data-note">{result.limitations.join(" | ")}</p>
+            </Panel>
+            <Panel title={result.format === "markdown" ? "Markdown export" : "JSON export"} subtitle="API-visible report payload only; raw source payloads are excluded.">
+              <pre className="json-preview">
+                {result.format === "markdown" && result.markdown
+                  ? result.markdown
+                  : JSON.stringify(result, null, 2)}
+              </pre>
+            </Panel>
+          </>
+        ) : (
+          <Panel title="Report not generated" subtitle="Choose sections and generate a JSON or Markdown report.">
+            {failure ? (
+              <div className="unavailable-panel">
+                <h3>{t("Investigation Report unavailable")}</h3>
+                <Field label="failed_endpoint" value={failedEndpoint} />
+                <Field label="source_status" value={sourceStatus} />
+                <p>{failure.envelope.warnings.join(" | ")}</p>
+              </div>
+            ) : (
+              <div className="empty-state">{t("No investigation report generated yet.")}</div>
             )}
           </Panel>
         )}

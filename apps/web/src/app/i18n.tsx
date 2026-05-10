@@ -185,6 +185,23 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
       description: "Selection d'actions de resilience sous contrainte de budget"
     }
   },
+  "investigation-report": {
+    en: {
+      label: "Investigation Report",
+      shortLabel: "Report",
+      description: "Auditable JSON and Markdown report export with evidence and version metadata"
+    },
+    zh: {
+      label: "Investigation Report",
+      shortLabel: "Report",
+      description: "Auditable JSON and Markdown report export with evidence and version metadata"
+    },
+    fr: {
+      label: "Investigation Report",
+      shortLabel: "Report",
+      description: "Export JSON et Markdown auditable avec preuves et versions"
+    }
+  },
   "causal-evidence-board": {
     en: {
       label: "Causal Evidence Board",

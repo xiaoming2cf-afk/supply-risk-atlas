@@ -13,6 +13,8 @@ import type {
   GraphVersionStudioData,
   InterventionOptimizationInput,
   InterventionOptimizationResult,
+  InvestigationReportData,
+  InvestigationReportInput,
   PathExplainerData,
   PredictionCenterData,
   ReverseStressInput,
@@ -51,6 +53,7 @@ export interface SupplyRiskApiClient {
   runForwardScenario(input: ForwardScenarioInput): Promise<ApiResult<ForwardScenarioResult>>;
   runReverseStress(input: ReverseStressInput): Promise<ApiResult<ReverseStressResult>>;
   optimizeInterventions(input: InterventionOptimizationInput): Promise<ApiResult<InterventionOptimizationResult>>;
+  generateInvestigationReport(input: InvestigationReportInput): Promise<ApiResult<InvestigationReportData>>;
 }
 
 export interface SupplyRiskDashboardData {
@@ -306,6 +309,13 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(
         baseUrl,
         "/optimization/interventions",
+        { method: "POST", body: JSON.stringify(input) },
+        clientOptions,
+      ),
+    generateInvestigationReport: (input) =>
+      requestJson(
+        baseUrl,
+        "/reports/investigation",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),

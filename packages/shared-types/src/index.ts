@@ -240,6 +240,7 @@ export type DashboardPageId =
   | "shock-simulator"
   | "reverse-stress-lab"
   | "intervention-optimizer"
+  | "investigation-report"
   | "causal-evidence-board"
   | "graph-version-studio";
 
@@ -310,6 +311,12 @@ export const dashboardPages: DashboardPage[] = [
     label: "Intervention Optimizer",
     shortLabel: "Optimize",
     description: "Budget-constrained fixture graph resilience action selection",
+  },
+  {
+    id: "investigation-report",
+    label: "Investigation Report",
+    shortLabel: "Report",
+    description: "Auditable JSON and Markdown report export with evidence and version metadata",
   },
   {
     id: "causal-evidence-board",
@@ -869,6 +876,51 @@ export interface InterventionOptimizationResult {
   evidence_refs: Array<Record<string, unknown>>;
   warnings: string[];
   fixture_graph: boolean;
+}
+
+export interface InvestigationReportInput {
+  entity_id: string;
+  include_entity_risk: boolean;
+  forward_scenario_payload?: ForwardScenarioInput | null;
+  reverse_stress_payload?: ReverseStressInput | null;
+  optimization_payload?: InterventionOptimizationInput | null;
+  format: "json" | "markdown";
+}
+
+export interface InvestigationReportData {
+  report_id: string;
+  report_version: "semirisk_investigation_report_v0.1" | string;
+  generated_at: string;
+  entity: Record<string, unknown>;
+  risk_score: SemiriskEntityRiskScore | null;
+  forward_stress: ForwardScenarioResult | null;
+  reverse_stress: ReverseStressResult | null;
+  intervention_optimization: InterventionOptimizationResult | null;
+  evidence_summary: Array<Record<string, unknown>>;
+  graph_context: {
+    node_id: string;
+    depth: number;
+    node_count: number;
+    edge_count: number;
+    nodes: Array<Record<string, unknown>>;
+    edges: Array<Record<string, unknown>>;
+  };
+  versions: {
+    graph_version: string;
+    source_manifest_id: string;
+    feature_version: string | null;
+    simulation_version: string | null;
+    optimization_version: string | null;
+    report_version: string;
+  };
+  warnings: string[];
+  assumptions: string[];
+  limitations: string[];
+  compliance_note: string;
+  raw_payload_excluded: boolean;
+  private_diagnostics_excluded: boolean;
+  format: "json" | "markdown";
+  markdown?: string;
 }
 
 export interface ShockAffectedPath {

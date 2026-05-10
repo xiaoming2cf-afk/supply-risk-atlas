@@ -28,6 +28,7 @@ const pages = [
   ["Shock Simulator", "#shock-simulator"],
   ["Reverse Stress Lab", "#reverse-stress-lab"],
   ["Intervention Optimizer", "#intervention-optimizer"],
+  ["Investigation Report", "#investigation-report"],
   ["Causal Evidence Board", "#causal-evidence-board"],
 ];
 
@@ -125,6 +126,14 @@ async function main() {
           as_of_time: "2026-05-01T00:00:00Z",
         }),
       }),
+      investigationReport: await fetchApiJson("/reports/investigation", {
+        method: "POST",
+        body: JSON.stringify({
+          entity_id: "company:tsmc",
+          include_entity_risk: true,
+          format: "json",
+        }),
+      }),
     };
     const semiriskSystemHealthReady =
       isSuccessfulEnvelope(apiCapabilities.systemHealth) &&
@@ -138,6 +147,7 @@ async function main() {
     const forwardScenarioReady = isSuccessfulEnvelope(apiCapabilities.forwardScenario);
     const reverseScenarioReady = isSuccessfulEnvelope(apiCapabilities.reverseScenario);
     const interventionOptimizationReady = isSuccessfulEnvelope(apiCapabilities.interventionOptimization);
+    const investigationReportReady = isSuccessfulEnvelope(apiCapabilities.investigationReport);
     checks.push({
       page: "SemiRisk API capability",
       apiBase,
@@ -149,7 +159,8 @@ async function main() {
       forwardScenarioStatus: apiCapabilities.forwardScenario.status,
       reverseScenarioStatus: apiCapabilities.reverseScenario.status,
       interventionOptimizationStatus: apiCapabilities.interventionOptimization.status,
-      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady && interventionOptimizationReady : true,
+      investigationReportStatus: apiCapabilities.investigationReport.status,
+      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady && interventionOptimizationReady && investigationReportReady : true,
     });
 
     for (const [page, hash] of pages) {
@@ -456,6 +467,65 @@ async function main() {
           : optimizerResultState.text.includes("Intervention Optimizer unavailable") && optimizerResultState.text.includes("failed_endpoint")),
     });
 
+    await navigate(client, `${webUrl}#investigation-report`);
+    const reportControlTerms = [
+      "Investigation Report",
+      "entity_id",
+      "include_entity_risk",
+      "Generate JSON report",
+      "Export Markdown",
+      "fixture_graph:not_production_ready",
+    ];
+    const reportInitialState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Investigation Report" &&
+        reportControlTerms.every((term) => state.text.includes(term)),
+    );
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const runButton = buttons.find((button) => (button.textContent ?? '').includes('Generate JSON report'));
+      runButton?.click();
+    })()`);
+    const reportResultTerms = [
+      "report_id",
+      "graph_version",
+      "source_manifest_id",
+      "report_version",
+      "semirisk_investigation_report_v0.1",
+      "raw_payload_excluded",
+      "private_diagnostics_excluded",
+      "evidence_summary",
+      "fixture_graph:not_production_ready",
+    ];
+    const reportResultState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Investigation Report" &&
+        (investigationReportReady
+          ? reportResultTerms.every((term) => state.text.includes(term))
+          : state.text.includes("Investigation Report unavailable") && state.text.includes("failed_endpoint")),
+    );
+    checks.push({
+      page: "Investigation Report export v1",
+      title: reportResultState.title,
+      hasControls: reportControlTerms.every((term) => reportInitialState.text.includes(term)),
+      hasReportExport: reportResultTerms.every((term) => reportResultState.text.includes(term)),
+      hasControlledDegradedState:
+        reportResultState.text.includes("Investigation Report unavailable") &&
+        reportResultState.text.includes("failed_endpoint") &&
+        reportResultState.text.includes("source_status"),
+      evidenceExcerpt: textExcerpt(reportResultState.text, reportResultTerms),
+      passed:
+        reportResultState.title === "Investigation Report" &&
+        reportControlTerms.every((term) => reportInitialState.text.includes(term)) &&
+        (investigationReportReady
+          ? reportResultTerms.every((term) => reportResultState.text.includes(term))
+          : reportResultState.text.includes("Investigation Report unavailable") && reportResultState.text.includes("failed_endpoint")),
+    });
+
     if (expectedMode) {
       const expectedModeText = { real: "Public data", mock: "Data unavailable", fallback: "Data unavailable" }[expectedMode];
       if (!expectedModeText) throw new Error(`Unsupported SUPPLY_RISK_EXPECT_MODE: ${expectedMode}`);
@@ -601,7 +671,13 @@ async function main() {
       });
 
       const apiPayloadFindings = [];
-      for (const [, hash] of pages.filter(([, hash]) => hash !== "#shock-simulator")) {
+      const postOnlyWorkflowPages = new Set([
+        "#shock-simulator",
+        "#reverse-stress-lab",
+        "#intervention-optimizer",
+        "#investigation-report",
+      ]);
+      for (const [, hash] of pages.filter(([, hash]) => !postOnlyWorkflowPages.has(hash))) {
         const pageId = hash.slice(1);
         const payloadText = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/${pageId}', { headers: { 'content-type': 'application/json' } })
           .then((response) => response.text())
