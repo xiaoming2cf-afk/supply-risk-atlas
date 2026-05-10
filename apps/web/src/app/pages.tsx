@@ -43,6 +43,8 @@ import type {
   DashboardPageId,
   EvidenceItem,
   ExplainedPath,
+  ForwardScenarioInput,
+  ForwardScenarioResult,
   GraphLink,
   GraphTransmissionPath,
   GraphNode,
@@ -95,7 +97,7 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
     case "path-explainer":
       return props.data.pathExplainer ? <PathExplainer data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "shock-simulator":
-      return <ShockSimulator apiClient={props.apiClient} />;
+      return <ForwardShockSimulator apiClient={props.apiClient} />;
     case "causal-evidence-board":
       return props.data.causalEvidenceBoard ? <CausalEvidenceBoard data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-version-studio":
@@ -2297,6 +2299,229 @@ function PathStrip({ path }: { path: ExplainedPath }) {
           <span className="row-subtitle">{step.evidence}</span>
         </article>
       ))}
+    </div>
+  );
+}
+
+const forwardTargetSuggestions = [
+  "company:tsmc",
+  "equipment:euv_scanner",
+  "material:photoresist",
+  "chemical:specialty_gas",
+  "country:taiwan",
+  "product_grade:advanced_logic",
+  "product_grade:hbm",
+];
+
+function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
+  const { t } = useI18n();
+  const [input, setInput] = useState<ForwardScenarioInput>({
+    scenario_type: "earthquake",
+    targets: ["company:tsmc"],
+    severity_distribution: { type: "fixed", params: { value: 0.72 } },
+    duration_days_distribution: { type: "fixed", params: { value: 28 } },
+    iterations: 1000,
+    seed: 42,
+    as_of_time: "2026-05-01T00:00:00Z",
+    assumptions: ["fixture/promoted test graph only; normalized loss scores, no dollar loss"]
+  });
+  const [result, setResult] = useState<ForwardScenarioResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [failure, setFailure] = useState<ApiResult<ForwardScenarioResult> | null>(null);
+
+  const updateDistribution = (
+    key: "severity_distribution" | "duration_days_distribution",
+    type: ForwardScenarioInput["severity_distribution"]["type"],
+  ) => {
+    const params =
+      type === "triangular"
+        ? key === "severity_distribution"
+          ? { min: 0.45, mode: 0.72, max: 0.95 }
+          : { min: 7, mode: 28, max: 60 }
+        : type === "beta"
+          ? { alpha: 2, beta: 3, scale: 0.9, loc: 0.05 }
+          : type === "lognormal"
+            ? { mean: 3.2, sigma: 0.2, min: 1, max: 90 }
+            : { value: key === "severity_distribution" ? 0.72 : 28 };
+    setInput((current) => ({ ...current, [key]: { type, params } }));
+  };
+
+  const runScenario = () => {
+    setIsRunning(true);
+    setFailure(null);
+    apiClient
+      .runForwardScenario(input)
+      .then((response) => {
+        if (isAcceptedRealApiResult(response)) {
+          setResult(response.data);
+          return;
+        }
+        setResult(null);
+        setFailure(response);
+      })
+      .catch((error) => {
+        setResult(null);
+        setFailure({
+          data: null,
+          envelope: {
+            request_id: "client-forward-scenario",
+            status: "error",
+            data: null,
+            metadata: {
+              graph_version: "unavailable",
+              feature_version: "unavailable",
+              label_version: "unavailable",
+              model_version: "unavailable",
+              as_of_time: new Date().toISOString(),
+              lineage_ref: "api-unavailable://scenarios/forward",
+              data_mode: "real",
+              freshness_status: "unavailable",
+            },
+            warnings: [error instanceof Error ? error.message : "Forward scenario request failed."],
+            errors: [],
+          },
+          mode: "real",
+          sourceStatus: "unavailable",
+          receivedAt: new Date().toISOString(),
+        });
+      })
+      .finally(() => setIsRunning(false));
+  };
+
+  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://scenarios/forward";
+  const sourceStatus = failure?.sourceStatus ?? "unavailable";
+
+  return (
+    <div className="page-grid split-layout">
+      <Panel
+        title="Shock Simulator"
+        subtitle="Graph-based forward Monte Carlo over the SemiRisk fixture graph. Runs only after explicit analyst action."
+        action={
+          <Button disabled={isRunning} icon={Play} onClick={runScenario} variant="primary">
+            {isRunning ? "Running" : "Run forward stress"}
+          </Button>
+        }
+      >
+        <div className="form-grid">
+          <label className="form-control">
+            <span>{t("scenario_type")}</span>
+            <select value={input.scenario_type} onChange={(event) => setInput((current) => ({ ...current, scenario_type: event.target.value as ForwardScenarioInput["scenario_type"] }))}>
+              <option value="earthquake">earthquake</option>
+              <option value="export_control">export_control</option>
+              <option value="material_shortage">material_shortage</option>
+              <option value="demand_spike">demand_spike</option>
+              <option value="port_disruption">port_disruption</option>
+              <option value="factory_shutdown">factory_shutdown</option>
+              <option value="cyber_incident">cyber_incident</option>
+              <option value="power_outage">power_outage</option>
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("target")}</span>
+            <select value={input.targets[0]} onChange={(event) => setInput((current) => ({ ...current, targets: [event.target.value] }))}>
+              {forwardTargetSuggestions.map((target) => <option key={target} value={target}>{target}</option>)}
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("severity_distribution")}</span>
+            <select value={input.severity_distribution.type} onChange={(event) => updateDistribution("severity_distribution", event.target.value as ForwardScenarioInput["severity_distribution"]["type"])}>
+              <option value="fixed">fixed</option>
+              <option value="triangular">triangular</option>
+              <option value="beta">beta</option>
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("duration_days_distribution")}</span>
+            <select value={input.duration_days_distribution.type} onChange={(event) => updateDistribution("duration_days_distribution", event.target.value as ForwardScenarioInput["duration_days_distribution"]["type"])}>
+              <option value="fixed">fixed</option>
+              <option value="triangular">triangular</option>
+              <option value="lognormal">lognormal</option>
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("iterations")}</span>
+            <input min="1" max="5000" onChange={(event) => setInput((current) => ({ ...current, iterations: Number(event.target.value) }))} type="number" value={input.iterations} />
+          </label>
+          <label className="form-control">
+            <span>{t("seed")}</span>
+            <input onChange={(event) => setInput((current) => ({ ...current, seed: Number(event.target.value) }))} type="number" value={input.seed} />
+          </label>
+        </div>
+        <p className="public-data-note">
+          {t("fixture_graph:not_production_ready")} · {t("No dollar losses are produced without licensed private exposure data.")}
+        </p>
+      </Panel>
+
+      <div className="page-grid">
+        {result ? (
+          <>
+            <Panel title="Forward stress results" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
+              <div className="metrics-grid">
+                <MetricTile metric={{ id: "expected_loss", label: "expected_loss", value: result.expected_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.expected_loss ?? 0), detail: "normalized loss score" }} />
+                <MetricTile metric={{ id: "p50_loss", label: "p50_loss", value: result.p50_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p50_loss ?? 0), detail: "median normalized loss" }} />
+                <MetricTile metric={{ id: "p90_loss", label: "p90_loss", value: result.p90_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p90_loss ?? 0), detail: "90th percentile normalized loss" }} />
+                <MetricTile metric={{ id: "p95_loss", label: "p95_loss", value: result.p95_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p95_loss ?? 0), detail: "95th percentile normalized loss" }} />
+                <MetricTile metric={{ id: "cvar_95", label: "cvar_95", value: result.cvar_95 ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.cvar_95 ?? 0), detail: "average tail loss above p95" }} />
+                <MetricTile metric={{ id: "time_to_recover_days", label: "time_to_recover_days", value: result.time_to_recover_days ?? 0, unit: "d", delta: 0, trend: "flat", level: "guarded", detail: "deterministic fixture estimate" }} />
+              </div>
+              <p className="public-data-note">
+                run_id {result.run_id}; seed {result.seed}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; time_to_survive_days {result.time_to_survive_days ?? "unavailable"}
+              </p>
+              <div className="field-grid">
+                <Field label="run_id" value={result.run_id} />
+                <Field label="seed" value={result.seed} />
+                <Field label="graph_version" value={result.graph_version} />
+                <Field label="source_manifest_id" value={result.source_manifest_id} />
+                <Field label="simulation_version" value={result.simulation_version} />
+                <Field label="time_to_survive_days" value={result.time_to_survive_days ?? "unavailable"} />
+              </div>
+            </Panel>
+            <Panel title="Affected nodes" subtitle="Top fixture graph nodes by mean normalized loss.">
+              <ul className="timeline-list">
+                {result.affected_nodes.slice(0, 8).map((node) => (
+                  <li className="data-row" key={node.node_id}>
+                    <div className="row-top">
+                      <span className="row-title">{node.label}</span>
+                      <span className="metric-chip">{node.node_id}</span>
+                    </div>
+                    <div className="row-meta">
+                      <span>{node.node_type}</span>
+                      <span>{node.loss_score.toFixed(2)}</span>
+                    </div>
+                    <ProgressBar value={node.loss_score} level={riskLevelForScore(node.loss_score)} />
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+            <Panel title="top_transmission_paths" subtitle="Evidence-backed one-hop transmission paths from the fixture graph.">
+              <ul className="timeline-list">
+                {result.top_transmission_paths.map((path) => (
+                  <li className="data-row" key={path.path_id}>
+                    <div className="row-top">
+                      <span className="row-title">{path.path_id}</span>
+                      <span className="metric-chip">{path.loss_contribution.toFixed(2)}</span>
+                    </div>
+                    <span className="row-subtitle">{path.explanation}</span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          </>
+        ) : (
+          <Panel title="Forward stress not run" subtitle="Monte Carlo does not run during page load. Use Run forward stress to create an auditable run manifest.">
+            {failure ? (
+              <div className="unavailable-panel">
+                <h3>{t("Shock Simulator unavailable")}</h3>
+                <Field label="failed_endpoint" value={failedEndpoint} />
+                <Field label="source_status" value={sourceStatus} />
+                <p>{failure.envelope.warnings.join(" | ")}</p>
+              </div>
+            ) : (
+              <div className="empty-state">{t("No scenario run yet.")}</div>
+            )}
+          </Panel>
+        )}
+      </div>
     </div>
   );
 }

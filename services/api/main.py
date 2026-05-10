@@ -35,7 +35,12 @@ from ml.risk_scoring.semirisk_score import (
     score_semirisk_entity,
 )
 from ml.simulation.counterfactual import build_counterfactual_edges
+from ml.simulation.monte_carlo import run_forward_monte_carlo
 from ml.simulation.scenario import build_scenario_simulation, normalize_scenario_shock
+from ml.simulation.scenario_schema import (
+    FORWARD_SIMULATION_VERSION,
+    ScenarioValidationError,
+)
 from services.api.prediction_center import (
     build_prediction_center_payload,
     build_prediction_payloads,
@@ -408,6 +413,38 @@ def route_semirisk_risk_portfolio(
         metadata=semiconductor_metadata(snapshot, feature_version=SEMIRISK_RISK_FEATURE_VERSION),
         request_id=request_id,
         warnings=payload.get("warnings", [RISK_SCORE_WARNING_FIXTURE_GRAPH]),
+    )
+
+
+def route_forward_scenario(
+    payload: dict[str, Any] | None = None,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+        result = run_forward_monte_carlo(payload or {}, snapshot=snapshot)
+    except ScenarioValidationError as exc:
+        return make_error_envelope(
+            "forward_scenario_validation_error",
+            str(exc),
+            metadata=semiconductor_metadata(feature_version=FORWARD_SIMULATION_VERSION),
+            request_id=request_id,
+            field=exc.field,
+            warnings=["fixture_graph:not_production_ready"],
+        )
+    except Exception as exc:
+        return make_error_envelope(
+            "forward_scenario_unavailable",
+            "Forward Monte Carlo scenario could not run against the SemiRisk fixture graph.",
+            metadata=semiconductor_metadata(feature_version=FORWARD_SIMULATION_VERSION),
+            request_id=request_id,
+            warnings=[f"forward_scenario_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
+        )
+    return make_envelope(
+        result,
+        metadata=semiconductor_metadata(snapshot, feature_version=FORWARD_SIMULATION_VERSION),
+        request_id=request_id,
+        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
 
 
@@ -3062,6 +3099,13 @@ def create_app() -> Any:
             },
             request_id=x_request_id,
         )
+
+    @app.post("/api/v1/scenarios/forward")
+    def http_forward_scenario(
+        payload: dict[str, Any] | None = Body(default=None),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_forward_scenario(payload=payload, request_id=x_request_id)
 
     @app.get("/reports", include_in_schema=False)
     @app.get("/api/v1/reports")

@@ -82,6 +82,19 @@ async function main() {
       graphNeighborhood: await fetchApiJson("/graph/neighborhood?node_id=company:tsmc&depth=1"),
       entityRisk: await fetchApiJson("/risk/entities/company:tsmc"),
       riskPortfolio: await fetchApiJson("/risk/portfolio?node_type=company&limit=3"),
+      forwardScenario: await fetchApiJson("/scenarios/forward", {
+        method: "POST",
+        body: JSON.stringify({
+          scenario_type: "earthquake",
+          targets: ["company:tsmc"],
+          severity_distribution: { type: "fixed", params: { value: 0.72 } },
+          duration_days_distribution: { type: "fixed", params: { value: 28 } },
+          iterations: 80,
+          seed: 42,
+          as_of_time: "2026-05-01T00:00:00Z",
+          assumptions: ["browser smoke fixture run"],
+        }),
+      }),
     };
     const semiriskSystemHealthReady =
       isSuccessfulEnvelope(apiCapabilities.systemHealth) &&
@@ -92,6 +105,7 @@ async function main() {
     const semiriskGraphReady =
       isSuccessfulEnvelope(apiCapabilities.graphSnapshot) &&
       isSuccessfulEnvelope(apiCapabilities.graphNeighborhood);
+    const forwardScenarioReady = isSuccessfulEnvelope(apiCapabilities.forwardScenario);
     checks.push({
       page: "SemiRisk API capability",
       apiBase,
@@ -100,7 +114,8 @@ async function main() {
       graphNeighborhoodStatus: apiCapabilities.graphNeighborhood.status,
       entityRiskStatus: apiCapabilities.entityRisk.status,
       riskPortfolioStatus: apiCapabilities.riskPortfolio.status,
-      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady : true,
+      forwardScenarioStatus: apiCapabilities.forwardScenario.status,
+      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady : true,
     });
 
     for (const [page, hash] of pages) {
@@ -216,6 +231,71 @@ async function main() {
       passed:
         riskState.title === "Entity Risk 360" &&
         (semiriskRiskReady ? riskHasScoreEvidence : riskHasControlledDegradedState),
+    });
+
+    await navigate(client, `${webUrl}#shock-simulator`);
+    const forwardControlTerms = [
+      "Shock Simulator",
+      "scenario_type",
+      "company:tsmc",
+      "severity_distribution",
+      "duration_days_distribution",
+      "iterations",
+      "seed",
+      "fixture_graph:not_production_ready",
+    ];
+    const shockInitialState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Shock Simulator" &&
+        forwardControlTerms.every((term) => state.text.includes(term)),
+    );
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const runButton = buttons.find((button) => (button.textContent ?? '').includes('Run forward stress'));
+      runButton?.click();
+    })()`);
+    const forwardResultTerms = [
+      "expected_loss",
+      "p50_loss",
+      "p90_loss",
+      "p95_loss",
+      "cvar_95",
+      "time_to_recover_days",
+      "time_to_survive_days",
+      "run_id",
+      "seed",
+      "graph_version",
+      "source_manifest_id",
+      "simulation_version",
+      "semirisk_forward_mc_v0.1",
+    ];
+    const shockResultState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Shock Simulator" &&
+        (forwardScenarioReady
+          ? forwardResultTerms.every((term) => state.text.includes(term))
+          : state.text.includes("Shock Simulator unavailable") && state.text.includes("failed_endpoint")),
+    );
+    checks.push({
+      page: "Shock Simulator forward Monte Carlo v2",
+      title: shockResultState.title,
+      hasControls: forwardControlTerms.every((term) => shockInitialState.text.includes(term)),
+      hasRunManifest: forwardResultTerms.every((term) => shockResultState.text.includes(term)),
+      hasControlledDegradedState:
+        shockResultState.text.includes("Shock Simulator unavailable") &&
+        shockResultState.text.includes("failed_endpoint") &&
+        shockResultState.text.includes("source_status"),
+      evidenceExcerpt: textExcerpt(shockResultState.text, forwardResultTerms),
+      passed:
+        shockResultState.title === "Shock Simulator" &&
+        forwardControlTerms.every((term) => shockInitialState.text.includes(term)) &&
+        (forwardScenarioReady
+          ? forwardResultTerms.every((term) => shockResultState.text.includes(term))
+          : shockResultState.text.includes("Shock Simulator unavailable") && shockResultState.text.includes("failed_endpoint")),
     });
 
     if (expectedMode) {

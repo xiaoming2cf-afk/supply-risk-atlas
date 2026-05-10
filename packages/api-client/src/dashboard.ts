@@ -5,6 +5,8 @@ import type {
   ApiSourceStatus,
   CausalEvidenceBoardData,
   CompanyRisk360Data,
+  ForwardScenarioInput,
+  ForwardScenarioResult,
   GlobalRiskCockpitData,
   GraphExplorerData,
   GraphExplorerQuery,
@@ -42,6 +44,7 @@ export interface SupplyRiskApiClient {
   getSemiriskGraphNeighborhood(nodeId: string, depth?: number): Promise<ApiResult<SemiriskGraphNeighborhoodData>>;
   getSemiriskEntityRisk(entityId: string): Promise<ApiResult<SemiriskEntityRiskScore>>;
   getSemiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiResult<SemiriskRiskPortfolioData>>;
+  runForwardScenario(input: ForwardScenarioInput): Promise<ApiResult<ForwardScenarioResult>>;
 }
 
 export interface SupplyRiskDashboardData {
@@ -277,6 +280,13 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
           limit: options?.limit,
         })}`,
         undefined,
+        clientOptions,
+      ),
+    runForwardScenario: (input) =>
+      requestJson(
+        baseUrl,
+        "/scenarios/forward",
+        { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
   };

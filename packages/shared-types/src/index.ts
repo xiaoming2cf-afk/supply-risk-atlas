@@ -674,6 +674,75 @@ export interface ShockSimulationInput {
   scope: "facility" | "regional" | "global";
 }
 
+export type ForwardScenarioType =
+  | "earthquake"
+  | "export_control"
+  | "material_shortage"
+  | "demand_spike"
+  | "port_disruption"
+  | "factory_shutdown"
+  | "cyber_incident"
+  | "power_outage";
+
+export interface ScenarioDistribution {
+  type: "fixed" | "constant" | "triangular" | "beta" | "uniform" | "normal" | "bounded_normal" | "lognormal";
+  params: Record<string, number>;
+}
+
+export interface ForwardScenarioInput {
+  scenario_type: ForwardScenarioType;
+  targets: string[];
+  severity_distribution: ScenarioDistribution;
+  duration_days_distribution: ScenarioDistribution;
+  iterations: number;
+  seed: number;
+  as_of_time: string;
+  graph_version?: string | null;
+  assumptions?: string[];
+}
+
+export interface ForwardScenarioAffectedNode {
+  node_id: string;
+  label: string;
+  node_type: string;
+  loss_score: number;
+  evidence_refs: Array<Record<string, unknown>>;
+}
+
+export interface ForwardScenarioTransmissionPath {
+  path_id: string;
+  node_sequence: string[];
+  edge_sequence: string[];
+  loss_contribution: number;
+  evidence_refs: Array<Record<string, unknown>>;
+  explanation: string;
+}
+
+export interface ForwardScenarioResult {
+  run_id: string;
+  seed: number;
+  graph_version: string;
+  source_manifest_id: string;
+  simulation_version: "semirisk_forward_mc_v0.1" | string;
+  timestamp: string;
+  scenario_type: ForwardScenarioType;
+  expected_loss: number | null;
+  p50_loss: number | null;
+  p90_loss: number | null;
+  p95_loss: number | null;
+  cvar_95: number | null;
+  time_to_recover_days: number | null;
+  time_to_survive_days: number | null;
+  affected_nodes: ForwardScenarioAffectedNode[];
+  top_transmission_paths: ForwardScenarioTransmissionPath[];
+  loss_distribution_summary: Record<string, number | null>;
+  warnings: string[];
+  assumptions: string[];
+  evidence_refs: Array<Record<string, unknown>>;
+  input: ForwardScenarioInput;
+  fixture_graph: boolean;
+}
+
 export interface ShockAffectedPath {
   id: string;
   label: string;

@@ -43,3 +43,41 @@ This log tracks the gated implementation sequence for the semiconductor platform
   - Entity Risk 360 smoke excerpt includes `company:tsmc`, `58.33`, `elevated`, `semirisk_risk_score_v0.1`, `graph_version`, `source_manifest_id`, and `fixture_graph:not_production_ready`.
 - Known limitations: Existing unrelated local processes occupied ports 8000 and 3000 during validation. Gate 1 smoke used API port 8010 and restarted the local Next dev server on port 3000 with explicit API env.
 - Next gate decision: Proceed to Gate 2.
+
+## Gate 2 - Forward Monte Carlo Stress Slice
+
+- Files changed:
+  - `ml/simulation/scenario_schema.py`
+  - `ml/simulation/metrics.py`
+  - `ml/simulation/propagation.py`
+  - `ml/simulation/monte_carlo.py`
+  - `services/api/main.py`
+  - `services/api/dev_server.py`
+  - `tests/simulation/test_propagation.py`
+  - `tests/simulation/test_monte_carlo.py`
+  - `tests/api/test_scenario_forward.py`
+  - `docs/model/forward-stress-testing.md`
+- Commands run:
+  - `python -m pytest tests/simulation tests/api/test_scenario_forward.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run build`
+- Result: Pass. Simulation and forward scenario API tests passed `10 passed`. Web typecheck, package typecheck, and build passed.
+- Evidence: `POST /api/v1/scenarios/forward` returns a success envelope with `run_id`, `seed`, `graph_version`, `source_manifest_id`, `simulation_version: semirisk_forward_mc_v0.1`, percentile losses, `cvar_95`, affected nodes, transmission paths, warnings, assumptions, and evidence refs.
+- Known limitations: The engine uses the SemiRisk fixture graph only and reports normalized loss scores, not dollar losses.
+- Next gate decision: Proceed to Gate 3.
+
+## Gate 3 - Shock Simulator v2 Frontend
+
+- Files changed:
+  - `apps/web/src/app/pages.tsx`
+  - `packages/shared-types/src/index.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `scripts/browser-smoke.mjs`
+- Commands run:
+  - local direct smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+  - local proxy smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+- Result: Pass. Browser smoke passed `20 checks` after making literal run-manifest field names visible in the Shock Simulator result panel.
+- Evidence: Smoke covers `#shock-simulator`, clicks `Run forward stress`, and verifies `expected_loss`, `p50_loss`, `p90_loss`, `p95_loss`, `cvar_95`, `time_to_recover_days`, `time_to_survive_days`, `run_id`, `seed`, `graph_version`, `source_manifest_id`, `simulation_version`, and `semirisk_forward_mc_v0.1`.
+- Known limitations: The page does not auto-run Monte Carlo on load by design.
+- Next gate decision: Proceed to Gate 4.

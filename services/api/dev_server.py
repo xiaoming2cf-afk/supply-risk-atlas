@@ -131,6 +131,10 @@ class Handler(BaseHTTPRequestHandler):
                 target_id=str(body.get("target_id") or "port_kaohsiung"),
                 request_id=request_id,
             ),
+            "/api/v1/scenarios/forward": lambda: main.route_forward_scenario(
+                payload=body,
+                request_id=request_id,
+            ),
             "/api/v1/reports": lambda: main.route_reports(request_id=request_id),
         }
         if parsed.path not in routes:
