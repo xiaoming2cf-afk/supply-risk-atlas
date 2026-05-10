@@ -54,6 +54,15 @@ def test_semirisk_entity_risk_route_returns_envelope() -> None:
     assert payload["data"]["level"] == "elevated"
     assert payload["data"]["evidence_refs"]
     assert "fixture_graph:not_production_ready" in payload["warnings"]
+    warning_text = " ".join(payload["warnings"])
+    assert "semirisk_risk_score_metadata" in warning_text
+    assert "company:tsmc" in warning_text
+    assert "score=58.33" in warning_text
+    assert "level=elevated" in warning_text
+    assert "evidence_refs=" in warning_text
+    assert "feature_version=semirisk_risk_score_v0.1" in warning_text
+    assert f"graph_version={payload['data']['graph_version']}" in warning_text
+    assert f"source_manifest_id={payload['data']['source_manifest_id']}" in warning_text
     _assert_no_raw_payload(payload)
 
 

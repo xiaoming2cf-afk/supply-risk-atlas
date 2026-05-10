@@ -71,7 +71,20 @@ def score_semirisk_entity(
         else:
             component["weighted_contribution"] = None
 
-    warnings = [RISK_SCORE_WARNING_FIXTURE_GRAPH]
+    warnings = [
+        RISK_SCORE_WARNING_FIXTURE_GRAPH,
+        (
+            "semirisk_risk_score_metadata: "
+            f"company:tsmc={'true' if node.node_id == DEFAULT_ENTITY_ID else 'false'}; "
+            f"score={_clamp_score(score):.2f}; "
+            f"level={level_for_score(score)}; "
+            "evidence_refs="
+            f"{len(evidence_refs)}; "
+            f"feature_version={FEATURE_VERSION}; "
+            f"graph_version={graph.graph_version}; "
+            f"source_manifest_id={graph.source_manifest_id}"
+        ),
+    ]
     warnings.extend(
         f"risk_component_unavailable:{component['name']}"
         for component in components

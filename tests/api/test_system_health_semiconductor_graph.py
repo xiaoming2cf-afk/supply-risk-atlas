@@ -74,6 +74,16 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert graph["ontologyReady"] is True
     assert graph["fixtureGraphReady"] is True
     assert "fixture_graph:not_production_ready" in graph["warnings"]
+    warning_text = " ".join(graph["warnings"])
+    assert "graphVersion" in warning_text
+    assert graph["graphVersion"] in warning_text
+    assert "sourceManifestId" in warning_text
+    assert graph["sourceManifestId"] in warning_text
+    assert "nodeCount" in warning_text
+    assert "edgeCount" in warning_text
+    assert "registryReady=true" in warning_text
+    assert "ontologyReady=true" in warning_text
+    assert "fixtureGraph: true" in warning_text
     _assert_no_raw_payload(payload)
 
 

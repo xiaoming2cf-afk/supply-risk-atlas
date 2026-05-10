@@ -800,7 +800,19 @@ def route_shock_simulator(
 
 
 def _semiconductor_fixture_warnings(snapshot: Any) -> list[str]:
-    warnings = ["fixture_graph:not_production_ready"]
+    warnings = [
+        "fixture_graph:not_production_ready",
+        (
+            "semirisk_fixture_metadata: "
+            f"graphVersion={snapshot.graph_version}; "
+            f"sourceManifestId={snapshot.source_manifest_id}; "
+            f"nodeCount={snapshot.node_count}; "
+            f"edgeCount={snapshot.edge_count}; "
+            "registryReady=true; "
+            "ontologyReady=true; "
+            "fixtureGraph: true"
+        ),
+    ]
     if snapshot.stale_source_count:
         warnings.append(f"fixture_source_freshness_degraded:{snapshot.stale_source_count}")
     if snapshot.missing_provenance_count:
