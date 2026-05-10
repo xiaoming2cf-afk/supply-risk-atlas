@@ -120,3 +120,45 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Evidence: Smoke covers `#reverse-stress-lab`, clicks `Run reverse stress`, and verifies `ranked_shock_sets`, `threshold_met`, `expected_loss`, `cvar95`, `plausibility_cost`, `baseline_comparison`, `run_id`, `graph_version`, `source_manifest_id`, and `semirisk_reverse_stress_v0.1`.
 - Known limitations: Reverse Stress Lab evaluates fixture graph candidates only and runs synchronously within bounded iteration limits.
 - Next gate decision: Proceed to Gate 6.
+
+## Gate 6 - Intervention Optimizer v1
+
+- Files changed:
+  - `ml/optimization/__init__.py`
+  - `ml/optimization/interventions.py`
+  - `ml/optimization/objectives.py`
+  - `ml/optimization/baselines.py`
+  - `ml/optimization/constraints.py`
+  - `services/api/main.py`
+  - `services/api/dev_server.py`
+  - `tests/optimization/test_interventions.py`
+  - `tests/optimization/test_optimization_baselines.py`
+  - `tests/api/test_optimization_routes.py`
+  - `docs/model/intervention-optimization.md`
+- Commands run:
+  - `python -m pytest tests/optimization tests/api/test_optimization_routes.py -q`
+- Result: Pass. Optimizer unit and API tests passed `7 passed`.
+- Evidence: `POST /api/v1/optimization/interventions` returns budget-feasible `recommended_actions`, before/after expected loss and CVaR95, cost, ROI, baselines, assumptions, constraints, evidence refs, warnings, and run manifest.
+- Known limitations: Effects are deterministic normalized fixture estimates, not financial savings.
+- Next gate decision: Proceed to Gate 7.
+
+## Gate 7 - Intervention Optimizer Frontend
+
+- Files changed:
+  - `packages/shared-types/src/index.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `apps/web/src/app/App.tsx`
+  - `apps/web/src/app/i18n.tsx`
+  - `apps/web/src/app/pages.tsx`
+  - `scripts/browser-smoke.mjs`
+- Commands run: pending.
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run build`
+  - local direct smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+  - local proxy smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+- Result: Pass. Typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `24 checks`.
+- Evidence: Smoke covers `#intervention-optimizer`, clicks `Run optimizer`, and verifies `recommended_actions`, before/after expected loss and CVaR95, cost, ROI, baselines, run ID, graph version, source manifest, and optimizer version.
+- Known limitations: Optimizer is a deterministic greedy fixture baseline; action effects are normalized planning estimates.
+- Next gate decision: Proceed to Gate 8.

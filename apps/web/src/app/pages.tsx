@@ -50,6 +50,8 @@ import type {
   GraphNode,
   GraphNodeKind,
   GraphVersion,
+  InterventionOptimizationInput,
+  InterventionOptimizationResult,
   Prediction,
   RiskLevel,
   ReverseStressInput,
@@ -102,6 +104,8 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return <ForwardShockSimulator apiClient={props.apiClient} />;
     case "reverse-stress-lab":
       return <ReverseStressLab apiClient={props.apiClient} />;
+    case "intervention-optimizer":
+      return <InterventionOptimizer apiClient={props.apiClient} />;
     case "causal-evidence-board":
       return props.data.causalEvidenceBoard ? <CausalEvidenceBoard data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-version-studio":
@@ -2541,7 +2545,7 @@ function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient }) {
     },
     max_combination_size: 2,
     beam_width: 4,
-    iterations_per_candidate: 60,
+    iterations_per_candidate: 30,
     seed: 42,
     as_of_time: "2026-05-01T00:00:00Z",
     allowed_shock_types: [],
@@ -2701,6 +2705,178 @@ function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient }) {
               </div>
             ) : (
               <div className="empty-state">{t("No reverse stress run yet.")}</div>
+            )}
+          </Panel>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const interventionTypes = [
+  "add_alternative_supplier",
+  "increase_inventory_buffer",
+  "regional_diversification",
+  "improve_recovery_rate",
+  "add_policy_monitoring",
+  "route_redundancy",
+  "qualify_backup_material",
+];
+
+function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiClient }) {
+  const { t } = useI18n();
+  const [input, setInput] = useState<InterventionOptimizationInput>({
+    budget: 70,
+    allowed_intervention_types: interventionTypes,
+    max_actions: 3,
+    risk_aversion_beta: 0.7,
+    compliance_constraints: {
+      no_export_control_evasion: true,
+      no_sanctions_circumvention: true,
+    },
+    seed: 42,
+    as_of_time: "2026-05-01T00:00:00Z",
+  });
+  const [result, setResult] = useState<InterventionOptimizationResult | null>(null);
+  const [failure, setFailure] = useState<ApiResult<InterventionOptimizationResult> | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const toggleActionType = (actionType: string) => {
+    setInput((current) => {
+      const selected = new Set(current.allowed_intervention_types);
+      if (selected.has(actionType)) selected.delete(actionType);
+      else selected.add(actionType);
+      return { ...current, allowed_intervention_types: Array.from(selected) };
+    });
+  };
+
+  const runOptimization = () => {
+    setIsRunning(true);
+    setFailure(null);
+    apiClient
+      .optimizeInterventions(input)
+      .then((response) => {
+        if (isAcceptedRealApiResult(response)) {
+          setResult(response.data);
+          return;
+        }
+        setResult(null);
+        setFailure(response);
+      })
+      .catch((error) => {
+        setResult(null);
+        setFailure({
+          data: null,
+          envelope: {
+            request_id: "client-intervention-optimizer",
+            status: "error",
+            data: null,
+            metadata: {
+              graph_version: "unavailable",
+              feature_version: "unavailable",
+              label_version: "unavailable",
+              model_version: "unavailable",
+              as_of_time: new Date().toISOString(),
+              lineage_ref: "api-unavailable://optimization/interventions",
+              data_mode: "real",
+              freshness_status: "unavailable",
+            },
+            warnings: [error instanceof Error ? error.message : "Intervention optimizer request failed."],
+            errors: [],
+          },
+          mode: "real",
+          sourceStatus: "unavailable",
+          receivedAt: new Date().toISOString(),
+        });
+      })
+      .finally(() => setIsRunning(false));
+  };
+
+  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://optimization/interventions";
+  const sourceStatus = failure?.sourceStatus ?? "unavailable";
+
+  return (
+    <div className="page-grid split-layout">
+      <Panel
+        title="Intervention Optimizer"
+        subtitle="Greedy budget-constrained resilience action selection over the SemiRisk fixture graph."
+        action={<Button disabled={isRunning} icon={Factory} onClick={runOptimization} variant="primary">{isRunning ? "Running" : "Run optimizer"}</Button>}
+      >
+        <div className="form-grid">
+          <label className="form-control">
+            <span>{t("budget")}</span>
+            <input min="0" onChange={(event) => setInput((current) => ({ ...current, budget: Number(event.target.value) }))} type="number" value={input.budget} />
+          </label>
+          <label className="form-control">
+            <span>{t("max_actions")}</span>
+            <input min="1" max="20" onChange={(event) => setInput((current) => ({ ...current, max_actions: Number(event.target.value) }))} type="number" value={input.max_actions} />
+          </label>
+          <label className="form-control">
+            <span>{t("risk_aversion_beta")}: {input.risk_aversion_beta.toFixed(2)}</span>
+            <input min="0" max="1" step="0.05" onChange={(event) => setInput((current) => ({ ...current, risk_aversion_beta: Number(event.target.value) }))} type="range" value={input.risk_aversion_beta} />
+          </label>
+        </div>
+        <div className="checkbox-grid">
+          {interventionTypes.map((actionType) => (
+            <label className="checkbox-control" key={actionType}>
+              <input checked={input.allowed_intervention_types.includes(actionType)} onChange={() => toggleActionType(actionType)} type="checkbox" />
+              <span>{actionType}</span>
+            </label>
+          ))}
+        </div>
+        <p className="public-data-note">
+          {t("compliance constraints")}: no illegal workarounds; approved monitoring, qualification, diversification, inventory, and recovery controls only. fixture_graph:not_production_ready
+        </p>
+      </Panel>
+
+      <div className="page-grid">
+        {result ? (
+          <>
+            <Panel title="recommended_actions" subtitle={`${result.run_id}; ${result.optimization_version}.`} translateSubtitle={false}>
+              <div className="metrics-grid">
+                <MetricTile metric={{ id: "before_expected_loss", label: "before_expected_loss", value: result.before_expected_loss ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_expected_loss ?? 0), detail: "baseline normalized loss" }} />
+                <MetricTile metric={{ id: "after_expected_loss", label: "after_expected_loss", value: result.after_expected_loss ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_expected_loss ?? 0), detail: "post-action normalized loss" }} />
+                <MetricTile metric={{ id: "before_cvar95", label: "before_cvar95", value: result.before_cvar95 ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_cvar95 ?? 0), detail: "baseline tail loss" }} />
+                <MetricTile metric={{ id: "after_cvar95", label: "after_cvar95", value: result.after_cvar95 ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_cvar95 ?? 0), detail: "post-action tail loss" }} />
+                <MetricTile metric={{ id: "cost", label: "cost", value: result.cost, delta: 0, trend: "flat", level: "guarded", detail: `budget ${result.budget}` }} />
+                <MetricTile metric={{ id: "resilience_roi", label: "resilience_roi", value: result.resilience_roi, delta: 0, trend: "flat", level: "guarded", detail: "tail-loss reduction per budget unit" }} />
+              </div>
+              <p className="public-data-note">
+                run_id {result.run_id}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; optimization_version {result.optimization_version}; fixture_graph:not_production_ready
+              </p>
+            </Panel>
+            <Panel title="Action plan" subtitle="Every recommendation includes target, cost, expected effect, constraints, and evidence.">
+              <ul className="timeline-list">
+                {result.recommended_actions.map((action) => (
+                  <li className="data-row" key={action.action_id}>
+                    <div className="row-top">
+                      <span className="row-title">{action.intervention_type}</span>
+                      <span className="metric-chip">{action.cost}</span>
+                    </div>
+                    <div className="row-meta">
+                      <span>{action.target_id}</span>
+                      <span>expected_effect {action.expected_effect}</span>
+                    </div>
+                    <span className="row-subtitle">{action.compliance_note}</span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+            <Panel title="baseline_comparison" subtitle="Random, highest-risk, cheapest-first, and proposed greedy optimizer.">
+              <pre className="json-preview">{JSON.stringify(result.baseline_comparison, null, 2)}</pre>
+            </Panel>
+          </>
+        ) : (
+          <Panel title="Optimizer not run" subtitle="Set a budget and run the optimizer to produce auditable actions.">
+            {failure ? (
+              <div className="unavailable-panel">
+                <h3>{t("Intervention Optimizer unavailable")}</h3>
+                <Field label="failed_endpoint" value={failedEndpoint} />
+                <Field label="source_status" value={sourceStatus} />
+                <p>{failure.envelope.warnings.join(" | ")}</p>
+              </div>
+            ) : (
+              <div className="empty-state">{t("No optimization run yet.")}</div>
             )}
           </Panel>
         )}

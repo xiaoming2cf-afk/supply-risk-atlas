@@ -168,6 +168,23 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
       description: "Identifier des ensembles de chocs plausibles contre un seuil normalise"
     }
   },
+  "intervention-optimizer": {
+    en: {
+      label: "Intervention Optimizer",
+      shortLabel: "Optimize",
+      description: "Budget-constrained fixture graph resilience action selection"
+    },
+    zh: {
+      label: "Intervention Optimizer",
+      shortLabel: "Optimize",
+      description: "Budget-constrained fixture graph resilience action selection"
+    },
+    fr: {
+      label: "Intervention Optimizer",
+      shortLabel: "Optimize",
+      description: "Selection d'actions de resilience sous contrainte de budget"
+    }
+  },
   "causal-evidence-board": {
     en: {
       label: "Causal Evidence Board",

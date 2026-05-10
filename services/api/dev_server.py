@@ -139,6 +139,10 @@ class Handler(BaseHTTPRequestHandler):
                 payload=body,
                 request_id=request_id,
             ),
+            "/api/v1/optimization/interventions": lambda: main.route_intervention_optimization(
+                payload=body,
+                request_id=request_id,
+            ),
             "/api/v1/reports": lambda: main.route_reports(request_id=request_id),
         }
         if parsed.path not in routes:

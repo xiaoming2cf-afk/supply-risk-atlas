@@ -34,6 +34,10 @@ from ml.risk_scoring.semirisk_score import (
     rank_risk_portfolio,
     score_semirisk_entity,
 )
+from ml.optimization.interventions import (
+    OPTIMIZATION_VERSION,
+    run_intervention_optimization,
+)
 from ml.simulation.counterfactual import build_counterfactual_edges
 from ml.simulation.monte_carlo import run_forward_monte_carlo
 from ml.simulation.reverse_stress import run_reverse_stress
@@ -477,6 +481,37 @@ def route_reverse_scenario(
     return make_envelope(
         result,
         metadata=semiconductor_metadata(snapshot, feature_version=REVERSE_SIMULATION_VERSION),
+        request_id=request_id,
+        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
+    )
+
+
+def route_intervention_optimization(
+    payload: dict[str, Any] | None = None,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+        result = run_intervention_optimization(payload or {}, snapshot=snapshot)
+    except ValueError as exc:
+        return make_error_envelope(
+            "optimization_validation_error",
+            str(exc),
+            metadata=semiconductor_metadata(feature_version=OPTIMIZATION_VERSION),
+            request_id=request_id,
+            warnings=["fixture_graph:not_production_ready"],
+        )
+    except Exception as exc:
+        return make_error_envelope(
+            "optimization_unavailable",
+            "Intervention optimizer could not run against the SemiRisk fixture graph.",
+            metadata=semiconductor_metadata(feature_version=OPTIMIZATION_VERSION),
+            request_id=request_id,
+            warnings=[f"optimization_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
+        )
+    return make_envelope(
+        result,
+        metadata=semiconductor_metadata(snapshot, feature_version=OPTIMIZATION_VERSION),
         request_id=request_id,
         warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
@@ -3147,6 +3182,13 @@ def create_app() -> Any:
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
         return route_reverse_scenario(payload=payload, request_id=x_request_id)
+
+    @app.post("/api/v1/optimization/interventions")
+    def http_intervention_optimization(
+        payload: dict[str, Any] | None = Body(default=None),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_intervention_optimization(payload=payload, request_id=x_request_id)
 
     @app.get("/reports", include_in_schema=False)
     @app.get("/api/v1/reports")

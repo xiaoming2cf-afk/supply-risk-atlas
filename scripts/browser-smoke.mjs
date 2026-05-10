@@ -27,6 +27,7 @@ const pages = [
   ["Country Lens", "#country-lens"],
   ["Shock Simulator", "#shock-simulator"],
   ["Reverse Stress Lab", "#reverse-stress-lab"],
+  ["Intervention Optimizer", "#intervention-optimizer"],
   ["Causal Evidence Board", "#causal-evidence-board"],
 ];
 
@@ -112,6 +113,18 @@ async function main() {
           as_of_time: "2026-05-01T00:00:00Z",
         }),
       }),
+      interventionOptimization: await fetchApiJson("/optimization/interventions", {
+        method: "POST",
+        body: JSON.stringify({
+          budget: 70,
+          allowed_intervention_types: ["add_alternative_supplier", "increase_inventory_buffer", "add_policy_monitoring"],
+          max_actions: 3,
+          risk_aversion_beta: 0.7,
+          compliance_constraints: { no_export_control_evasion: true, no_sanctions_circumvention: true },
+          seed: 42,
+          as_of_time: "2026-05-01T00:00:00Z",
+        }),
+      }),
     };
     const semiriskSystemHealthReady =
       isSuccessfulEnvelope(apiCapabilities.systemHealth) &&
@@ -124,6 +137,7 @@ async function main() {
       isSuccessfulEnvelope(apiCapabilities.graphNeighborhood);
     const forwardScenarioReady = isSuccessfulEnvelope(apiCapabilities.forwardScenario);
     const reverseScenarioReady = isSuccessfulEnvelope(apiCapabilities.reverseScenario);
+    const interventionOptimizationReady = isSuccessfulEnvelope(apiCapabilities.interventionOptimization);
     checks.push({
       page: "SemiRisk API capability",
       apiBase,
@@ -134,7 +148,8 @@ async function main() {
       riskPortfolioStatus: apiCapabilities.riskPortfolio.status,
       forwardScenarioStatus: apiCapabilities.forwardScenario.status,
       reverseScenarioStatus: apiCapabilities.reverseScenario.status,
-      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady : true,
+      interventionOptimizationStatus: apiCapabilities.interventionOptimization.status,
+      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady && interventionOptimizationReady : true,
     });
 
     for (const [page, hash] of pages) {
@@ -377,6 +392,68 @@ async function main() {
         (reverseScenarioReady
           ? reverseResultTerms.every((term) => reverseResultState.text.includes(term))
           : reverseResultState.text.includes("Reverse Stress Lab unavailable") && reverseResultState.text.includes("failed_endpoint")),
+    });
+
+    await navigate(client, `${webUrl}#intervention-optimizer`);
+    const optimizerControlTerms = [
+      "Intervention Optimizer",
+      "budget",
+      "max_actions",
+      "risk_aversion_beta",
+      "add_alternative_supplier",
+      "fixture_graph:not_production_ready",
+    ];
+    const optimizerInitialState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Intervention Optimizer" &&
+        optimizerControlTerms.every((term) => state.text.includes(term)),
+    );
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const runButton = buttons.find((button) => (button.textContent ?? '').includes('Run optimizer'));
+      runButton?.click();
+    })()`);
+    const optimizerResultTerms = [
+      "recommended_actions",
+      "before_expected_loss",
+      "after_expected_loss",
+      "before_cvar95",
+      "after_cvar95",
+      "cost",
+      "resilience_roi",
+      "baseline_comparison",
+      "run_id",
+      "graph_version",
+      "source_manifest_id",
+      "semirisk_intervention_optimizer_v0.1",
+    ];
+    const optimizerResultState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Intervention Optimizer" &&
+        (interventionOptimizationReady
+          ? optimizerResultTerms.every((term) => state.text.includes(term))
+          : state.text.includes("Intervention Optimizer unavailable") && state.text.includes("failed_endpoint")),
+    );
+    checks.push({
+      page: "Intervention Optimizer v1",
+      title: optimizerResultState.title,
+      hasControls: optimizerControlTerms.every((term) => optimizerInitialState.text.includes(term)),
+      hasRecommendedActions: optimizerResultTerms.every((term) => optimizerResultState.text.includes(term)),
+      hasControlledDegradedState:
+        optimizerResultState.text.includes("Intervention Optimizer unavailable") &&
+        optimizerResultState.text.includes("failed_endpoint") &&
+        optimizerResultState.text.includes("source_status"),
+      evidenceExcerpt: textExcerpt(optimizerResultState.text, optimizerResultTerms),
+      passed:
+        optimizerResultState.title === "Intervention Optimizer" &&
+        optimizerControlTerms.every((term) => optimizerInitialState.text.includes(term)) &&
+        (interventionOptimizationReady
+          ? optimizerResultTerms.every((term) => optimizerResultState.text.includes(term))
+          : optimizerResultState.text.includes("Intervention Optimizer unavailable") && optimizerResultState.text.includes("failed_endpoint")),
     });
 
     if (expectedMode) {
@@ -940,6 +1017,8 @@ async function navigate(client, url) {
         window.location.hash = ${JSON.stringify(expectedHash)};
       }
       window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL: oldUrl, newURL: window.location.href }));
+      const pageId = ${JSON.stringify(expectedHash.replace(/^#/, ""))};
+      document.querySelector('[data-page-id="' + pageId + '"]')?.click();
     })()`);
     await sleep(100);
   }
