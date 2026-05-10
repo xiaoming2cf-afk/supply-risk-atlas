@@ -35,6 +35,26 @@ SCENARIO_MULTIPLIERS = {
     "power_outage": 0.9,
 }
 
+TARGET_METRICS = {
+    "capacity_loss",
+    "cvar95_loss",
+    "demand_fulfillment_loss",
+    "affected_critical_nodes",
+}
+
+SHOCK_TYPES = {
+    "country",
+    "material",
+    "equipment",
+    "process_stage",
+    "company",
+    "facility",
+    "route",
+    "demand",
+    "policy",
+    "risk_event",
+}
+
 
 class ScenarioValidationError(ValueError):
     def __init__(self, message: str, *, field: str | None = None) -> None:
@@ -75,6 +95,40 @@ def normalize_forward_request(payload: dict[str, Any] | None) -> dict[str, Any]:
         "as_of_time": normalize_time(raw.get("as_of_time")),
         "graph_version": raw.get("graph_version"),
         "assumptions": [str(item)[:240] for item in assumptions],
+    }
+
+
+def normalize_reverse_request(payload: dict[str, Any] | None) -> dict[str, Any]:
+    raw = dict(payload or {})
+    target_metric = str(raw.get("target_metric") or "").strip()
+    if target_metric not in TARGET_METRICS:
+        raise ScenarioValidationError(f"invalid target_metric: {target_metric or 'missing'}", field="target_metric")
+    failure_threshold = float(raw.get("failure_threshold", 0.35))
+    if failure_threshold < 0:
+        raise ScenarioValidationError("failure_threshold must be non-negative", field="failure_threshold")
+    max_combination_size = max(1, min(_int(raw.get("max_combination_size"), 3), 4))
+    beam_width = max(1, min(_int(raw.get("beam_width"), 8), 24))
+    iterations_per_candidate = max(1, min(_int(raw.get("iterations_per_candidate"), 300), MAX_FORWARD_ITERATIONS))
+    allowed = [str(item) for item in raw.get("allowed_shock_types", []) if str(item) in SHOCK_TYPES] if isinstance(raw.get("allowed_shock_types"), list) else []
+    forbidden = [str(item) for item in raw.get("forbidden_shock_types", []) if str(item) in SHOCK_TYPES] if isinstance(raw.get("forbidden_shock_types"), list) else []
+    candidate_scope = raw.get("candidate_scope") if isinstance(raw.get("candidate_scope"), dict) else {}
+    node_types = candidate_scope.get("node_types") if isinstance(candidate_scope.get("node_types"), list) else []
+    edge_types = candidate_scope.get("edge_types") if isinstance(candidate_scope.get("edge_types"), list) else []
+    return {
+        "target_metric": target_metric,
+        "failure_threshold": failure_threshold,
+        "candidate_scope": {
+            "node_types": [str(item) for item in node_types],
+            "edge_types": [str(item) for item in edge_types],
+        },
+        "max_combination_size": max_combination_size,
+        "beam_width": beam_width,
+        "iterations_per_candidate": iterations_per_candidate,
+        "seed": _int(raw.get("seed"), 42),
+        "as_of_time": normalize_time(raw.get("as_of_time")),
+        "graph_version": raw.get("graph_version"),
+        "allowed_shock_types": allowed,
+        "forbidden_shock_types": forbidden,
     }
 
 
@@ -175,4 +229,3 @@ def _int(value: Any, default: int) -> int:
         return int(value)
     except (TypeError, ValueError):
         return default
-

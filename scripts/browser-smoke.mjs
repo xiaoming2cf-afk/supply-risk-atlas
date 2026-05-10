@@ -26,6 +26,7 @@ const pages = [
   ["Path Analysis", "#path-analysis"],
   ["Country Lens", "#country-lens"],
   ["Shock Simulator", "#shock-simulator"],
+  ["Reverse Stress Lab", "#reverse-stress-lab"],
   ["Causal Evidence Board", "#causal-evidence-board"],
 ];
 
@@ -95,6 +96,22 @@ async function main() {
           assumptions: ["browser smoke fixture run"],
         }),
       }),
+      reverseScenario: await fetchApiJson("/scenarios/reverse", {
+        method: "POST",
+        body: JSON.stringify({
+          target_metric: "cvar95_loss",
+          failure_threshold: 35,
+          candidate_scope: {
+            node_types: ["company", "equipment", "material", "chemical", "process_stage", "product_grade"],
+            edge_types: [],
+          },
+          max_combination_size: 2,
+          beam_width: 4,
+          iterations_per_candidate: 30,
+          seed: 42,
+          as_of_time: "2026-05-01T00:00:00Z",
+        }),
+      }),
     };
     const semiriskSystemHealthReady =
       isSuccessfulEnvelope(apiCapabilities.systemHealth) &&
@@ -106,6 +123,7 @@ async function main() {
       isSuccessfulEnvelope(apiCapabilities.graphSnapshot) &&
       isSuccessfulEnvelope(apiCapabilities.graphNeighborhood);
     const forwardScenarioReady = isSuccessfulEnvelope(apiCapabilities.forwardScenario);
+    const reverseScenarioReady = isSuccessfulEnvelope(apiCapabilities.reverseScenario);
     checks.push({
       page: "SemiRisk API capability",
       apiBase,
@@ -115,7 +133,8 @@ async function main() {
       entityRiskStatus: apiCapabilities.entityRisk.status,
       riskPortfolioStatus: apiCapabilities.riskPortfolio.status,
       forwardScenarioStatus: apiCapabilities.forwardScenario.status,
-      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady : true,
+      reverseScenarioStatus: apiCapabilities.reverseScenario.status,
+      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady : true,
     });
 
     for (const [page, hash] of pages) {
@@ -296,6 +315,68 @@ async function main() {
         (forwardScenarioReady
           ? forwardResultTerms.every((term) => shockResultState.text.includes(term))
           : shockResultState.text.includes("Shock Simulator unavailable") && shockResultState.text.includes("failed_endpoint")),
+    });
+
+    await navigate(client, `${webUrl}#reverse-stress-lab`);
+    const reverseControlTerms = [
+      "Reverse Stress Lab",
+      "target_metric",
+      "failure_threshold",
+      "max_combination_size",
+      "beam_width",
+      "iterations_per_candidate",
+      "seed",
+      "fixture_graph:not_production_ready",
+    ];
+    const reverseInitialState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Reverse Stress Lab" &&
+        reverseControlTerms.every((term) => state.text.includes(term)),
+    );
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const runButton = buttons.find((button) => (button.textContent ?? '').includes('Run reverse stress'));
+      runButton?.click();
+    })()`);
+    const reverseResultTerms = [
+      "ranked_shock_sets",
+      "threshold_met",
+      "expected_loss",
+      "cvar95",
+      "plausibility_cost",
+      "baseline_comparison",
+      "run_id",
+      "graph_version",
+      "source_manifest_id",
+      "semirisk_reverse_stress_v0.1",
+    ];
+    const reverseResultState = await waitFor(
+      client,
+      () => pageState(client),
+      (state) =>
+        state.title === "Reverse Stress Lab" &&
+        (reverseScenarioReady
+          ? reverseResultTerms.every((term) => state.text.includes(term))
+          : state.text.includes("Reverse Stress Lab unavailable") && state.text.includes("failed_endpoint")),
+    );
+    checks.push({
+      page: "Reverse Stress Lab v1",
+      title: reverseResultState.title,
+      hasControls: reverseControlTerms.every((term) => reverseInitialState.text.includes(term)),
+      hasRankedShockSets: reverseResultTerms.every((term) => reverseResultState.text.includes(term)),
+      hasControlledDegradedState:
+        reverseResultState.text.includes("Reverse Stress Lab unavailable") &&
+        reverseResultState.text.includes("failed_endpoint") &&
+        reverseResultState.text.includes("source_status"),
+      evidenceExcerpt: textExcerpt(reverseResultState.text, reverseResultTerms),
+      passed:
+        reverseResultState.title === "Reverse Stress Lab" &&
+        reverseControlTerms.every((term) => reverseInitialState.text.includes(term)) &&
+        (reverseScenarioReady
+          ? reverseResultTerms.every((term) => reverseResultState.text.includes(term))
+          : reverseResultState.text.includes("Reverse Stress Lab unavailable") && reverseResultState.text.includes("failed_endpoint")),
     });
 
     if (expectedMode) {

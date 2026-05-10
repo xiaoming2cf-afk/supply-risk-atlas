@@ -37,6 +37,7 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "country-lens": Globe2,
   "path-explainer": Route,
   "shock-simulator": SlidersHorizontal,
+  "reverse-stress-lab": GitBranch,
   "causal-evidence-board": ShieldAlert,
   "graph-version-studio": GitBranch,
   "system-health-center": ServerCog
@@ -52,6 +53,7 @@ const publicPageIds = new Set<DashboardPageId>([
   "path-analysis",
   "country-lens",
   "shock-simulator",
+  "reverse-stress-lab",
   "causal-evidence-board",
 ]);
 const publicDashboardPages = dashboardPages.filter((page) => publicPageIds.has(page.id));
@@ -138,7 +140,7 @@ export function App() {
   );
   const t = (value: string) => translateText(value, language);
   const activeResultKey: DashboardPageId =
-    pageId === "shock-simulator"
+    pageId === "shock-simulator" || pageId === "reverse-stress-lab"
       ? "global-risk-cockpit"
       : pageId === "path-analysis" || pageId === "country-lens"
         ? "graph-explorer"
@@ -466,7 +468,7 @@ function canRenderPageData(
   activeResult: ApiResult<unknown> | undefined,
   hasApiBaseUrl: boolean,
 ) {
-  if (pageId === "shock-simulator") return hasApiBaseUrl;
+  if (pageId === "shock-simulator" || pageId === "reverse-stress-lab") return hasApiBaseUrl;
   if (pageId === "company-risk-360") return hasApiBaseUrl;
   if (pageId === "system-health-center") {
     return Boolean(data?.systemHealthCenter && hasVerifiedHealthResult(activeResult as ApiResult<unknown> | undefined));

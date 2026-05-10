@@ -13,6 +13,8 @@ import type {
   GraphVersionStudioData,
   PathExplainerData,
   PredictionCenterData,
+  ReverseStressInput,
+  ReverseStressResult,
   SemiriskEntityRiskScore,
   SemiriskGraphNeighborhoodData,
   SemiriskGraphSnapshotData,
@@ -45,6 +47,7 @@ export interface SupplyRiskApiClient {
   getSemiriskEntityRisk(entityId: string): Promise<ApiResult<SemiriskEntityRiskScore>>;
   getSemiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiResult<SemiriskRiskPortfolioData>>;
   runForwardScenario(input: ForwardScenarioInput): Promise<ApiResult<ForwardScenarioResult>>;
+  runReverseStress(input: ReverseStressInput): Promise<ApiResult<ReverseStressResult>>;
 }
 
 export interface SupplyRiskDashboardData {
@@ -286,6 +289,13 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(
         baseUrl,
         "/scenarios/forward",
+        { method: "POST", body: JSON.stringify(input) },
+        clientOptions,
+      ),
+    runReverseStress: (input) =>
+      requestJson(
+        baseUrl,
+        "/scenarios/reverse",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),

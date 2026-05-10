@@ -151,6 +151,23 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
       description: "Tester régions, produits, sévérité et reprise"
     }
   },
+  "reverse-stress-lab": {
+    en: {
+      label: "Reverse Stress Lab",
+      shortLabel: "Reverse",
+      description: "Find plausible shock sets that can breach a normalized failure threshold"
+    },
+    zh: {
+      label: "Reverse Stress Lab",
+      shortLabel: "Reverse",
+      description: "Find plausible shock sets that can breach a normalized failure threshold"
+    },
+    fr: {
+      label: "Reverse Stress Lab",
+      shortLabel: "Reverse",
+      description: "Identifier des ensembles de chocs plausibles contre un seuil normalise"
+    }
+  },
   "causal-evidence-board": {
     en: {
       label: "Causal Evidence Board",

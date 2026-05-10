@@ -81,3 +81,42 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Evidence: Smoke covers `#shock-simulator`, clicks `Run forward stress`, and verifies `expected_loss`, `p50_loss`, `p90_loss`, `p95_loss`, `cvar_95`, `time_to_recover_days`, `time_to_survive_days`, `run_id`, `seed`, `graph_version`, `source_manifest_id`, `simulation_version`, and `semirisk_forward_mc_v0.1`.
 - Known limitations: The page does not auto-run Monte Carlo on load by design.
 - Next gate decision: Proceed to Gate 4.
+
+## Gate 4 - Reverse Stress Testing v1
+
+- Files changed:
+  - `ml/simulation/shock_candidates.py`
+  - `ml/simulation/plausibility.py`
+  - `ml/simulation/reverse_stress.py`
+  - `ml/simulation/scenario_schema.py`
+  - `services/api/main.py`
+  - `services/api/dev_server.py`
+  - `tests/simulation/test_reverse_stress.py`
+  - `tests/api/test_scenario_reverse.py`
+  - `docs/model/reverse-stress-testing.md`
+- Commands run:
+  - `python -m pytest tests/simulation/test_reverse_stress.py tests/api/test_scenario_reverse.py -q`
+- Result: Pass. Reverse stress unit and API tests passed `8 passed`.
+- Evidence: `POST /api/v1/scenarios/reverse` returns `run_id`, `seed`, `graph_version`, `source_manifest_id`, `simulation_version: semirisk_reverse_stress_v0.1`, `ranked_shock_sets`, `baseline_comparison`, `plausibility_cost`, affected paths, warnings, assumptions, and evidence refs.
+- Known limitations: Candidate shocks are fixture graph candidates only.
+- Next gate decision: Proceed to Gate 5.
+
+## Gate 5 - Reverse Stress Lab Frontend
+
+- Files changed:
+  - `packages/shared-types/src/index.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `apps/web/src/app/App.tsx`
+  - `apps/web/src/app/pages.tsx`
+  - `scripts/browser-smoke.mjs`
+- Commands run: pending.
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run build`
+  - local direct smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+  - local proxy smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+- Result: Pass. Typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `22 checks`.
+- Evidence: Smoke covers `#reverse-stress-lab`, clicks `Run reverse stress`, and verifies `ranked_shock_sets`, `threshold_met`, `expected_loss`, `cvar95`, `plausibility_cost`, `baseline_comparison`, `run_id`, `graph_version`, `source_manifest_id`, and `semirisk_reverse_stress_v0.1`.
+- Known limitations: Reverse Stress Lab evaluates fixture graph candidates only and runs synchronously within bounded iteration limits.
+- Next gate decision: Proceed to Gate 6.

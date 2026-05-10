@@ -135,6 +135,10 @@ class Handler(BaseHTTPRequestHandler):
                 payload=body,
                 request_id=request_id,
             ),
+            "/api/v1/scenarios/reverse": lambda: main.route_reverse_scenario(
+                payload=body,
+                request_id=request_id,
+            ),
             "/api/v1/reports": lambda: main.route_reports(request_id=request_id),
         }
         if parsed.path not in routes:

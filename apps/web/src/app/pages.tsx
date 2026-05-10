@@ -52,6 +52,8 @@ import type {
   GraphVersion,
   Prediction,
   RiskLevel,
+  ReverseStressInput,
+  ReverseStressResult,
   ScenarioChangedPath,
   ScenarioGraphOverlay,
   SemiriskEntityRiskScore,
@@ -98,6 +100,8 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return props.data.pathExplainer ? <PathExplainer data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "shock-simulator":
       return <ForwardShockSimulator apiClient={props.apiClient} />;
+    case "reverse-stress-lab":
+      return <ReverseStressLab apiClient={props.apiClient} />;
     case "causal-evidence-board":
       return props.data.causalEvidenceBoard ? <CausalEvidenceBoard data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-version-studio":
@@ -2518,6 +2522,185 @@ function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }
               </div>
             ) : (
               <div className="empty-state">{t("No scenario run yet.")}</div>
+            )}
+          </Panel>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient }) {
+  const { t } = useI18n();
+  const [input, setInput] = useState<ReverseStressInput>({
+    target_metric: "cvar95_loss",
+    failure_threshold: 35,
+    candidate_scope: {
+      node_types: ["company", "equipment", "material", "chemical", "process_stage", "product_grade"],
+      edge_types: [],
+    },
+    max_combination_size: 2,
+    beam_width: 4,
+    iterations_per_candidate: 60,
+    seed: 42,
+    as_of_time: "2026-05-01T00:00:00Z",
+    allowed_shock_types: [],
+    forbidden_shock_types: [],
+  });
+  const [result, setResult] = useState<ReverseStressResult | null>(null);
+  const [failure, setFailure] = useState<ApiResult<ReverseStressResult> | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const runReverse = () => {
+    setIsRunning(true);
+    setFailure(null);
+    apiClient
+      .runReverseStress(input)
+      .then((response) => {
+        if (isAcceptedRealApiResult(response)) {
+          setResult(response.data);
+          return;
+        }
+        setResult(null);
+        setFailure(response);
+      })
+      .catch((error) => {
+        setResult(null);
+        setFailure({
+          data: null,
+          envelope: {
+            request_id: "client-reverse-stress",
+            status: "error",
+            data: null,
+            metadata: {
+              graph_version: "unavailable",
+              feature_version: "unavailable",
+              label_version: "unavailable",
+              model_version: "unavailable",
+              as_of_time: new Date().toISOString(),
+              lineage_ref: "api-unavailable://scenarios/reverse",
+              data_mode: "real",
+              freshness_status: "unavailable",
+            },
+            warnings: [error instanceof Error ? error.message : "Reverse stress request failed."],
+            errors: [],
+          },
+          mode: "real",
+          sourceStatus: "unavailable",
+          receivedAt: new Date().toISOString(),
+        });
+      })
+      .finally(() => setIsRunning(false));
+  };
+
+  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://scenarios/reverse";
+  const sourceStatus = failure?.sourceStatus ?? "unavailable";
+  const topShockSet = result?.ranked_shock_sets[0];
+
+  return (
+    <div className="page-grid split-layout">
+      <Panel
+        title="Reverse Stress Lab"
+        subtitle="Greedy beam search over fixture graph shock candidates. Runs only after explicit analyst action."
+        action={<Button disabled={isRunning} icon={GitBranch} onClick={runReverse} variant="primary">{isRunning ? "Running" : "Run reverse stress"}</Button>}
+      >
+        <div className="form-grid">
+          <label className="form-control">
+            <span>{t("target_metric")}</span>
+            <select value={input.target_metric} onChange={(event) => setInput((current) => ({ ...current, target_metric: event.target.value as ReverseStressInput["target_metric"] }))}>
+              <option value="cvar95_loss">cvar95_loss</option>
+              <option value="capacity_loss">capacity_loss</option>
+              <option value="demand_fulfillment_loss">demand_fulfillment_loss</option>
+              <option value="affected_critical_nodes">affected_critical_nodes</option>
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("failure_threshold")}</span>
+            <input min="1" max="100" onChange={(event) => setInput((current) => ({ ...current, failure_threshold: Number(event.target.value) }))} type="number" value={input.failure_threshold} />
+          </label>
+          <label className="form-control">
+            <span>{t("candidate node types")}</span>
+            <input
+              onChange={(event) => setInput((current) => ({ ...current, candidate_scope: { ...current.candidate_scope, node_types: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) } }))}
+              type="text"
+              value={input.candidate_scope.node_types.join(",")}
+            />
+          </label>
+          <label className="form-control">
+            <span>{t("max_combination_size")}</span>
+            <input min="1" max="4" onChange={(event) => setInput((current) => ({ ...current, max_combination_size: Number(event.target.value) }))} type="number" value={input.max_combination_size} />
+          </label>
+          <label className="form-control">
+            <span>{t("beam_width")}</span>
+            <input min="1" max="24" onChange={(event) => setInput((current) => ({ ...current, beam_width: Number(event.target.value) }))} type="number" value={input.beam_width} />
+          </label>
+          <label className="form-control">
+            <span>{t("iterations_per_candidate")}</span>
+            <input min="1" max="5000" onChange={(event) => setInput((current) => ({ ...current, iterations_per_candidate: Number(event.target.value) }))} type="number" value={input.iterations_per_candidate} />
+          </label>
+          <label className="form-control">
+            <span>{t("seed")}</span>
+            <input onChange={(event) => setInput((current) => ({ ...current, seed: Number(event.target.value) }))} type="number" value={input.seed} />
+          </label>
+        </div>
+        <p className="public-data-note">
+          {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")} · fixture_graph:not_production_ready
+        </p>
+      </Panel>
+
+      <div className="page-grid">
+        {result ? (
+          <>
+            <Panel title="ranked_shock_sets" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
+              <div className="field-grid">
+                <Field label="run_id" value={result.run_id} />
+                <Field label="seed" value={result.seed} />
+                <Field label="graph_version" value={result.graph_version} />
+                <Field label="source_manifest_id" value={result.source_manifest_id} />
+                <Field label="simulation_version" value={result.simulation_version} />
+                <Field label="plausibility_cost" value={result.plausibility_cost ?? "unavailable"} />
+              </div>
+              <p className="public-data-note">
+                run_id {result.run_id}; ranked_shock_sets {result.ranked_shock_sets.length}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; fixture_graph:not_production_ready
+              </p>
+            </Panel>
+            <Panel title="Top shock set" subtitle={topShockSet?.explanation ?? result.explanation} translateSubtitle={false}>
+              {topShockSet ? (
+                <ul className="timeline-list">
+                  {result.ranked_shock_sets.map((shockSet) => (
+                    <li className="data-row" key={shockSet.shock_set_id}>
+                      <div className="row-top">
+                        <span className="row-title">{shockSet.shock_set_id}</span>
+                        <span className="metric-chip">{shockSet.threshold_met ? "threshold_met" : "approaches_threshold"}</span>
+                      </div>
+                      <div className="row-meta">
+                        <span>expected_loss {shockSet.expected_loss?.toFixed(2) ?? "unavailable"}</span>
+                        <span>cvar95 {shockSet.cvar95?.toFixed(2) ?? "unavailable"}</span>
+                        <span>plausibility_cost {shockSet.plausibility_cost.toFixed(4)}</span>
+                      </div>
+                      <span className="row-subtitle">{shockSet.explanation}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="empty-state">{t("No ranked shock sets returned.")}</div>
+              )}
+            </Panel>
+            <Panel title="baseline_comparison" subtitle="Random, highest-criticality, and proposed beam-search baselines.">
+              <pre className="json-preview">{JSON.stringify(result.baseline_comparison, null, 2)}</pre>
+            </Panel>
+          </>
+        ) : (
+          <Panel title="Reverse stress not run" subtitle="Set a threshold and run the search to produce ranked shock sets.">
+            {failure ? (
+              <div className="unavailable-panel">
+                <h3>{t("Reverse Stress Lab unavailable")}</h3>
+                <Field label="failed_endpoint" value={failedEndpoint} />
+                <Field label="source_status" value={sourceStatus} />
+                <p>{failure.envelope.warnings.join(" | ")}</p>
+              </div>
+            ) : (
+              <div className="empty-state">{t("No reverse stress run yet.")}</div>
             )}
           </Panel>
         )}
