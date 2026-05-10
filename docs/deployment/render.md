@@ -10,7 +10,7 @@ SupplyRiskAtlas deploys to Render as two Git-backed web services managed by the 
 | `supply-risk-atlas-web` | Node.js | Next.js web app and same-origin API proxy |
 
 The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1` on Render so browser requests can call the API directly through CORS. The Next.js `/api/v1/*` proxy remains available for same-origin deployments and uses `SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com`, with `SUPPLY_RISK_API_HOSTPORT` retained as a private-network fallback.
-The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds. The API build also runs `python -m sra_core.ingestion.bulk_public --mode online ...` so Render creates `data/promoted/public_real/latest/catalog.json` during deployment without committing raw source downloads to Git.
+The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds. Render deployment is lightweight by default: the API build installs the service only and does not run online ingestion. The API can serve the SemiRisk fixture graph and any pre-promoted public graph that already exists; large or online ingestion jobs must be run as explicit offline maintenance tasks, not during Render build or startup.
 
 ## Deploy From GitHub
 
@@ -45,9 +45,10 @@ The web service must receive both:
 ```text
 NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1
 SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com
+SUPPLY_RISK_DATA_MODE=fixture
 ```
 
-`SUPPLY_RISK_API_HOSTPORT` is optional and is used only as a private-network fallback for the same-origin proxy. Keep the direct public API URL configured so browser smoke diagnostics and runtime pages do not depend on the proxy path.
+`SUPPLY_RISK_API_HOSTPORT` is optional and is used only as a private-network fallback for the same-origin proxy. Keep the direct public API URL configured so browser smoke diagnostics and runtime pages do not depend on the proxy path. `SUPPLY_RISK_DATA_MODE=fixture` documents that the deployed first platform slices use the promoted SemiRisk fixture graph and must carry the `fixture_graph:not_production_ready` warning.
 
 ## Data Hygiene
 
@@ -69,7 +70,9 @@ Local checks before pushing:
 ```powershell
 python -m pytest -q
 npm test
-$env:SUPPLY_RISK_EXPECT_MODE='real'; npm run smoke:web
+$env:SUPPLY_RISK_API_URL='http://127.0.0.1:8000/api/v1'
+$env:SUPPLY_RISK_EXPECT_MODE='real'
+npm run smoke:web
 ```
 
 The local web app can still connect directly to the local API with:

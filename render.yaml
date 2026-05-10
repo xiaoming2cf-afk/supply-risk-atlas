@@ -3,7 +3,7 @@ services:
     name: supply-risk-atlas-api
     runtime: python
     plan: free
-    buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]" && python -m sra_core.ingestion.bulk_public --mode online --sec-limit 900 --gleif-limit 500 --world-bank-indicator-limit 450 --world-bank-country-limit 260 --airport-limit 900 --gdelt-limit 140 --ofac-limit 180 --usgs-earthquake-limit 120
+    buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]"
     startCommand: python -m uvicorn services.api.main:app --host 0.0.0.0 --port $PORT
     branch: main
     healthCheckPath: /api/v1/health
@@ -13,6 +13,8 @@ services:
         value: 3.11.9
       - key: SUPPLY_RISK_DEPLOY_TARGET
         value: supply-risk-atlas-web.onrender.com
+      - key: SUPPLY_RISK_DATA_MODE
+        value: fixture
     buildFilter:
       paths:
         - services/**
@@ -38,6 +40,8 @@ services:
         value: 22
       - key: SUPPLY_RISK_DEPLOY_TARGET
         value: supply-risk-atlas-web.onrender.com
+      - key: SUPPLY_RISK_DATA_MODE
+        value: fixture
       - key: NEXT_PUBLIC_SUPPLY_RISK_API_URL
         value: https://supply-risk-atlas-api.onrender.com/api/v1
       - key: SUPPLY_RISK_API_ORIGIN

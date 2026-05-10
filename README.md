@@ -95,15 +95,27 @@ npm --workspace apps/web run dev -- --hostname 127.0.0.1 --port 3000
 npm run smoke:web
 ```
 
-The web app is real-data-first. Point it at the local API with:
+The web app is real-data-first. Point it at the local API before starting the dev server:
 
 ```powershell
 $env:NEXT_PUBLIC_SUPPLY_RISK_API_URL='http://127.0.0.1:8000/api/v1'
+$env:SUPPLY_RISK_API_ORIGIN='http://127.0.0.1:8000'
+npm --workspace apps/web run dev -- --hostname 127.0.0.1 --port 3000
+```
+
+Run smoke against the direct API URL:
+
+```powershell
+$env:SUPPLY_RISK_API_URL='http://127.0.0.1:8000/api/v1'
+$env:SUPPLY_RISK_EXPECT_MODE='real'
+npm run smoke:web
 ```
 
 When the API URL is configured, the dashboard client calls versioned envelope routes under
 `/api/v1/dashboard/*`. If those routes are unavailable, the UI blocks business payloads and
 shows real-data unavailable states rather than silently rendering fabricated fallback data.
+
+The current semiconductor platform slices use the deterministic SemiRisk fixture graph. It is intentionally visible as `SemiRisk-KG v0.1 fixture graph` with `fixture_graph:not_production_ready` and must not be described as production data.
 
 ## Acceptance Baseline
 

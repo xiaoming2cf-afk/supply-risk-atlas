@@ -71,8 +71,8 @@ The initial workflow in `.github/workflows/quality-gates.yml` runs:
 - Node dependency installation plus `lint`, `typecheck`, and `test` scripts when `package.json` exists.
 - Python compile checks when Python files exist.
 - Python project dependency installation plus `pytest` when pytest-style tests exist.
-- Main CI browser smoke starts the zero-dependency API server and Next.js dev server, then runs `npm run smoke:web` in both real API mode and mock mode.
-- Browser smoke in real API mode verifies `/api/v1/sources`, `/api/v1/lineage`, System Health source registry, entity resolution, evidence lineage, and entity search.
+- Main CI browser smoke starts the zero-dependency API server and Next.js dev server, then runs `npm run smoke:web` in real API mode with `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1` and `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000`.
+- Browser smoke in real API mode verifies `/api/v1/sources`, `/api/v1/lineage`, System Health source registry, SemiRisk fixture graph readiness, Entity Risk 360 fixture score rendering, entity resolution, evidence lineage, and entity search. Optional full smoke can be enabled with `SUPPLY_RISK_FULL_SMOKE=1`; mock smoke is not part of the required CI gate unless the workflow explicitly adds a separate mock-mode job.
 - Public-real bulk ingestion tests verify fixture replay, promoted manifest creation, data governance node classes, and data relationship edge classes.
 
 Language checks skip only when the corresponding implementation files or test files are absent. Once a manifest or test suite exists, the workflow must either run it or document the concrete blocker.
@@ -105,7 +105,7 @@ Before handoff, run the closest available checks:
 - API health: `http://127.0.0.1:8000/api/v1/health`
 - API lineage: `http://127.0.0.1:8000/api/v1/lineage`
 - Web app: `http://127.0.0.1:3000`
-- Required frontend pages: Global Risk Cockpit, Graph Explorer, Company Risk 360, Path Explainer, Shock Simulator, Causal Evidence Board, Graph Version Studio, System Health Center.
+- Required frontend pages: System Health Center, Global Risk Cockpit, Graph Explorer, Entity Risk 360, Prediction Center, Path Analysis, Country Lens, Shock Simulator, Causal Evidence Board. Later analytical workflow pages are added to this list only after their API and frontend gates are implemented.
 - Browser smoke report: `artifacts/browser-smoke/report.json`
 - Required API metadata: every visible prediction, simulation, explanation, and report must carry graph, feature, label, model, and `as_of_time` metadata.
 
