@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_HOSTPORT = process.env.SUPPLY_RISK_API_HOSTPORT;
 const API_ORIGIN = process.env.SUPPLY_RISK_API_ORIGIN ?? (API_HOSTPORT ? `http://${API_HOSTPORT}` : undefined);
+const RENDER_WEB_HOSTNAME = "supply-risk-atlas-web.onrender.com";
+const RENDER_API_ORIGIN = "https://supply-risk-atlas-api.onrender.com";
 const MAX_PROXY_PATH_SEGMENTS = 8;
 const MAX_PROXY_PATH_SEGMENT_LENGTH = 120;
 
@@ -27,7 +29,8 @@ export async function OPTIONS() {
 }
 
 async function proxyRequest(request: NextRequest, context: RouteContext) {
-  if (!API_ORIGIN) {
+  const apiOrigin = resolveApiOrigin(request);
+  if (!apiOrigin) {
     return NextResponse.json(
       {
         request_id: crypto.randomUUID(),
@@ -67,7 +70,7 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
     return proxyErrorResponse("api_proxy_invalid_path", pathError, 400);
   }
   const path = pathSegments.map((segment) => encodeURIComponent(segment)).join("/");
-  const upstreamUrl = new URL(`/api/v1/${path}${request.nextUrl.search}`, API_ORIGIN);
+  const upstreamUrl = new URL(`/api/v1/${path}${request.nextUrl.search}`, apiOrigin);
   let upstreamResponse: Response;
   try {
     upstreamResponse = await fetch(upstreamUrl, {
@@ -116,6 +119,16 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
       "content-type": upstreamResponse.headers.get("content-type") ?? "application/json; charset=utf-8"
     }
   });
+}
+
+function resolveApiOrigin(request: NextRequest): string | undefined {
+  if (API_ORIGIN) return API_ORIGIN;
+  const requestHost = request.headers.get("host")?.split(":")[0]?.toLowerCase();
+  const deployTarget = process.env.SUPPLY_RISK_DEPLOY_TARGET?.trim().toLowerCase() || RENDER_WEB_HOSTNAME;
+  if (requestHost === deployTarget || requestHost === RENDER_WEB_HOSTNAME) {
+    return RENDER_API_ORIGIN;
+  }
+  return undefined;
 }
 
 function validateProxyPath(pathSegments: string[]): string | null {
