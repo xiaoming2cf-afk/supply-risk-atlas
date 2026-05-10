@@ -985,6 +985,56 @@ export interface DataCatalogSummary {
   }>;
 }
 
+export interface SemiconductorGraphHealth {
+  label: string;
+  status: "ready" | "degraded" | "unavailable";
+  fixtureGraph: boolean;
+  registryReady: boolean;
+  ontologyReady: boolean;
+  fixtureManifestReady: boolean;
+  fixtureGraphReady: boolean;
+  graphVersion: string;
+  ontologyVersion: string;
+  sourceManifestId: string;
+  asOfTime: string;
+  nodeCount: number;
+  edgeCount: number;
+  nodeCountByType: Record<string, number>;
+  edgeCountByType: Record<string, number>;
+  missingProvenanceCount: number;
+  unresolvedEntityCount: number;
+  staleSourceCount: number;
+  warnings: string[];
+}
+
+export interface SemiriskGraphSnapshotData {
+  graph_version: string;
+  ontology_version: string;
+  source_manifest_id: string;
+  as_of_time: string;
+  node_count: number;
+  edge_count: number;
+  node_count_by_type: Record<string, number>;
+  edge_count_by_type: Record<string, number>;
+  missing_provenance_count: number;
+  unresolved_entity_count: number;
+  stale_source_count: number;
+  nodes: Array<Record<string, unknown>>;
+  edges: Array<Record<string, unknown>>;
+  quality_report: Record<string, unknown>;
+}
+
+export interface SemiriskGraphNeighborhoodData {
+  graph_version: string;
+  source_manifest_id: string;
+  as_of_time: string;
+  node_id: string;
+  depth: number;
+  nodes: Array<Record<string, unknown>>;
+  edges: Array<Record<string, unknown>>;
+  warnings: string[];
+}
+
 export interface SystemHealthData {
   services: ServiceHealth[];
   stages: PipelineStage[];
@@ -993,4 +1043,5 @@ export interface SystemHealthData {
   entityResolution: EntityResolutionSummary;
   evidenceLineage: EvidenceLineageSummary;
   dataCatalog?: DataCatalogSummary;
+  semiconductorGraph?: SemiconductorGraphHealth;
 }

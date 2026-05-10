@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semirisk_graph_snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "graph_version": { "type": "string", "pattern": "^semirisk_kg_v0_1_" },
+    "ontology_version": { "type": "string", "minLength": 1 },
+    "source_manifest_id": { "type": "string", "pattern": "^semirisk_fixture_manifest_" },
+    "as_of_time": { "type": "string", "format": "date-time" },
+    "node_count": { "type": "integer", "minimum": 0 },
+    "edge_count": { "type": "integer", "minimum": 0 },
+    "node_count_by_type": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "edge_count_by_type": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "missing_provenance_count": { "type": "integer", "minimum": 0 },
+    "unresolved_entity_count": { "type": "integer", "minimum": 0 },
+    "stale_source_count": { "type": "integer", "minimum": 0 },
+    "nodes": { "type": "array", "items": { "$ref": "semirisk_node.schema.json" } },
+    "edges": { "type": "array", "items": { "$ref": "semirisk_edge.schema.json" } },
+    "quality_report": { "type": "object" }
+  },
+  "required": ["graph_version", "ontology_version", "source_manifest_id", "as_of_time", "node_count", "edge_count", "node_count_by_type", "edge_count_by_type", "missing_provenance_count", "unresolved_entity_count", "stale_source_count", "nodes", "edges", "quality_report"]
+}

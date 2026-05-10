@@ -2852,11 +2852,11 @@ function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) {
             </ul>
           </Panel>
 
-          <Panel
-            title="Source registry"
-            subtitle={`${health.sourceRegistry.manifestRef}; checksum ${manifestChecksum}; catalog ${health.sourceRegistry.catalogSource ?? "unknown"}.`}
-            translateSubtitle={false}
-          >
+            <Panel
+              title="Source registry"
+              subtitle={`${health.sourceRegistry.manifestRef}; checksum ${manifestChecksum}; catalog ${health.sourceRegistry.catalogSource ?? "unknown"}.`}
+              translateSubtitle={false}
+            >
             <div className="inspector-grid" style={{ marginBottom: 16 }}>
               <Field label="Sources" value={health.sourceRegistry.sourceCount} />
               <Field label="Raw records" value={health.sourceRegistry.rawRecordCount} />
@@ -2883,11 +2883,78 @@ function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) {
                   </div>
                 </li>
               ))}
-            </ul>
-          </Panel>
+              </ul>
+            </Panel>
 
-          {health.dataCatalog ? (
-            <Panel
+            {health.semiconductorGraph ? (
+              <Panel
+                title="SemiRisk-KG v0.1 fixture graph"
+                subtitle={`${health.semiconductorGraph.sourceManifestId}; graph ${health.semiconductorGraph.graphVersion}; fixture/promoted test graph, not production readiness.`}
+                translateSubtitle={false}
+              >
+                <div className="inspector-grid" style={{ marginBottom: 16 }}>
+                  <Field label="Registry ready" value={health.semiconductorGraph.registryReady ? "yes" : "no"} />
+                  <Field label="Ontology ready" value={health.semiconductorGraph.ontologyReady ? "yes" : "no"} />
+                  <Field label="Fixture manifest" value={health.semiconductorGraph.fixtureManifestReady ? "loaded" : "unavailable"} />
+                  <Field label="Fixture graph" value={health.semiconductorGraph.fixtureGraphReady ? "loaded" : "unavailable"} />
+                  <Field label="Nodes" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />
+                  <Field label="Edges" value={formatCompactNumber(health.semiconductorGraph.edgeCount)} />
+                  <Field label="Stale sources" value={health.semiconductorGraph.staleSourceCount} />
+                  <Field label="Unresolved entities" value={health.semiconductorGraph.unresolvedEntityCount} />
+                </div>
+                <div className="driver-grid">
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>{t("Node type")}</th>
+                          <th>{t("Count")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(health.semiconductorGraph.nodeCountByType).map(([nodeType, count]) => (
+                          <tr key={nodeType}>
+                            <td>{nodeType}</td>
+                            <td>{formatCompactNumber(count)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>{t("Edge type")}</th>
+                          <th>{t("Count")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(health.semiconductorGraph.edgeCountByType).map(([edgeType, count]) => (
+                          <tr key={edgeType}>
+                            <td>{edgeType}</td>
+                            <td>{formatCompactNumber(count)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <ul className="health-list" style={{ marginTop: 16 }}>
+                  {health.semiconductorGraph.warnings.map((warning) => (
+                    <li className="data-row" key={warning}>
+                      <div className="row-top">
+                        <span className="row-title">{warning}</span>
+                        <StatusPill status={health.semiconductorGraph?.status ?? "degraded"} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Panel>
+            ) : null}
+  
+            {health.dataCatalog ? (
+              <Panel
               title="Data node catalog"
               subtitle={`${health.dataCatalog.totalDataNodes} governed data nodes across source, dataset, indicator, license, release, field, and series classes.`}
             >

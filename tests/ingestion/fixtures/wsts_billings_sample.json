@@ -1,0 +1,25 @@
+{
+  "fixture_version": "semirisk_kg_fixture_v0.1",
+  "source_id": "wsts_historical_billings",
+  "records": [
+    {
+      "source_record_id": "wsts-monthly-billings-2026-03",
+      "retrieved_at": "2026-05-01T00:00:00Z",
+      "source_published_at": "2026-04-05T00:00:00Z",
+      "as_of_time": "2026-05-01T00:00:00Z",
+      "provenance_url": "https://www.wsts.org/",
+      "raw_payload_summary": "Fixture-only WSTS-style monthly billings indicator for semiconductor market pressure.",
+      "entities": [
+        { "node_id": "market_indicator:wsts_monthly_billings", "node_type": "market_indicator", "canonical_name": "WSTS monthly billings indicator", "aliases": ["WSTS billings"], "country_code": null, "sector_tags": ["market_indicator"], "confidence": 0.76, "attributes": { "period": "2026-03", "value": 52500, "unit": "usd_millions", "region": "worldwide" } }
+      ],
+      "market_indicators": [
+        { "indicator_id": "market_indicator:wsts_monthly_billings", "indicator_type": "market_indicator", "canonical_name": "WSTS monthly billings indicator", "region": "worldwide", "period": "2026-03", "value": 52500, "unit": "usd_millions", "confidence": 0.76 }
+      ],
+      "edges": [
+        { "edge_id": "edge:wsts_billings:correlated_with:advanced_logic", "source_node_id": "market_indicator:wsts_monthly_billings", "target_node_id": "product_grade:advanced_logic", "edge_type": "correlated_with", "weight": 0.58, "confidence": 0.7, "evidence_text_summary": "The fixture billings indicator is correlated with advanced logic demand pressure." },
+        { "edge_id": "edge:wsts_billings:correlated_with:hbm", "source_node_id": "market_indicator:wsts_monthly_billings", "target_node_id": "product_grade:hbm", "edge_type": "correlated_with", "weight": 0.55, "confidence": 0.69, "evidence_text_summary": "The fixture billings indicator is correlated with HBM demand pressure." },
+        { "edge_id": "edge:wsts_billings:correlated_with:gpu_accelerator", "source_node_id": "market_indicator:wsts_monthly_billings", "target_node_id": "component:gpu_accelerator", "edge_type": "correlated_with", "weight": 0.5, "confidence": 0.66, "evidence_text_summary": "The fixture billings indicator is correlated with AI accelerator demand pressure." }
+      ]
+    }
+  ]
+}

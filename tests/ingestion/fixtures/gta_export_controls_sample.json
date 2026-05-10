@@ -1,0 +1,29 @@
+{
+  "fixture_version": "semirisk_kg_fixture_v0.1",
+  "source_id": "global_trade_alert_semiconductor_export_controls",
+  "records": [
+    {
+      "source_record_id": "gta-export-control-placeholder-2026-04",
+      "retrieved_at": "2026-05-01T00:00:00Z",
+      "source_published_at": "2026-04-25T00:00:00Z",
+      "as_of_time": "2026-05-01T00:00:00Z",
+      "provenance_url": "https://www.globaltradealert.org/",
+      "raw_payload_summary": "Fixture-only export-control policy placeholder normalized for graph lineage; not compliance advice.",
+      "entities": [
+        { "node_id": "policy_event:export_control_placeholder", "node_type": "policy_event", "canonical_name": "Export-control placeholder", "aliases": ["semiconductor export-control placeholder"], "country_code": "US", "sector_tags": ["policy", "export_control"], "confidence": 0.72 },
+        { "node_id": "trade_flow:advanced_logic_us_kr", "node_type": "trade_flow", "canonical_name": "Advanced logic US-KR trade flow placeholder", "aliases": ["US-KR advanced logic flow"], "country_code": null, "sector_tags": ["trade_flow"], "confidence": 0.68 }
+      ],
+      "events": [
+        { "event_id": "policy_event:export_control_placeholder", "event_type": "policy_event", "canonical_name": "Export-control placeholder", "event_time": "2026-04-25T00:00:00Z", "summary": "Fixture-only policy event representing public export-control monitoring evidence.", "affected_entity_ids": ["equipment:euv_scanner", "technology_node:5nm", "product_grade:advanced_logic"], "confidence": 0.72 }
+      ],
+      "edges": [
+        { "edge_id": "edge:euv_scanner:restricted_by:export_control_placeholder", "source_node_id": "equipment:euv_scanner", "target_node_id": "policy_event:export_control_placeholder", "edge_type": "restricted_by", "weight": 0.7, "confidence": 0.72, "evidence_text_summary": "The fixture policy event constrains EUV scanner availability as a public monitoring placeholder." },
+        { "edge_id": "edge:5nm:restricted_by:export_control_placeholder", "source_node_id": "technology_node:5nm", "target_node_id": "policy_event:export_control_placeholder", "edge_type": "restricted_by", "weight": 0.62, "confidence": 0.7, "evidence_text_summary": "The fixture policy event constrains 5nm-class technology as a public monitoring placeholder." },
+        { "edge_id": "edge:advanced_logic:restricted_by:export_control_placeholder", "source_node_id": "product_grade:advanced_logic", "target_node_id": "policy_event:export_control_placeholder", "edge_type": "restricted_by", "weight": 0.6, "confidence": 0.69, "evidence_text_summary": "The fixture policy event constrains advanced logic products as a public monitoring placeholder." },
+        { "edge_id": "edge:trade_flow_us_kr:exports_to:kr", "source_node_id": "trade_flow:advanced_logic_us_kr", "target_node_id": "country:kr", "edge_type": "exports_to", "weight": 0.48, "confidence": 0.64, "evidence_text_summary": "The fixture trade-flow placeholder maps advanced logic exports to South Korea." },
+        { "edge_id": "edge:trade_flow_us_kr:imports_from:us", "source_node_id": "trade_flow:advanced_logic_us_kr", "target_node_id": "country:us", "edge_type": "imports_from", "weight": 0.48, "confidence": 0.64, "evidence_text_summary": "The fixture trade-flow placeholder maps advanced logic imports from the United States." },
+        { "edge_id": "edge:trade_flow_us_kr:restricted_by:export_control_placeholder", "source_node_id": "trade_flow:advanced_logic_us_kr", "target_node_id": "policy_event:export_control_placeholder", "edge_type": "restricted_by", "weight": 0.5, "confidence": 0.65, "evidence_text_summary": "The fixture trade-flow placeholder is linked to the policy event for lineage." }
+      ]
+    }
+  ]
+}

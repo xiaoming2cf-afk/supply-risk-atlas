@@ -52,6 +52,14 @@ class Handler(BaseHTTPRequestHandler):
             "/api/v1/graph": lambda: main.route_graph_snapshots(request_id=request_id),
             "/api/v1/graph/snapshots": lambda: main.route_graph_snapshots(request_id=request_id),
             "/api/v1/graph/diff": lambda: main.route_graph_diff(request_id=request_id),
+            "/api/v1/graph/snapshot": lambda: main.route_semiconductor_graph_snapshot(
+                request_id=request_id,
+            ),
+            "/api/v1/graph/neighborhood": lambda: main.route_semiconductor_graph_neighborhood(
+                node_id=_first(query.get("node_id")) or "company:tsmc",
+                depth=_int_or_default(_first(query.get("depth")), 1),
+                request_id=request_id,
+            ),
             "/api/v1/features": lambda: main.route_features(
                 entity_id=_first(query.get("entity_id")),
                 request_id=request_id,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from threading import Lock
 from typing import Any
 from uuid import uuid4
@@ -20,6 +21,10 @@ except Exception:  # pragma: no cover - allows contract tests without FastAPI in
     JSONResponse = None  # type: ignore[assignment]
 
 from graph_kernel.graph_diff import diff_edge_states
+from graph_kernel.semiconductor_snapshot import (
+    build_semiconductor_fixture_snapshot,
+    neighborhood as semiconductor_neighborhood,
+)
 from graph_kernel.path_index import build_path_index
 from ml.models.dchgt_sc import DCHGTSCSkeleton
 from ml.simulation.counterfactual import build_counterfactual_edges
@@ -40,6 +45,7 @@ from sra_core.contracts.domain import (
     SimulationRequest,
     VersionMetadata,
 )
+from sra_core.contracts.semiconductor import DEFAULT_SEMIRISK_AS_OF_TIME
 from sra_core.real_pipeline import real_metadata, run_public_real_pipeline
 
 
@@ -256,6 +262,81 @@ def route_graph_snapshots(request_id: str | None = None) -> dict[str, Any]:
         },
         metadata=metadata_for_result(result),
         request_id=request_id,
+    )
+
+
+def semiconductor_metadata(snapshot: Any | None = None) -> VersionMetadata:
+    graph_version = snapshot.graph_version if snapshot is not None else "semirisk_kg_unavailable"
+    source_manifest_id = snapshot.source_manifest_id if snapshot is not None else "semirisk_fixture_manifest_unavailable"
+    as_of_time = snapshot.as_of_time if snapshot is not None else _semiconductor_default_time()
+    return VersionMetadata(
+        graph_version=graph_version,
+        feature_version="semirisk_features_unavailable",
+        label_version="semirisk_labels_unavailable",
+        model_version="semirisk_model_unavailable",
+        as_of_time=as_of_time,
+        audit_ref="semirisk_fixture_graph_v0.1",
+        lineage_ref=source_manifest_id,
+        data_mode="real",
+        freshness_status="partial",
+        source_count=4,
+        source_manifest_ref=source_manifest_id,
+    )
+
+
+def _semiconductor_default_time() -> datetime:
+    return datetime.fromisoformat(DEFAULT_SEMIRISK_AS_OF_TIME.replace("Z", "+00:00"))
+
+
+def route_semiconductor_graph_snapshot(request_id: str | None = None) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+    except Exception as exc:
+        return make_error_envelope(
+            "semiconductor_graph_unavailable",
+            "SemiRisk-KG fixture graph could not be built.",
+            metadata=semiconductor_metadata(),
+            request_id=request_id,
+            warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
+        )
+    return make_envelope(
+        snapshot.model_dump(mode="json"),
+        metadata=semiconductor_metadata(snapshot),
+        request_id=request_id,
+        warnings=_semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_semiconductor_graph_neighborhood(
+    node_id: str = "company:tsmc",
+    depth: int = 1,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+        payload = semiconductor_neighborhood(snapshot, node_id=node_id, depth=depth)
+    except KeyError as exc:
+        return make_error_envelope(
+            "semiconductor_graph_node_not_found",
+            str(exc),
+            metadata=semiconductor_metadata(),
+            request_id=request_id,
+            field="node_id",
+            warnings=["fixture_graph:not_production_ready"],
+        )
+    except Exception as exc:
+        return make_error_envelope(
+            "semiconductor_graph_unavailable",
+            "SemiRisk-KG fixture graph neighborhood could not be built.",
+            metadata=semiconductor_metadata(),
+            request_id=request_id,
+            warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
+        )
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot),
+        request_id=request_id,
+        warnings=_semiconductor_fixture_warnings(snapshot),
     )
 
 
@@ -569,6 +650,71 @@ def route_shock_simulator(
     )
 
 
+def _semiconductor_fixture_warnings(snapshot: Any) -> list[str]:
+    warnings = ["fixture_graph:not_production_ready"]
+    if snapshot.stale_source_count:
+        warnings.append(f"fixture_source_freshness_degraded:{snapshot.stale_source_count}")
+    if snapshot.missing_provenance_count:
+        warnings.append(f"missing_graph_provenance:{snapshot.missing_provenance_count}")
+    if snapshot.unresolved_entity_count:
+        warnings.append(f"unresolved_graph_entities:{snapshot.unresolved_entity_count}")
+    quality_status = (snapshot.quality_report or {}).get("status")
+    if quality_status not in {None, "pass"}:
+        warnings.append(f"graph_quality_{quality_status}")
+    return warnings
+
+
+def _semiconductor_graph_health_payload() -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+    except Exception as exc:
+        return {
+            "label": "SemiRisk-KG v0.1 fixture graph",
+            "status": "unavailable",
+            "fixtureGraph": True,
+            "registryReady": False,
+            "ontologyReady": False,
+            "fixtureManifestReady": False,
+            "fixtureGraphReady": False,
+            "graphVersion": "unavailable",
+            "ontologyVersion": "unavailable",
+            "sourceManifestId": "unavailable",
+            "asOfTime": DEFAULT_SEMIRISK_AS_OF_TIME,
+            "nodeCount": 0,
+            "edgeCount": 0,
+            "nodeCountByType": {},
+            "edgeCountByType": {},
+            "missingProvenanceCount": 0,
+            "unresolvedEntityCount": 0,
+            "staleSourceCount": 0,
+            "warnings": [f"fixture_graph_unavailable:{type(exc).__name__}"],
+        }
+    warnings = _semiconductor_fixture_warnings(snapshot)
+    return {
+        "label": "SemiRisk-KG v0.1 fixture graph",
+        "status": "ready"
+        if snapshot.quality_report.get("status") == "pass" and snapshot.stale_source_count == 0
+        else "degraded",
+        "fixtureGraph": True,
+        "registryReady": True,
+        "ontologyReady": True,
+        "fixtureManifestReady": True,
+        "fixtureGraphReady": True,
+        "graphVersion": snapshot.graph_version,
+        "ontologyVersion": snapshot.ontology_version,
+        "sourceManifestId": snapshot.source_manifest_id,
+        "asOfTime": snapshot.as_of_time.isoformat(),
+        "nodeCount": snapshot.node_count,
+        "edgeCount": snapshot.edge_count,
+        "nodeCountByType": snapshot.node_count_by_type,
+        "edgeCountByType": snapshot.edge_count_by_type,
+        "missingProvenanceCount": snapshot.missing_provenance_count,
+        "unresolvedEntityCount": snapshot.unresolved_entity_count,
+        "staleSourceCount": snapshot.stale_source_count,
+        "warnings": warnings,
+    }
+
+
 def _real_data_warnings(result: Any) -> list[str]:
     if not hasattr(result, "real"):
         return ["real_mode_required"]
@@ -762,6 +908,7 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
             "entityResolution": _entity_resolution_payload(result),
             "evidenceLineage": _evidence_lineage_payload(result),
             "dataCatalog": _data_catalog_payload(result),
+            "semiconductorGraph": _semiconductor_graph_health_payload(),
         },
     }
 
@@ -2598,6 +2745,24 @@ def create_app() -> Any:
     @app.get("/api/v1/graph/diff")
     def http_graph_diff(x_request_id: str | None = Header(default=None)) -> dict[str, Any]:
         return route_graph_diff(request_id=x_request_id)
+
+    @app.get("/api/v1/graph/snapshot")
+    def http_semiconductor_graph_snapshot(
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_semiconductor_graph_snapshot(request_id=x_request_id)
+
+    @app.get("/api/v1/graph/neighborhood")
+    def http_semiconductor_graph_neighborhood(
+        node_id: str = Query(default="company:tsmc"),
+        depth: int = Query(default=1, ge=0, le=3),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_semiconductor_graph_neighborhood(
+            node_id=node_id,
+            depth=depth,
+            request_id=x_request_id,
+        )
 
     @app.get("/features", include_in_schema=False)
     @app.get("/api/v1/features")

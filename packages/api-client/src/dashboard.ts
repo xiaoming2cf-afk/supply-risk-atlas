@@ -11,6 +11,8 @@ import type {
   GraphVersionStudioData,
   PathExplainerData,
   PredictionCenterData,
+  SemiriskGraphNeighborhoodData,
+  SemiriskGraphSnapshotData,
   ShockSimulationInput,
   ShockSimulationResult,
   SystemHealthData,
@@ -33,6 +35,8 @@ export interface SupplyRiskApiClient {
   getCausalEvidenceBoard(): Promise<ApiResult<CausalEvidenceBoardData>>;
   getGraphVersionStudio(): Promise<ApiResult<GraphVersionStudioData>>;
   getSystemHealthCenter(): Promise<ApiResult<SystemHealthData>>;
+  getSemiriskGraphSnapshot(): Promise<ApiResult<SemiriskGraphSnapshotData>>;
+  getSemiriskGraphNeighborhood(nodeId: string, depth?: number): Promise<ApiResult<SemiriskGraphNeighborhoodData>>;
 }
 
 export interface SupplyRiskDashboardData {
@@ -233,5 +237,13 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
     getCausalEvidenceBoard: () => requestJson(baseUrl, "/dashboard/causal-evidence-board", undefined, clientOptions),
     getGraphVersionStudio: () => requestJson(baseUrl, "/dashboard/graph-version-studio", undefined, clientOptions),
     getSystemHealthCenter: () => requestJson(baseUrl, "/dashboard/system-health-center", undefined, clientOptions),
+    getSemiriskGraphSnapshot: () => requestJson(baseUrl, "/graph/snapshot", undefined, clientOptions),
+    getSemiriskGraphNeighborhood: (nodeId, depth = 1) =>
+      requestJson(
+        baseUrl,
+        `/graph/neighborhood${queryString({ node_id: nodeId, depth })}`,
+        undefined,
+        clientOptions,
+      ),
   };
 }
