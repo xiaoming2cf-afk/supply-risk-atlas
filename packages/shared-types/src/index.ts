@@ -229,6 +229,7 @@ export type RiskLevel = "low" | "guarded" | "elevated" | "severe" | "critical";
 export type TrendDirection = "up" | "down" | "flat";
 
 export type DashboardPageId =
+  | "system-health-center"
   | "global-risk-cockpit"
   | "graph-explorer"
   | "company-risk-360"
@@ -238,8 +239,7 @@ export type DashboardPageId =
   | "path-explainer"
   | "shock-simulator"
   | "causal-evidence-board"
-  | "graph-version-studio"
-  | "system-health-center";
+  | "graph-version-studio";
 
 export interface DashboardPage {
   id: DashboardPageId;
@@ -249,6 +249,12 @@ export interface DashboardPage {
 }
 
 export const dashboardPages: DashboardPage[] = [
+  {
+    id: "system-health-center",
+    label: "System Health Center",
+    shortLabel: "Health",
+    description: "Data pipeline, source registry, freshness, API, and graph service health",
+  },
   {
     id: "global-risk-cockpit",
     label: "Global Risk Cockpit",
@@ -302,12 +308,6 @@ export const dashboardPages: DashboardPage[] = [
     label: "Graph Version Studio",
     shortLabel: "Versions",
     description: "Compare graph builds, schema drift, and promotion readiness",
-  },
-  {
-    id: "system-health-center",
-    label: "System Health Center",
-    shortLabel: "Health",
-    description: "Data pipeline, model, API, and graph service health",
   },
 ];
 

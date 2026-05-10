@@ -2,6 +2,15 @@ Feature: SupplyRiskAtlas analyst workflows
   Supply-risk analysts need explainable, traceable risk views across suppliers,
   graph relationships, and evidence so they can prioritize interventions.
 
+  @smoke @foundation
+  Scenario: Open the public System Health Center
+    Given the analyst opens the public SupplyRiskAtlas deployment
+    When the analyst navigates to "#system-health-center"
+    Then the page title is "System Health Center"
+    And System Health Center is the first public navigation item
+    And the page shows API health, source registry, freshness, source manifest, and graph status when verified data is available
+    And unavailable, stale, partial, or degraded health data is labeled explicitly without fake metrics
+
   @smoke @risk
   Scenario: View portfolio risk overview
     Given the analyst has access to a populated supply-risk workspace

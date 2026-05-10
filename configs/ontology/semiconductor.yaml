@@ -1,0 +1,220 @@
+schema_version: semiconductor_ontology_v0.1
+domain: semiconductor_supply_risk
+version: v0.1
+
+node_required_fields: &node_required_fields
+  [node_id, node_type, canonical_name, attributes, source_refs, confidence, valid_from, valid_to]
+edge_required_fields: &edge_required_fields
+  [edge_id, source_node_id, target_node_id, edge_type, weight, confidence, valid_from, valid_to, provenance_refs, evidence_text_summary]
+
+node_types:
+  company:
+    description: Legal entity, supplier, customer, foundry, OSAT, equipment vendor, or materials supplier.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [participates_in, located_in, requires, produces, supplies, depends_on, substitutable_with, restricted_by, impacted_by, exports_to, imports_from, routes_through, correlated_with, evidence_for], incoming: [supplies, depends_on, substitutable_with, impacted_by, evidence_for] }
+    example: { node_id: "company:tsmc", node_type: company, canonical_name: "Taiwan Semiconductor Manufacturing Company" }
+    version: v0.1
+  country:
+    description: ISO country jurisdiction for geography, policy, market, and trade-flow context.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [exports_to, imports_from, restricted_by, impacted_by, correlated_with, evidence_for], incoming: [located_in, exports_to, imports_from, routes_through, correlated_with, evidence_for] }
+    example: { node_id: "country:us", node_type: country, canonical_name: "United States" }
+    version: v0.1
+  region:
+    description: Subnational, multi-country, or market region used for exposure aggregation.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [impacted_by, correlated_with, evidence_for], incoming: [located_in, routes_through, exports_to, imports_from, correlated_with, evidence_for] }
+    example: { node_id: "region:east_asia", node_type: region, canonical_name: "East Asia" }
+    version: v0.1
+  facility:
+    description: Fab, OSAT site, warehouse, port-adjacent plant, or operational facility.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [located_in, requires, produces, depends_on, impacted_by, routes_through, evidence_for], incoming: [participates_in, supplies, depends_on, impacted_by, evidence_for] }
+    example: { node_id: "facility:fab18", node_type: facility, canonical_name: "TSMC Fab 18" }
+    version: v0.1
+  process_stage:
+    description: Semiconductor manufacturing, packaging, test, or logistics process stage.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [requires, produces, depends_on, impacted_by, evidence_for], incoming: [participates_in, requires, depends_on, evidence_for] }
+    example: { node_id: "process_stage:lithography", node_type: process_stage, canonical_name: "Lithography" }
+    version: v0.1
+  equipment:
+    description: Wafer fab, metrology, lithography, packaging, or test equipment class.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [substitutable_with, restricted_by, impacted_by, evidence_for], incoming: [requires, supplies, depends_on, substitutable_with, restricted_by, evidence_for] }
+    example: { node_id: "equipment:euv_scanner", node_type: equipment, canonical_name: "EUV lithography scanner" }
+    version: v0.1
+  material:
+    description: Semiconductor-grade wafer, substrate, gas, consumable, or raw material.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [substitutable_with, restricted_by, impacted_by, exports_to, imports_from, evidence_for], incoming: [requires, supplies, depends_on, substitutable_with, evidence_for] }
+    example: { node_id: "material:silicon_wafer_300mm", node_type: material, canonical_name: "300mm silicon wafer" }
+    version: v0.1
+  chemical:
+    description: Semiconductor chemical, photoresist, etchant, slurry, or specialty gas.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [substitutable_with, restricted_by, impacted_by, exports_to, imports_from, evidence_for], incoming: [requires, supplies, depends_on, substitutable_with, evidence_for] }
+    example: { node_id: "chemical:photoresist", node_type: chemical, canonical_name: "Advanced photoresist" }
+    version: v0.1
+  component:
+    description: Semiconductor component, package substrate, die, module, or HS-coded product family.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [requires, depends_on, substitutable_with, restricted_by, impacted_by, exports_to, imports_from, evidence_for], incoming: [produces, supplies, depends_on, substitutable_with, evidence_for] }
+    example: { node_id: "component:hbm", node_type: component, canonical_name: "High bandwidth memory" }
+    version: v0.1
+  product_grade:
+    description: Product, technology, or market grade such as advanced logic, automotive MCU, or HBM.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [requires, depends_on, restricted_by, impacted_by, correlated_with, evidence_for], incoming: [produces, supplies, depends_on, correlated_with, evidence_for] }
+    example: { node_id: "product_grade:logic_5nm", node_type: product_grade, canonical_name: "Advanced logic 5nm" }
+    version: v0.1
+  technology_node:
+    description: Wafer process node, packaging process, or qualified manufacturing capability.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [requires, restricted_by, impacted_by, correlated_with, evidence_for], incoming: [requires, produces, depends_on, correlated_with, evidence_for] }
+    example: { node_id: "technology_node:5nm", node_type: technology_node, canonical_name: "5nm logic" }
+    version: v0.1
+  policy_event:
+    description: Export control, sanctions action, industrial policy, tariff, or licensing rule.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [restricted_by, evidence_for, correlated_with], incoming: [restricted_by, impacted_by, evidence_for, correlated_with] }
+    example: { node_id: "policy_event:gta:measure_123", node_type: policy_event, canonical_name: "Export licensing measure" }
+    version: v0.1
+  risk_event:
+    description: Public disruption, logistics, weather, geopolitical, or operational event signal.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [impacted_by, evidence_for, correlated_with], incoming: [impacted_by, evidence_for, correlated_with] }
+    example: { node_id: "risk_event:gdelt:semiconductor_signal", node_type: risk_event, canonical_name: "Semiconductor disruption signal" }
+    version: v0.1
+  market_indicator:
+    description: Billings, pricing, inventory, utilization, or public market indicator.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [correlated_with, evidence_for], incoming: [correlated_with, evidence_for] }
+    example: { node_id: "market_indicator:wsts_billings", node_type: market_indicator, canonical_name: "WSTS monthly billings" }
+    version: v0.1
+  trade_flow:
+    description: Country, region, or product trade-flow observation or aggregation.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [exports_to, imports_from, correlated_with, evidence_for], incoming: [exports_to, imports_from, correlated_with, evidence_for] }
+    example: { node_id: "trade_flow:8542:us:kr", node_type: trade_flow, canonical_name: "HS 8542 US-KR trade flow" }
+    version: v0.1
+  route:
+    description: Logistics corridor, port pair, air lane, customs route, or critical transport segment.
+    required_fields: *node_required_fields
+    allowed_edge_directions: { outgoing: [routes_through, depends_on, impacted_by, substitutable_with, evidence_for], incoming: [routes_through, depends_on, impacted_by, substitutable_with, evidence_for] }
+    example: { node_id: "route:taiwan_us_west_coast", node_type: route, canonical_name: "Taiwan to US West Coast lane" }
+    version: v0.1
+
+edge_types:
+  participates_in:
+    description: Entity participates in a process stage, facility program, or production network.
+    required_fields: *edge_required_fields
+    source: [company, facility]
+    target: [facility, process_stage]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: company, target_node_type: process_stage }
+    version: v0.1
+  located_in:
+    description: Entity or route is located in a country or region.
+    required_fields: *edge_required_fields
+    source: [company, facility, route]
+    target: [country, region]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: facility, target_node_type: country }
+    version: v0.1
+  requires:
+    description: Entity, facility, process, or product requires an input, technology, or equipment class.
+    required_fields: *edge_required_fields
+    source: [company, facility, process_stage, component, product_grade, technology_node]
+    target: [equipment, material, chemical, component, technology_node, process_stage]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: facility, target_node_type: chemical }
+    version: v0.1
+  produces:
+    description: Company, facility, or stage produces a component, product grade, or technology node.
+    required_fields: *edge_required_fields
+    source: [company, facility, process_stage]
+    target: [component, product_grade, technology_node]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: facility, target_node_type: product_grade }
+    version: v0.1
+  supplies:
+    description: Supplier provides a material, chemical, equipment class, component, or product grade.
+    required_fields: *edge_required_fields
+    source: [company, facility, material, chemical, equipment, component]
+    target: [company, facility, component, product_grade, material, chemical, equipment]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: company, target_node_type: facility }
+    version: v0.1
+  depends_on:
+    description: Operational, production, or logistics dependency not covered by direct supply.
+    required_fields: *edge_required_fields
+    source: [company, facility, process_stage, component, product_grade, route]
+    target: [company, facility, process_stage, equipment, material, chemical, component, technology_node, route]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: product_grade, target_node_type: technology_node }
+    version: v0.1
+  substitutable_with:
+    description: Qualified or candidate substitution relationship between comparable entities or routes.
+    required_fields: *edge_required_fields
+    source: [company, material, chemical, equipment, component, product_grade, route]
+    target: [company, material, chemical, equipment, component, product_grade, route]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: material, target_node_type: material }
+    version: v0.1
+  restricted_by:
+    description: Policy event restricts or constrains an entity, product, input, country, or trade flow.
+    required_fields: *edge_required_fields
+    source: [company, country, region, equipment, material, chemical, component, product_grade, technology_node, trade_flow]
+    target: [policy_event]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: component, target_node_type: policy_event }
+    version: v0.1
+  impacted_by:
+    description: Risk event or policy event impacts an entity, geography, route, product, or process.
+    required_fields: *edge_required_fields
+    source: [company, country, region, facility, process_stage, equipment, material, chemical, component, product_grade, technology_node, market_indicator, trade_flow, route]
+    target: [risk_event, policy_event]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: facility, target_node_type: risk_event }
+    version: v0.1
+  exports_to:
+    description: Country, company, material, component, or trade flow exports to another country or region.
+    required_fields: *edge_required_fields
+    source: [country, region, company, material, chemical, component, product_grade, trade_flow]
+    target: [country, region]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: country, target_node_type: country }
+    version: v0.1
+  imports_from:
+    description: Country, company, material, component, or trade flow imports from another country or region.
+    required_fields: *edge_required_fields
+    source: [country, region, company, material, chemical, component, product_grade, trade_flow]
+    target: [country, region]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: country, target_node_type: country }
+    version: v0.1
+  routes_through:
+    description: Company, facility, trade flow, or route depends on a route, country, or region transit point.
+    required_fields: *edge_required_fields
+    source: [company, facility, trade_flow, route]
+    target: [route, country, region]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: facility, target_node_type: route }
+    version: v0.1
+  correlated_with:
+    description: Public evidence indicates correlation between market, risk, policy, trade, geography, or technology signals.
+    required_fields: *edge_required_fields
+    source: [company, country, region, component, product_grade, technology_node, policy_event, risk_event, market_indicator, trade_flow]
+    target: [company, country, region, component, product_grade, technology_node, policy_event, risk_event, market_indicator, trade_flow]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: market_indicator, target_node_type: product_grade }
+    version: v0.1
+  evidence_for:
+    description: Evidence artifact or source-derived node supports another node or edge interpretation.
+    required_fields: *edge_required_fields
+    source: [company, country, region, facility, process_stage, equipment, material, chemical, component, product_grade, technology_node, policy_event, risk_event, market_indicator, trade_flow, route]
+    target: [company, country, region, facility, process_stage, equipment, material, chemical, component, product_grade, technology_node, policy_event, risk_event, market_indicator, trade_flow, route]
+    allowed_edge_directions: { source_to_target: true }
+    example: { source_node_type: risk_event, target_node_type: company }
+    version: v0.1

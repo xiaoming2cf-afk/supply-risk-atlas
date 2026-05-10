@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semiconductor_source_registry",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "registry_version": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "enum": [
+              "eto_cset_advanced_semiconductor_supply_chain",
+              "wsts_historical_billings",
+              "global_trade_alert_semiconductor_export_controls",
+              "gdelt_semiconductor_events",
+              "sec_edgar",
+              "un_comtrade"
+            ]
+          },
+          "publisher": { "type": "string", "minLength": 1 },
+          "source_url": { "type": "string", "minLength": 1 },
+          "terms_url": { "type": "string", "minLength": 1 },
+          "license_or_terms_summary": { "type": "string", "minLength": 1 },
+          "allowed_use": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "redistribution_limits": { "type": "string", "minLength": 1 },
+          "attribution": { "type": "string", "minLength": 1 },
+          "requires_api_key": { "type": "boolean" },
+          "enabled_by_default": { "type": "boolean" },
+          "update_frequency": {
+            "type": "string",
+            "enum": ["15_minutes", "hourly", "daily", "weekly", "monthly", "irregular"]
+          },
+          "freshness_sla_hours": { "type": "integer", "minimum": 1 },
+          "connector": { "type": "string", "minLength": 1 },
+          "raw_contract": { "type": "string", "minLength": 1 },
+          "silver_contract": { "type": "string", "minLength": 1 },
+          "graph_contract": { "type": "string", "minLength": 1 },
+          "owner": { "type": "string", "minLength": 1 },
+          "review_status": { "type": "string", "minLength": 1 }
+        },
+        "required": [
+          "source_id",
+          "publisher",
+          "source_url",
+          "terms_url",
+          "license_or_terms_summary",
+          "allowed_use",
+          "redistribution_limits",
+          "attribution",
+          "requires_api_key",
+          "enabled_by_default",
+          "update_frequency",
+          "freshness_sla_hours",
+          "connector",
+          "raw_contract",
+          "silver_contract",
+          "graph_contract",
+          "owner",
+          "review_status"
+        ]
+      }
+    }
+  },
+  "required": ["registry_version", "generated_at", "sources"]
+}

@@ -1,0 +1,116 @@
+registry_version: semiconductor-source-registry-v0.1
+generated_at: "2026-05-10T00:00:00Z"
+sources:
+  - source_id: eto_cset_advanced_semiconductor_supply_chain
+    publisher: Georgetown CSET Emerging Technology Observatory
+    source_url: https://eto.tech/dataset-docs/chipexplorer/
+    terms_url: https://eto.tech/terms/
+    license_or_terms_summary: Public terms allow derived research analysis with attribution; raw redistribution is not approved by this registry.
+    allowed_use: [research, derived_risk_analysis, internal_review]
+    redistribution_limits: Do not redistribute raw payloads; expose only hashes, summaries, lineage, and derived graph facts.
+    attribution: Emerging Technology Observatory, Georgetown CSET
+    requires_api_key: false
+    enabled_by_default: true
+    update_frequency: monthly
+    freshness_sla_hours: 720
+    connector: unavailable:live_connector_not_implemented
+    raw_contract: data_contracts/raw_schema/eto_supply_chain_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
+    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+    owner: data-ingestion
+    review_status: approved_for_governance_registration
+
+  - source_id: wsts_historical_billings
+    publisher: World Semiconductor Trade Statistics
+    source_url: https://www.wsts.org/
+    terms_url: https://www.wsts.org/terms
+    license_or_terms_summary: Public summaries may support attributed analysis; raw reports and tables must not be redistributed.
+    allowed_use: [research, derived_market_indicator, internal_review]
+    redistribution_limits: Do not expose raw reports or tables; expose only normalized indicators with lineage.
+    attribution: World Semiconductor Trade Statistics
+    requires_api_key: false
+    enabled_by_default: true
+    update_frequency: monthly
+    freshness_sla_hours: 720
+    connector: unavailable:live_connector_not_implemented
+    raw_contract: data_contracts/raw_schema/wsts_billings_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_market_indicator.schema.json
+    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+    owner: data-ingestion
+    review_status: approved_for_governance_registration
+
+  - source_id: global_trade_alert_semiconductor_export_controls
+    publisher: Global Trade Alert
+    source_url: https://www.globaltradealert.org/
+    terms_url: https://www.globaltradealert.org/terms-of-use
+    license_or_terms_summary: Public policy facts may be summarized with attribution; this registry does not provide compliance advice.
+    allowed_use: [research, policy_risk_analysis, internal_review]
+    redistribution_limits: Do not expose raw intervention payloads; expose normalized policy summaries and graph evidence only.
+    attribution: Global Trade Alert
+    requires_api_key: false
+    enabled_by_default: true
+    update_frequency: weekly
+    freshness_sla_hours: 168
+    connector: unavailable:live_connector_not_implemented
+    raw_contract: data_contracts/raw_schema/gta_export_controls_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_event.schema.json
+    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+    owner: data-ingestion
+    review_status: approved_for_governance_registration
+
+  - source_id: gdelt_semiconductor_events
+    publisher: The GDELT Project
+    source_url: https://www.gdeltproject.org/
+    terms_url: https://www.gdeltproject.org/about.html
+    license_or_terms_summary: Public event metadata may be analyzed with attribution; article payloads must be summarized, not exposed.
+    allowed_use: [research, event_monitoring, derived_risk_analysis]
+    redistribution_limits: Do not expose article text or raw GDELT payloads; expose event summaries and lineage refs.
+    attribution: The GDELT Project
+    requires_api_key: false
+    enabled_by_default: true
+    update_frequency: 15_minutes
+    freshness_sla_hours: 6
+    connector: unavailable:live_connector_not_implemented
+    raw_contract: data_contracts/raw_schema/gdelt_semiconductor_event_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_event.schema.json
+    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+    owner: data-ingestion
+    review_status: approved_for_governance_registration
+
+  - source_id: sec_edgar
+    publisher: U.S. Securities and Exchange Commission
+    source_url: https://www.sec.gov/edgar/sec-api-documentation
+    terms_url: https://www.sec.gov/os/accessing-edgar-data
+    license_or_terms_summary: Public filings may support attributed derived analysis; request headers and rate limits must follow SEC guidance.
+    allowed_use: [research, filing_risk_factor_analysis, internal_review]
+    redistribution_limits: Do not expose raw filing payloads through platform API or UI.
+    attribution: U.S. Securities and Exchange Commission EDGAR
+    requires_api_key: false
+    enabled_by_default: false
+    update_frequency: daily
+    freshness_sla_hours: 72
+    connector: disabled:v0.2_review_required
+    raw_contract: data_contracts/raw_schema/sec_edgar_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
+    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+    owner: data-ingestion
+    review_status: disabled_pending_v0.2_review
+
+  - source_id: un_comtrade
+    publisher: United Nations Comtrade
+    source_url: https://comtradeplus.un.org/
+    terms_url: https://comtradeplus.un.org/TermsOfUse
+    license_or_terms_summary: Public trade data may support attributed derived analysis subject to Comtrade terms and volume limits.
+    allowed_use: [research, trade_flow_analysis, internal_review]
+    redistribution_limits: Do not expose bulk raw trade payloads; expose governed indicators and lineage only.
+    attribution: United Nations Comtrade
+    requires_api_key: false
+    enabled_by_default: false
+    update_frequency: monthly
+    freshness_sla_hours: 2160
+    connector: disabled:v0.2_review_required
+    raw_contract: data_contracts/raw_schema/un_comtrade_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_market_indicator.schema.json
+    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+    owner: data-ingestion
+    review_status: disabled_pending_v0.2_review

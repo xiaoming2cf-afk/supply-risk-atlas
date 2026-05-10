@@ -99,7 +99,7 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
     case "graph-version-studio":
       return <PageDataUnavailable title="This workspace is not available in the public view." />;
     case "system-health-center":
-      return <PageDataUnavailable title="This workspace is not available in the public view." />;
+      return props.data.systemHealthCenter ? <SystemHealthCenter data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     default:
       return (
         <div className="empty-state">

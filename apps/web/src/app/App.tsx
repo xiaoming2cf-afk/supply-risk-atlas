@@ -44,6 +44,7 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
 
 const deploymentTarget = "supply-risk-atlas-web.onrender.com";
 const publicPageIds = new Set<DashboardPageId>([
+  "system-health-center",
   "global-risk-cockpit",
   "graph-explorer",
   "company-risk-360",
@@ -77,14 +78,14 @@ function resolveApiBaseUrl(hostname: string | null) {
 
 function getHashPage(): DashboardPageId {
   if (typeof window === "undefined") {
-    return "global-risk-cockpit";
+    return "system-health-center";
   }
   const hash = window.location.hash.replace("#", "");
-  return publicDashboardPages.some((page) => page.id === hash) ? (hash as DashboardPageId) : "global-risk-cockpit";
+  return publicDashboardPages.some((page) => page.id === hash) ? (hash as DashboardPageId) : "system-health-center";
 }
 
 function useHashPage() {
-  const [pageId, setPageIdState] = useState<DashboardPageId>("global-risk-cockpit");
+  const [pageId, setPageIdState] = useState<DashboardPageId>("system-health-center");
 
   useEffect(() => {
     const onHashChange = () => setPageIdState(getHashPage());
@@ -159,6 +160,7 @@ export function App() {
     setError(null);
     try {
       const [
+        systemHealthCenterResult,
         globalRiskCockpitResult,
         graphExplorerResult,
         companyRisk360Result,
@@ -166,6 +168,7 @@ export function App() {
         pathExplainerResult,
         causalEvidenceBoardResult
       ] = await Promise.all([
+        apiClient.getSystemHealthCenter(),
         apiClient.getGlobalRiskCockpit(),
         apiClient.getGraphExplorer(),
         apiClient.getCompanyRisk360(),
@@ -175,6 +178,7 @@ export function App() {
       ]);
 
       const nextResults: DashboardResultMap = {
+        "system-health-center": systemHealthCenterResult,
         "global-risk-cockpit": globalRiskCockpitResult,
         "graph-explorer": graphExplorerResult,
         "company-risk-360": companyRisk360Result,
@@ -185,6 +189,7 @@ export function App() {
       setDashboardResults(nextResults);
       setData((current) => {
         const nextData: DashboardDataState = { ...(current ?? {}) };
+        if (hasVerifiedHealthResult(systemHealthCenterResult)) nextData.systemHealthCenter = systemHealthCenterResult.data;
         if (isAcceptedRealResult(globalRiskCockpitResult)) nextData.globalRiskCockpit = globalRiskCockpitResult.data;
         if (isAcceptedRealResult(graphExplorerResult)) nextData.graphExplorer = graphExplorerResult.data;
         if (isAcceptedRealResult(companyRisk360Result)) nextData.companyRisk360 = companyRisk360Result.data;
@@ -445,6 +450,9 @@ function canRenderPageData(
   hasApiBaseUrl: boolean,
 ) {
   if (pageId === "shock-simulator") return hasApiBaseUrl;
+  if (pageId === "system-health-center") {
+    return Boolean(data?.systemHealthCenter && hasVerifiedHealthResult(activeResult as ApiResult<unknown> | undefined));
+  }
   if (!data || !isAcceptedRealResult(activeResult)) return false;
   switch (pageId) {
     case "global-risk-cockpit":
@@ -462,6 +470,12 @@ function canRenderPageData(
     default:
       return false;
   }
+}
+
+function hasVerifiedHealthResult<T>(result: ApiResult<T> | undefined): result is ApiResult<T> & { data: T } {
+  if (!result || result.data === null) return false;
+  if (result.envelope.status !== "success") return false;
+  return !["fallback", "unavailable", "unauthorized", "error"].includes(result.sourceStatus);
 }
 
 function publicCoverageLabel(sourceStatus: string) {
