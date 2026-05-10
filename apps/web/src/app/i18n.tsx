@@ -51,9 +51,9 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
   },
   "company-risk-360": {
     en: {
-      label: "Company Risk 360",
+      label: "Entity Risk 360",
       shortLabel: "Risk 360",
-      description: "Company-level exposure, suppliers, and mitigation posture"
+      description: "Fixture-labeled entity risk score, components, evidence refs, and graph context"
     },
     zh: {
       label: "企业风险 360",

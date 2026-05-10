@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from services.api import main
 
@@ -60,6 +60,11 @@ class Handler(BaseHTTPRequestHandler):
                 depth=_int_or_default(_first(query.get("depth")), 1),
                 request_id=request_id,
             ),
+            "/api/v1/risk/portfolio": lambda: main.route_semirisk_risk_portfolio(
+                node_type=_first(query.get("node_type")) or "company",
+                limit=_int_or_default(_first(query.get("limit")), 20),
+                request_id=request_id,
+            ),
             "/api/v1/features": lambda: main.route_features(
                 entity_id=_first(query.get("entity_id")),
                 request_id=request_id,
@@ -94,6 +99,13 @@ class Handler(BaseHTTPRequestHandler):
                         target_id=_first(query.get("target_id")),
                         request_id=request_id,
                     ),
+                )
+                return
+            if parsed.path.startswith("/api/v1/risk/entities/"):
+                entity_id = unquote(parsed.path.rsplit("/", 1)[-1])
+                self._write(
+                    200,
+                    main.route_semirisk_entity_risk(entity_id=entity_id, request_id=request_id),
                 )
                 return
             self._write(404, main.make_error("not_found", f"Route not found: {parsed.path}", request_id=request_id))

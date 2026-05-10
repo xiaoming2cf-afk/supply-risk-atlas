@@ -6,6 +6,8 @@ import type {
   GraphExplorerQuery,
   GraphSnapshotPayload,
   Prediction,
+  SemiriskEntityRiskScore,
+  SemiriskRiskPortfolioData,
   SimulationResult,
   SourceRegistrySummary,
 } from "@supply-risk/shared-types";
@@ -21,6 +23,8 @@ export interface SupplyRiskClient {
   predictions(): Promise<ApiEnvelope<Prediction[]>>;
   simulations(): Promise<ApiEnvelope<SimulationResult>>;
   reports(): Promise<ApiEnvelope<Record<string, unknown>>>;
+  semiriskEntityRisk(entityId: string): Promise<ApiEnvelope<SemiriskEntityRiskScore>>;
+  semiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiEnvelope<SemiriskRiskPortfolioData>>;
 }
 
 async function request<T>(baseUrl: string, path: string): Promise<ApiEnvelope<T>> {
@@ -89,6 +93,16 @@ export function createSupplyRiskClient(baseUrl = "http://127.0.0.1:8000"): Suppl
     predictions: () => request(baseUrl, "/api/v1/predictions"),
     simulations: () => request(baseUrl, "/api/v1/simulations"),
     reports: () => request(baseUrl, "/api/v1/reports"),
+    semiriskEntityRisk: (entityId) =>
+      request(baseUrl, `/api/v1/risk/entities/${encodeURIComponent(entityId)}`),
+    semiriskRiskPortfolio: (options) =>
+      request(
+        baseUrl,
+        `/api/v1/risk/portfolio${queryString({
+          node_type: options?.nodeType ?? undefined,
+          limit: options?.limit,
+        })}`,
+      ),
   };
 }
 

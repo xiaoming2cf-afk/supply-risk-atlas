@@ -17,7 +17,7 @@ const pages = [
   ["System Health Center", "#system-health-center"],
   ["Global Risk Cockpit", "#global-risk-cockpit"],
   ["Graph Explorer", "#graph-explorer"],
-  ["Company Risk 360", "#company-risk-360"],
+  ["Entity Risk 360", "#company-risk-360"],
   ["Prediction Center", "#prediction-center"],
   ["Path Analysis", "#path-analysis"],
   ["Country Lens", "#country-lens"],

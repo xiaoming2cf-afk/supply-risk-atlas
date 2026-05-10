@@ -49,6 +49,8 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert graph["edgeCount"] >= 30
     assert graph["registryReady"] is True
     assert graph["ontologyReady"] is True
+    assert graph["fixtureGraphReady"] is True
+    assert "fixture_graph:not_production_ready" in graph["warnings"]
     _assert_no_raw_payload(payload)
 
 

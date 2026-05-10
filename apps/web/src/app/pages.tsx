@@ -52,6 +52,8 @@ import type {
   RiskLevel,
   ScenarioChangedPath,
   ScenarioGraphOverlay,
+  SemiriskEntityRiskScore,
+  SemiriskRiskPortfolioData,
   ShockSimulationInput,
   ShockSimulationResult
 } from "@supply-risk/shared-types";
@@ -75,7 +77,7 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
         <PageDataUnavailable />
       );
     case "company-risk-360":
-      return props.data.companyRisk360 ? <CompanyRisk360 data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
+      return <CompanyRisk360 apiClient={props.apiClient} data={props.data} />;
     case "prediction-center":
       return props.data.predictionCenter ? <PredictionCenter data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "path-analysis":
@@ -118,6 +120,12 @@ function PageDataUnavailable({ title = "Data temporarily unavailable" }: { title
       </div>
     </section>
   );
+}
+
+function formatDateTime(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value || "unavailable";
+  return parsed.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function isAcceptedRealApiResult<T>(result: ApiResult<T>): result is ApiResult<T> & { data: T } {
@@ -1858,116 +1866,211 @@ function NetworkSvg({ links, nodes }: { links: GraphLink[]; nodes: GraphNode[] }
   );
 }
 
-function CompanyRisk360({ data }: { data: SupplyRiskDashboardData }) {
+function CompanyRisk360({
+  apiClient
+}: {
+  data: Partial<SupplyRiskDashboardData>;
+  apiClient: SupplyRiskApiClient;
+}) {
   const { t } = useI18n();
-  const companyData = data.companyRisk360;
-  const watchlistAlertsEnabled = companyData.featureGates?.watchlistAlertsDefaultEnabled === true;
-  const [selectedCompanyId, setSelectedCompanyId] = useState(companyData.selectedCompanyId);
-  const selectedCompany =
-    companyData.companies.find((company) => company.id === selectedCompanyId) ?? companyData.companies[0];
+  const [selectedNodeId, setSelectedNodeId] = useState("company:tsmc");
+  const [portfolioResult, setPortfolioResult] = useState<ApiResult<SemiriskRiskPortfolioData> | null>(null);
+  const [riskResult, setRiskResult] = useState<ApiResult<SemiriskEntityRiskScore> | null>(null);
+  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
+  const [isLoadingRisk, setIsLoadingRisk] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingPortfolio(true);
+    apiClient.getSemiriskRiskPortfolio({ nodeType: "company", limit: 20 })
+      .then((result) => {
+        if (!cancelled) setPortfolioResult(result);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingPortfolio(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingRisk(true);
+    apiClient.getSemiriskEntityRisk(selectedNodeId)
+      .then((result) => {
+        if (!cancelled) setRiskResult(result);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingRisk(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient, selectedNodeId]);
+
+  const portfolio = portfolioResult && isAcceptedRealApiResult(portfolioResult) ? portfolioResult.data : null;
+  const risk = riskResult && isAcceptedRealApiResult(riskResult) ? riskResult.data : null;
+  const visibleScores = portfolio?.scores ?? [];
+  const warnings = [
+    ...(portfolio?.warnings ?? []),
+    ...(risk?.warnings ?? []),
+    ...((portfolioResult?.envelope.warnings ?? []) as string[]),
+    ...((riskResult?.envelope.warnings ?? []) as string[])
+  ];
+  const degradedMessage = !risk
+    ? riskResult?.envelope.errors?.[0]?.message ??
+      riskResult?.envelope.warnings?.[0] ??
+      "Risk Score v0 is unavailable until the SemiRisk fixture graph API is reachable."
+    : "";
 
   return (
     <div className="page-grid split-layout">
       <Panel
-        title={watchlistAlertsEnabled ? "Company watchlist" : "Company exposure"}
-        subtitle={
-          watchlistAlertsEnabled
-            ? "Board-level exposure by target company."
-            : "Watchlist and alert defaults are gated until the quality gate is passed."
-        }
+        title="Entity watchlist"
+        subtitle="Fixture-labeled SemiRisk-KG entity scores. These scores are deterministic test-graph outputs, not production readiness claims."
       >
-        <div className="company-list">
-          {companyData.companies.map((company) => (
-            <button
-              className={`version-card ${selectedCompany.id === company.id ? "is-selected" : ""}`}
-              key={company.id}
-              onClick={() => setSelectedCompanyId(company.id)}
-              type="button"
-            >
-              <div className="row-top">
-                <div>
-                  <span className="row-title">{company.name}</span>
-                  <span className="row-subtitle">
-                    {company.ticker} / {company.sector}
-                  </span>
+        {visibleScores.length > 0 ? (
+          <div className="company-list">
+            {visibleScores.map((entity) => (
+              <button
+                className={`version-card ${selectedNodeId === entity.node_id ? "is-selected" : ""}`}
+                key={entity.node_id}
+                onClick={() => setSelectedNodeId(entity.node_id)}
+                type="button"
+              >
+                <div className="row-top">
+                  <div>
+                    <span className="row-title">{entity.canonical_name}</span>
+                    <span className="row-subtitle">
+                      {entity.node_id} / {entity.node_type}
+                    </span>
+                  </div>
+                  <RiskPill level={entity.level} />
                 </div>
-                <RiskPill level={company.level} />
-              </div>
-              <ProgressBar value={company.riskScore} level={company.level} />
-            </button>
-          ))}
-        </div>
+                <ProgressBar value={entity.score} level={entity.level} />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state-shell compact">
+            <h3>{isLoadingPortfolio ? "Loading fixture portfolio" : "Risk portfolio unavailable"}</h3>
+            <p>No entity scores are rendered until the Risk Score v0 API returns a real metadata envelope.</p>
+          </div>
+        )}
       </Panel>
 
       <div className="page-grid">
-        <Panel
-          title={`${selectedCompany.name} ${t("risk posture")}`}
-          subtitle={`${selectedCompany.headquarters}; ${t("confidence")} ${formatPercent(selectedCompany.confidence)}.`}
-          translateTitle={false}
-          translateSubtitle={false}
-          action={<Button icon={ShieldAlert}>{watchlistAlertsEnabled ? "Create watch" : "Experimental watch"}</Button>}
-        >
-          <div className="driver-grid">
-            <ScoreDial score={selectedCompany.riskScore} level={selectedCompany.level} label="Risk score" />
-            <div className="inspector-grid">
-              <Field label="Revenue at risk" value={formatUsdCompact(selectedCompany.revenueAtRiskUsd)} />
-              <Field label="Supplier count" value={selectedCompany.suppliers.length} />
-              <Field label="Top dependency" value={selectedCompany.suppliers[0]?.supplier ?? "None"} />
-              <Field label="Confidence" value={formatPercent(selectedCompany.confidence)} />
+        {risk ? (
+          <>
+            <Panel
+              title={`${risk.entity.canonical_name} ${t("risk posture")}`}
+              subtitle={`${risk.node_id}; graph ${risk.graph_version}; manifest ${risk.source_manifest_id}.`}
+              translateTitle={false}
+              translateSubtitle={false}
+              action={<StatusPill status={risk.fixture_graph ? "degraded" : "operational"} />}
+            >
+              <div className="driver-grid">
+                <ScoreDial score={risk.score} level={risk.level} label="Risk Score v0" />
+                <div className="inspector-grid">
+                  <Field label="Node type" value={risk.entity.node_type} />
+                  <Field label="Confidence" value={formatPercent(risk.entity.confidence)} />
+                  <Field label="Feature version" value={risk.feature_version} />
+                  <Field label="As of time" value={formatDateTime(risk.as_of_time)} />
+                  <Field label="Source manifest" value={risk.source_manifest_id} />
+                  <Field label="Evidence refs" value={formatCompactNumber(risk.evidence_refs.length)} />
+                </div>
+              </div>
+            </Panel>
+
+            <Panel title="Score components" subtitle="Evidence-backed component values with normalized weighted contributions.">
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>{t("Component")}</th>
+                      <th>{t("Value")}</th>
+                      <th>{t("Weight")}</th>
+                      <th>{t("Contribution")}</th>
+                      <th>{t("Evidence")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {risk.components.map((component) => (
+                      <tr key={component.name}>
+                        <td>{component.name}</td>
+                        <td>{component.value === null ? "unavailable" : component.value.toFixed(2)}</td>
+                        <td>{formatPercent(component.weight)}</td>
+                        <td>
+                          {component.weighted_contribution === null
+                            ? "unavailable"
+                            : component.weighted_contribution.toFixed(2)}
+                        </td>
+                        <td>{formatCompactNumber(component.evidence_refs.length)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Evidence refs" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>{t("Edge")}</th>
+                      <th>{t("Type")}</th>
+                      <th>{t("Source")}</th>
+                      <th>{t("Summary")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {risk.evidence_refs.slice(0, 10).map((evidence) => {
+                      const sourceRef = evidence.source_refs[0];
+                      return (
+                        <tr key={evidence.edge_id}>
+                          <td>{evidence.edge_id}</td>
+                          <td>{evidence.edge_type}</td>
+                          <td>{sourceRef ? `${sourceRef.source_id}:${sourceRef.source_record_id}` : "unavailable"}</td>
+                          <td>{evidence.evidence_text_summary}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </>
+        ) : (
+          <Panel
+            title="Entity Risk 360 unavailable"
+            subtitle="The page is waiting for the fixture graph Risk Score v0 API. No production score is fabricated."
+          >
+            <div className="empty-state-shell compact">
+              <h3>{isLoadingRisk ? "Loading Risk Score v0" : "Risk score unavailable"}</h3>
+              <p>{degradedMessage}</p>
             </div>
-          </div>
-        </Panel>
+          </Panel>
+        )}
 
-        <Panel title="Drivers and mitigations" subtitle="Highest contribution factors and current response plan.">
-          <div className="driver-grid">
-            <ul className="timeline-list">
-              {selectedCompany.topDrivers.map((driver) => (
-                <li className="data-row" key={driver}>
-                  <span className="row-title">{driver}</span>
-                </li>
-              ))}
-            </ul>
-            <ul className="recommendation-list">
-              {selectedCompany.mitigations.map((mitigation) => (
-                <li className="data-row" key={mitigation}>
-                  <span className="row-title">{mitigation}</span>
-                </li>
-              ))}
-            </ul>
+        <Panel title="Version and freshness" subtitle="Every displayed score is tied to graph, feature, and source manifest metadata.">
+          <div className="inspector-grid">
+            <Field label="Graph version" value={risk?.graph_version ?? portfolio?.graph_version ?? "unavailable"} />
+            <Field label="Source manifest" value={risk?.source_manifest_id ?? portfolio?.source_manifest_id ?? "unavailable"} />
+            <Field label="Feature version" value={risk?.feature_version ?? portfolio?.feature_version ?? "unavailable"} />
+            <Field label="Fixture graph" value={risk?.fixture_graph || portfolio?.fixture_graph ? "yes" : "unavailable"} />
           </div>
-        </Panel>
-
-        <Panel title="Supplier exposure table" subtitle="Spend share, dependency, and lead time by supplier.">
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>{t("Supplier")}</th>
-                  <th>{t("Country")}</th>
-                  <th>{t("Category")}</th>
-                  <th>{t("Spend")}</th>
-                  <th>{t("Dependency")}</th>
-                  <th>{t("Lead time")}</th>
-                  <th>{t("Level")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedCompany.suppliers.map((supplier) => (
-                  <tr key={supplier.id}>
-                    <td>{supplier.supplier}</td>
-                    <td>{supplier.country}</td>
-                    <td>{supplier.category}</td>
-                    <td>{formatPercent(supplier.spendShare)}</td>
-                    <td>{formatPercent(supplier.dependency)}</td>
-                    <td>{t(`${supplier.leadTimeDays} days`)}</td>
-                    <td>
-                      <RiskPill level={supplier.level} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="health-list" style={{ marginTop: 16 }}>
+            {Array.from(new Set(warnings.length ? warnings : ["fixture_graph:not_production_ready"])).map((warning) => (
+              <li className="data-row" key={warning}>
+                <div className="row-top">
+                  <span className="row-title">{warning}</span>
+                  <StatusPill status="degraded" />
+                </div>
+              </li>
+            ))}
+          </ul>
         </Panel>
       </div>
     </div>
@@ -2951,7 +3054,25 @@ function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) {
                   ))}
                 </ul>
               </Panel>
-            ) : null}
+            ) : (
+              <Panel
+                title="SemiRisk-KG v0.1 fixture graph unavailable"
+                subtitle="The System Health Center did not receive fixture graph metadata from the API, so no graph readiness metrics are fabricated."
+              >
+                <div className="empty-state-shell compact">
+                  <h3>Fixture graph readiness unavailable</h3>
+                  <p>Expected fields include graph_version, source_manifest_id, node counts, edge counts, registryReady, ontologyReady, and fixtureGraph.</p>
+                </div>
+                <ul className="health-list" style={{ marginTop: 16 }}>
+                  <li className="data-row">
+                    <div className="row-top">
+                      <span className="row-title">fixture_graph:metadata_unavailable</span>
+                      <StatusPill status="degraded" />
+                    </div>
+                  </li>
+                </ul>
+              </Panel>
+            )}
   
             {health.dataCatalog ? (
               <Panel

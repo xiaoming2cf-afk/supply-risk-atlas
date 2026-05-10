@@ -11,8 +11,10 @@ import type {
   GraphVersionStudioData,
   PathExplainerData,
   PredictionCenterData,
+  SemiriskEntityRiskScore,
   SemiriskGraphNeighborhoodData,
   SemiriskGraphSnapshotData,
+  SemiriskRiskPortfolioData,
   ShockSimulationInput,
   ShockSimulationResult,
   SystemHealthData,
@@ -37,6 +39,8 @@ export interface SupplyRiskApiClient {
   getSystemHealthCenter(): Promise<ApiResult<SystemHealthData>>;
   getSemiriskGraphSnapshot(): Promise<ApiResult<SemiriskGraphSnapshotData>>;
   getSemiriskGraphNeighborhood(nodeId: string, depth?: number): Promise<ApiResult<SemiriskGraphNeighborhoodData>>;
+  getSemiriskEntityRisk(entityId: string): Promise<ApiResult<SemiriskEntityRiskScore>>;
+  getSemiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiResult<SemiriskRiskPortfolioData>>;
 }
 
 export interface SupplyRiskDashboardData {
@@ -242,6 +246,18 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(
         baseUrl,
         `/graph/neighborhood${queryString({ node_id: nodeId, depth })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiriskEntityRisk: (entityId) =>
+      requestJson(baseUrl, `/risk/entities/${encodeURIComponent(entityId)}`, undefined, clientOptions),
+    getSemiriskRiskPortfolio: (options) =>
+      requestJson(
+        baseUrl,
+        `/risk/portfolio${queryString({
+          node_type: options?.nodeType ?? undefined,
+          limit: options?.limit,
+        })}`,
         undefined,
         clientOptions,
       ),

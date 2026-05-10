@@ -269,9 +269,9 @@ export const dashboardPages: DashboardPage[] = [
   },
   {
     id: "company-risk-360",
-    label: "Company Risk 360",
+    label: "Entity Risk 360",
     shortLabel: "Risk 360",
-    description: "Company-level exposure, suppliers, and mitigation posture",
+    description: "Fixture-labeled entity risk score, components, evidence refs, and graph context",
   },
   {
     id: "prediction-center",
@@ -1032,6 +1032,80 @@ export interface SemiriskGraphNeighborhoodData {
   depth: number;
   nodes: Array<Record<string, unknown>>;
   edges: Array<Record<string, unknown>>;
+  warnings: string[];
+}
+
+export interface SemiriskRiskEvidenceRef {
+  edge_id: string;
+  source_node_id: string;
+  target_node_id: string;
+  edge_type: string;
+  evidence_text_summary: string;
+  source_refs: Array<{
+    source_id: string;
+    source_record_id: string;
+    raw_id: string;
+    payload_hash: string;
+    provenance_url: string;
+    retrieved_at: string;
+    as_of_time: string;
+  }>;
+}
+
+export interface SemiriskRiskComponent {
+  name:
+    | "exposure_score"
+    | "criticality_score"
+    | "substitution_gap"
+    | "policy_risk"
+    | "event_pressure"
+    | "market_pressure";
+  value: number | null;
+  status: "available" | "unavailable";
+  weight: number;
+  weighted_contribution: number | null;
+  evidence_refs: SemiriskRiskEvidenceRef[];
+  explanation: string;
+}
+
+export interface SemiriskEntityRiskScore {
+  node_id: string;
+  entity: {
+    node_id: string;
+    node_type: string;
+    canonical_name: string;
+    attributes: Record<string, unknown>;
+    confidence: number;
+    valid_from: string;
+    valid_to: string | null;
+  };
+  score: number;
+  level: RiskLevel;
+  components: SemiriskRiskComponent[];
+  evidence_refs: SemiriskRiskEvidenceRef[];
+  feature_version: string;
+  graph_version: string;
+  source_manifest_id: string;
+  as_of_time: string;
+  fixture_graph: boolean;
+  warnings: string[];
+}
+
+export interface SemiriskRiskPortfolioData {
+  graph_version: string;
+  source_manifest_id: string;
+  feature_version: string;
+  as_of_time: string;
+  fixture_graph: boolean;
+  node_type: string | null;
+  scores: Array<{
+    node_id: string;
+    canonical_name: string;
+    node_type: string;
+    score: number;
+    level: RiskLevel;
+    evidence_ref_count: number;
+  }>;
   warnings: string[];
 }
 

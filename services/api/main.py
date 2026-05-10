@@ -27,6 +27,13 @@ from graph_kernel.semiconductor_snapshot import (
 )
 from graph_kernel.path_index import build_path_index
 from ml.models.dchgt_sc import DCHGTSCSkeleton
+from ml.risk_scoring.semirisk_score import (
+    FEATURE_VERSION as SEMIRISK_RISK_FEATURE_VERSION,
+    RISK_SCORE_WARNING_FIXTURE_GRAPH,
+    RiskScoreUnavailable,
+    rank_risk_portfolio,
+    score_semirisk_entity,
+)
 from ml.simulation.counterfactual import build_counterfactual_edges
 from ml.simulation.scenario import build_scenario_simulation, normalize_scenario_shock
 from services.api.prediction_center import (
@@ -265,13 +272,17 @@ def route_graph_snapshots(request_id: str | None = None) -> dict[str, Any]:
     )
 
 
-def semiconductor_metadata(snapshot: Any | None = None) -> VersionMetadata:
+def semiconductor_metadata(
+    snapshot: Any | None = None,
+    *,
+    feature_version: str = "semirisk_features_unavailable",
+) -> VersionMetadata:
     graph_version = snapshot.graph_version if snapshot is not None else "semirisk_kg_unavailable"
     source_manifest_id = snapshot.source_manifest_id if snapshot is not None else "semirisk_fixture_manifest_unavailable"
     as_of_time = snapshot.as_of_time if snapshot is not None else _semiconductor_default_time()
     return VersionMetadata(
         graph_version=graph_version,
-        feature_version="semirisk_features_unavailable",
+        feature_version=feature_version,
         label_version="semirisk_labels_unavailable",
         model_version="semirisk_model_unavailable",
         as_of_time=as_of_time,
@@ -337,6 +348,66 @@ def route_semiconductor_graph_neighborhood(
         metadata=semiconductor_metadata(snapshot),
         request_id=request_id,
         warnings=_semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_semirisk_entity_risk(
+    entity_id: str = "company:tsmc",
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+    except Exception as exc:
+        return make_error_envelope(
+            "semirisk_risk_graph_unavailable",
+            "SemiRisk fixture graph could not be built for Risk Score v0.",
+            metadata=semiconductor_metadata(feature_version=SEMIRISK_RISK_FEATURE_VERSION),
+            request_id=request_id,
+            warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
+        )
+    try:
+        payload = score_semirisk_entity(entity_id, snapshot=snapshot)
+    except RiskScoreUnavailable as exc:
+        return make_error_envelope(
+            "semirisk_risk_score_unavailable",
+            str(exc),
+            metadata=semiconductor_metadata(
+                snapshot,
+                feature_version=SEMIRISK_RISK_FEATURE_VERSION,
+            ),
+            request_id=request_id,
+            field="entity_id",
+            warnings=[RISK_SCORE_WARNING_FIXTURE_GRAPH],
+        )
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=SEMIRISK_RISK_FEATURE_VERSION),
+        request_id=request_id,
+        warnings=payload.get("warnings", [RISK_SCORE_WARNING_FIXTURE_GRAPH]),
+    )
+
+
+def route_semirisk_risk_portfolio(
+    node_type: str | None = "company",
+    limit: int = 20,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = build_semiconductor_fixture_snapshot()
+        payload = rank_risk_portfolio(snapshot=snapshot, node_type=node_type, limit=limit)
+    except Exception as exc:
+        return make_error_envelope(
+            "semirisk_risk_portfolio_unavailable",
+            "SemiRisk fixture graph portfolio scores could not be built.",
+            metadata=semiconductor_metadata(feature_version=SEMIRISK_RISK_FEATURE_VERSION),
+            request_id=request_id,
+            warnings=[f"risk_portfolio_failed:{type(exc).__name__}", RISK_SCORE_WARNING_FIXTURE_GRAPH],
+        )
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=SEMIRISK_RISK_FEATURE_VERSION),
+        request_id=request_id,
+        warnings=payload.get("warnings", [RISK_SCORE_WARNING_FIXTURE_GRAPH]),
     )
 
 
@@ -2761,6 +2832,25 @@ def create_app() -> Any:
         return route_semiconductor_graph_neighborhood(
             node_id=node_id,
             depth=depth,
+            request_id=x_request_id,
+        )
+
+    @app.get("/api/v1/risk/entities/{entity_id}")
+    def http_semirisk_entity_risk(
+        entity_id: str,
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_semirisk_entity_risk(entity_id=entity_id, request_id=x_request_id)
+
+    @app.get("/api/v1/risk/portfolio")
+    def http_semirisk_risk_portfolio(
+        node_type: str | None = Query(default="company"),
+        limit: int = Query(default=20, ge=1, le=100),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_semirisk_risk_portfolio(
+            node_type=node_type,
+            limit=limit,
             request_id=x_request_id,
         )
 

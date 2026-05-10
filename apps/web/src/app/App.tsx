@@ -450,6 +450,7 @@ function canRenderPageData(
   hasApiBaseUrl: boolean,
 ) {
   if (pageId === "shock-simulator") return hasApiBaseUrl;
+  if (pageId === "company-risk-360") return hasApiBaseUrl;
   if (pageId === "system-health-center") {
     return Boolean(data?.systemHealthCenter && hasVerifiedHealthResult(activeResult as ApiResult<unknown> | undefined));
   }
@@ -461,8 +462,6 @@ function canRenderPageData(
     case "path-analysis":
     case "country-lens":
       return Boolean(data.graphExplorer && data.pathExplainer);
-    case "company-risk-360":
-      return Boolean(data.companyRisk360);
     case "prediction-center":
       return Boolean(data.predictionCenter);
     case "causal-evidence-board":
