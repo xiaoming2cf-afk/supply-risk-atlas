@@ -191,3 +191,39 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Evidence: `POST /api/v1/reports/investigation` returns `report_id`, `report_version: semirisk_investigation_report_v0.1`, version metadata, evidence summary, graph context, warnings, limitations, `raw_payload_excluded: true`, and `private_diagnostics_excluded: true`. Smoke covers `#investigation-report`, clicks `Generate JSON report`, and verifies the report metadata plus exclusion flags.
 - Known limitations: Reports are generated synchronously and returned directly; persistent report storage is deferred.
 - Next gate decision: Defer Gate 9 prediction cleanup unless final stability checks reveal a narrow required fix; proceed to Gate 10 documentation and final acceptance checks.
+
+## Gate 9 - Prediction Center v1 Baseline Cleanup
+
+- Files changed: none.
+- Commands run: `Get-ChildItem tests -Directory`
+- Result: Deferred. Earlier gates are stable and the checkout does not contain `tests/prediction`; no prediction cleanup was required to pass the runtime or workflow gates.
+- Known limitations: The existing Prediction Center remains the pre-existing public workflow and is not upgraded to a new market/event pressure baseline in this overnight pass.
+- Next gate decision: Proceed to Gate 10 final CI, smoke, docs, and acceptance.
+
+## Gate 10 - Final CI, Smoke, Docs, Acceptance
+
+- Files changed:
+  - `README.md`
+  - `docs/deployment/render.md`
+  - `docs/quality-gates.md`
+  - `tests/e2e/supply-risk-atlas.feature`
+  - `docs/roadmap/overnight-implementation-log.md`
+- Commands run:
+  - `python -m pytest tests/contract tests/ingestion tests/graph_invariants tests/model tests/simulation tests/optimization tests/api tests/reports -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run build`
+  - local direct smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+  - local proxy smoke with `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+- Result: Pass. Targeted Python suite passed; full pytest passed; typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `26 checks`.
+- Final acceptance evidence:
+  - System Health local smoke shows `SemiRisk-KG v0.1 fixture graph`, `graphVersion: semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a`, `sourceManifestId: semirisk_fixture_manifest_f8fa1615a0a7`, `nodeCount: 30`, `edgeCount: 45`, `registryReady: true`, `ontologyReady: true`, and `fixture_graph:not_production_ready`.
+  - Entity Risk 360 local smoke shows `company:tsmc`, `58.33`, `elevated`, all six Risk Score v0 components, `semirisk_risk_score_v0.1`, `graph_version`, `source_manifest_id`, and the fixture warning.
+  - Forward Monte Carlo example: `scenario_type=earthquake`, `run_id=fwd_9eb2aaddecd930db`, `seed=42`, `expected_loss=30.6632`, `cvar95=30.6632`, `graph_version=semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a`, `source_manifest_id=semirisk_fixture_manifest_f8fa1615a0a7`.
+  - Reverse Stress example: `run_id=rev_d927b00a66219239`, `ranked_shock_sets_count=4`, `top_shock_set=shockset_ec587a094897623a`, `cvar95=35.9867`, `plausibility_cost=0.5342`.
+  - Intervention Optimizer example: `run_id=opt_29d024a91a47dfa0`, `budget=70`, `recommended_actions_count=3`, `before_cvar95=29.5275`, `after_cvar95=17.3625`, `resilience_roi=0.2253`.
+  - Investigation Report example: `report_id=report_fa346c5952fa1fab`, JSON generation available, Markdown generation available, `raw_payload_excluded=true`.
+- Skipped tests: `tests/prediction` is absent in this checkout, so prediction-specific pytest selection was skipped.
+- Known limitations: Render deploy verification is best-effort without Render credentials; remote web may remain stale until these commits are pushed and the Render web service redeploys.
+- Next gate decision: Stop. The requested priority gates through report export and final smoke/docs are stable locally.

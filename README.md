@@ -66,6 +66,18 @@ http://127.0.0.1:8000/api/v1/entities?q=SEC%20EDGAR
 http://127.0.0.1:8000/api/v1/entities?entity_type=indicator&source_id=world_bank
 ```
 
+SemiRisk fixture platform endpoints:
+
+```text
+GET  http://127.0.0.1:8000/api/v1/dashboard/system-health-center
+GET  http://127.0.0.1:8000/api/v1/graph/snapshot
+GET  http://127.0.0.1:8000/api/v1/risk/entities/company:tsmc
+POST http://127.0.0.1:8000/api/v1/scenarios/forward
+POST http://127.0.0.1:8000/api/v1/scenarios/reverse
+POST http://127.0.0.1:8000/api/v1/optimization/interventions
+POST http://127.0.0.1:8000/api/v1/reports/investigation
+```
+
 Build or refresh the promoted public-real graph from local cache or public no-key
 sources:
 
@@ -115,7 +127,7 @@ When the API URL is configured, the dashboard client calls versioned envelope ro
 `/api/v1/dashboard/*`. If those routes are unavailable, the UI blocks business payloads and
 shows real-data unavailable states rather than silently rendering fabricated fallback data.
 
-The current semiconductor platform slices use the deterministic SemiRisk fixture graph. It is intentionally visible as `SemiRisk-KG v0.1 fixture graph` with `fixture_graph:not_production_ready` and must not be described as production data.
+The current semiconductor platform slices use the deterministic SemiRisk fixture graph. It is intentionally visible as `SemiRisk-KG v0.1 fixture graph` with `fixture_graph:not_production_ready` and must not be described as production data. Public workflow pages now include System Health Center, Entity Risk 360, Shock Simulator, Reverse Stress Lab, Intervention Optimizer, and Investigation Report; the analytical workflows run only after explicit user action.
 
 ## Acceptance Baseline
 

@@ -55,6 +55,35 @@ Feature: SupplyRiskAtlas analyst workflows
   Scenario: Export an investigation summary
     Given the analyst has selected a supplier with risk evidence and graph context
     When the analyst exports the investigation summary
-    Then the export includes supplier identity, risk score, evidence summary, graph context, and generation time
-    And the export records the data freshness state
-    And the export excludes private runtime diagnostics
+    Then the export includes supplier identity, risk score, evidence summary, graph context, generation time, graph version, source manifest, and report version
+    And the export records warnings, assumptions, limitations, and fixture graph status
+    And the export excludes raw source payloads, private runtime diagnostics, credentials, and hidden internal fields
+
+  @smoke @simulation
+  Scenario: Run forward stress testing from the Shock Simulator
+    Given the analyst opens "#shock-simulator"
+    When the analyst runs a fixed-seed forward stress test for "company:tsmc"
+    Then the page shows expected loss, p50 loss, p90 loss, p95 loss, CVaR95, recovery timing, affected nodes, and top transmission paths
+    And the run manifest includes run id, seed, graph version, source manifest, simulation version, timestamp, warnings, and evidence references
+    And no dollar loss is displayed without licensed private exposure data
+
+  @smoke @reverse-stress
+  Scenario: Search for reverse stress shock sets
+    Given the analyst opens "#reverse-stress-lab"
+    When the analyst runs reverse stress search with a fixed threshold and seed
+    Then the page shows ranked shock sets, threshold status, expected loss, CVaR95, plausibility cost, affected paths, baseline comparison, graph version, and source manifest
+    And policy-related text is limited to resilience planning and compliance review
+
+  @smoke @optimization
+  Scenario: Optimize budget-constrained interventions
+    Given the analyst opens "#intervention-optimizer"
+    When the analyst sets a budget and runs the optimizer
+    Then the page shows recommended actions, before and after expected loss, before and after CVaR95, cost, resilience ROI, assumptions, constraints, evidence refs, graph version, and source manifest
+    And recommended actions remain within the budget and avoid illegal workaround advice
+
+  @smoke @report
+  Scenario: Generate the investigation report page export
+    Given the analyst opens "#investigation-report"
+    When the analyst generates a JSON investigation report for "company:tsmc"
+    Then the page shows report id, graph version, source manifest, evidence summary, report version, and fixture graph warning
+    And the report marks raw payloads and private diagnostics as excluded

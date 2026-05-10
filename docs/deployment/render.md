@@ -88,8 +88,17 @@ Post-deploy SemiRisk fixture graph checks:
 ```powershell
 Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/graph/snapshot
 Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/risk/entities/company:tsmc
+Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/scenarios/forward -Method Post -ContentType 'application/json' -Body '{"scenario_type":"earthquake","targets":["company:tsmc"],"severity_distribution":{"type":"fixed","params":{"value":0.72}},"duration_days_distribution":{"type":"fixed","params":{"value":28}},"iterations":80,"seed":42,"as_of_time":"2026-05-01T00:00:00Z"}'
+Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/scenarios/reverse -Method Post -ContentType 'application/json' -Body '{"target_metric":"cvar95_loss","failure_threshold":35,"candidate_scope":{"node_types":["company","equipment","material","chemical","process_stage","product_grade"],"edge_types":[]},"max_combination_size":2,"beam_width":4,"iterations_per_candidate":30,"seed":42,"as_of_time":"2026-05-01T00:00:00Z"}'
+Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/optimization/interventions -Method Post -ContentType 'application/json' -Body '{"budget":70,"allowed_intervention_types":["add_alternative_supplier","increase_inventory_buffer","add_policy_monitoring"],"max_actions":3,"risk_aversion_beta":0.7,"compliance_constraints":{"no_export_control_evasion":true,"no_sanctions_circumvention":true},"seed":42,"as_of_time":"2026-05-01T00:00:00Z"}'
+Invoke-RestMethod https://supply-risk-atlas-api.onrender.com/api/v1/reports/investigation -Method Post -ContentType 'application/json' -Body '{"entity_id":"company:tsmc","include_entity_risk":true,"format":"json"}'
 $env:SUPPLY_RISK_WEB_URL='https://supply-risk-atlas-web.onrender.com'
 $env:SUPPLY_RISK_API_URL='https://supply-risk-atlas-api.onrender.com/api/v1'
 $env:SUPPLY_RISK_EXPECT_MODE='real'
 npm run smoke:web
 ```
+
+If Render web stays stale after a pushed commit, redeploy the web service from
+the latest Git commit and clear the web build cache before rerunning the remote
+smoke command. Do not claim deployed completion unless the web route shows
+either fixture graph readiness or an explicit API unavailable state.
