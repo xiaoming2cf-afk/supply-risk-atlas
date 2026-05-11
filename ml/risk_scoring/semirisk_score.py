@@ -6,19 +6,25 @@ from typing import Any, Iterable
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.contracts.semiconductor import SemiriskEdge, SemiriskGraphSnapshot, SemiriskNode
 
+from .risk_framework import (
+    CALIBRATION_STATUS as LITERATURE_CALIBRATION_STATUS,
+    FEATURE_VERSION as LITERATURE_FEATURE_VERSION,
+    FORMULA_VERSION as LITERATURE_FORMULA_VERSION,
+    SCORING_METHOD as LITERATURE_SCORING_METHOD,
+    score_likelihood_impact_vulnerability,
+)
+from .weighting import (
+    HEURISTIC_CALIBRATION_STATUS,
+    HEURISTIC_COMPONENT_WEIGHTS,
+    HEURISTIC_WEIGHT_SOURCE,
+    HEURISTIC_WEIGHTING_METHOD,
+)
 
-FEATURE_VERSION = "semirisk_risk_score_v0.1"
+FEATURE_VERSION = LITERATURE_FEATURE_VERSION
+HEURISTIC_FEATURE_VERSION = "semirisk_risk_score_heuristic_v0.1"
 RISK_SCORE_WARNING_FIXTURE_GRAPH = "fixture_graph:not_production_ready"
 DEFAULT_ENTITY_ID = "company:tsmc"
-
-COMPONENT_WEIGHTS = {
-    "exposure_score": 0.25,
-    "criticality_score": 0.25,
-    "substitution_gap": 0.15,
-    "policy_risk": 0.15,
-    "event_pressure": 0.10,
-    "market_pressure": 0.10,
-}
+COMPONENT_WEIGHTS = HEURISTIC_COMPONENT_WEIGHTS
 
 EXPOSURE_EDGE_TYPES = {
     "depends_on",
@@ -38,8 +44,81 @@ def score_semirisk_entity(
     node_id: str = DEFAULT_ENTITY_ID,
     *,
     snapshot: SemiriskGraphSnapshot | None = None,
+    method: str = LITERATURE_SCORING_METHOD,
 ) -> dict[str, Any]:
     """Compute a deterministic fixture-only risk score for one SemiRisk graph node."""
+
+    graph = snapshot or build_semiconductor_fixture_snapshot()
+    node_by_id = {node.node_id: node for node in graph.nodes}
+    node = node_by_id.get(node_id)
+    if node is None:
+        raise RiskScoreUnavailable(f"unknown node_id: {node_id}")
+    if method == "heuristic_weighted_sum_baseline":
+        return score_semirisk_entity_heuristic(node_id, snapshot=graph)
+
+    distances = _node_distances(graph, node_id, depth=2)
+    context_edges = _context_edges(
+        graph,
+        distances,
+        {
+            "depends_on",
+            "requires",
+            "supplies",
+            "produces",
+            "routes_through",
+            "participates_in",
+            "restricted_by",
+            "impacted_by",
+            "correlated_with",
+            "substitutable_with",
+            "located_in",
+        },
+        max_edge_distance=2,
+    )
+    score_payload = score_likelihood_impact_vulnerability(graph, node, context_edges=context_edges)
+    evidence_refs = _unique_evidence(score_payload["evidence_refs"])
+    if not evidence_refs:
+        raise RiskScoreUnavailable(f"insufficient evidence for risk score: {node_id}")
+    score = _clamp_score(float(score_payload["score"]))
+    warnings = sorted(
+        {
+            RISK_SCORE_WARNING_FIXTURE_GRAPH,
+            *score_payload.get("warnings", []),
+            "not_financial_loss",
+        }
+    )
+    return {
+        "node_id": node.node_id,
+        "entity": _node_identity(node),
+        "score": score,
+        "level": level_for_score(score),
+        "scoring_method": score_payload["scoring_method"],
+        "formula_version": score_payload["formula_version"],
+        "likelihood": score_payload["likelihood"],
+        "impact": score_payload["impact"],
+        "vulnerability_modifier": score_payload["vulnerability_modifier"],
+        "components": score_payload["components"],
+        "concentration": score_payload["concentration"],
+        "evidence_refs": evidence_refs,
+        "formula_refs": score_payload["formula_refs"],
+        "feature_version": score_payload["feature_version"],
+        "graph_version": graph.graph_version,
+        "source_manifest_id": graph.source_manifest_id,
+        "as_of_time": graph.as_of_time.isoformat(),
+        "calibration_status": LITERATURE_CALIBRATION_STATUS,
+        "weighting_method": "not_weighted_sum",
+        "weight_source": "not_applicable_likelihood_impact_framework",
+        "fixture_graph": True,
+        "warnings": warnings,
+    }
+
+
+def score_semirisk_entity_heuristic(
+    node_id: str = DEFAULT_ENTITY_ID,
+    *,
+    snapshot: SemiriskGraphSnapshot | None = None,
+) -> dict[str, Any]:
+    """Legacy weighted-sum baseline. It is not the default risk method."""
 
     graph = snapshot or build_semiconductor_fixture_snapshot()
     node_by_id = {node.node_id: node for node in graph.nodes}
@@ -73,6 +152,8 @@ def score_semirisk_entity(
 
     warnings = [
         RISK_SCORE_WARNING_FIXTURE_GRAPH,
+        "heuristic_weights:not_literature_calibrated",
+        "not_for_production_decision",
         (
             "semirisk_risk_score_metadata: "
             f"company:tsmc={'true' if node.node_id == DEFAULT_ENTITY_ID else 'false'}; "
@@ -80,7 +161,7 @@ def score_semirisk_entity(
             f"level={level_for_score(score)}; "
             "evidence_refs="
             f"{len(evidence_refs)}; "
-            f"feature_version={FEATURE_VERSION}; "
+            f"feature_version={HEURISTIC_FEATURE_VERSION}; "
             f"graph_version={graph.graph_version}; "
             f"source_manifest_id={graph.source_manifest_id}"
         ),
@@ -95,9 +176,16 @@ def score_semirisk_entity(
         "entity": _node_identity(node),
         "score": _clamp_score(score),
         "level": level_for_score(score),
+        "scoring_method": "heuristic_weighted_sum_baseline",
+        "formula_version": "semirisk_heuristic_weighted_sum_v0.1",
         "components": components,
+        "component_weights": dict(COMPONENT_WEIGHTS),
+        "weighting_method": HEURISTIC_WEIGHTING_METHOD,
+        "weight_source": HEURISTIC_WEIGHT_SOURCE,
+        "calibration_status": HEURISTIC_CALIBRATION_STATUS,
         "evidence_refs": evidence_refs,
-        "feature_version": FEATURE_VERSION,
+        "formula_refs": ["heuristic_baseline_unvalidated_component_weights"],
+        "feature_version": HEURISTIC_FEATURE_VERSION,
         "graph_version": graph.graph_version,
         "source_manifest_id": graph.source_manifest_id,
         "as_of_time": graph.as_of_time.isoformat(),
@@ -135,6 +223,8 @@ def rank_risk_portfolio(
                 "score": result["score"],
                 "level": result["level"],
                 "evidence_ref_count": len(result["evidence_refs"]),
+                "scoring_method": result.get("scoring_method"),
+                "calibration_status": result.get("calibration_status"),
             }
         )
     scores.sort(key=lambda item: (-float(item["score"]), str(item["node_id"])))

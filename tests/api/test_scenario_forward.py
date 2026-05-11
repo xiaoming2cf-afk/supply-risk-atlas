@@ -70,6 +70,11 @@ def test_route_forward_scenario_returns_required_manifest() -> None:
     assert data["graph_version"].startswith("semirisk_kg_v0_1_")
     assert data["source_manifest_id"].startswith("semirisk_fixture_manifest_")
     assert data["simulation_version"] == "semirisk_forward_mc_v0.1"
+    assert data["loss_mode"] == "resilience_integral_loss"
+    assert data["propagation_mode"] == "auto_semiconductor"
+    assert data["resilience_integral_loss"] is not None
+    assert data["formula_refs"]
+    assert data["calibration_status"] == "fixture_proxy_not_calibrated"
     assert data["p50_loss"] <= data["p90_loss"] <= data["p95_loss"] <= data["cvar_95"]
     assert data["affected_nodes"]
     assert data["top_transmission_paths"]
@@ -87,6 +92,16 @@ def test_route_forward_scenario_rejects_unknown_target() -> None:
     assert response["errors"][0]["code"] == "forward_scenario_validation_error"
     assert response["errors"][0]["field"] == "targets"
     assert response["data"] is None
+
+
+def test_route_forward_scenario_allows_affected_mean_legacy_baseline() -> None:
+    payload = _payload()
+    payload["loss_mode"] = "affected_mean"
+    response = main.route_forward_scenario(payload, request_id="req_forward_legacy")
+
+    assert response["status"] == "success"
+    assert response["data"]["loss_mode"] == "affected_mean"
+    assert "affected_mean:legacy_baseline" in response["data"]["warnings"]
 
 
 def test_fastapi_forward_scenario_endpoint() -> None:
@@ -115,4 +130,3 @@ def test_dev_server_forward_scenario_endpoint(dev_server_base_url: str) -> None:
     assert body["data"]["seed"] == 42
     assert body["data"]["source_manifest_id"].startswith("semirisk_fixture_manifest_")
     _assert_no_raw_payload(body)
-

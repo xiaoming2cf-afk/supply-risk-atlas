@@ -4,29 +4,31 @@ The forward stress engine runs deterministic, graph-based Monte Carlo over the S
 
 ## Inputs
 
-- `scenario_type`: one of `earthquake`, `export_control`, `material_shortage`, `demand_spike`, `port_disruption`, `factory_shutdown`, `cyber_incident`, or `power_outage`.
-- `targets`: fixture graph node IDs or simple selectors.
-- `severity_distribution`: `fixed`, `triangular`, `beta`, `uniform`, or bounded normal parameters.
-- `duration_days_distribution`: `fixed`, `triangular`, or `lognormal` parameters.
-- `iterations`: capped at 5000 for lightweight deployment.
-- `seed`, `as_of_time`, optional `graph_version`, and optional `assumptions`.
+In addition to scenario type, targets, severity/duration distributions, iterations, seed, `as_of_time`, and optional `graph_version`, the request accepts:
 
-## Algorithm
+- `loss_mode`: default `resilience_integral_loss`.
+- `propagation_mode`: default `auto_semiconductor`.
+- `functionality_metric`: default `capacity_fulfillment`.
+- `weighting_method`: default `literature_proxy_not_calibrated`.
 
-For each iteration, the engine samples severity and duration using `random.Random(seed)`, initializes normalized target-node loss, and propagates stress over `depends_on`, `requires`, `supplies`, `produces`, `participates_in`, `routes_through`, `restricted_by`, and `impacted_by` edges. Edge weight and confidence control propagation strength. Available substitutability, inventory-buffer, and recovery-rate attributes reduce retained impact; missing attributes use documented conservative defaults.
+`affected_mean` remains available only as a legacy baseline loss mode.
 
-Outputs are normalized loss scores only. Dollar losses are intentionally disabled unless a future gate adds licensed private exposure data.
+## Propagation
+
+`auto_semiconductor` uses:
+
+- `leontief_bottleneck` for `requires` and `depends_on` critical input chains.
+- `noisy_or` for `restricted_by` and `impacted_by` policy/event exposure.
+- `additive_cap` for other dependency, route, supply, and participation links.
+
+The legacy `max` propagation mode is still selectable for comparisons but is not the default.
+
+## Loss Function
+
+The default loss is `resilience_integral_loss`, a normalized integral of functionality loss over time. Outputs also include `graph_weighted_loss`, `demand_fulfillment_loss`, `capacity_functionality_loss`, and `affected_mean` for auditability.
+
+All losses are normalized scores. They are not dollar losses.
 
 ## Output Manifest
 
-Every run includes:
-
-- `run_id`
-- `seed`
-- `graph_version`
-- `source_manifest_id`
-- `simulation_version: semirisk_forward_mc_v0.1`
-- `timestamp`
-- percentile losses, `cvar_95`, affected nodes, top transmission paths, warnings, assumptions, and evidence refs.
-
-All fixture outputs include `fixture_graph:not_production_ready`.
+Every run includes `run_id`, `seed`, `graph_version`, `source_manifest_id`, `simulation_version`, `loss_mode`, `propagation_mode`, `functionality_curve`, `formula_refs`, `calibration_status`, warnings, assumptions, and evidence refs.

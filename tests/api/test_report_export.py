@@ -56,6 +56,9 @@ def test_report_route_generates_json_report() -> None:
     assert response["request_id"] == "req_report"
     assert response["status"] == "success"
     assert response["data"]["report_id"].startswith("report_")
+    assert response["data"]["methodology"]["risk_scoring_method"] == "likelihood_impact_vulnerability_framework"
+    assert response["data"]["formula_sources"]["formula_refs"]
+    assert response["data"]["model_limitations"]
     assert response["data"]["raw_payload_excluded"] is True
     assert response["data"]["private_diagnostics_excluded"] is True
     _assert_safe(response)

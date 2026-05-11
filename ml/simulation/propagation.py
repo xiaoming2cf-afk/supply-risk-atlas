@@ -6,6 +6,8 @@ from typing import Any
 
 from sra_core.contracts.semiconductor import SemiriskEdge, SemiriskGraphSnapshot
 
+from .propagation_models import AGGREGATION_FORMULAS, FORMULA_REFS, aggregate_loss, mode_for_edge_type
+
 
 PROPAGATION_EDGE_TYPES = {
     "depends_on",
@@ -50,13 +52,14 @@ def propagate_loss(
     *,
     initial_losses: dict[str, float],
     duration_days: float,
+    propagation_mode: str = "auto_semiconductor",
 ) -> tuple[dict[str, float], list[dict[str, Any]]]:
     steps = max(1, min(12, int(round(max(1.0, duration_days) / 7.0))))
     losses = {node_id: _clamp01(value) for node_id, value in initial_losses.items()}
     traces: list[dict[str, Any]] = []
     edges = [edge for edge in snapshot.edges if edge.edge_type in PROPAGATION_EDGE_TYPES]
     for step in range(1, steps + 1):
-        next_losses = dict(losses)
+        contributions: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for edge in edges:
             for source_id, target_id, direction_multiplier, direction in _edge_directions(edge):
                 source_loss = losses.get(source_id, 0.0)
@@ -64,10 +67,10 @@ def propagate_loss(
                     continue
                 contribution = source_loss * _edge_transmission(edge) * direction_multiplier
                 contribution = _apply_mitigation(contribution, snapshot, target_id, edge)
-                if contribution <= next_losses.get(target_id, 0.0):
+                if contribution <= 0:
                     continue
-                next_losses[target_id] = _clamp01(contribution)
-                traces.append(
+                mode = mode_for_edge_type(edge.edge_type, propagation_mode)
+                contributions[target_id].append(
                     {
                         "step": step,
                         "edge_id": edge.edge_id,
@@ -75,8 +78,30 @@ def propagate_loss(
                         "source_node_id": source_id,
                         "target_node_id": target_id,
                         "direction": direction,
+                        "raw_contribution": contribution,
                         "loss_contribution": round(contribution * 100.0, 4),
+                        "propagation_mode": mode,
+                        "aggregation_formula": AGGREGATION_FORMULAS[mode],
+                        "formula_refs": FORMULA_REFS[mode],
                         "evidence_refs": evidence_refs_for_edge(edge),
+                    }
+                )
+        next_losses = dict(losses)
+        for target_id, rows in contributions.items():
+            mode = _mode_for_target(rows, propagation_mode)
+            aggregated = aggregate_loss(
+                losses.get(target_id, 0.0),
+                [float(row["raw_contribution"]) for row in rows],
+                mode=mode,
+            )
+            next_losses[target_id] = aggregated
+            for row in rows:
+                traces.append(
+                    {
+                        **{key: value for key, value in row.items() if key != "raw_contribution"},
+                        "target_aggregated_loss": round(aggregated * 100.0, 4),
+                        "propagation_mode": mode if propagation_mode != "auto_semiconductor" else row["propagation_mode"],
+                        "requested_propagation_mode": propagation_mode,
                     }
                 )
         losses = {node_id: _clamp01(value * 0.97) for node_id, value in next_losses.items()}
@@ -132,7 +157,10 @@ def top_transmission_paths(
                 "edge_sequence": [trace["edge_id"]],
                 "loss_contribution": 0.0,
                 "evidence_refs": [],
-                "explanation": f"{source_label} transmitted normalized stress to {target_label} via {trace['edge_type']}.",
+                "propagation_mode": trace.get("propagation_mode", "unknown"),
+                "aggregation_formula": trace.get("aggregation_formula"),
+                "formula_refs": trace.get("formula_refs", []),
+                "explanation": f"{source_label} transmitted normalized stress to {target_label} via {trace['edge_type']} using {trace.get('propagation_mode', 'unknown')} propagation.",
             },
         )
         row["loss_contribution"] = max(float(row["loss_contribution"]), float(trace["loss_contribution"]))
@@ -176,6 +204,17 @@ def _edge_transmission(edge: SemiriskEdge) -> float:
     if edge.edge_type == "impacted_by":
         factor *= 1.08
     return _clamp01(factor)
+
+
+def _mode_for_target(rows: list[dict[str, Any]], requested_mode: str) -> str:
+    if requested_mode != "auto_semiconductor":
+        return requested_mode
+    modes = {str(row.get("propagation_mode")) for row in rows}
+    if "leontief_bottleneck" in modes:
+        return "leontief_bottleneck"
+    if "noisy_or" in modes:
+        return "noisy_or"
+    return "additive_cap"
 
 
 def _apply_mitigation(value: float, snapshot: SemiriskGraphSnapshot, node_id: str, edge: SemiriskEdge) -> float:
@@ -223,4 +262,3 @@ def _attr_float(attrs: dict[str, Any], key: str, default: float) -> float:
 
 def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, float(value)))
-

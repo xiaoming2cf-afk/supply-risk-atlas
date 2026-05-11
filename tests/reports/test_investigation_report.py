@@ -20,6 +20,10 @@ def test_investigation_report_json_includes_versions_and_exclusions() -> None:
     assert report["risk_score"]["node_id"] == "company:tsmc"
     assert report["versions"]["graph_version"].startswith("semirisk_kg_v0_1_")
     assert report["versions"]["source_manifest_id"].startswith("semirisk_fixture_manifest_")
+    assert report["methodology"]["risk_scoring_method"] == "likelihood_impact_vulnerability_framework"
+    assert report["methodology"]["calibration_status"] == "fixture_proxy_not_calibrated"
+    assert report["formula_sources"]["formula_refs"]
+    assert report["model_limitations"]
     assert report["raw_payload_excluded"] is True
     assert report["private_diagnostics_excluded"] is True
     assert "fixture_graph:not_production_ready" in report["warnings"]
@@ -31,5 +35,8 @@ def test_investigation_report_markdown_is_generated() -> None:
 
     assert report["format"] == "markdown"
     assert "# Investigation Report" in report["markdown"]
+    assert "## Methodology" in report["markdown"]
+    assert "## Formula Sources" in report["markdown"]
+    assert "## Model Limitations" in report["markdown"]
     assert "raw_payload_excluded: true" in report["markdown"]
     _assert_safe(report)

@@ -1998,6 +1998,12 @@ function CompanyRisk360({
                   <Field label="selected_entity" value={risk.node_id} />
                   <Field label="score" value={risk.score.toFixed(2)} />
                   <Field label="level" value={risk.level} />
+                  <Field label="scoring_method" value={risk.scoring_method} />
+                  <Field label="formula_version" value={risk.formula_version} />
+                  <Field label="calibration_status" value={risk.calibration_status} />
+                  <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
+                  <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
+                  <Field label="vulnerability_modifier" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
                   <Field label="node_type" value={risk.entity.node_type} />
                   <Field label="confidence" value={formatPercent(risk.entity.confidence)} />
                   <Field label="feature_version" value={risk.feature_version} />
@@ -2009,11 +2015,11 @@ function CompanyRisk360({
                 </div>
               </div>
               <p className="row-subtitle" style={{ marginTop: 16 }}>
-                {`selected_entity: ${risk.node_id}; score: ${risk.score.toFixed(2)}; level: ${risk.level}; feature_version: ${risk.feature_version}; graph_version: ${risk.graph_version}; source_manifest_id: ${risk.source_manifest_id}; fixture_graph: ${String(risk.fixture_graph)}; evidence_refs: ${risk.evidence_refs.length}`}
+                {`selected_entity: ${risk.node_id}; score: ${risk.score.toFixed(2)}; level: ${risk.level}; scoring_method: ${risk.scoring_method}; formula_version: ${risk.formula_version}; calibration_status: ${risk.calibration_status}; likelihood: ${risk.likelihood?.toFixed(4) ?? "unavailable"}; impact: ${risk.impact?.toFixed(4) ?? "unavailable"}; vulnerability_modifier: ${risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"}; feature_version: ${risk.feature_version}; graph_version: ${risk.graph_version}; source_manifest_id: ${risk.source_manifest_id}; fixture_graph: ${String(risk.fixture_graph)}; evidence_refs: ${risk.evidence_refs.length}; formula_refs: ${risk.formula_refs.join(",")}`}
               </p>
             </Panel>
 
-            <Panel title="Score components" subtitle="Evidence-backed component values with normalized weighted contributions.">
+            <Panel title="Score components" subtitle="Literature-grounded proxy components. Legacy component weights are not used by the default score.">
               <div className="table-wrap">
                 <table className="data-table">
                   <thead>
@@ -2030,7 +2036,7 @@ function CompanyRisk360({
                       <tr key={component.name}>
                         <td>{component.name}</td>
                         <td>{component.value === null ? "unavailable" : component.value.toFixed(2)}</td>
-                        <td>{formatPercent(component.weight)}</td>
+                        <td>{component.weight === null ? "not_weighted_sum" : formatPercent(component.weight)}</td>
                         <td>
                           {component.weighted_contribution === null
                             ? "unavailable"
@@ -2335,6 +2341,10 @@ function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }
     iterations: 1000,
     seed: 42,
     as_of_time: "2026-05-01T00:00:00Z",
+    loss_mode: "resilience_integral_loss",
+    propagation_mode: "auto_semiconductor",
+    functionality_metric: "capacity_fulfillment",
+    weighting_method: "literature_proxy_not_calibrated",
     assumptions: ["fixture/promoted test graph only; normalized loss scores, no dollar loss"]
   });
   const [result, setResult] = useState<ForwardScenarioResult | null>(null);
@@ -2458,6 +2468,26 @@ function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }
             <span>{t("seed")}</span>
             <input onChange={(event) => setInput((current) => ({ ...current, seed: Number(event.target.value) }))} type="number" value={input.seed} />
           </label>
+          <label className="form-control">
+            <span>{t("loss_mode")}</span>
+            <select value={input.loss_mode ?? "resilience_integral_loss"} onChange={(event) => setInput((current) => ({ ...current, loss_mode: event.target.value as ForwardScenarioInput["loss_mode"] }))}>
+              <option value="resilience_integral_loss">resilience_integral_loss</option>
+              <option value="graph_weighted_loss">graph_weighted_loss</option>
+              <option value="demand_fulfillment_loss">demand_fulfillment_loss</option>
+              <option value="capacity_functionality_loss">capacity_functionality_loss</option>
+              <option value="affected_mean">affected_mean legacy</option>
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("propagation_mode")}</span>
+            <select value={input.propagation_mode ?? "auto_semiconductor"} onChange={(event) => setInput((current) => ({ ...current, propagation_mode: event.target.value as ForwardScenarioInput["propagation_mode"] }))}>
+              <option value="auto_semiconductor">auto_semiconductor</option>
+              <option value="noisy_or">noisy_or</option>
+              <option value="leontief_bottleneck">leontief_bottleneck</option>
+              <option value="additive_cap">additive_cap</option>
+              <option value="max">max legacy</option>
+            </select>
+          </label>
         </div>
         <p className="public-data-note">
           {t("fixture_graph:not_production_ready")} · {t("No dollar losses are produced without licensed private exposure data.")}
@@ -2477,7 +2507,7 @@ function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }
                 <MetricTile metric={{ id: "time_to_recover_days", label: "time_to_recover_days", value: result.time_to_recover_days ?? 0, unit: "d", delta: 0, trend: "flat", level: "guarded", detail: "deterministic fixture estimate" }} />
               </div>
               <p className="public-data-note">
-                run_id {result.run_id}; seed {result.seed}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; time_to_survive_days {result.time_to_survive_days ?? "unavailable"}
+                run_id {result.run_id}; seed {result.seed}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; loss_mode {result.loss_mode}; propagation_mode {result.propagation_mode}; formula_refs {result.formula_refs.join(",")}; calibration_status {result.calibration_status}; resilience_integral_loss {result.resilience_integral_loss ?? "unavailable"}; time_to_survive_days {result.time_to_survive_days ?? "unavailable"}
               </p>
               <div className="field-grid">
                 <Field label="run_id" value={result.run_id} />
@@ -2485,6 +2515,15 @@ function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }
                 <Field label="graph_version" value={result.graph_version} />
                 <Field label="source_manifest_id" value={result.source_manifest_id} />
                 <Field label="simulation_version" value={result.simulation_version} />
+                <Field label="loss_mode" value={result.loss_mode} />
+                <Field label="propagation_mode" value={result.propagation_mode} />
+                <Field label="resilience_integral_loss" value={result.resilience_integral_loss ?? "unavailable"} />
+                <Field label="graph_weighted_loss" value={result.graph_weighted_loss ?? "unavailable"} />
+                <Field label="demand_fulfillment_loss" value={result.demand_fulfillment_loss ?? "unavailable"} />
+                <Field label="capacity_functionality_loss" value={result.capacity_functionality_loss ?? "unavailable"} />
+                <Field label="formula_refs" value={result.formula_refs.join(",")} />
+                <Field label="weighting_method" value={String(result.weight_basis.weighting_method ?? "unavailable")} />
+                <Field label="calibration_status" value={result.calibration_status} />
                 <Field label="time_to_survive_days" value={result.time_to_survive_days ?? "unavailable"} />
               </div>
             </Panel>
@@ -2554,6 +2593,10 @@ function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient }) {
     as_of_time: "2026-05-01T00:00:00Z",
     allowed_shock_types: [],
     forbidden_shock_types: [],
+    loss_mode: "resilience_integral_loss",
+    propagation_mode: "auto_semiconductor",
+    functionality_metric: "capacity_fulfillment",
+    weighting_method: "literature_proxy_not_calibrated",
   });
   const [result, setResult] = useState<ReverseStressResult | null>(null);
   const [failure, setFailure] = useState<ApiResult<ReverseStressResult> | null>(null);
@@ -2650,6 +2693,23 @@ function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient }) {
             <span>{t("seed")}</span>
             <input onChange={(event) => setInput((current) => ({ ...current, seed: Number(event.target.value) }))} type="number" value={input.seed} />
           </label>
+          <label className="form-control">
+            <span>{t("loss_mode")}</span>
+            <select value={input.loss_mode ?? "resilience_integral_loss"} onChange={(event) => setInput((current) => ({ ...current, loss_mode: event.target.value as ReverseStressInput["loss_mode"] }))}>
+              <option value="resilience_integral_loss">resilience_integral_loss</option>
+              <option value="graph_weighted_loss">graph_weighted_loss</option>
+              <option value="demand_fulfillment_loss">demand_fulfillment_loss</option>
+              <option value="capacity_functionality_loss">capacity_functionality_loss</option>
+            </select>
+          </label>
+          <label className="form-control">
+            <span>{t("propagation_mode")}</span>
+            <select value={input.propagation_mode ?? "auto_semiconductor"} onChange={(event) => setInput((current) => ({ ...current, propagation_mode: event.target.value as ReverseStressInput["propagation_mode"] }))}>
+              <option value="auto_semiconductor">auto_semiconductor</option>
+              <option value="leontief_bottleneck">leontief_bottleneck</option>
+              <option value="noisy_or">noisy_or</option>
+            </select>
+          </label>
         </div>
         <p className="public-data-note">
           {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")} · fixture_graph:not_production_ready
@@ -2666,10 +2726,15 @@ function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient }) {
                 <Field label="graph_version" value={result.graph_version} />
                 <Field label="source_manifest_id" value={result.source_manifest_id} />
                 <Field label="simulation_version" value={result.simulation_version} />
+                <Field label="failure_threshold_input" value={result.failure_threshold_input} />
+                <Field label="failure_threshold_normalized" value={result.failure_threshold_normalized} />
+                <Field label="threshold_metric_basis" value={result.threshold_metric_basis} />
+                <Field label="loss_mode" value={result.loss_mode} />
+                <Field label="propagation_mode" value={result.propagation_mode} />
                 <Field label="plausibility_cost" value={result.plausibility_cost ?? "unavailable"} />
               </div>
               <p className="public-data-note">
-                run_id {result.run_id}; ranked_shock_sets {result.ranked_shock_sets.length}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; fixture_graph:not_production_ready
+                run_id {result.run_id}; ranked_shock_sets {result.ranked_shock_sets.length}; failure_threshold_input {result.failure_threshold_input}; failure_threshold_normalized {result.failure_threshold_normalized}; threshold_metric_basis {result.threshold_metric_basis}; loss_mode {result.loss_mode}; propagation_mode {result.propagation_mode}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; fixture_graph:not_production_ready
               </p>
             </Panel>
             <Panel title="Top shock set" subtitle={topShockSet?.explanation ?? result.explanation} translateSubtitle={false}>
@@ -2846,8 +2911,17 @@ function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiClient }
                 <MetricTile metric={{ id: "resilience_roi", label: "resilience_roi", value: result.resilience_roi, delta: 0, trend: "flat", level: "guarded", detail: "tail-loss reduction per budget unit" }} />
               </div>
               <p className="public-data-note">
-                run_id {result.run_id}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; optimization_version {result.optimization_version}; fixture_graph:not_production_ready
+                run_id {result.run_id}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; optimization_version {result.optimization_version}; optimization_context_type {result.optimization_context_type}; scenario_count {result.scenario_count}; before_simulation_run_ids {result.before_simulation_run_ids.join(",")}; after_simulation_run_ids {result.after_simulation_run_ids.join(",")}; heuristic_estimated_after_cvar95 {result.heuristic_estimated_after_cvar95 ?? "unavailable"}; fixture_graph:not_production_ready
               </p>
+              <div className="field-grid">
+                <Field label="optimization_context_type" value={result.optimization_context_type} />
+                <Field label="scenario_count" value={result.scenario_count} />
+                <Field label="baseline_run_ids" value={result.baseline_run_ids.join(",")} />
+                <Field label="before_simulation_run_ids" value={result.before_simulation_run_ids.join(",")} />
+                <Field label="after_simulation_run_ids" value={result.after_simulation_run_ids.join(",")} />
+                <Field label="heuristic_estimated_after_expected_loss" value={result.heuristic_estimated_after_expected_loss ?? "unavailable"} />
+                <Field label="heuristic_estimated_after_cvar95" value={result.heuristic_estimated_after_cvar95 ?? "unavailable"} />
+              </div>
             </Panel>
             <Panel title="Action plan" subtitle="Every recommendation includes target, cost, expected effect, constraints, and evidence.">
               <ul className="timeline-list">
@@ -3064,6 +3138,12 @@ function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiClient }) 
                 <Field label="feature_version" value={result.versions.feature_version ?? "not included"} />
                 <Field label="simulation_version" value={result.versions.simulation_version ?? "not included"} />
                 <Field label="optimization_version" value={result.versions.optimization_version ?? "not included"} />
+                <Field label="risk_scoring_method" value={String(result.methodology.risk_scoring_method ?? "unavailable")} />
+                <Field label="weighting_method" value={String(result.methodology.weighting_method ?? "unavailable")} />
+                <Field label="calibration_status" value={String(result.methodology.calibration_status ?? "unavailable")} />
+                <Field label="loss_mode" value={String(result.methodology.loss_mode ?? "not included")} />
+                <Field label="propagation_mode" value={String(result.methodology.propagation_mode ?? "not included")} />
+                <Field label="formula_refs" value={result.formula_sources.formula_refs.join(",")} />
                 <Field label="raw_payload_excluded" value={String(result.raw_payload_excluded)} />
                 <Field label="private_diagnostics_excluded" value={String(result.private_diagnostics_excluded)} />
               </div>
@@ -3082,7 +3162,9 @@ function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiClient }) 
                   </li>
                 ))}
               </ul>
-              <p className="public-data-note">{result.limitations.join(" | ")}</p>
+              <p className="public-data-note">
+                Methodology section; Formula source section; Model limitations section; {result.model_limitations.join(" | ")}; {result.limitations.join(" | ")}
+              </p>
             </Panel>
             <Panel title={result.format === "markdown" ? "Markdown export" : "JSON export"} subtitle="API-visible report payload only; raw source payloads are excluded.">
               <pre className="json-preview">

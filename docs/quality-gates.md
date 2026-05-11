@@ -18,6 +18,7 @@ Quality gates define what must be true before changes are merged. Gates should b
 | Unit and API behavior | `services/api/`, `packages/` | Unit tests, API tests, error path coverage |
 | Graph invariants | `graph_kernel/`, `packages/sra_core/`, `tests/graph_invariants/` | Node and edge validation, traversal invariants, temporal validity checks |
 | Leakage and model quality | `ml/`, `configs/features/`, `configs/labels/`, `tests/leakage/` | Leakage tests, evaluation reports, model promotion criteria |
+| Methodology disclosure | `ml/risk_scoring/`, `ml/simulation/`, `ml/optimization/`, `docs/model/`, reports | Default scores disclose formula refs and calibration status; hard-coded weights are baseline-only; simulation losses disclose loss and propagation modes |
 | Frontend runtime | `apps/web/`, `packages/shared-types/`, `packages/api-client/`, `packages/design-system/` | `npm install`, typecheck, build, and browser smoke evidence |
 | Infrastructure | `infra/`, environment configs | Build validation, secret hygiene, deployment dry run where available |
 
@@ -108,5 +109,6 @@ Before handoff, run the closest available checks:
 - Required frontend pages: System Health Center, Global Risk Cockpit, Graph Explorer, Entity Risk 360, Prediction Center, Path Analysis, Country Lens, Shock Simulator, Reverse Stress Lab, Intervention Optimizer, Investigation Report, Causal Evidence Board.
 - Browser smoke report: `artifacts/browser-smoke/report.json`
 - Required API metadata: every visible prediction, simulation, reverse stress output, optimization output, explanation, and report must carry graph/source manifest/version metadata plus warnings and evidence references where applicable.
+- Required methodology metadata: risk scores must expose scoring method, formula version, formula refs, weighting method/source where relevant, and calibration status. Forward/reverse simulations must expose `loss_mode`, `propagation_mode`, functionality/loss components, formula refs, and `not_financial_loss` or equivalent warnings. Optimizer before/after metrics must come from simulation runs when scenario context is available. Reports must include methodology, formula source, and model limitation sections.
 
 Related docs: [multi-agent operating model](governance/multi-agent.md), [real data governance](governance/real-data-governance.md), [GitHub CI data hygiene](deployment/github-ci.md), [E2E acceptance suite](../tests/e2e/README.md).

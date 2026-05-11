@@ -70,6 +70,10 @@ def test_optimization_route_returns_budget_feasible_actions() -> None:
     assert response["status"] == "success"
     data = response["data"]
     assert data["optimization_version"] == "semirisk_intervention_optimizer_v0.1"
+    assert data["optimization_context_type"] == "default_fixture_scenario"
+    assert data["scenario_count"] == 1
+    assert data["before_simulation_run_ids"]
+    assert data["after_simulation_run_ids"]
     assert data["cost"] <= data["budget"]
     assert data["after_cvar95"] <= data["before_cvar95"]
     assert data["recommended_actions"]
@@ -96,4 +100,3 @@ def test_dev_server_optimization_endpoint(dev_server_base_url: str) -> None:
     assert body["status"] == "success"
     assert body["data"]["recommended_actions"]
     _assert_safe(body)
-

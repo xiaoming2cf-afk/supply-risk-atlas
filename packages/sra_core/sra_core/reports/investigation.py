@@ -71,8 +71,18 @@ def generate_investigation_report(payload: dict[str, Any] | None = None) -> dict
             "optimization_version": optimization.get("optimization_version") if optimization else None,
             "report_version": REPORT_VERSION,
         },
+        "methodology": _methodology_section(risk, forward, reverse, optimization),
+        "formula_sources": _formula_source_section(risk, forward, reverse, optimization),
+        "model_limitations": [
+            "Fixture graph is not production-ready.",
+            "Risk score uses fixture proxy likelihood, impact, and vulnerability inputs because calibrated production data is unavailable.",
+            "Simulation losses are normalized resilience loss scores, not dollar losses.",
+            "Intervention before/after values are generated from bounded fixture Monte Carlo reruns.",
+        ],
         "warnings": sorted({
             "fixture_graph:not_production_ready",
+            "not_financial_loss",
+            "not_production_decision",
             *(_warnings(risk)),
             *(_warnings(forward)),
             *(_warnings(reverse)),
@@ -85,6 +95,7 @@ def generate_investigation_report(payload: dict[str, Any] | None = None) -> dict
         "limitations": [
             "Not a production readiness report.",
             "Forward, reverse, and optimization sections appear only when request payloads are supplied.",
+            "Formula refs identify source principles and implemented proxy formulas; they are not calibrated authoritative coefficients.",
         ],
         "compliance_note": "Use this report for resilience planning, monitoring, approved qualification, diversification, and compliance review.",
         "raw_payload_excluded": True,
@@ -131,6 +142,35 @@ def _first_present(*sections: Any, key: str) -> str | None:
     return None
 
 
+def _methodology_section(risk: Any, forward: Any, reverse: Any, optimization: Any) -> dict[str, Any]:
+    return {
+        "risk_scoring_method": risk.get("scoring_method") if isinstance(risk, dict) else None,
+        "weighting_method": risk.get("weighting_method") if isinstance(risk, dict) else None,
+        "calibration_status": risk.get("calibration_status") if isinstance(risk, dict) else "fixture_proxy_not_calibrated",
+        "loss_mode": _first_present(forward, reverse, key="loss_mode"),
+        "propagation_mode": _first_present(forward, reverse, key="propagation_mode"),
+        "resilience_integral_loss": forward.get("resilience_integral_loss") if isinstance(forward, dict) else None,
+        "functionality_curve_summary": forward.get("functionality_curve_summary") if isinstance(forward, dict) else None,
+        "hhi_concentration_summary": risk.get("concentration") if isinstance(risk, dict) else None,
+        "optimization_context_type": optimization.get("optimization_context_type") if isinstance(optimization, dict) else None,
+    }
+
+
+def _formula_source_section(*sections: Any) -> dict[str, Any]:
+    refs = sorted(
+        {
+            ref
+            for section in sections
+            if isinstance(section, dict)
+            for ref in section.get("formula_refs", [])
+        }
+    )
+    return {
+        "formula_refs": refs,
+        "source_principle_note": "Formula refs identify literature/government source principles and implemented fixture proxy formulas; uncalibrated coefficients are not presented as authoritative.",
+    }
+
+
 def _markdown(report: dict[str, Any]) -> str:
     lines = [
         f"# Investigation Report {report['report_id']}",
@@ -144,6 +184,26 @@ def _markdown(report: dict[str, Any]) -> str:
     for key, value in report["versions"].items():
         lines.append(f"- `{key}`: `{value}`")
     lines.extend([
+        "",
+        "## Methodology",
+        "",
+        f"- Risk scoring method: `{report['methodology'].get('risk_scoring_method')}`",
+        f"- Weighting method: `{report['methodology'].get('weighting_method')}`",
+        f"- Calibration status: `{report['methodology'].get('calibration_status')}`",
+        f"- Loss mode: `{report['methodology'].get('loss_mode')}`",
+        f"- Propagation mode: `{report['methodology'].get('propagation_mode')}`",
+        f"- Resilience integral loss: `{report['methodology'].get('resilience_integral_loss')}`",
+        "",
+        "## Formula Sources",
+        "",
+    ])
+    for ref in report["formula_sources"]["formula_refs"]:
+        lines.append(f"- `{ref}`")
+    lines.extend([
+        "",
+        "## Model Limitations",
+        "",
+        *[f"- {limitation}" for limitation in report["model_limitations"]],
         "",
         "## Risk Score",
         "",

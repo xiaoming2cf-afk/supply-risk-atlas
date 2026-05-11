@@ -40,7 +40,7 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Result: Pass. Python targeted tests passed `75 passed`; typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `19 checks`.
 - Evidence:
   - System Health smoke excerpt includes `SemiRisk-KG v0.1 fixture graph`, `registryReady: true`, `ontologyReady: true`, `fixtureGraph: true`, `graphVersion: semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a`, `sourceManifestId: semirisk_fixture_manifest_f8fa1615a0a7`, `nodeCount: 30`, and `edgeCount: 45`.
-  - Entity Risk 360 smoke excerpt includes `company:tsmc`, `58.33`, `elevated`, `semirisk_risk_score_v0.1`, `graph_version`, `source_manifest_id`, and `fixture_graph:not_production_ready`.
+  - Entity Risk 360 smoke excerpt originally included the heuristic baseline `company:tsmc`, `58.33`, `elevated`, and `semirisk_risk_score_v0.1`. This evidence was superseded by the methodology rebuild, where `58.33` is baseline-only and the default score uses `semirisk_risk_score_likelihood_impact_v0.1`.
 - Known limitations: Existing unrelated local processes occupied ports 8000 and 3000 during validation. Gate 1 smoke used API port 8010 and restarted the local Next dev server on port 3000 with explicit API env.
 - Next gate decision: Proceed to Gate 2.
 
@@ -219,7 +219,7 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Result: Pass. Targeted Python suite passed; full pytest passed; typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `26 checks`.
 - Final acceptance evidence:
   - System Health local smoke shows `SemiRisk-KG v0.1 fixture graph`, `graphVersion: semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a`, `sourceManifestId: semirisk_fixture_manifest_f8fa1615a0a7`, `nodeCount: 30`, `edgeCount: 45`, `registryReady: true`, `ontologyReady: true`, and `fixture_graph:not_production_ready`.
-  - Entity Risk 360 local smoke shows `company:tsmc`, `58.33`, `elevated`, all six Risk Score v0 components, `semirisk_risk_score_v0.1`, `graph_version`, `source_manifest_id`, and the fixture warning.
+  - Entity Risk 360 local smoke originally showed the heuristic score `58.33`; this is now explicitly baseline-only after the literature-grounded methodology rebuild.
   - Forward Monte Carlo example: `scenario_type=earthquake`, `run_id=fwd_9eb2aaddecd930db`, `seed=42`, `expected_loss=30.6632`, `cvar95=30.6632`, `graph_version=semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a`, `source_manifest_id=semirisk_fixture_manifest_f8fa1615a0a7`.
   - Reverse Stress example: `run_id=rev_d927b00a66219239`, `ranked_shock_sets_count=4`, `top_shock_set=shockset_ec587a094897623a`, `cvar95=35.9867`, `plausibility_cost=0.5342`.
   - Intervention Optimizer example: `run_id=opt_29d024a91a47dfa0`, `budget=70`, `recommended_actions_count=3`, `before_cvar95=29.5275`, `after_cvar95=17.3625`, `resilience_roi=0.2253`.
@@ -227,3 +227,53 @@ This log tracks the gated implementation sequence for the semiconductor platform
 - Skipped tests: `tests/prediction` is absent in this checkout, so prediction-specific pytest selection was skipped.
 - Known limitations: Render deploy verification is best-effort without Render credentials; remote web may remain stale until these commits are pushed and the Render web service redeploys.
 - Next gate decision: Stop. The requested priority gates through report export and final smoke/docs are stable locally.
+
+## Gate 11 - Literature-Grounded Methodology Rebuild
+
+- Files changed:
+  - `ml/risk_scoring/semirisk_score.py`
+  - `ml/risk_scoring/risk_framework.py`
+  - `ml/risk_scoring/weighting.py`
+  - `ml/risk_scoring/critical_dependency.py`
+  - `ml/risk_scoring/concentration.py`
+  - `ml/simulation/functionality.py`
+  - `ml/simulation/loss_functions.py`
+  - `ml/simulation/propagation.py`
+  - `ml/simulation/propagation_models.py`
+  - `ml/simulation/monte_carlo.py`
+  - `ml/simulation/scenario_schema.py`
+  - `ml/simulation/reverse_stress.py`
+  - `ml/optimization/constraints.py`
+  - `ml/optimization/interventions.py`
+  - `packages/sra_core/sra_core/reports/investigation.py`
+  - `packages/shared-types/src/index.ts`
+  - `apps/web/src/app/pages.tsx`
+  - `scripts/browser-smoke.mjs`
+  - `docs/model/literature-grounded-risk-methodology.md`
+  - `docs/model/model-assumption-register.md`
+  - `docs/model/formula-source-registry.md`
+  - model, simulation, API, optimization, and report tests
+- Commands run:
+  - `python -m pytest tests/model tests/simulation tests/optimization tests/api/test_semirisk_risk_score.py tests/api/test_scenario_forward.py tests/api/test_scenario_reverse.py tests/api/test_optimization_routes.py tests/api/test_report_export.py tests/reports -q`
+  - `python -m pytest tests/api tests/model tests/simulation tests/optimization tests/reports -q`
+  - `python -m pytest -q`
+  - `npm --workspace apps/web run typecheck` (blocked by local PowerShell execution policy for `npm.ps1`)
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run build`
+  - Direct local smoke: `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_URL=http://127.0.0.1:8010/api/v1`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+  - Proxy local smoke: `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000`, `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8010`, `SUPPLY_RISK_EXPECT_MODE=real`, `npm.cmd run smoke:web`
+- Result: Pass for focused methodology suite, `60 passed`.
+- Final validation result: Pass. Broader API/model/simulation/optimization/report suite passed; full pytest passed `205 passed`; web typecheck, package typecheck, build, direct smoke, and proxy smoke passed. Browser smoke reported `26 checks`.
+- Runtime fix during validation: Reverse Stress Lab smoke initially timed out at `/scenarios/reverse` after the methodology rebuild. Fixed by reusing deterministic fixed-distribution Monte Carlo evaluations and bounding reverse-stress candidate expansion; the same smoke path now completes under the API client timeout.
+- Acceptance evidence:
+  - Default risk feature version is `semirisk_risk_score_likelihood_impact_v0.1`.
+  - Prior `58.33` weighted score remains available only as `heuristic_weighted_sum_baseline` with `weight_source=heuristic_unvalidated` and `calibration_status=not_calibrated`.
+  - HHI functions and OECD-derived `0_to_1` concentration bands are tested.
+  - Forward Monte Carlo default `loss_mode` is `resilience_integral_loss`; `affected_mean` is labeled legacy.
+  - Propagation supports `additive_cap`, `noisy_or`, `leontief_bottleneck`, `psi_recursive`, and legacy `max`.
+  - Reverse stress normalizes `0.35` to `35` and reports threshold basis.
+  - Optimizer consumes scenario context and records before/after simulation run IDs.
+  - Reports include methodology, formula source, and model limitation sections.
+- Known limitations: All formulas remain fixture proxies with `fixture_proxy_not_calibrated`; source refs are methodology anchors and not production calibration studies. `tests/prediction` is absent in this checkout, so prediction-specific methodology tests were not run.
+- Next gate decision: Stop. The methodology rebuild is stable locally; Render deployment verification remains a separate post-merge/push task.

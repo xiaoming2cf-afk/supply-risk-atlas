@@ -32,7 +32,7 @@ def run_reverse_stress(
         candidate_scope=request["candidate_scope"],
         allowed_shock_types=request["allowed_shock_types"],
         forbidden_shock_types=request["forbidden_shock_types"],
-        limit=max(8, int(request["beam_width"]) * 4),
+        limit=max(8, int(request["beam_width"])),
     )
     if not candidates:
         raise ScenarioValidationError("candidate scope produced no fixture graph shock candidates", field="candidate_scope")
@@ -66,6 +66,11 @@ def run_reverse_stress(
         "source_manifest_id": graph.source_manifest_id,
         "simulation_version": REVERSE_SIMULATION_VERSION,
         "timestamp": request["as_of_time"],
+        "failure_threshold_input": request["failure_threshold_input"],
+        "failure_threshold_normalized": request["failure_threshold_normalized"],
+        "threshold_metric_basis": request["threshold_metric_basis"],
+        "loss_mode": request["loss_mode"],
+        "propagation_mode": request["propagation_mode"],
         "ranked_shock_sets": ranked,
         "expected_loss": best.get("expected_loss"),
         "cvar95": best.get("cvar95"),
@@ -79,6 +84,7 @@ def run_reverse_stress(
             FIXTURE_GRAPH_WARNING,
             "reverse_stress:resilience_planning_only",
             "policy_shocks_require_compliance_review",
+            *request.get("threshold_warnings", []),
         ],
         "assumptions": ["Candidate shocks are derived from fixture graph evidence and evaluated through the forward Monte Carlo engine."],
         "input": request,
@@ -125,6 +131,10 @@ def _evaluate_combo(
             "seed": int(request["seed"]) + seed_offset,
             "as_of_time": request["as_of_time"],
             "graph_version": graph.graph_version,
+            "loss_mode": request["loss_mode"],
+            "propagation_mode": request["propagation_mode"],
+            "functionality_metric": request["functionality_metric"],
+            "weighting_method": request["weighting_method"],
             "assumptions": ["Reverse stress candidate evaluation uses the forward Monte Carlo engine."],
         },
         snapshot=graph,
@@ -137,12 +147,19 @@ def _evaluate_combo(
         "_raw_shocks": combo,
         "expected_loss": forward["expected_loss"],
         "cvar95": forward["cvar_95"],
-        "threshold_met": bool(metric_value is not None and metric_value >= float(request["failure_threshold"])),
+        "threshold_met": bool(metric_value is not None and metric_value >= float(request["failure_threshold_normalized"])),
         "plausibility_cost": cost,
         "affected_nodes": forward["affected_nodes"],
         "affected_paths": forward["top_transmission_paths"],
-        "explanation": explanation_for_shocks(list(combo)),
+        "explanation": (
+            f"{explanation_for_shocks(list(combo))} "
+            f"Evaluated with loss_mode={request['loss_mode']} and propagation_mode={request['propagation_mode']} "
+            "over affected functionality and critical dependency pathways."
+        ),
         "evidence_refs": _unique_refs([ref for item in combo for ref in item["evidence_refs"]] + forward["evidence_refs"]),
+        "loss_mode": request["loss_mode"],
+        "propagation_mode": request["propagation_mode"],
+        "threshold_metric_basis": request["threshold_metric_basis"],
         "assumptions": ["Compliance-safe stress planning; no illegal workaround recommendation is implied."],
     }
 
@@ -150,6 +167,10 @@ def _evaluate_combo(
 def _metric_value(metric: str, forward: dict[str, Any]) -> float | None:
     if metric == "cvar95_loss":
         return forward.get("cvar_95")
+    if metric == "capacity_loss":
+        return forward.get("capacity_functionality_loss")
+    if metric == "demand_fulfillment_loss":
+        return forward.get("demand_fulfillment_loss")
     if metric == "affected_critical_nodes":
         return float(len(forward.get("affected_nodes", [])))
     return forward.get("expected_loss")

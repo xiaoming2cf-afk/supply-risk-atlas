@@ -35,6 +35,11 @@ def test_intervention_optimizer_is_deterministic_and_budget_feasible() -> None:
     assert first == second
     assert first["run_id"].startswith("opt_")
     assert first["optimization_version"] == OPTIMIZATION_VERSION
+    assert first["optimization_context_type"] == "default_fixture_scenario"
+    assert first["scenario_count"] == 1
+    assert first["before_simulation_run_ids"]
+    assert first["after_simulation_run_ids"]
+    assert first["before_simulation_run_ids"] != first["after_simulation_run_ids"]
     assert first["cost"] <= first["budget"]
     assert len(first["recommended_actions"]) <= 3
     assert first["after_expected_loss"] <= first["before_expected_loss"]
@@ -56,6 +61,32 @@ def test_intervention_optimizer_respects_allowed_actions() -> None:
     assert result["cost"] <= 20
 
 
+def test_intervention_optimizer_uses_supplied_scenario_context() -> None:
+    base = run_intervention_optimization(_payload())
+    scenario = {
+        "scenario_type": "power_outage",
+        "targets": ["equipment:euv_scanner"],
+        "severity_distribution": {"type": "fixed", "params": {"value": 0.55}},
+        "duration_days_distribution": {"type": "fixed", "params": {"value": 14}},
+        "iterations": 40,
+        "seed": 7,
+        "as_of_time": "2026-05-01T00:00:00Z",
+    }
+    contextual = run_intervention_optimization({**_payload(), "scenario_set": [scenario]})
+
+    assert contextual["optimization_context_type"] == "scenario_set"
+    assert contextual["scenario_count"] == 1
+    assert contextual["before_expected_loss"] != base["before_expected_loss"]
+
+
+def test_intervention_optimizer_zero_budget_returns_no_actions_and_unchanged_metrics() -> None:
+    result = run_intervention_optimization({**_payload(), "budget": 0})
+
+    assert result["recommended_actions"] == []
+    assert result["cost"] == 0
+    assert result["after_cvar95"] == result["before_cvar95"]
+
+
 def test_intervention_optimizer_has_no_raw_payload_or_unsafe_wording() -> None:
     text = json.dumps(run_intervention_optimization(_payload()), sort_keys=True).lower()
 
@@ -64,4 +95,3 @@ def test_intervention_optimizer_has_no_raw_payload_or_unsafe_wording() -> None:
     assert "evad" not in text
     assert "circumvent" not in text
     assert "bypass" not in text
-

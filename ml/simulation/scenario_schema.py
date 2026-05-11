@@ -12,6 +12,25 @@ FORWARD_SIMULATION_VERSION = "semirisk_forward_mc_v0.1"
 REVERSE_SIMULATION_VERSION = "semirisk_reverse_stress_v0.1"
 FIXTURE_GRAPH_WARNING = "fixture_graph:not_production_ready"
 MAX_FORWARD_ITERATIONS = 5000
+LOSS_MODES = {
+    "affected_mean",
+    "graph_weighted_loss",
+    "demand_fulfillment_loss",
+    "resilience_integral_loss",
+    "capacity_functionality_loss",
+}
+PROPAGATION_MODES = {
+    "auto_semiconductor",
+    "max",
+    "additive_cap",
+    "noisy_or",
+    "leontief_bottleneck",
+    "psi_recursive",
+}
+DEFAULT_LOSS_MODE = "resilience_integral_loss"
+DEFAULT_PROPAGATION_MODE = "auto_semiconductor"
+DEFAULT_FUNCTIONALITY_METRIC = "capacity_fulfillment"
+DEFAULT_WEIGHTING_METHOD = "literature_proxy_not_calibrated"
 
 SCENARIO_TYPES = {
     "earthquake",
@@ -77,6 +96,12 @@ def normalize_forward_request(payload: dict[str, Any] | None) -> dict[str, Any]:
         raise ScenarioValidationError(f"iterations must be <= {MAX_FORWARD_ITERATIONS}", field="iterations")
     seed = _int(raw.get("seed"), 42)
     assumptions = raw.get("assumptions") if isinstance(raw.get("assumptions"), list) else []
+    loss_mode = str(raw.get("loss_mode") or DEFAULT_LOSS_MODE).strip()
+    if loss_mode not in LOSS_MODES:
+        raise ScenarioValidationError(f"invalid loss_mode: {loss_mode}", field="loss_mode")
+    propagation_mode = str(raw.get("propagation_mode") or DEFAULT_PROPAGATION_MODE).strip()
+    if propagation_mode not in PROPAGATION_MODES:
+        raise ScenarioValidationError(f"invalid propagation_mode: {propagation_mode}", field="propagation_mode")
     return {
         "scenario_type": scenario_type,
         "targets": [str(item).strip() for item in targets],
@@ -95,6 +120,10 @@ def normalize_forward_request(payload: dict[str, Any] | None) -> dict[str, Any]:
         "as_of_time": normalize_time(raw.get("as_of_time")),
         "graph_version": raw.get("graph_version"),
         "assumptions": [str(item)[:240] for item in assumptions],
+        "loss_mode": loss_mode,
+        "propagation_mode": propagation_mode,
+        "functionality_metric": str(raw.get("functionality_metric") or DEFAULT_FUNCTIONALITY_METRIC),
+        "weighting_method": str(raw.get("weighting_method") or DEFAULT_WEIGHTING_METHOD),
     }
 
 
@@ -103,9 +132,17 @@ def normalize_reverse_request(payload: dict[str, Any] | None) -> dict[str, Any]:
     target_metric = str(raw.get("target_metric") or "").strip()
     if target_metric not in TARGET_METRICS:
         raise ScenarioValidationError(f"invalid target_metric: {target_metric or 'missing'}", field="target_metric")
-    failure_threshold = float(raw.get("failure_threshold", 0.35))
-    if failure_threshold < 0:
+    failure_threshold_input = float(raw.get("failure_threshold", 0.35))
+    if failure_threshold_input < 0:
         raise ScenarioValidationError("failure_threshold must be non-negative", field="failure_threshold")
+    threshold_warnings: list[str] = []
+    if failure_threshold_input <= 1.0:
+        failure_threshold = failure_threshold_input * 100.0
+        threshold_warnings.append("failure_threshold_normalized_from_unit_interval")
+    else:
+        failure_threshold = failure_threshold_input
+    if failure_threshold > 100:
+        raise ScenarioValidationError("failure_threshold must be <= 100 after normalization", field="failure_threshold")
     max_combination_size = max(1, min(_int(raw.get("max_combination_size"), 3), 4))
     beam_width = max(1, min(_int(raw.get("beam_width"), 8), 24))
     iterations_per_candidate = max(1, min(_int(raw.get("iterations_per_candidate"), 300), MAX_FORWARD_ITERATIONS))
@@ -114,9 +151,19 @@ def normalize_reverse_request(payload: dict[str, Any] | None) -> dict[str, Any]:
     candidate_scope = raw.get("candidate_scope") if isinstance(raw.get("candidate_scope"), dict) else {}
     node_types = candidate_scope.get("node_types") if isinstance(candidate_scope.get("node_types"), list) else []
     edge_types = candidate_scope.get("edge_types") if isinstance(candidate_scope.get("edge_types"), list) else []
+    loss_mode = str(raw.get("loss_mode") or DEFAULT_LOSS_MODE).strip()
+    if loss_mode not in LOSS_MODES:
+        raise ScenarioValidationError(f"invalid loss_mode: {loss_mode}", field="loss_mode")
+    propagation_mode = str(raw.get("propagation_mode") or DEFAULT_PROPAGATION_MODE).strip()
+    if propagation_mode not in PROPAGATION_MODES:
+        raise ScenarioValidationError(f"invalid propagation_mode: {propagation_mode}", field="propagation_mode")
     return {
         "target_metric": target_metric,
+        "failure_threshold_input": failure_threshold_input,
         "failure_threshold": failure_threshold,
+        "failure_threshold_normalized": failure_threshold,
+        "threshold_metric_basis": "normalized_0_to_100_resilience_loss_score",
+        "threshold_warnings": threshold_warnings,
         "candidate_scope": {
             "node_types": [str(item) for item in node_types],
             "edge_types": [str(item) for item in edge_types],
@@ -129,6 +176,10 @@ def normalize_reverse_request(payload: dict[str, Any] | None) -> dict[str, Any]:
         "graph_version": raw.get("graph_version"),
         "allowed_shock_types": allowed,
         "forbidden_shock_types": forbidden,
+        "loss_mode": loss_mode,
+        "propagation_mode": propagation_mode,
+        "functionality_metric": str(raw.get("functionality_metric") or DEFAULT_FUNCTIONALITY_METRIC),
+        "weighting_method": str(raw.get("weighting_method") or DEFAULT_WEIGHTING_METHOD),
     }
 
 

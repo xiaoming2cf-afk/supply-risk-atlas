@@ -1,70 +1,37 @@
 # Risk Score v0
 
-Risk Score v0 is an explainable, deterministic baseline for the fixture-based SemiRisk-KG v0.1 graph. It is not a production model and does not use neural networks, random forests, private exposure data, or fabricated business metrics.
+Risk Score v0 is a deterministic fixture-graph model for the SemiRisk-KG v0.1 platform slice. It is not a production risk model and does not use neural networks, random forests, private exposure data, or fabricated business metrics.
 
-## Scope
+## Default Method
 
-- Graph source: SemiRisk-KG v0.1 fixture/promoted test graph.
-- Default entity: `company:tsmc`.
-- Feature version: `semirisk_risk_score_v0.1`.
-- Required lineage: every score carries `graph_version`, `source_manifest_id`, `as_of_time`, component evidence refs, and `fixture_graph:not_production_ready`.
-- Raw source payloads are not exposed through model output or API payloads.
-
-## Components
-
-All component values are normalized to 0-100 and computed from graph edge weights and confidence.
-
-| Component | Meaning |
-| --- | --- |
-| `exposure_score` | Dependency, supply, process, production, and route pressure near the entity. |
-| `criticality_score` | Direct weighted graph degree normalized by the highest weighted degree in the snapshot. |
-| `substitution_gap` | Dependency pressure not covered by explicit `substitutable_with` evidence. |
-| `policy_risk` | `restricted_by` policy evidence directly or through graph context. |
-| `event_pressure` | `impacted_by` risk-event evidence directly or through graph context. |
-| `market_pressure` | WSTS-style `market_indicator` evidence connected through graph context. |
-
-Overall score is a weighted average over evidence-backed available components:
+- Feature version: `semirisk_risk_score_likelihood_impact_v0.1`.
+- Scoring method: `likelihood_impact_vulnerability_framework`.
+- Formula version: `semirisk_liv_framework_v0.1`.
+- Calibration status: `fixture_proxy_not_calibrated`.
+- Formula:
 
 ```text
-score =
-  0.25 * exposure_score +
-  0.25 * criticality_score +
-  0.15 * substitution_gap +
-  0.15 * policy_risk +
-  0.10 * event_pressure +
-  0.10 * market_pressure
+score = 100 * likelihood * impact * vulnerability_modifier
 ```
 
-If a component has no evidence for an entity, it is reported as unavailable and its weight is excluded from the denominator. If no evidence-backed components remain, no score is returned.
+The formula follows the NIST principle that risk assessment combines likelihood and impact. The vulnerability modifier is an implemented proxy that reflects concentration, substitution gap, recovery difficulty, and policy/event exposure. The proxy is explicitly not calibrated.
 
-## Levels
+## Baseline Method
 
-| Score range | Level |
-| --- | --- |
-| `< 25` | `low` |
-| `25-49.99` | `guarded` |
-| `50-69.99` | `elevated` |
-| `70-84.99` | `severe` |
-| `>= 85` | `critical` |
+The previous weighted score is still available only as an explicit baseline:
 
-## API Payload
+- Feature version: `semirisk_risk_score_heuristic_v0.1`.
+- Scoring method: `heuristic_weighted_sum_baseline`.
+- Weight source: `heuristic_unvalidated`.
+- Calibration status: `not_calibrated`.
+- Required warnings: `heuristic_weights:not_literature_calibrated` and `not_for_production_decision`.
 
-`GET /api/v1/risk/entities/{entity_id}` returns the standardized API envelope. `data` includes:
+The historic `company:tsmc` score of `58.33` belongs to this baseline, not to the default API score.
 
-- `node_id`
-- `score`
-- `level`
-- `components`
-- `evidence_refs`
-- `feature_version`
-- `graph_version`
-- `source_manifest_id`
-- `as_of_time`
-- `fixture_graph`
-- `warnings`
+## Required Metadata
 
-`GET /api/v1/risk/portfolio` returns a lightweight ranked list of fixture graph entities. It is intended for Entity Risk 360 entity selection, not portfolio optimization.
+Every score includes `graph_version`, `source_manifest_id`, `as_of_time`, `feature_version`, `formula_refs`, `evidence_refs`, `calibration_status`, and `fixture_graph:not_production_ready`.
 
 ## Limitations
 
-Risk Score v0 is a fixture graph readiness slice. It is useful for validating contracts, lineage, API wiring, and frontend workflow behavior. It must not be interpreted as a production semiconductor supply-chain risk score until public-source ingestion, source review, evidence graph expansion, and external validation are complete.
+The score uses fixture proxy inputs only. Formula references identify source principles and implemented proxies; they are not validated coefficients or production decision rules.

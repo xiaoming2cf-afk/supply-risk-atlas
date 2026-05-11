@@ -31,6 +31,8 @@ def normalize_optimization_request(payload: dict[str, Any] | None) -> dict[str, 
         "scenario_run": raw.get("scenario_run"),
         "reverse_stress_run": raw.get("reverse_stress_run"),
         "scenario_set": raw.get("scenario_set") if isinstance(raw.get("scenario_set"), list) else [],
+        "forward_scenario_payload": raw.get("forward_scenario_payload") if isinstance(raw.get("forward_scenario_payload"), dict) else None,
+        "reverse_stress_payload": raw.get("reverse_stress_payload") if isinstance(raw.get("reverse_stress_payload"), dict) else None,
         "budget": budget,
         "allowed_intervention_types": allowed_types,
         "max_actions": max_actions,
@@ -45,8 +47,14 @@ def normalize_optimization_request(payload: dict[str, Any] | None) -> dict[str, 
 
 
 def validate_action(action: dict[str, Any], request: dict[str, Any], current_cost: float) -> bool:
+    text = " ".join(str(value) for value in action.values()).lower()
+    forbidden = ["evade", "evasion", "circumvent", "bypass sanctions", "illegal rerouting", "disguise"]
+    if any(term in text for term in forbidden):
+        return False
+    compliance = request.get("compliance_constraints", {})
+    if not compliance.get("no_export_control_evasion", True) or not compliance.get("no_sanctions_circumvention", True):
+        return False
     return (
         action["intervention_type"] in request["allowed_intervention_types"]
         and current_cost + float(action["cost"]) <= float(request["budget"]) + 1e-9
     )
-

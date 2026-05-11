@@ -73,6 +73,11 @@ def test_route_reverse_scenario_returns_ranked_shock_sets() -> None:
     assert data["run_id"].startswith("rev_")
     assert data["seed"] == 42
     assert data["simulation_version"] == "semirisk_reverse_stress_v0.1"
+    assert data["failure_threshold_input"] == 35
+    assert data["failure_threshold_normalized"] == 35
+    assert data["threshold_metric_basis"] == "normalized_0_to_100_resilience_loss_score"
+    assert data["loss_mode"] == "resilience_integral_loss"
+    assert data["propagation_mode"] == "auto_semiconductor"
     assert data["ranked_shock_sets"]
     assert data["ranked_shock_sets"][0]["shock_set_id"].startswith("shockset_")
     assert data["baseline_comparison"]
@@ -111,4 +116,3 @@ def test_dev_server_reverse_scenario_endpoint(dev_server_base_url: str) -> None:
     assert body["status"] == "success"
     assert body["data"]["ranked_shock_sets"]
     _assert_no_raw_or_unsafe(body)
-

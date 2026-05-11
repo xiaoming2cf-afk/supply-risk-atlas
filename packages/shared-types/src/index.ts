@@ -720,6 +720,10 @@ export interface ForwardScenarioInput {
   as_of_time: string;
   graph_version?: string | null;
   assumptions?: string[];
+  loss_mode?: "affected_mean" | "graph_weighted_loss" | "demand_fulfillment_loss" | "resilience_integral_loss" | "capacity_functionality_loss";
+  propagation_mode?: "auto_semiconductor" | "max" | "additive_cap" | "noisy_or" | "leontief_bottleneck" | "psi_recursive";
+  functionality_metric?: string;
+  weighting_method?: string;
 }
 
 export interface ForwardScenarioAffectedNode {
@@ -754,6 +758,19 @@ export interface ForwardScenarioResult {
   cvar_95: number | null;
   time_to_recover_days: number | null;
   time_to_survive_days: number | null;
+  loss_mode: string;
+  propagation_mode: string;
+  functionality_metric: string;
+  functionality_curve: Array<Record<string, number>>;
+  functionality_curve_summary: Record<string, number>;
+  resilience_integral_loss: number | null;
+  graph_weighted_loss: number | null;
+  demand_fulfillment_loss: number | null;
+  capacity_functionality_loss: number | null;
+  affected_mean: number | null;
+  weight_basis: Record<string, unknown>;
+  formula_refs: string[];
+  calibration_status: string;
   affected_nodes: ForwardScenarioAffectedNode[];
   top_transmission_paths: ForwardScenarioTransmissionPath[];
   loss_distribution_summary: Record<string, number | null>;
@@ -785,6 +802,10 @@ export interface ReverseStressInput {
   graph_version?: string | null;
   allowed_shock_types?: string[];
   forbidden_shock_types?: string[];
+  loss_mode?: ForwardScenarioInput["loss_mode"];
+  propagation_mode?: ForwardScenarioInput["propagation_mode"];
+  functionality_metric?: string;
+  weighting_method?: string;
 }
 
 export interface ReverseShockSet {
@@ -799,6 +820,9 @@ export interface ReverseShockSet {
   explanation: string;
   evidence_refs: Array<Record<string, unknown>>;
   assumptions: string[];
+  loss_mode?: string;
+  propagation_mode?: string;
+  threshold_metric_basis?: string;
 }
 
 export interface ReverseStressResult {
@@ -808,6 +832,11 @@ export interface ReverseStressResult {
   source_manifest_id: string;
   simulation_version: "semirisk_reverse_stress_v0.1" | string;
   timestamp: string;
+  failure_threshold_input: number;
+  failure_threshold_normalized: number;
+  threshold_metric_basis: string;
+  loss_mode: string;
+  propagation_mode: string;
   ranked_shock_sets: ReverseShockSet[];
   expected_loss: number | null;
   cvar95: number | null;
@@ -828,6 +857,8 @@ export interface InterventionOptimizationInput {
   scenario_run?: Record<string, unknown> | null;
   reverse_stress_run?: Record<string, unknown> | null;
   scenario_set?: Array<Record<string, unknown>>;
+  forward_scenario_payload?: ForwardScenarioInput | null;
+  reverse_stress_payload?: ReverseStressInput | null;
   budget: number;
   allowed_intervention_types: string[];
   max_actions: number;
@@ -861,11 +892,18 @@ export interface InterventionOptimizationResult {
   source_manifest_id: string;
   optimization_version: "semirisk_intervention_optimizer_v0.1" | string;
   timestamp: string;
+  optimization_context_type: string;
+  scenario_count: number;
+  baseline_run_ids: string[];
+  before_simulation_run_ids: string[];
+  after_simulation_run_ids: string[];
   recommended_actions: InterventionAction[];
   before_expected_loss: number | null;
   after_expected_loss: number | null;
   before_cvar95: number | null;
   after_cvar95: number | null;
+  heuristic_estimated_after_expected_loss: number | null;
+  heuristic_estimated_after_cvar95: number | null;
   cost: number;
   budget: number;
   resilience_roi: number;
@@ -913,6 +951,12 @@ export interface InvestigationReportData {
     optimization_version: string | null;
     report_version: string;
   };
+  methodology: Record<string, unknown>;
+  formula_sources: {
+    formula_refs: string[];
+    source_principle_note: string;
+  };
+  model_limitations: string[];
   warnings: string[];
   assumptions: string[];
   limitations: string[];
@@ -1302,16 +1346,11 @@ export interface SemiriskRiskEvidenceRef {
 }
 
 export interface SemiriskRiskComponent {
-  name:
-    | "exposure_score"
-    | "criticality_score"
-    | "substitution_gap"
-    | "policy_risk"
-    | "event_pressure"
-    | "market_pressure";
+  name: string;
   value: number | null;
+  normalized_value?: number | null;
   status: "available" | "unavailable";
-  weight: number;
+  weight: number | null;
   weighted_contribution: number | null;
   evidence_refs: SemiriskRiskEvidenceRef[];
   explanation: string;
@@ -1330,8 +1369,19 @@ export interface SemiriskEntityRiskScore {
   };
   score: number;
   level: RiskLevel;
+  scoring_method: string;
+  formula_version: string;
+  likelihood?: number;
+  impact?: number;
+  vulnerability_modifier?: number;
   components: SemiriskRiskComponent[];
+  component_weights?: Record<string, number>;
+  weighting_method?: string;
+  weight_source?: string;
+  calibration_status: string;
+  concentration?: Record<string, unknown>;
   evidence_refs: SemiriskRiskEvidenceRef[];
+  formula_refs: string[];
   feature_version: string;
   graph_version: string;
   source_manifest_id: string;
@@ -1354,6 +1404,8 @@ export interface SemiriskRiskPortfolioData {
     score: number;
     level: RiskLevel;
     evidence_ref_count: number;
+    scoring_method?: string;
+    calibration_status?: string;
   }>;
   warnings: string[];
 }

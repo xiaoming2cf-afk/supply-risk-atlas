@@ -46,23 +46,23 @@ def test_semirisk_entity_risk_route_returns_envelope() -> None:
     assert payload["request_id"] == "req_risk_tsmc"
     assert payload["status"] == "success"
     assert payload["source_status"] == "partial"
-    assert payload["metadata"]["feature_version"] == "semirisk_risk_score_v0.1"
+    assert payload["metadata"]["feature_version"] == "semirisk_risk_score_likelihood_impact_v0.1"
     assert payload["metadata"]["graph_version"] == payload["data"]["graph_version"]
     assert payload["metadata"]["source_manifest_ref"] == payload["data"]["source_manifest_id"]
     assert payload["data"]["node_id"] == "company:tsmc"
-    assert payload["data"]["score"] == 58.33
-    assert payload["data"]["level"] == "elevated"
+    assert 0 <= payload["data"]["score"] <= 100
+    assert payload["data"]["scoring_method"] == "likelihood_impact_vulnerability_framework"
+    assert payload["data"]["formula_version"] == "semirisk_liv_framework_v0.1"
+    assert payload["data"]["calibration_status"] == "fixture_proxy_not_calibrated"
+    assert payload["data"]["formula_refs"]
+    assert 0 <= payload["data"]["likelihood"] <= 1
+    assert 0 <= payload["data"]["impact"] <= 1
+    assert 0 <= payload["data"]["vulnerability_modifier"] <= 1
     assert payload["data"]["evidence_refs"]
     assert "fixture_graph:not_production_ready" in payload["warnings"]
     warning_text = " ".join(payload["warnings"])
-    assert "semirisk_risk_score_metadata" in warning_text
-    assert "company:tsmc" in warning_text
-    assert "score=58.33" in warning_text
-    assert "level=elevated" in warning_text
-    assert "evidence_refs=" in warning_text
-    assert "feature_version=semirisk_risk_score_v0.1" in warning_text
-    assert f"graph_version={payload['data']['graph_version']}" in warning_text
-    assert f"source_manifest_id={payload['data']['source_manifest_id']}" in warning_text
+    assert "fixture_proxy_not_calibrated" in warning_text
+    assert "not_for_production_decision" in warning_text
     _assert_no_raw_payload(payload)
 
 
@@ -79,7 +79,8 @@ def test_semirisk_portfolio_route_is_ranked_and_fixture_labeled() -> None:
     assert len(scores) == 3
     assert scores[0]["node_id"] == "company:tsmc"
     assert payload["data"]["fixture_graph"] is True
-    assert payload["data"]["feature_version"] == "semirisk_risk_score_v0.1"
+    assert payload["data"]["feature_version"] == "semirisk_risk_score_likelihood_impact_v0.1"
+    assert all(row["scoring_method"] == "likelihood_impact_vulnerability_framework" for row in scores)
     _assert_no_raw_payload(payload)
 
 
@@ -119,8 +120,8 @@ def test_dev_server_risk_endpoints_are_registered(dev_server_base_url: str) -> N
     assert entity_status == 200
     assert portfolio_status == 200
     assert entity["data"]["node_id"] == "company:tsmc"
-    assert entity["data"]["score"] == 58.33
-    assert entity["data"]["level"] == "elevated"
+    assert entity["data"]["scoring_method"] == "likelihood_impact_vulnerability_framework"
+    assert entity["data"]["calibration_status"] == "fixture_proxy_not_calibrated"
     assert portfolio["data"]["scores"][0]["node_id"] == "company:tsmc"
     _assert_no_raw_payload(entity)
     _assert_no_raw_payload(portfolio)

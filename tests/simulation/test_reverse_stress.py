@@ -44,6 +44,11 @@ def test_reverse_stress_is_deterministic_and_ranked() -> None:
     assert first["simulation_version"] == "semirisk_reverse_stress_v0.1"
     assert first["graph_version"].startswith("semirisk_kg_v0_1_")
     assert first["source_manifest_id"].startswith("semirisk_fixture_manifest_")
+    assert first["failure_threshold_input"] == 35
+    assert first["failure_threshold_normalized"] == 35
+    assert first["threshold_metric_basis"] == "normalized_0_to_100_resilience_loss_score"
+    assert first["loss_mode"] == "resilience_integral_loss"
+    assert first["propagation_mode"] == "auto_semiconductor"
     assert first["ranked_shock_sets"]
     assert first["ranked_shock_sets"][0]["shock_set_id"].startswith("shockset_")
     assert first["ranked_shock_sets"][0]["affected_paths"]
@@ -65,6 +70,16 @@ def test_reverse_stress_threshold_and_safety_language() -> None:
     assert "bypass" not in text
 
 
+def test_reverse_stress_normalizes_unit_interval_threshold() -> None:
+    payload = _payload()
+    payload["failure_threshold"] = 0.35
+    result = run_reverse_stress(payload)
+
+    assert result["failure_threshold_input"] == 0.35
+    assert result["failure_threshold_normalized"] == 35
+    assert "failure_threshold_normalized_from_unit_interval" in result["warnings"]
+
+
 def test_reverse_stress_rejects_invalid_metric_and_empty_candidates() -> None:
     invalid = _payload()
     invalid["target_metric"] = "made_up"
@@ -75,4 +90,3 @@ def test_reverse_stress_rejects_invalid_metric_and_empty_candidates() -> None:
     empty["candidate_scope"] = {"node_types": ["not_a_node_type"], "edge_types": []}
     with pytest.raises(ScenarioValidationError):
         run_reverse_stress(empty)
-

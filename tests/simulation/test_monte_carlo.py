@@ -36,6 +36,11 @@ def test_forward_monte_carlo_is_deterministic_for_fixed_seed() -> None:
     assert first["graph_version"].startswith("semirisk_kg_v0_1_")
     assert first["source_manifest_id"].startswith("semirisk_fixture_manifest_")
     assert first["simulation_version"] == "semirisk_forward_mc_v0.1"
+    assert first["loss_mode"] == "resilience_integral_loss"
+    assert first["propagation_mode"] == "auto_semiconductor"
+    assert first["expected_loss"] == first["resilience_integral_loss"]
+    assert first["formula_refs"]
+    assert first["calibration_status"] == "fixture_proxy_not_calibrated"
     assert first["evidence_refs"]
     assert "fixture_graph:not_production_ready" in first["warnings"]
 
@@ -48,6 +53,7 @@ def test_forward_monte_carlo_distribution_metrics_are_ordered() -> None:
     assert result["time_to_recover_days"] >= result["time_to_survive_days"] >= 1
     assert result["affected_nodes"]
     assert result["top_transmission_paths"]
+    assert result["loss_distribution_summary"]["count"] == 120
     text = json.dumps(result, sort_keys=True)
     assert "raw_payload" not in text
     assert "private_diagnostics" not in text
@@ -72,3 +78,7 @@ def test_forward_monte_carlo_rejects_invalid_scenario_and_unknown_target() -> No
     with pytest.raises(ScenarioValidationError):
         run_forward_monte_carlo(unknown)
 
+    bad_mode = _payload()
+    bad_mode["propagation_mode"] = "made_up"
+    with pytest.raises(ScenarioValidationError):
+        run_forward_monte_carlo(bad_mode)
