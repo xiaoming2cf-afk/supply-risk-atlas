@@ -135,3 +135,38 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Dev-mode CORS remains wildcard by default for local development.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 3 frontend feature-module split.
+
+## Gate 3 - Frontend Feature-Module Split
+
+- Gate name: Gate 3 frontend feature-module split
+- Current HEAD before commit: `fc66a021289f7d6ffe2ab23f1313a7c5019ff90d`
+- Files changed:
+  - `apps/web/src/app/pages.tsx`
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `apps/web/src/features/common/PageDataUnavailable.tsx`
+  - `apps/web/src/features/common/GlobalRiskCockpit.tsx`
+  - `apps/web/src/features/system-health/SystemHealthCenter.tsx`
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/entity-risk/EntityRisk360.tsx`
+  - `apps/web/src/features/forward-stress/ForwardShockSimulator.tsx`
+  - `apps/web/src/features/reverse-stress/ReverseStressLab.tsx`
+  - `apps/web/src/features/intervention-optimizer/InterventionOptimizer.tsx`
+  - `apps/web/src/features/investigation-report/InvestigationReport.tsx`
+  - `apps/web/src/features/evidence-board/CausalEvidenceBoard.tsx`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web`
+- Pass/fail: pass
+- Evidence:
+  - `apps/web/src/app/pages.tsx` reduced from 3,977 lines to 75 lines.
+  - Typecheck passed.
+  - Web build passed.
+  - Browser smoke passed: 22 checks.
+  - Public page hashes still render through the lightweight dispatcher.
+- Unresolved limitations:
+  - Most legacy feature implementation code is temporarily colocated in `features/common/legacyDashboard.tsx` to preserve behavior during the first split.
+  - Gate 5 will decompose Graph Explorer into dedicated view-model, canvas, controls, inspector, legend, layers, breadcrumbs, layout, and filter modules.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 4 shared types domain split.
