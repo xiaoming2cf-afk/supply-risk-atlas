@@ -62,6 +62,16 @@ from services.api.routes import risk as risk_routes
 from services.api.routes import scenarios as scenario_routes
 from services.api.routes import system_health as system_health_routes
 from services.api.runtime.cache import BoundedRunCache, SnapshotCache
+from services.api.runtime.errors import ControlledApiError
+from services.api.security.headers import cors_origins, security_headers
+from services.api.security.validation import (
+    sanitized_payload,
+    validate_forward_payload,
+    validate_optimization_payload,
+    validate_report_payload,
+    validate_request_size,
+    validate_reverse_payload,
+)
 from sra_core.reports.investigation import REPORT_VERSION, generate_investigation_report
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
@@ -452,8 +462,18 @@ def route_forward_scenario(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
+        payload = validate_forward_payload(payload)
         snapshot = build_semiconductor_fixture_snapshot()
-        result = run_forward_monte_carlo(payload or {}, snapshot=snapshot)
+        result = run_forward_monte_carlo(payload, snapshot=snapshot)
+    except ControlledApiError as exc:
+        return make_error_envelope(
+            exc.code,
+            str(exc),
+            metadata=semiconductor_metadata(feature_version=FORWARD_SIMULATION_VERSION),
+            request_id=request_id,
+            field=exc.field,
+            warnings=["fixture_graph:not_production_ready"],
+        )
     except ScenarioValidationError as exc:
         return make_error_envelope(
             "forward_scenario_validation_error",
@@ -486,8 +506,18 @@ def route_reverse_scenario(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
+        payload = validate_reverse_payload(payload)
         snapshot = build_semiconductor_fixture_snapshot()
-        result = run_reverse_stress(payload or {}, snapshot=snapshot)
+        result = run_reverse_stress(payload, snapshot=snapshot)
+    except ControlledApiError as exc:
+        return make_error_envelope(
+            exc.code,
+            str(exc),
+            metadata=semiconductor_metadata(feature_version=REVERSE_SIMULATION_VERSION),
+            request_id=request_id,
+            field=exc.field,
+            warnings=["fixture_graph:not_production_ready"],
+        )
     except ScenarioValidationError as exc:
         return make_error_envelope(
             "reverse_scenario_validation_error",
@@ -520,8 +550,18 @@ def route_intervention_optimization(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
+        payload = validate_optimization_payload(payload)
         snapshot = build_semiconductor_fixture_snapshot()
-        result = run_intervention_optimization(payload or {}, snapshot=snapshot)
+        result = run_intervention_optimization(payload, snapshot=snapshot)
+    except ControlledApiError as exc:
+        return make_error_envelope(
+            exc.code,
+            str(exc),
+            metadata=semiconductor_metadata(feature_version=OPTIMIZATION_VERSION),
+            request_id=request_id,
+            field=exc.field,
+            warnings=["fixture_graph:not_production_ready"],
+        )
     except ValueError as exc:
         return make_error_envelope(
             "optimization_validation_error",
@@ -553,8 +593,18 @@ def route_investigation_report(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
+        payload = validate_report_payload(payload)
         snapshot = build_semiconductor_fixture_snapshot()
-        result = generate_investigation_report(payload or {})
+        result = sanitized_payload(generate_investigation_report(payload))
+    except ControlledApiError as exc:
+        return make_error_envelope(
+            exc.code,
+            str(exc),
+            metadata=semiconductor_metadata(feature_version=REPORT_VERSION),
+            request_id=request_id,
+            field=exc.field,
+            warnings=["fixture_graph:not_production_ready"],
+        )
     except Exception as exc:
         return make_error_envelope(
             "investigation_report_unavailable",
@@ -2952,10 +3002,31 @@ def create_app() -> Any:
     if CORSMiddleware is not None:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origins=cors_origins(),
             allow_methods=["*"],
             allow_headers=["*"],
         )
+
+    @app.middleware("http")
+    async def security_boundary_middleware(request: Request, call_next: Any) -> Any:
+        try:
+            validate_request_size(request.headers.get("content-length"))
+        except ControlledApiError as exc:
+            response = JSONResponse(
+                status_code=413,
+                content=make_error(
+                    exc.code,
+                    str(exc),
+                    request_id=_request_id_from_request(request),
+                    field=exc.field,
+                ),
+            )
+        else:
+            response = await call_next(request)
+        for key, value in security_headers().items():
+            if key not in response.headers:
+                response.headers[key] = value
+        return response
 
     @app.exception_handler(LookupError)
     async def lookup_error_handler(request: Request, exc: LookupError) -> JSONResponse:

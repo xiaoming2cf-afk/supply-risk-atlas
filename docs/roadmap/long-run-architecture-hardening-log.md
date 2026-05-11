@@ -99,3 +99,39 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Gate 2 will expand validation/security behavior beyond the initial placeholder security helpers.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 2 API input validation and security boundary.
+
+## Gate 2 - API Input Validation and Security Boundary
+
+- Gate name: Gate 2 API input validation and security boundary
+- Current HEAD before commit: `e746de33fec84fb09024c011687dda9c71028380`
+- Files changed:
+  - `services/api/main.py`
+  - `services/api/security/validation.py`
+  - `services/api/security/headers.py`
+  - `tests/security/test_input_validation.py`
+  - `tests/security/test_response_sanitization.py`
+  - `tests/security/test_security_headers.py`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `python -m pytest tests/security -q`
+  - `python -m pytest tests/api/test_scenario_forward.py tests/api/test_scenario_reverse.py tests/api/test_optimization_routes.py tests/api/test_report_export.py tests/api/test_route_architecture_split.py tests/security -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+- Pass/fail: pass
+- Evidence:
+  - New security tests passed.
+  - Affected API and security suites passed.
+  - Full pytest passed, 227 tests.
+  - Web typecheck passed.
+  - Web build passed.
+  - Request size guard returns controlled `request_too_large` envelopes.
+  - Forward, reverse, optimization, and report routes reject bounded unsafe inputs with controlled envelopes.
+  - Security headers are present on API responses.
+  - Production CORS default is not wildcard; configured origins are read from `SUPPLY_RISK_CORS_ORIGINS`.
+  - Report export sanitizer drops raw/private payload fields while preserving safe exclusion evidence flags.
+- Unresolved limitations:
+  - Request-size middleware uses `content-length`; streaming chunked request hardening is not implemented.
+  - Dev-mode CORS remains wildcard by default for local development.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 3 frontend feature-module split.
