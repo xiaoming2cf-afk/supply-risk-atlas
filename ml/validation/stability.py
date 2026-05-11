@@ -90,4 +90,3 @@ def explain_rank_disagreements(
             }
         )
     return sorted(rows, key=lambda row: (-abs(int(row["rank_delta"])), str(row["node_id"])))
-

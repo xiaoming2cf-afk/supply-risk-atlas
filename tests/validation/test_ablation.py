@@ -26,4 +26,3 @@ def test_ablation_rows_are_deterministic_and_report_rank_changes() -> None:
     assert first == second
     assert {row["ablation_factor"] for row in first} == {"policy_risk", "event_pressure"}
     assert all("rank_delta" in row for row in first)
-

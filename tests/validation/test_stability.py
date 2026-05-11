@@ -33,4 +33,3 @@ def test_rank_correlation_and_deltas_are_deterministic() -> None:
     }
     disagreements = explain_rank_disagreements(left, right, min_rank_delta=1)
     assert disagreements[0]["node_id"] in {"a", "c"}
-

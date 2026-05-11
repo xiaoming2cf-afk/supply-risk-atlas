@@ -84,4 +84,3 @@ def hhi_sensitivity_rows(
                     }
                 )
     return rows
-

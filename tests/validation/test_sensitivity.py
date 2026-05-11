@@ -30,4 +30,3 @@ def test_threshold_helpers_follow_operational_policy() -> None:
     assert significant_dependency_for_reference(0.50, 0.20) is True
     assert significant_dependency_for_reference(0.40, 0.20) is False
     assert significant_dependency_for_reference(0.50, 0.15) is False
-
