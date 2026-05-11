@@ -170,3 +170,35 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Gate 5 will decompose Graph Explorer into dedicated view-model, canvas, controls, inspector, legend, layers, breadcrumbs, layout, and filter modules.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 4 shared types domain split.
+
+## Gate 4 - Shared Types Domain Split
+
+- Gate name: Gate 4 shared types domain split
+- Current HEAD before commit: `50efa07494f29b8a3a75140ef5a3bf81577159b8`
+- Files changed:
+  - `packages/shared-types/src/index.ts`
+  - `packages/shared-types/src/common.ts`
+  - `packages/shared-types/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `packages/shared-types/src/risk.ts`
+  - `packages/shared-types/src/scenario.ts`
+  - `packages/shared-types/src/reverse-stress.ts`
+  - `packages/shared-types/src/optimization.ts`
+  - `packages/shared-types/src/report.ts`
+  - `packages/shared-types/src/health.ts`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+- Pass/fail: pass
+- Evidence:
+  - `packages/shared-types/src/index.ts` is now a 9-line export barrel.
+  - Package typecheck passed for shared-types, api-client, and design-system.
+  - Web typecheck passed.
+  - Web build passed.
+  - Existing `@supply-risk/shared-types` import path remains compatible.
+- Unresolved limitations:
+  - Frontend and API-client still mostly import from the compatibility barrel; more direct domain imports can be adopted incrementally.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 5 Graph Explorer v2 declutter.
