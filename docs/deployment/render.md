@@ -12,6 +12,22 @@ SupplyRiskAtlas deploys to Render as two Git-backed web services managed by the 
 The frontend uses `NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1` on Render so browser requests can call the API directly through CORS. The Next.js `/api/v1/*` proxy remains available for same-origin deployments and uses `SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com`, with `SUPPLY_RISK_API_HOSTPORT` retained as a private-network fallback.
 The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducible builds. Render deployment is lightweight by default: the API build installs the service only and does not run online ingestion. The API can serve the SemiRisk fixture graph and any pre-promoted public graph that already exists; large or online ingestion jobs must be run as explicit offline maintenance tasks, not during Render build or startup.
 
+## Environment
+
+| Variable | Service | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPPLY_RISK_API_URL` | web | Browser-visible API base URL, normally `https://supply-risk-atlas-api.onrender.com/api/v1` on Render. |
+| `SUPPLY_RISK_API_ORIGIN` | web | Same-origin proxy upstream, normally `https://supply-risk-atlas-api.onrender.com`. |
+| `SUPPLY_RISK_API_HOSTPORT` | web | Optional Render private-network fallback for the same-origin proxy. |
+| `SUPPLY_RISK_CORS_ORIGINS` | API | Comma-separated allowed web origins. Production must not use wildcard CORS. |
+| `SUPPLY_RISK_ENV` | API | Use `production` on Render so CORS defaults stay strict. |
+| `SUPPLY_RISK_DATA_MODE` | both | Current value is `fixture`; no production data mode is enabled. |
+| `SUPPLY_RISK_FIXTURE_GRAPH_MODE` | both | Documents the active fixture graph mode, currently `semirisk_fixture_v0.1`. |
+| `SUPPLY_RISK_MAX_REQUEST_BYTES` | API | Request body cap; default and Render value are `262144`. |
+| `SUPPLY_RISK_RUN_STORE_SIZE` | API | Bounded in-memory run summary count; default and Render value are `32`. |
+
+Current limits are `forward iterations <= 5000`, `reverse beam_width <= 20`, `reverse max_combination_size <= 4`, `reverse iterations_per_candidate <= 1000`, and `optimizer max_actions <= 10`.
+
 ## Deploy From GitHub
 
 1. Push the repository to GitHub.
@@ -46,6 +62,18 @@ The web service must receive both:
 NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1
 SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com
 SUPPLY_RISK_DATA_MODE=fixture
+SUPPLY_RISK_FIXTURE_GRAPH_MODE=semirisk_fixture_v0.1
+```
+
+The API service must receive:
+
+```text
+SUPPLY_RISK_ENV=production
+SUPPLY_RISK_CORS_ORIGINS=https://supply-risk-atlas-web.onrender.com
+SUPPLY_RISK_DATA_MODE=fixture
+SUPPLY_RISK_FIXTURE_GRAPH_MODE=semirisk_fixture_v0.1
+SUPPLY_RISK_MAX_REQUEST_BYTES=262144
+SUPPLY_RISK_RUN_STORE_SIZE=32
 ```
 
 `SUPPLY_RISK_API_HOSTPORT` is optional and is used only as a private-network fallback for the same-origin proxy. Keep the direct public API URL configured so browser smoke diagnostics and runtime pages do not depend on the proxy path. `SUPPLY_RISK_DATA_MODE=fixture` documents that the deployed first platform slices use the promoted SemiRisk fixture graph and must carry the `fixture_graph:not_production_ready` warning.
@@ -75,6 +103,18 @@ $env:SUPPLY_RISK_EXPECT_MODE='real'
 npm run smoke:web
 ```
 
+Smoke modes:
+
+```powershell
+npm.cmd run smoke:web -- --mode=proxy
+npm.cmd run smoke:web -- --mode=local
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+- `proxy` uses `SUPPLY_RISK_WEB_URL` or `http://127.0.0.1:3000` and the same-origin `/api/v1` proxy.
+- `local` defaults to `http://127.0.0.1:3000` plus `http://127.0.0.1:8000/api/v1`.
+- `deployed` defaults to the Render web/API URLs and is best-effort so transient deployed-service failures do not mask local regression status.
+
 The local web app can still connect directly to the local API with:
 
 ```powershell
@@ -97,6 +137,16 @@ $env:SUPPLY_RISK_API_URL='https://supply-risk-atlas-api.onrender.com/api/v1'
 $env:SUPPLY_RISK_EXPECT_MODE='real'
 npm run smoke:web
 ```
+
+Deployed smoke checklist:
+
+- `#system-health-center`
+- `#graph-explorer`
+- `#company-risk-360` or `#entity-risk-360`
+- `#shock-simulator`
+- `#reverse-stress-lab`
+- `#intervention-optimizer`
+- `#investigation-report`
 
 If Render web stays stale after a pushed commit, redeploy the web service from
 the latest Git commit and clear the web build cache before rerunning the remote

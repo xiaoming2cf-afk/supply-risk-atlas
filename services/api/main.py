@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import os
 from threading import Lock
 from typing import Any
 from uuid import uuid4
@@ -93,8 +94,18 @@ TAIWAN_PROVINCE_DISPLAY = "中国台湾省"
 TAIWAN_RAW_CODES = {"TW", "TWN"}
 DASHBOARD_PAYLOAD_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 DASHBOARD_PAYLOAD_CACHE_LOCK = Lock()
+
+
+def _run_store_size() -> int:
+    try:
+        configured = int(os.getenv("SUPPLY_RISK_RUN_STORE_SIZE", "32"))
+    except ValueError:
+        return 32
+    return max(1, min(configured, 256))
+
+
 SNAPSHOT_CACHE = SnapshotCache(max_items=8)
-RUN_STORE = RunStore(max_items=32)
+RUN_STORE = RunStore(max_items=_run_store_size())
 RUN_CACHE = RUN_STORE
 PATH_DIRECTIONS = {"upstream", "downstream", "both"}
 MAX_DASHBOARD_QUERY_LIST_ITEMS = 32

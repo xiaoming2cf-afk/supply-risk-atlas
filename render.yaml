@@ -15,6 +15,16 @@ services:
         value: supply-risk-atlas-web.onrender.com
       - key: SUPPLY_RISK_DATA_MODE
         value: fixture
+      - key: SUPPLY_RISK_ENV
+        value: production
+      - key: SUPPLY_RISK_CORS_ORIGINS
+        value: https://supply-risk-atlas-web.onrender.com
+      - key: SUPPLY_RISK_MAX_REQUEST_BYTES
+        value: "262144"
+      - key: SUPPLY_RISK_RUN_STORE_SIZE
+        value: "32"
+      - key: SUPPLY_RISK_FIXTURE_GRAPH_MODE
+        value: semirisk_fixture_v0.1
     buildFilter:
       paths:
         - services/**
@@ -42,6 +52,8 @@ services:
         value: supply-risk-atlas-web.onrender.com
       - key: SUPPLY_RISK_DATA_MODE
         value: fixture
+      - key: SUPPLY_RISK_FIXTURE_GRAPH_MODE
+        value: semirisk_fixture_v0.1
       - key: NEXT_PUBLIC_SUPPLY_RISK_API_URL
         value: https://supply-risk-atlas-api.onrender.com/api/v1
       - key: SUPPLY_RISK_API_ORIGIN

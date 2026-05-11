@@ -31,6 +31,9 @@ GitHub Actions is a public-code validation environment for v1. It must prove qua
 
 ## Workflow Expectations
 
+- Official GitHub actions are kept on Node 24-runtime major releases where practical. As of this gate, `actions/checkout@v5` and `actions/setup-node@v5` are used based on the official action repositories:
+  - [actions/checkout](https://github.com/actions/checkout)
+  - [actions/setup-node](https://github.com/actions/setup-node)
 - Artifact upload paths must be explicit file patterns, not broad directories such as `artifacts/`.
 - Failure logs should summarize counts and error classes instead of dumping source payloads.
 - Changed-file routing in `quality-gates.yml` should show the required gates and responsible agent for pull requests.

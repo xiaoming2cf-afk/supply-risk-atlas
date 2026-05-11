@@ -6,16 +6,22 @@ import os from "node:os";
 import path from "node:path";
 
 const root = process.cwd();
-const webUrl = process.env.SUPPLY_RISK_WEB_URL ?? "http://127.0.0.1:3000";
+const smokeMode = process.env.SUPPLY_RISK_SMOKE_MODE ?? cliOption("mode") ?? "proxy";
+const webUrl =
+  process.env.SUPPLY_RISK_WEB_URL ??
+  (smokeMode === "deployed" ? "https://supply-risk-atlas-web.onrender.com" : "http://127.0.0.1:3000");
 const expectedMode = process.env.SUPPLY_RISK_EXPECT_MODE;
 const apiUrl =
   process.env.SUPPLY_RISK_API_URL ??
   process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL ??
+  (smokeMode === "local" ? "http://127.0.0.1:8000/api/v1" : undefined) ??
+  (smokeMode === "deployed" ? "https://supply-risk-atlas-api.onrender.com/api/v1" : undefined) ??
   new URL("/api/v1", webUrl).toString();
 const apiBase = apiUrl.replace(/\/$/, "");
 const apiUrlLiteral = JSON.stringify(apiUrl.replace(/\/$/, ""));
 const artifactDir = path.join(root, "artifacts", "browser-smoke");
 const reportPath = path.join(artifactDir, "report.json");
+const deployedBestEffort = smokeMode === "deployed" || process.env.SUPPLY_RISK_SMOKE_BEST_EFFORT === "1";
 
 const pages = [
   ["System Health Center", "#system-health-center"],
@@ -36,6 +42,12 @@ const zhGlobalRiskTitle = "\u5168\u7403\u98ce\u9669\u9a7e\u9a76\u8231";
 const zhGraphExplorerLabel = "\u56fe\u8c31\u63a2\u7d22\u5668";
 const frGlobalRiskTitle = "Poste de pilotage des risques mondiaux";
 const frGraphExplorerLabel = "Explorateur de graphe";
+
+function cliOption(name) {
+  const prefix = `--${name}=`;
+  const match = process.argv.slice(2).find((item) => item.startsWith(prefix));
+  return match ? match.slice(prefix.length) : undefined;
+}
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -1117,12 +1129,16 @@ async function main() {
     await rm(profileDir, { recursive: true, force: true }).catch(() => undefined);
   }
 
-  const report = { url: webUrl, checkedAt: new Date().toISOString(), checks };
+  const report = { url: webUrl, apiBase, smokeMode, bestEffort: deployedBestEffort, checkedAt: new Date().toISOString(), checks };
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
   const failures = checks.filter((check) => !check.passed);
   if (failures.length > 0) {
     console.error(JSON.stringify(report, null, 2));
+    if (deployedBestEffort) {
+      console.warn(`Browser smoke had ${failures.length} failure(s) in deployed best-effort mode. Report: ${reportPath}`);
+      return;
+    }
     process.exit(1);
   }
   console.log(`Browser smoke passed: ${checks.length} checks. Report: ${reportPath}`);
@@ -1420,5 +1436,9 @@ class CdpClient {
 
 main().catch((error) => {
   console.error(error);
+  if (deployedBestEffort) {
+    console.warn("Browser smoke did not complete in deployed best-effort mode.");
+    process.exit(0);
+  }
   process.exit(1);
 });

@@ -411,3 +411,49 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Threat model covers current fixture/proxy surfaces; future live connectors require a separate ingestion and PII review.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 10 deployment and CI modernization.
+
+## Gate 10 - Deployment And CI Modernization
+
+- Gate name: Gate 10 deployment documentation, smoke modes, and Node action modernization
+- Current HEAD before commit: `fa967795f604602b181fb891023b1db96b712392`
+- Files changed:
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/quality-gates.yml`
+  - `docs/deployment/github-ci.md`
+  - `docs/deployment/render.md`
+  - `render.yaml`
+  - `scripts/browser-smoke.mjs`
+  - `services/api/main.py`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - Web verification of official action sources:
+    - [actions/checkout](https://github.com/actions/checkout)
+    - [actions/setup-node](https://github.com/actions/setup-node)
+  - `rg -n "actions/(checkout|setup-node)@" .github/workflows`
+  - `python -m pytest tests/api/test_run_store.py tests/security -q`
+  - `python scripts/security_scan.py`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web -- --mode=proxy`
+  - `npm.cmd run smoke:web -- --mode=deployed`
+  - `git diff --check`
+- Pass/fail: pass for local acceptance; deployed best-effort did not complete because the live Render web app appears stale.
+- Evidence:
+  - Workflow action refs now use `actions/checkout@v5` and `actions/setup-node@v5`, which the official repositories identify as Node 24-runtime major versions.
+  - Focused API/security tests passed: 19 tests.
+  - Security scan passed.
+  - Web typecheck passed.
+  - Web build passed.
+  - Proxy-mode browser smoke passed: 26 checks.
+  - Browser smoke supports `--mode=proxy`, `--mode=local`, and `--mode=deployed`; deployed mode is best-effort.
+  - Render docs now list API base URL, CORS allowed origin, data mode, fixture graph mode, request byte cap, run store size, and deployed smoke checklist hashes.
+  - `render.yaml` now documents production CORS, request size, run-store size, and fixture graph mode environment variables.
+- Screenshots/text evidence:
+  - `artifacts/browser-smoke/report.json` records the passing 26-check proxy smoke run after Gate 10.
+  - Deployed best-effort smoke reached `https://supply-risk-atlas-web.onrender.com`, but timed out on the Graph Explorer v2 checks because the deployed page still rendered the older dense Graph Explorer surface.
+- Unresolved limitations:
+  - Actual GitHub CI status was not fetched after this local commit.
+  - Deployed Render web app appears stale relative to the local branch; a redeploy is needed before remote smoke can be used as final acceptance.
+  - Node action modernization covered official checkout/setup-node actions; other third-party action runtime families were not changed in this gate.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 11 final no-regression acceptance.
