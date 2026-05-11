@@ -1,6 +1,6 @@
 """FastAPI route registration modules."""
 
-from . import graph, optimization, reports, reverse_stress, risk, scenarios, system_health
+from . import graph, optimization, reports, reverse_stress, risk, runs, scenarios, system_health
 
 __all__ = [
     "graph",
@@ -8,7 +8,7 @@ __all__ = [
     "reports",
     "reverse_stress",
     "risk",
+    "runs",
     "scenarios",
     "system_health",
 ]
-

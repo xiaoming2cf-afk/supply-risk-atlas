@@ -246,3 +246,56 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - When a matched data node has no direct edge in the current capped dashboard payload, the UI shows a clearly labeled derived evidence-context edge from safe metadata so search remains inspectable without inventing a supply-chain dependency.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 6 workflow continuity and run history.
+
+## Gate 6 - Workflow Continuity And Run History
+
+- Gate name: Gate 6 workflow continuity, run history, and compare
+- Current HEAD before commit: `43972790c63e9a864424048db99991932b164293`
+- Files changed:
+  - `services/api/runtime/run_store.py`
+  - `services/api/routes/runs.py`
+  - `services/api/routes/__init__.py`
+  - `services/api/main.py`
+  - `packages/shared-types/src/runs.ts`
+  - `packages/shared-types/src/index.ts`
+  - `packages/shared-types/src/reverse-stress.ts`
+  - `packages/shared-types/src/optimization.ts`
+  - `packages/shared-types/src/report.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/api-client/src/index.ts`
+  - `packages/sra_core/sra_core/reports/investigation.py`
+  - `apps/web/src/features/common/useRunHistory.ts`
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `tests/api/test_run_store.py`
+  - `tests/api/test_api_endpoints.py`
+  - `tests/api/test_route_architecture_split.py`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `python -m pytest tests/api/test_run_store.py tests/api/test_route_architecture_split.py tests/api/test_api_endpoints.py -q`
+  - `npm.cmd --workspace apps/web run typecheck:packages`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/reports tests/security/test_response_sanitization.py -q`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web`
+  - `python -m pytest -q`
+- Pass/fail: pass
+- Evidence:
+  - Focused API run-store/endpoint tests passed: 42 tests.
+  - Report/security sanitizer tests passed: 5 tests.
+  - Full pytest passed: 230 tests.
+  - Package typecheck passed for shared-types, api-client, and design-system.
+  - Web typecheck passed.
+  - Web build passed.
+  - Browser smoke passed: 26 checks.
+  - Added `GET /api/v1/runs` and `GET /api/v1/runs/{run_id}`.
+  - Run records include `run_id`, `run_type`, `created_at`, `graph_version`, `source_manifest_id`, `status`, `warnings`, sanitized `summary`, evidence refs, and version fields.
+  - Forward, reverse, optimizer, and report route results are written to a bounded in-memory run store.
+  - Frontend pages now show sanitized run history context; Reverse Stress and Optimizer can use the latest forward run; Optimizer can use the latest reverse run; Report can include latest forward/reverse/optimizer run refs; compare panels show latest forward pair and latest optimizer before/after summary.
+- Screenshots/text evidence:
+  - `artifacts/browser-smoke/report.json` records the passing 26-check smoke run after Gate 6.
+- Unresolved limitations:
+  - Run history is in-memory and process-local; it is not durable across API restarts.
+  - Stored entries are sanitized summaries only, not raw result payloads.
+  - Report run refs are included as sanitized context refs; sections are still recomputed from bounded fixture payloads when selected.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 7 validation experiment gap check.

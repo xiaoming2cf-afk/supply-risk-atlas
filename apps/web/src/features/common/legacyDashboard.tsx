@@ -58,6 +58,7 @@ import type {
   RiskLevel,
   ReverseStressInput,
   ReverseStressResult,
+  RunReference,
   ScenarioChangedPath,
   ScenarioGraphOverlay,
   SemiriskEntityRiskScore,
@@ -68,6 +69,7 @@ import type {
 import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel } from "@supply-risk/design-system";
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "../../app/components";
 import { useI18n } from "../../app/i18n";
+import { useRunHistory } from "./useRunHistory";
 
 export interface PageRenderProps {
   data: Partial<SupplyRiskDashboardData>;
@@ -2350,6 +2352,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
   const [result, setResult] = useState<ForwardScenarioResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [failure, setFailure] = useState<ApiResult<ForwardScenarioResult> | null>(null);
+  const runHistory = useRunHistory(apiClient);
 
   const updateDistribution = (
     key: "severity_distribution" | "duration_days_distribution",
@@ -2376,6 +2379,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
       .then((response) => {
         if (isAcceptedRealApiResult(response)) {
           setResult(response.data);
+          void runHistory.refresh();
           return;
         }
         setResult(null);
@@ -2495,6 +2499,14 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
       </Panel>
 
       <div className="page-grid">
+        <RunHistoryPanel
+          title="Run history"
+          latestRuns={[runHistory.latestForward, runHistory.latestReverse, runHistory.latestOptimization, runHistory.latestReport]}
+          isLoading={runHistory.isLoading}
+          error={runHistory.error}
+          onRefresh={runHistory.refresh}
+        />
+        <ForwardRunComparePanel runs={runHistory.forwardRuns} />
         {result ? (
           <>
             <Panel title="Forward stress results" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
@@ -2601,6 +2613,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
   const [result, setResult] = useState<ReverseStressResult | null>(null);
   const [failure, setFailure] = useState<ApiResult<ReverseStressResult> | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const runHistory = useRunHistory(apiClient);
 
   const runReverse = () => {
     setIsRunning(true);
@@ -2610,6 +2623,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
       .then((response) => {
         if (isAcceptedRealApiResult(response)) {
           setResult(response.data);
+          void runHistory.refresh();
           return;
         }
         setResult(null);
@@ -2653,7 +2667,20 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
       <Panel
         title="Reverse Stress Lab"
         subtitle="Greedy beam search over fixture graph shock candidates. Runs only after explicit analyst action."
-        action={<Button disabled={isRunning} icon={GitBranch} onClick={runReverse} variant="primary">{isRunning ? "Running" : "Run reverse stress"}</Button>}
+        action={
+          <div className="action-group">
+            <Button
+              disabled={!runHistory.latestForward}
+              onClick={() => {
+                const latest = runHistory.latestForward;
+                if (latest) setInput((current) => ({ ...current, graph_version: latest.graph_version, scenario_run: latest }));
+              }}
+            >
+              Use last forward scenario
+            </Button>
+            <Button disabled={isRunning} icon={GitBranch} onClick={runReverse} variant="primary">{isRunning ? "Running" : "Run reverse stress"}</Button>
+          </div>
+        }
       >
         <div className="form-grid">
           <label className="form-control">
@@ -2717,6 +2744,13 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
       </Panel>
 
       <div className="page-grid">
+        <RunHistoryPanel
+          title="Workflow continuity"
+          latestRuns={[runHistory.latestForward, runHistory.latestReverse, runHistory.latestOptimization]}
+          isLoading={runHistory.isLoading}
+          error={runHistory.error}
+          onRefresh={runHistory.refresh}
+        />
         {result ? (
           <>
             <Panel title="ranked_shock_sets" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
@@ -2809,6 +2843,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
   const [result, setResult] = useState<InterventionOptimizationResult | null>(null);
   const [failure, setFailure] = useState<ApiResult<InterventionOptimizationResult> | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const runHistory = useRunHistory(apiClient);
 
   const toggleActionType = (actionType: string) => {
     setInput((current) => {
@@ -2827,6 +2862,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
       .then((response) => {
         if (isAcceptedRealApiResult(response)) {
           setResult(response.data);
+          void runHistory.refresh();
           return;
         }
         setResult(null);
@@ -2869,7 +2905,29 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
       <Panel
         title="Intervention Optimizer"
         subtitle="Greedy budget-constrained resilience action selection over the SemiRisk fixture graph."
-        action={<Button disabled={isRunning} icon={Factory} onClick={runOptimization} variant="primary">{isRunning ? "Running" : "Run optimizer"}</Button>}
+        action={
+          <div className="action-group">
+            <Button
+              disabled={!runHistory.latestForward}
+              onClick={() => {
+                const latest = runHistory.latestForward;
+                if (latest) setInput((current) => ({ ...current, graph_version: latest.graph_version, scenario_run: latest }));
+              }}
+            >
+              Use last forward scenario
+            </Button>
+            <Button
+              disabled={!runHistory.latestReverse}
+              onClick={() => {
+                const latest = runHistory.latestReverse;
+                if (latest) setInput((current) => ({ ...current, graph_version: latest.graph_version, reverse_stress_run: latest }));
+              }}
+            >
+              Use last reverse stress
+            </Button>
+            <Button disabled={isRunning} icon={Factory} onClick={runOptimization} variant="primary">{isRunning ? "Running" : "Run optimizer"}</Button>
+          </div>
+        }
       >
         <div className="form-grid">
           <label className="form-control">
@@ -2899,6 +2957,14 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
       </Panel>
 
       <div className="page-grid">
+        <RunHistoryPanel
+          title="Optimizer context source"
+          latestRuns={[runHistory.latestForward, runHistory.latestReverse, runHistory.latestOptimization]}
+          isLoading={runHistory.isLoading}
+          error={runHistory.error}
+          onRefresh={runHistory.refresh}
+        />
+        <OptimizerComparePanel runs={runHistory.optimizationRuns} />
         {result ? (
           <>
             <Panel title="recommended_actions" subtitle={`${result.run_id}; ${result.optimization_version}.`} translateSubtitle={false}>
@@ -2976,6 +3042,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
   const [result, setResult] = useState<InvestigationReportData | null>(null);
   const [failure, setFailure] = useState<ApiResult<InvestigationReportData> | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const runHistory = useRunHistory(apiClient);
 
   const defaultForwardPayload: ForwardScenarioInput = {
     scenario_type: "earthquake",
@@ -3021,6 +3088,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
         if (isAcceptedRealApiResult(response)) {
           setResult(response.data);
           setInput((current) => ({ ...current, format }));
+          void runHistory.refresh();
           return;
         }
         setResult(null);
@@ -3120,12 +3188,48 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
             <span>include_intervention_optimization</span>
           </label>
         </div>
+        <div className="action-group">
+          <Button
+            disabled={!runHistory.latestForward}
+            onClick={() => {
+              const latest = runHistory.latestForward;
+              if (latest) setInput((current) => ({ ...current, forward_scenario_payload: defaultForwardPayload, forward_run: latest }));
+            }}
+          >
+            Use last forward scenario
+          </Button>
+          <Button
+            disabled={!runHistory.latestReverse}
+            onClick={() => {
+              const latest = runHistory.latestReverse;
+              if (latest) setInput((current) => ({ ...current, reverse_stress_payload: defaultReversePayload, reverse_stress_run: latest }));
+            }}
+          >
+            Use last reverse stress
+          </Button>
+          <Button
+            disabled={!runHistory.latestOptimization}
+            onClick={() => {
+              const latest = runHistory.latestOptimization;
+              if (latest) setInput((current) => ({ ...current, optimization_payload: defaultOptimizationPayload, optimization_run: latest }));
+            }}
+          >
+            Include last optimizer result
+          </Button>
+        </div>
         <p className="public-data-note">
           fixture_graph:not_production_ready 路 report_version semirisk_investigation_report_v0.1 路 approved resilience planning and compliance review only
         </p>
       </Panel>
 
       <div className="page-grid">
+        <RunHistoryPanel
+          title="Report run context"
+          latestRuns={[runHistory.latestForward, runHistory.latestReverse, runHistory.latestOptimization, runHistory.latestReport]}
+          isLoading={runHistory.isLoading}
+          error={runHistory.error}
+          onRefresh={runHistory.refresh}
+        />
         {result ? (
           <>
             <Panel title="Report export" subtitle={`${result.report_id}; ${result.report_version}.`} translateSubtitle={false}>
@@ -3146,6 +3250,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 <Field label="formula_refs" value={result.formula_sources.formula_refs.join(",")} />
                 <Field label="raw_payload_excluded" value={String(result.raw_payload_excluded)} />
                 <Field label="private_diagnostics_excluded" value={String(result.private_diagnostics_excluded)} />
+                <Field label="selected_run_refs" value={(result.selected_run_refs ?? []).map((run) => run.run_id).join(",") || "none"} />
               </div>
               <p className="public-data-note">
                 evidence_summary {result.evidence_summary.length}; graph_context {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges; {result.warnings.join(" | ")}
@@ -3191,6 +3296,103 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
       </div>
     </div>
   );
+}
+
+function RunHistoryPanel({
+  error,
+  isLoading,
+  latestRuns,
+  onRefresh,
+  title,
+}: {
+  error: string | null;
+  isLoading: boolean;
+  latestRuns: Array<RunReference | undefined>;
+  onRefresh: () => Promise<unknown>;
+  title: string;
+}) {
+  const runs = latestRuns.filter((run): run is RunReference => Boolean(run));
+  const uniqueRuns = Array.from(new Map(runs.map((run) => [run.run_id, run])).values());
+  return (
+    <Panel
+      title={title}
+      subtitle="Bounded sanitized run summaries; no raw payloads or private diagnostics."
+      action={<Button disabled={isLoading} icon={Clock3} onClick={() => void onRefresh()}>{isLoading ? "Refreshing" : "Refresh runs"}</Button>}
+    >
+      {error ? <p className="public-data-note">run_history_unavailable: {error}</p> : null}
+      {uniqueRuns.length ? (
+        <ul className="timeline-list">
+          {uniqueRuns.map((run) => (
+            <li className="data-row" key={run.run_id}>
+              <div className="row-top">
+                <span className="row-title">{run.run_type}</span>
+                <span className="metric-chip">{run.run_id}</span>
+              </div>
+              <div className="row-meta">
+                <span>{run.created_at}</span>
+                <span>{run.status}</span>
+              </div>
+              <p className="public-data-note">
+                graph_version {run.graph_version}; source_manifest_id {run.source_manifest_id}; warnings {run.warnings.join(" | ") || "none"}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="empty-state">No stored workflow runs yet.</div>
+      )}
+    </Panel>
+  );
+}
+
+function ForwardRunComparePanel({ runs }: { runs: RunReference[] }) {
+  const [latest, previous] = runs;
+  return (
+    <Panel title="Forward run compare" subtitle="Latest two sanitized forward scenario summaries.">
+      {latest && previous ? (
+        <div className="field-grid">
+          <Field label="latest_run_id" value={latest.run_id} />
+          <Field label="previous_run_id" value={previous.run_id} />
+          <Field label="latest_expected_loss" value={formatRunMetric(latest, "expected_loss")} />
+          <Field label="previous_expected_loss" value={formatRunMetric(previous, "expected_loss")} />
+          <Field label="latest_cvar_95" value={formatRunMetric(latest, "cvar_95")} />
+          <Field label="previous_cvar_95" value={formatRunMetric(previous, "cvar_95")} />
+          <Field label="graph_version" value={latest.graph_version} />
+          <Field label="source_manifest_id" value={latest.source_manifest_id} />
+        </div>
+      ) : (
+        <div className="empty-state">Run two forward scenarios to compare summaries.</div>
+      )}
+    </Panel>
+  );
+}
+
+function OptimizerComparePanel({ runs }: { runs: RunReference[] }) {
+  const latest = runs[0];
+  return (
+    <Panel title="Optimizer before/after compare" subtitle="Sanitized optimizer summary from the latest run.">
+      {latest ? (
+        <div className="field-grid">
+          <Field label="run_id" value={latest.run_id} />
+          <Field label="before_expected_loss" value={formatRunMetric(latest, "before_expected_loss")} />
+          <Field label="after_expected_loss" value={formatRunMetric(latest, "after_expected_loss")} />
+          <Field label="before_cvar95" value={formatRunMetric(latest, "before_cvar95")} />
+          <Field label="after_cvar95" value={formatRunMetric(latest, "after_cvar95")} />
+          <Field label="resilience_roi" value={formatRunMetric(latest, "resilience_roi")} />
+          <Field label="graph_version" value={latest.graph_version} />
+          <Field label="source_manifest_id" value={latest.source_manifest_id} />
+        </div>
+      ) : (
+        <div className="empty-state">Run the optimizer to compare before and after summaries.</div>
+      )}
+    </Panel>
+  );
+}
+
+function formatRunMetric(run: RunReference, key: string) {
+  const value = run.summary[key];
+  if (typeof value === "number") return Number.isFinite(value) ? value.toFixed(2) : "unavailable";
+  return value === undefined || value === null || value === "" ? "unavailable" : String(value);
 }
 
 export function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {

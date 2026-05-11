@@ -59,10 +59,12 @@ from services.api.routes import optimization as optimization_routes
 from services.api.routes import reports as report_routes
 from services.api.routes import reverse_stress as reverse_stress_routes
 from services.api.routes import risk as risk_routes
+from services.api.routes import runs as run_routes
 from services.api.routes import scenarios as scenario_routes
 from services.api.routes import system_health as system_health_routes
-from services.api.runtime.cache import BoundedRunCache, SnapshotCache
+from services.api.runtime.cache import SnapshotCache
 from services.api.runtime.errors import ControlledApiError
+from services.api.runtime.run_store import RUN_STORE_VERSION, RunStore
 from services.api.security.headers import cors_origins, security_headers
 from services.api.security.validation import (
     sanitized_payload,
@@ -92,7 +94,8 @@ TAIWAN_RAW_CODES = {"TW", "TWN"}
 DASHBOARD_PAYLOAD_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 DASHBOARD_PAYLOAD_CACHE_LOCK = Lock()
 SNAPSHOT_CACHE = SnapshotCache(max_items=8)
-RUN_CACHE = BoundedRunCache(max_items=32)
+RUN_STORE = RunStore(max_items=32)
+RUN_CACHE = RUN_STORE
 PATH_DIRECTIONS = {"upstream", "downstream", "both"}
 MAX_DASHBOARD_QUERY_LIST_ITEMS = 32
 MAX_DASHBOARD_QUERY_TOKEN_LENGTH = 80
@@ -621,6 +624,49 @@ def route_investigation_report(
     )
     RUN_CACHE.put_summary("investigation_report", response)
     return response
+
+
+def route_runs(request_id: str | None = None) -> dict[str, Any]:
+    snapshot = build_semiconductor_fixture_snapshot()
+    runs = RUN_STORE.list_summaries()
+    payload = {
+        "run_store_version": RUN_STORE_VERSION,
+        "graph_version": snapshot.graph_version,
+        "source_manifest_id": snapshot.source_manifest_id,
+        "as_of_time": snapshot.as_of_time,
+        "count": len(runs),
+        "max_items": RUN_STORE.max_items,
+        "runs": runs,
+        "warnings": ["fixture_graph:not_production_ready", "run_history:sanitized_summaries_only"],
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=RUN_STORE_VERSION),
+        request_id=request_id,
+        warnings=payload["warnings"],
+    )
+
+
+def route_run_detail(run_id: str, request_id: str | None = None) -> dict[str, Any]:
+    snapshot = build_semiconductor_fixture_snapshot()
+    run = RUN_STORE.get(run_id)
+    if run is None:
+        raise LookupError(f"Run not found: {run_id}")
+    payload = {
+        **run,
+        "run_store_version": RUN_STORE_VERSION,
+        "graph_version": run.get("graph_version") or snapshot.graph_version,
+        "source_manifest_id": run.get("source_manifest_id") or snapshot.source_manifest_id,
+        "raw_payload_excluded": True,
+        "private_diagnostics_excluded": True,
+        "warnings": sorted(set([*run.get("warnings", []), "fixture_graph:not_production_ready", "run_history:sanitized_summaries_only"])),
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=RUN_STORE_VERSION),
+        request_id=request_id,
+        warnings=payload["warnings"],
+    )
 
 
 def route_graph_diff(request_id: str | None = None) -> dict[str, Any]:
@@ -3098,6 +3144,12 @@ def create_app() -> Any:
         Body=Body,
         Header=Header,
         route_investigation_report=route_investigation_report,
+    )
+    run_routes.register(
+        app,
+        Header=Header,
+        route_runs=route_runs,
+        route_run_detail=route_run_detail,
     )
 
     @app.get("/health", include_in_schema=False)

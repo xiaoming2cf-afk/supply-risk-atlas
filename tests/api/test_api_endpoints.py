@@ -48,6 +48,7 @@ def test_health_aliases_return_envelope_with_request_id() -> None:
         ("get", "/api/v1/explanations", None),
         ("get", "/api/v1/simulations", None),
         ("get", "/api/v1/reports", None),
+        ("get", "/api/v1/runs", None),
         ("get", "/api/v1/dashboard/global-risk-cockpit", None),
         ("get", "/api/v1/dashboard/graph-explorer", None),
         ("get", "/api/v1/dashboard/prediction-center", None),

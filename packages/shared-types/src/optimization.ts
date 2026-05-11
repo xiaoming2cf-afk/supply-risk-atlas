@@ -1,11 +1,12 @@
 import type { ForwardScenarioInput } from "./scenario";
 import type { ReverseStressInput } from "./reverse-stress";
+import type { RunReference } from "./runs";
 
 export interface InterventionOptimizationInput {
   graph_version?: string | null;
-  scenario_run?: Record<string, unknown> | null;
-  reverse_stress_run?: Record<string, unknown> | null;
-  scenario_set?: Array<Record<string, unknown>>;
+  scenario_run?: RunReference | null;
+  reverse_stress_run?: RunReference | null;
+  scenario_set?: RunReference[];
   forward_scenario_payload?: ForwardScenarioInput | null;
   reverse_stress_payload?: ReverseStressInput | null;
   budget: number;

@@ -100,6 +100,7 @@ def generate_investigation_report(payload: dict[str, Any] | None = None) -> dict
         "compliance_note": "Use this report for resilience planning, monitoring, approved qualification, diversification, and compliance review.",
         "raw_payload_excluded": True,
         "private_diagnostics_excluded": True,
+        "selected_run_refs": _selected_run_refs(request),
     }
     if report_format == "markdown":
         return {**report, "format": "markdown", "markdown": _markdown(report)}
@@ -133,6 +134,28 @@ def _evidence_summary(*sections: Any) -> list[dict[str, Any]]:
 
 def _warnings(section: Any) -> list[str]:
     return list(section.get("warnings", [])) if isinstance(section, dict) else []
+
+
+def _selected_run_refs(request: dict[str, Any]) -> list[dict[str, Any]]:
+    refs: list[dict[str, Any]] = []
+    for key in ("forward_run", "reverse_stress_run", "optimization_run"):
+        value = request.get(key)
+        if not isinstance(value, dict):
+            continue
+        refs.append(
+            {
+                "run_id": value.get("run_id"),
+                "run_type": value.get("run_type"),
+                "created_at": value.get("created_at"),
+                "graph_version": value.get("graph_version"),
+                "source_manifest_id": value.get("source_manifest_id"),
+                "status": value.get("status"),
+                "warnings": list(value.get("warnings", []))[:10] if isinstance(value.get("warnings"), list) else [],
+                "summary": value.get("summary") if isinstance(value.get("summary"), dict) else {},
+                "versions": value.get("versions") if isinstance(value.get("versions"), dict) else {},
+            }
+        )
+    return refs
 
 
 def _first_present(*sections: Any, key: str) -> str | None:

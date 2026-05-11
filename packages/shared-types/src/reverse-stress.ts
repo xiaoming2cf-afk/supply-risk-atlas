@@ -1,4 +1,5 @@
 import type { ForwardScenarioAffectedNode, ForwardScenarioInput, ForwardScenarioTransmissionPath } from "./scenario";
+import type { RunReference } from "./runs";
 
 export type ReverseStressTargetMetric =
   | "capacity_loss"
@@ -19,6 +20,7 @@ export interface ReverseStressInput {
   seed: number;
   as_of_time: string;
   graph_version?: string | null;
+  scenario_run?: RunReference | null;
   allowed_shock_types?: string[];
   forbidden_shock_types?: string[];
   loss_mode?: ForwardScenarioInput["loss_mode"];

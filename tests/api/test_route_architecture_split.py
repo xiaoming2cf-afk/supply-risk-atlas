@@ -46,6 +46,7 @@ def test_gate1_route_and_runtime_modules_exist() -> None:
         "runtime/envelope.py",
         "runtime/errors.py",
         "runtime/cache.py",
+        "runtime/run_store.py",
         "security/__init__.py",
         "security/validation.py",
         "security/headers.py",
@@ -70,6 +71,8 @@ def test_gate1_public_routes_remain_registered() -> None:
     assert "/api/v1/scenarios/reverse" in paths
     assert "/api/v1/optimization/interventions" in paths
     assert "/api/v1/reports/investigation" in paths
+    assert "/api/v1/runs" in paths
+    assert "/api/v1/runs/{run_id}" in paths
 
 
 def test_gate1_main_route_functions_remain_import_compatible() -> None:
@@ -82,6 +85,7 @@ def test_gate1_main_route_functions_remain_import_compatible() -> None:
     assert main.route_reverse_scenario(_reverse_payload())["status"] == "success"
     assert main.route_intervention_optimization({"max_actions": 1})["status"] == "success"
     assert main.route_investigation_report({"entity_id": "company:tsmc"})["status"] == "success"
+    assert main.route_runs()["status"] == "success"
 
 
 def test_gate1_runtime_caches_are_bounded_and_sanitized() -> None:

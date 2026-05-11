@@ -8,6 +8,8 @@ import type {
   InvestigationReportData,
   InvestigationReportInput,
   Prediction,
+  RunDetailData,
+  RunHistoryData,
   SemiriskEntityRiskScore,
   SemiriskRiskPortfolioData,
   SimulationResult,
@@ -28,6 +30,8 @@ export interface SupplyRiskClient {
   investigationReport(input: InvestigationReportInput): Promise<ApiEnvelope<InvestigationReportData>>;
   semiriskEntityRisk(entityId: string): Promise<ApiEnvelope<SemiriskEntityRiskScore>>;
   semiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiEnvelope<SemiriskRiskPortfolioData>>;
+  listRuns(): Promise<ApiEnvelope<RunHistoryData>>;
+  getRun(runId: string): Promise<ApiEnvelope<RunDetailData>>;
 }
 
 async function request<T>(baseUrl: string, path: string): Promise<ApiEnvelope<T>> {
@@ -119,6 +123,8 @@ export function createSupplyRiskClient(baseUrl = "http://127.0.0.1:8000"): Suppl
           limit: options?.limit,
         })}`,
       ),
+    listRuns: () => request(baseUrl, "/api/v1/runs"),
+    getRun: (runId) => request(baseUrl, `/api/v1/runs/${encodeURIComponent(runId)}`),
   };
 }
 

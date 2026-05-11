@@ -19,6 +19,8 @@ import type {
   PredictionCenterData,
   ReverseStressInput,
   ReverseStressResult,
+  RunDetailData,
+  RunHistoryData,
   SemiriskEntityRiskScore,
   SemiriskGraphNeighborhoodData,
   SemiriskGraphSnapshotData,
@@ -54,6 +56,8 @@ export interface SupplyRiskApiClient {
   runReverseStress(input: ReverseStressInput): Promise<ApiResult<ReverseStressResult>>;
   optimizeInterventions(input: InterventionOptimizationInput): Promise<ApiResult<InterventionOptimizationResult>>;
   generateInvestigationReport(input: InvestigationReportInput): Promise<ApiResult<InvestigationReportData>>;
+  listRuns(): Promise<ApiResult<RunHistoryData>>;
+  getRun(runId: string): Promise<ApiResult<RunDetailData>>;
 }
 
 export interface SupplyRiskDashboardData {
@@ -319,5 +323,7 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
+    listRuns: () => requestJson(baseUrl, "/runs", undefined, clientOptions),
+    getRun: (runId) => requestJson(baseUrl, `/runs/${encodeURIComponent(runId)}`, undefined, clientOptions),
   };
 }

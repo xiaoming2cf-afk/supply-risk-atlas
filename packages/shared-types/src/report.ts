@@ -1,5 +1,6 @@
 import type { InterventionOptimizationInput, InterventionOptimizationResult } from "./optimization";
 import type { SemiriskEntityRiskScore } from "./risk";
+import type { RunReference } from "./runs";
 import type { ForwardScenarioInput, ForwardScenarioResult } from "./scenario";
 import type { ReverseStressInput, ReverseStressResult } from "./reverse-stress";
 
@@ -9,6 +10,9 @@ export interface InvestigationReportInput {
   forward_scenario_payload?: ForwardScenarioInput | null;
   reverse_stress_payload?: ReverseStressInput | null;
   optimization_payload?: InterventionOptimizationInput | null;
+  forward_run?: RunReference | null;
+  reverse_stress_run?: RunReference | null;
+  optimization_run?: RunReference | null;
   format: "json" | "markdown";
 }
 
@@ -51,5 +55,6 @@ export interface InvestigationReportData {
   raw_payload_excluded: boolean;
   private_diagnostics_excluded: boolean;
   format: "json" | "markdown";
+  selected_run_refs?: RunReference[];
   markdown?: string;
 }
