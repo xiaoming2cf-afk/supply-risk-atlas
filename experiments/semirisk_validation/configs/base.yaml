@@ -1,0 +1,69 @@
+{
+  "seed": 42,
+  "as_of_time": "2026-05-01T00:00:00Z",
+  "top_n": 10,
+  "risk_node_types": ["company", "country", "equipment", "material", "chemical", "product_grade", "process_stage"],
+  "hhi": {
+    "node_ids": ["company:tsmc", "equipment:euv_scanner", "chemical:photoresist", "product_grade:hbm", "country:tw"],
+    "global_reference_hhi_values": [0.15, 0.20, 0.25, 0.30],
+    "threshold_pairs": [
+      {"low_cutoff": 0.18, "high_cutoff": 0.38},
+      {"low_cutoff": 0.20, "high_cutoff": 0.40},
+      {"low_cutoff": 0.22, "high_cutoff": 0.42}
+    ]
+  },
+  "loss_modes": [
+    "affected_mean",
+    "graph_weighted_loss",
+    "demand_fulfillment_loss",
+    "capacity_functionality_loss",
+    "resilience_integral_loss"
+  ],
+  "propagation_modes": [
+    "max",
+    "additive_cap",
+    "noisy_or",
+    "leontief_bottleneck",
+    "psi_recursive",
+    "auto_semiconductor"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": ["chemical:photoresist"],
+      "severity": 0.72,
+      "duration_days": 28
+    },
+    {
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": ["equipment:euv_scanner"],
+      "severity": 0.68,
+      "duration_days": 35
+    },
+    {
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": ["country:tw"],
+      "severity": 0.66,
+      "duration_days": 21
+    },
+    {
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": ["product_grade:hbm"],
+      "severity": 0.60,
+      "duration_days": 24
+    }
+  ],
+  "optimizer": {
+    "budget": 70,
+    "max_actions": 3,
+    "risk_aversion_beta": 0.7
+  },
+  "ablation": {
+    "node_ids": ["company:tsmc", "company:asml", "company:samsung", "equipment:euv_scanner", "chemical:photoresist"],
+    "factors": ["concentration", "substitution_gap", "policy_risk", "event_pressure", "market_pressure", "recovery_difficulty"]
+  }
+}

@@ -1098,6 +1098,20 @@ function textExcerpt(text, terms) {
 
 async function navigate(client, url) {
   await client.send("Page.navigate", { url });
+  const targetUrl = new URL(url);
+  await waitFor(
+    client,
+    () => evaluate(client, "window.location.href"),
+    (href) => {
+      try {
+        const current = new URL(String(href));
+        return current.origin === targetUrl.origin && current.pathname === targetUrl.pathname;
+      } catch {
+        return false;
+      }
+    },
+    30000,
+  );
   const expectedHash = new URL(url).hash;
   if (expectedHash) {
     await evaluate(client, `(() => {
