@@ -457,3 +457,49 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Node action modernization covered official checkout/setup-node actions; other third-party action runtime families were not changed in this gate.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 11 final no-regression acceptance.
+
+## Gate 11 - Final No-Regression Acceptance
+
+- Gate name: Gate 11 final no-regression acceptance
+- Current HEAD before acceptance log commit: `2467ea4a71fbf10d7f295b1b80d3427461cf4d51`
+- Files changed:
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `python -m pytest -q`
+  - `python -m pytest tests/security tests/model tests/simulation tests/optimization tests/api tests/reports tests/quality -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web`
+- Pass/fail: pass
+- Evidence:
+  - Full pytest passed.
+  - Focused security/model/simulation/optimization/API/report/quality pytest passed.
+  - Web typecheck passed.
+  - Web build passed.
+  - Browser smoke passed: 26 checks.
+  - One first final smoke attempt timed out while navigating away from System Health Center after a deployed smoke run; rerunning the same local proxy smoke with `SUPPLY_RISK_SMOKE_MODE=proxy` passed 26 checks.
+  - Current public routes remain present: `/api/v1/dashboard/system-health-center`, `/api/v1/graph/snapshot`, `/api/v1/graph/neighborhood`, `/api/v1/risk/entities/{entity_id}`, `/api/v1/risk/portfolio`, `/api/v1/scenarios/forward`, `/api/v1/scenarios/reverse`, `/api/v1/optimization/interventions`, `/api/v1/reports/investigation`, `/api/v1/runs`, and `/api/v1/runs/{run_id}`.
+  - Public pages remain reachable in browser smoke: System Health Center, Global Risk Cockpit, Graph Explorer, Entity Risk 360, Prediction Center, Path Analysis, Country Lens, Shock Simulator, Reverse Stress Lab, Intervention Optimizer, Investigation Report, and Causal Evidence Board.
+- Screenshots/text evidence:
+  - `artifacts/browser-smoke/report.json` records the final passing 26-check smoke run.
+- Commit summary:
+  - `febe25c` Record long-run hardening baseline
+  - `e746de3` Split backend route registration
+  - `fc66a02` Harden API validation boundary
+  - `50efa07` Split frontend page features
+  - `6004171` Split shared types by domain
+  - `4397279` Declutter graph explorer views
+  - `e3cd343` Add sanitized workflow run history
+  - `6d2b19c` Record validation suite gate
+  - `d33289b` Clarify page-level fixture workflows
+  - `fa96779` Add security audit gates
+  - `2467ea4` Modernize deployment smoke and CI actions
+- Known limitations:
+  - The platform remains fixture/proxy based and not production ready.
+  - Proxy calibration is not production calibration.
+  - Outputs are not production decisions and not financial-loss calculations.
+  - There are no live connectors or uncontrolled live ingestion.
+  - Run history is bounded in-memory storage and not durable.
+  - Deployed Render web app appeared stale during best-effort smoke and needs redeploy before remote acceptance can be claimed.
+  - Actual GitHub CI status was not fetched after these local commits.
+- Next gate decision: stop; requested gate sequence is implemented, tested locally, and documented.
