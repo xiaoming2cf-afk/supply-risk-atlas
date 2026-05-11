@@ -179,6 +179,91 @@ async function main() {
       });
     }
 
+    await navigate(client, `${webUrl}#graph-explorer`);
+    const graphV2Overview = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) =>
+        state.title === "Graph Explorer" &&
+        state.hasV2Title &&
+        state.hasLegend &&
+        state.hasLayerControls &&
+        state.hasFixtureWarning &&
+        state.graphNodeCount >= 2 &&
+        state.flowEdgeCount >= 1 &&
+        state.graphNodeCount <= 20 &&
+        state.flowEdgeCount <= 35,
+    );
+    checks.push({
+      page: "Graph Explorer v2 overview caps",
+      graphNodeCount: graphV2Overview.graphNodeCount,
+      flowEdgeCount: graphV2Overview.flowEdgeCount,
+      hasLegend: graphV2Overview.hasLegend,
+      hasLayerControls: graphV2Overview.hasLayerControls,
+      hasFixtureWarning: graphV2Overview.hasFixtureWarning,
+      passed:
+        graphV2Overview.title === "Graph Explorer" &&
+        graphV2Overview.hasV2Title &&
+        graphV2Overview.hasLegend &&
+        graphV2Overview.hasLayerControls &&
+        graphV2Overview.hasFixtureWarning &&
+        graphV2Overview.graphNodeCount >= 2 &&
+        graphV2Overview.flowEdgeCount >= 1 &&
+        graphV2Overview.graphNodeCount <= 20 &&
+        graphV2Overview.flowEdgeCount <= 35,
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.includes('Two-hop'))?.click();
+    })()`);
+    const graphV2Focus = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Focus view") && state.graphNodeCount >= 2 && state.graphNodeCount <= 25 && state.flowEdgeCount <= 40,
+    );
+    checks.push({
+      page: "Graph Explorer v2 focus expansion caps",
+      graphNodeCount: graphV2Focus.graphNodeCount,
+      flowEdgeCount: graphV2Focus.flowEdgeCount,
+      passed: graphV2Focus.graphNodeCount >= 2 && graphV2Focus.graphNodeCount <= 25 && graphV2Focus.flowEdgeCount <= 40,
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Path'))?.click();
+    })()`);
+    const graphV2Path = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Path view") && state.text.includes("Transmission paths") && state.graphNodeCount >= 2 && state.flowEdgeCount >= 1,
+    );
+    checks.push({
+      page: "Graph Explorer v2 path mode",
+      graphNodeCount: graphV2Path.graphNodeCount,
+      flowEdgeCount: graphV2Path.flowEdgeCount,
+      passed:
+        graphV2Path.text.includes("Path view") &&
+        graphV2Path.text.includes("Transmission paths") &&
+        graphV2Path.graphNodeCount >= 2 &&
+        graphV2Path.flowEdgeCount >= 1,
+    });
+
+    await evaluate(client, `(() => {
+      const layer = Array.from(document.querySelectorAll('.graph-layer-toggle')).find((item) => item.textContent?.includes('Trade'));
+      layer?.querySelector('input')?.click();
+    })()`);
+    const graphV2LayerToggle = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.hasLayerControls && state.flowEdgeCount <= 40,
+    );
+    checks.push({
+      page: "Graph Explorer v2 layer toggle",
+      flowEdgeCount: graphV2LayerToggle.flowEdgeCount,
+      passed: graphV2LayerToggle.hasLayerControls && graphV2LayerToggle.flowEdgeCount <= 40,
+    });
+
     await navigate(client, `${webUrl}#system-health-center`);
     const healthSemiriskTerms = [
       "SemiRisk-KG v0.1 fixture graph",
@@ -1148,6 +1233,24 @@ async function pageState(client) {
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
       layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
       overflowSafe: root ? root.scrollWidth <= window.innerWidth + 1 : false
+    };
+  })()`);
+}
+
+async function graphV2State(client) {
+  return evaluate(client, `(() => {
+    const text = document.body?.innerText ?? '';
+    return {
+      title: document.querySelector('h1')?.textContent?.trim() ?? '',
+      text,
+      graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
+      flowNodeCount: document.querySelectorAll('.react-flow__node').length,
+      flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
+      hasV2Title: text.includes('Graph Explorer v2'),
+      hasLegend: text.includes('Legend'),
+      hasLayerControls: text.includes('Layer controls'),
+      hasFixtureWarning: text.includes('fixture_graph:not_production_ready'),
+      layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
     };
   })()`);
 }

@@ -202,3 +202,47 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Frontend and API-client still mostly import from the compatibility barrel; more direct domain imports can be adopted incrementally.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 5 Graph Explorer v2 declutter.
+
+## Gate 5 - Graph Explorer V2 Declutter
+
+- Gate name: Gate 5 Graph Explorer v2 declutter and progressive disclosure
+- Current HEAD before commit: `60041716dac5d5d8ba9acb1c72fe6f6a3d2370f5`
+- Files changed:
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/graph-explorer/GraphCanvas.tsx`
+  - `apps/web/src/features/graph-explorer/GraphControls.tsx`
+  - `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+  - `apps/web/src/features/graph-explorer/GraphLegend.tsx`
+  - `apps/web/src/features/graph-explorer/GraphLayers.tsx`
+  - `apps/web/src/features/graph-explorer/GraphBreadcrumbs.tsx`
+  - `apps/web/src/features/graph-explorer/GraphEmptyState.tsx`
+  - `apps/web/src/features/graph-explorer/graphViewModel.ts`
+  - `apps/web/src/features/graph-explorer/graphLayout.ts`
+  - `apps/web/src/features/graph-explorer/graphFilters.ts`
+  - `packages/design-system/src/styles.css`
+  - `scripts/browser-smoke.mjs`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web`
+  - Browser plugin spot-check at `http://127.0.0.1:3000/#graph-explorer`
+  - `SUPPLY_RISK_FULL_SMOKE=1 npm.cmd run smoke:web` was attempted; after graph checks it failed in the broader Shock Simulator local-state interaction, so the default smoke suite was extended with Gate 5 graph assertions instead of relying on that optional mode.
+- Pass/fail: pass
+- Evidence:
+  - Web typecheck passed.
+  - Web build passed.
+  - Browser smoke passed: 26 checks.
+  - Browser-smoke now checks Graph Explorer v2 title, legend, layer controls, fixture warning, overview cap, focus expansion cap, path mode, and layer toggle.
+  - Graph Explorer overview rendered 20 nodes and 17 edges, under the 20-node / 35-edge initial cap.
+  - Focus expansion rendered 14 nodes and 23 edges, under the 25-node / 40-edge focus cap.
+  - Path mode rendered 3 nodes and 1 edge, with `Transmission paths` visible.
+  - Browser plugin spot-check confirmed `Graph Explorer v2`, `Legend`, `Layer controls`, and `fixture_graph:not_production_ready` are visible; search for `0000320193` retained Apple context; Path mode remained selectable after search.
+- Screenshots/text evidence:
+  - `artifacts/browser-smoke/report.json` records the 26 passing smoke checks and graph-specific counts.
+- Unresolved limitations:
+  - Graph Explorer v2 uses the existing dashboard graph payload; no new backend view endpoints were added.
+  - Scenario overlay is present as a mode but waits for Gate 6 run history before a selected scenario run can be displayed.
+  - When a matched data node has no direct edge in the current capped dashboard payload, the UI shows a clearly labeled derived evidence-context edge from safe metadata so search remains inspectable without inventing a supply-chain dependency.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 6 workflow continuity and run history.

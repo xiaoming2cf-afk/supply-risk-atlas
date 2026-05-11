@@ -2269,6 +2269,131 @@ textarea:focus-visible {
   margin-top: 14px;
 }
 
+.graph-version-strip,
+.graph-view-summary,
+.graph-toggle-row,
+.graph-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.graph-version-strip {
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #f8f9f6;
+}
+
+.graph-version-strip strong,
+.graph-version-strip span,
+.graph-view-summary span,
+.graph-breadcrumbs span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 760;
+}
+
+.graph-version-strip strong,
+.graph-breadcrumbs span:last-child {
+  color: var(--text);
+}
+
+.graph-toggle-row {
+  margin-top: 10px;
+}
+
+.graph-toggle-row .control-button {
+  min-height: 32px;
+  padding: 7px 9px;
+  font-size: 0.68rem;
+}
+
+.graph-view-summary {
+  margin-bottom: 10px;
+}
+
+.graph-view-summary span,
+.graph-breadcrumbs {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.graph-breadcrumbs {
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 8px;
+  border-radius: 7px;
+}
+
+.graph-breadcrumbs svg {
+  width: 13px;
+  height: 13px;
+  color: var(--subtle);
+}
+
+.graph-layer-grid,
+.graph-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 7px;
+}
+
+.graph-layer-toggle,
+.graph-legend-item,
+.graph-warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  background: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 720;
+}
+
+.graph-layer-toggle input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--accent-2);
+}
+
+.graph-legend-item i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(22, 28, 22, 0.06);
+}
+
+.graph-warning-banner {
+  margin-bottom: 8px;
+  color: var(--text);
+  background: #fff7e6;
+}
+
+.graph-warning-banner svg {
+  width: 15px;
+  height: 15px;
+  color: var(--amber);
+}
+
+.graph-empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-height: auto;
+  background: #f7f8f5;
+}
+
 .graph-stat-grid {
   margin-top: 14px;
 }
@@ -2782,6 +2907,13 @@ textarea:focus-visible {
   box-shadow:
     0 0 0 3px rgba(15, 118, 110, 0.26),
     0 10px 22px rgba(34, 40, 34, 0.1);
+}
+
+.risk-flow-node.is-pinned,
+.risk-flow-node.is-matched {
+  box-shadow:
+    0 0 0 2px rgba(15, 118, 110, 0.26),
+    0 0 0 7px rgba(15, 118, 110, 0.08);
 }
 
 .risk-flow-node.is-dimmed {
