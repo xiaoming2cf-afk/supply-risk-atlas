@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock3,
+  Copy,
   Database,
   Factory,
   GitBranch,
@@ -1947,6 +1948,8 @@ export function CompanyRisk360({
     portfolioResult?.envelope.source?.lineage_ref ??
     portfolioResult?.envelope.metadata?.lineage_ref ??
     "api-unavailable://risk/portfolio";
+  const sourceConcentration = asRecord(risk?.concentration?.["source_concentration"]);
+  const countryConcentration = asRecord(risk?.concentration?.["country_concentration"]);
 
   return (
     <div className="page-grid split-layout">
@@ -2018,6 +2021,26 @@ export function CompanyRisk360({
               </div>
               <p className="row-subtitle" style={{ marginTop: 16 }}>
                 {`selected_entity: ${risk.node_id}; score: ${risk.score.toFixed(2)}; level: ${risk.level}; scoring_method: ${risk.scoring_method}; formula_version: ${risk.formula_version}; calibration_status: ${risk.calibration_status}; likelihood: ${risk.likelihood?.toFixed(4) ?? "unavailable"}; impact: ${risk.impact?.toFixed(4) ?? "unavailable"}; vulnerability_modifier: ${risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"}; feature_version: ${risk.feature_version}; graph_version: ${risk.graph_version}; source_manifest_id: ${risk.source_manifest_id}; fixture_graph: ${String(risk.fixture_graph)}; evidence_refs: ${risk.evidence_refs.length}; formula_refs: ${risk.formula_refs.join(",")}`}
+              </p>
+            </Panel>
+
+            <Panel title="Scoring method and HHI" subtitle="Likelihood, impact, vulnerability, and concentration are shown separately so the proxy score is auditable.">
+              <div className="field-grid">
+                <Field label="scoring_method" value={risk.scoring_method} />
+                <Field label="formula_version" value={risk.formula_version} />
+                <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
+                <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
+                <Field label="vulnerability_modifier" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
+                <Field label="source_concentration_hhi" value={formatUnknownNumber(sourceConcentration?.["hhi"])} />
+                <Field label="source_concentration_level" value={formatUnknownValue(sourceConcentration?.["concentration_level"])} />
+                <Field label="country_concentration_hhi" value={formatUnknownNumber(countryConcentration?.["hhi"])} />
+                <Field label="country_concentration_level" value={formatUnknownValue(countryConcentration?.["concentration_level"])} />
+                <Field label="calibration_status" value={risk.calibration_status} />
+                <Field label="weighting_method" value={risk.weighting_method ?? "unavailable"} />
+                <Field label="fixture_graph" value={risk.fixture_graph ? "true" : "false"} />
+              </div>
+              <p className="public-data-note">
+                formula_refs {risk.formula_refs.join(",")}; HHI uses fixture/proxy shares on a 0_to_1 scale and is not calibrated for production decisions.
               </p>
             </Panel>
 
@@ -2371,6 +2394,49 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
     setInput((current) => ({ ...current, [key]: { type, params } }));
   };
 
+  const applyScenarioTemplate = (template: "material_shortage" | "policy_review" | "earthquake_taiwan" | "demand_spike_hbm") => {
+    setInput((current): ForwardScenarioInput => {
+      if (template === "material_shortage") {
+        return {
+          ...current,
+          scenario_type: "material_shortage",
+          targets: ["material:photoresist"],
+          severity_distribution: { type: "triangular", params: { min: 0.45, mode: 0.68, max: 0.86 } },
+          duration_days_distribution: { type: "fixed", params: { value: 21 } },
+          assumptions: ["template: material shortage over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+        };
+      }
+      if (template === "policy_review") {
+        return {
+          ...current,
+          scenario_type: "export_control",
+          targets: ["equipment:euv_scanner"],
+          severity_distribution: { type: "fixed", params: { value: 0.58 } },
+          duration_days_distribution: { type: "triangular", params: { min: 14, mode: 45, max: 90 } },
+          assumptions: ["template: policy review shock over fixture graph", "resilience planning only; no compliance workarounds"]
+        };
+      }
+      if (template === "demand_spike_hbm") {
+        return {
+          ...current,
+          scenario_type: "demand_spike",
+          targets: ["product_grade:hbm"],
+          severity_distribution: { type: "fixed", params: { value: 0.64 } },
+          duration_days_distribution: { type: "fixed", params: { value: 60 } },
+          assumptions: ["template: HBM demand spike over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+        };
+      }
+      return {
+        ...current,
+        scenario_type: "earthquake",
+        targets: ["country:taiwan"],
+        severity_distribution: { type: "triangular", params: { min: 0.52, mode: 0.72, max: 0.92 } },
+        duration_days_distribution: { type: "triangular", params: { min: 7, mode: 28, max: 60 } },
+        assumptions: ["template: Taiwan corridor earthquake over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+      };
+    });
+  };
+
   const runScenario = () => {
     setIsRunning(true);
     setFailure(null);
@@ -2493,8 +2559,20 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
             </select>
           </label>
         </div>
+        <div className="action-group" aria-label="Scenario templates">
+          <Button onClick={() => applyScenarioTemplate("material_shortage")}>Template material shortage</Button>
+          <Button onClick={() => applyScenarioTemplate("policy_review")}>Template policy review</Button>
+          <Button onClick={() => applyScenarioTemplate("earthquake_taiwan")}>Template Taiwan earthquake</Button>
+          <Button onClick={() => applyScenarioTemplate("demand_spike_hbm")}>Template HBM demand spike</Button>
+        </div>
+        <div className="field-grid">
+          <Field label="current_loss_mode" value={input.loss_mode ?? "resilience_integral_loss"} />
+          <Field label="current_propagation_mode" value={input.propagation_mode ?? "auto_semiconductor"} />
+          <Field label="functionality_metric" value={input.functionality_metric ?? "capacity_fulfillment"} />
+          <Field label="weighting_method" value={input.weighting_method ?? "literature_proxy_not_calibrated"} />
+        </div>
         <p className="public-data-note">
-          {t("fixture_graph:not_production_ready")} · {t("No dollar losses are produced without licensed private exposure data.")}
+          {t("fixture_graph:not_production_ready")}; {t("No dollar losses are produced without licensed private exposure data.")}
         </p>
       </Panel>
 
@@ -2710,11 +2788,11 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           </label>
           <label className="form-control">
             <span>{t("beam_width")}</span>
-            <input min="1" max="24" onChange={(event) => setInput((current) => ({ ...current, beam_width: Number(event.target.value) }))} type="number" value={input.beam_width} />
+            <input min="1" max="20" onChange={(event) => setInput((current) => ({ ...current, beam_width: Number(event.target.value) }))} type="number" value={input.beam_width} />
           </label>
           <label className="form-control">
             <span>{t("iterations_per_candidate")}</span>
-            <input min="1" max="5000" onChange={(event) => setInput((current) => ({ ...current, iterations_per_candidate: Number(event.target.value) }))} type="number" value={input.iterations_per_candidate} />
+            <input min="1" max="1000" onChange={(event) => setInput((current) => ({ ...current, iterations_per_candidate: Number(event.target.value) }))} type="number" value={input.iterations_per_candidate} />
           </label>
           <label className="form-control">
             <span>{t("seed")}</span>
@@ -2738,8 +2816,16 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             </select>
           </label>
         </div>
+        <div className="field-grid">
+          <Field label="normalized_threshold" value={`${Math.max(0, Math.min(100, input.failure_threshold))}/100`} />
+          <Field label="threshold_basis" value={input.target_metric} />
+          <Field label="context_source" value={input.scenario_run ? "forward_scenario" : "default_fixture"} />
+          <Field label="context_run_id" value={input.scenario_run?.run_id ?? "none"} />
+          <Field label="max_combination_size_cap" value="4" />
+          <Field label="beam_width_cap" value="20" />
+        </div>
         <p className="public-data-note">
-          {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")} · fixture_graph:not_production_ready
+          {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")}; fixture_graph:not_production_ready
         </p>
       </Panel>
 
@@ -2899,6 +2985,13 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
 
   const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://optimization/interventions";
   const sourceStatus = failure?.sourceStatus ?? "unavailable";
+  const optimizerContextSource = input.reverse_stress_run
+    ? "reverse_stress"
+    : input.scenario_set?.length
+      ? "scenario_set"
+      : input.scenario_run
+        ? "forward_scenario"
+        : "default_fixture";
 
   return (
     <div className="page-grid split-layout">
@@ -2936,7 +3029,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           </label>
           <label className="form-control">
             <span>{t("max_actions")}</span>
-            <input min="1" max="20" onChange={(event) => setInput((current) => ({ ...current, max_actions: Number(event.target.value) }))} type="number" value={input.max_actions} />
+            <input min="1" max="10" onChange={(event) => setInput((current) => ({ ...current, max_actions: Number(event.target.value) }))} type="number" value={input.max_actions} />
           </label>
           <label className="form-control">
             <span>{t("risk_aversion_beta")}: {input.risk_aversion_beta.toFixed(2)}</span>
@@ -2950,6 +3043,14 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
               <span>{actionType}</span>
             </label>
           ))}
+        </div>
+        <div className="field-grid">
+          <Field label="context_source" value={optimizerContextSource} />
+          <Field label="forward_context_run_id" value={input.scenario_run?.run_id ?? "none"} />
+          <Field label="reverse_context_run_id" value={input.reverse_stress_run?.run_id ?? "none"} />
+          <Field label="scenario_set_count" value={input.scenario_set?.length ?? 0} />
+          <Field label="max_actions_cap" value="10" />
+          <Field label="budget_basis" value="finite normalized budget units" />
         </div>
         <p className="public-data-note">
           {t("compliance constraints")}: no illegal workarounds; approved monitoring, qualification, diversification, inventory, and recovery controls only. fixture_graph:not_production_ready
@@ -3218,7 +3319,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
           </Button>
         </div>
         <p className="public-data-note">
-          fixture_graph:not_production_ready 路 report_version semirisk_investigation_report_v0.1 路 approved resilience planning and compliance review only
+          fixture_graph:not_production_ready; report_version semirisk_investigation_report_v0.1; approved resilience planning and compliance review only
         </p>
       </Panel>
 
@@ -3232,7 +3333,21 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
         />
         {result ? (
           <>
-            <Panel title="Report export" subtitle={`${result.report_id}; ${result.report_version}.`} translateSubtitle={false}>
+            <Panel
+              title="Report export"
+              subtitle={`${result.report_id}; ${result.report_version}.`}
+              translateSubtitle={false}
+              action={
+                <Button
+                  icon={Copy}
+                  onClick={() => {
+                    if (typeof navigator !== "undefined" && navigator.clipboard) void navigator.clipboard.writeText(result.report_id);
+                  }}
+                >
+                  Copy report id
+                </Button>
+              }
+            >
               <div className="field-grid">
                 <Field label="report_id" value={result.report_id} />
                 <Field label="format" value={result.format} />
@@ -3254,6 +3369,21 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               </div>
               <p className="public-data-note">
                 evidence_summary {result.evidence_summary.length}; graph_context {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges; {result.warnings.join(" | ")}
+              </p>
+            </Panel>
+            <Panel title="Methodology" subtitle="Report methodology and version metadata are rendered separately from findings.">
+              <div className="field-grid">
+                <Field label="risk_scoring_method" value={String(result.methodology.risk_scoring_method ?? "unavailable")} />
+                <Field label="weighting_method" value={String(result.methodology.weighting_method ?? "unavailable")} />
+                <Field label="calibration_status" value={String(result.methodology.calibration_status ?? "unavailable")} />
+                <Field label="loss_mode" value={String(result.methodology.loss_mode ?? "not included")} />
+                <Field label="propagation_mode" value={String(result.methodology.propagation_mode ?? "not included")} />
+                <Field label="formula_refs" value={result.formula_sources.formula_refs.join(",")} />
+                <Field label="graph_version" value={result.versions.graph_version} />
+                <Field label="source_manifest_id" value={result.versions.source_manifest_id} />
+              </div>
+              <p className="public-data-note">
+                {result.formula_sources.source_principle_note}; fixture/proxy methodology only; no production readiness claim.
               </p>
             </Panel>
             <Panel title="Evidence and limitations" subtitle="Report sections are omitted unless selected; no placeholder findings are inserted.">
@@ -3758,6 +3888,23 @@ function riskLevelForScore(score: number): RiskLevel {
   return "low";
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function formatUnknownNumber(value: unknown, digits = 4) {
+  if (typeof value === "number" && Number.isFinite(value)) return value.toFixed(digits);
+  if (typeof value === "string" && value.trim()) return value;
+  return "unavailable";
+}
+
+function formatUnknownValue(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value.toFixed(4);
+  if (typeof value === "string" && value.trim()) return value;
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return "unavailable";
+}
+
 export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData }) {
   const { t } = useI18n();
   const board = data.causalEvidenceBoard;
@@ -3810,6 +3957,20 @@ export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData })
               />
             </div>
           </div>
+        </Panel>
+
+        <Panel title="Graph and model links" subtitle="Display-only refs connect evidence claims to graph paths and model components without exposing raw payloads.">
+          <div className="field-grid">
+            <Field label="evidence_ref" value={activeClaim.id} />
+            <Field label="graph_path_ref" value={`evidence:${activeClaim.id}`} />
+            <Field label="model_component" value={activeClaim.method === "graph-inference" ? "path_transmission" : "evidence_weight"} />
+            <Field label="claim_source" value={activeClaim.source} />
+            <Field label="last_reviewed" value={activeClaim.lastReviewed} />
+            <Field label="fixture_graph" value="fixture_graph:not_production_ready" />
+          </div>
+          <p className="public-data-note">
+            Evidence refs are sanitized display identifiers; source payloads, private diagnostics, and unbounded evidence text are not rendered.
+          </p>
         </Panel>
 
         <Panel title="Evidence quality" subtitle="Confidence and disagreement are tracked separately.">
@@ -3989,6 +4150,9 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         : "complete";
   const freshnessStatus = maxFreshnessLag === 0 ? "operational" : "degraded";
   const manifestChecksum = health.sourceRegistry.checksum.slice(0, 12);
+  const graphReadiness = health.semiconductorGraph?.fixtureGraphReady ? "ready" : "degraded";
+  const modelReadiness = health.semiconductorGraph?.fixtureGraphReady ? "fixture_ready" : "unavailable";
+  const validationReadiness = "deterministic_fixture_suite";
 
   return (
     <div className="page-grid">
@@ -4033,6 +4197,22 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <p className="metric-detail">{t("Signal ingest is the current freshness constraint.")}</p>
         </article>
       </div>
+
+      <Panel title="Readiness boundary" subtitle="Fixture readiness is shown separately from production readiness.">
+        <div className="field-grid">
+          <Field label="service_readiness" value={serviceSummaryStatus} />
+          <Field label="graph_readiness" value={graphReadiness} />
+          <Field label="model_readiness" value={modelReadiness} />
+          <Field label="validation_readiness" value={validationReadiness} />
+          <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />
+          <Field label="production_status" value="not_production_ready" />
+          <Field label="graph_version" value={health.semiconductorGraph?.graphVersion ?? "unavailable"} />
+          <Field label="source_manifest_id" value={health.semiconductorGraph?.sourceManifestId ?? "unavailable"} />
+        </div>
+        <p className="public-data-note">
+          service, graph, model, and validation readiness are fixture/proxy readiness signals only; production status remains not_production_ready.
+        </p>
+      </Panel>
 
       <div className="page-grid split-layout">
         <Panel title="Service status" subtitle="Runtime health by service owner.">

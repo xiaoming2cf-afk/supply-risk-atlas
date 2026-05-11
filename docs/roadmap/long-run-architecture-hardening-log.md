@@ -325,3 +325,37 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - No live data was fetched.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 8 page-level UX iteration.
+
+## Gate 8 - Page-Level UX Iteration
+
+- Gate name: Gate 8 page-level UX clarity without model changes
+- Current HEAD before commit: `6d2b19c3772d9ae062d061a834e248907d185294`
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck` (first run failed on a scenario-template distribution typing issue; fixed before proceeding)
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web`
+  - Browser plugin spot-check at `http://127.0.0.1:3000/#system-health-center`, `#company-risk-360`, `#shock-simulator`, and `#causal-evidence-board`
+  - `git diff --check`
+- Pass/fail: pass
+- Evidence:
+  - Web typecheck passed after typing the scenario-template updater as `ForwardScenarioInput`.
+  - Web build passed.
+  - Browser smoke passed: 26 checks.
+  - Browser plugin confirmed System Health `Readiness boundary`, `production_status`, and `not_production_ready` after waiting for dashboard data.
+  - Browser plugin confirmed Entity Risk 360 displays `Scoring method and HHI`, `source_concentration_hhi`, and `calibration_status`.
+  - Browser plugin confirmed Shock Simulator displays scenario template controls and clicking `Template HBM demand spike` updates the scenario state.
+  - Browser plugin confirmed Evidence Board displays `Graph and model links`, `graph_path_ref`, and `fixture_graph:not_production_ready`.
+  - `git diff --check` passed.
+- Screenshots/text evidence:
+  - Browser plugin screenshot showed the Evidence Board graph/model links panel with sanitized evidence refs and fixture warning.
+  - `artifacts/browser-smoke/report.json` records the passing 26-check smoke run after Gate 8.
+- Unresolved limitations:
+  - Gate 8 changes clarify existing fixture/proxy outputs only; no model behavior changed.
+  - Investigation Report copy-to-clipboard is a browser convenience for generated report IDs; no export format semantics changed.
+  - Run history remains in-memory and process-local.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 9 security hardening and audit.
