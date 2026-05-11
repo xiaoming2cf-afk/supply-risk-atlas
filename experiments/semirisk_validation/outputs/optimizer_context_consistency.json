@@ -1,0 +1,117 @@
+{
+  "feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
+  "fixture_graph": true,
+  "graph_version": "semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a",
+  "optimization_version": "semirisk_intervention_optimizer_v0.1",
+  "rows": [
+    {
+      "after_cvar95": 44.3155,
+      "after_simulation_run_ids": [
+        "fwd_ae505d1a2d36359a"
+      ],
+      "before_cvar95": 44.6718,
+      "before_simulation_run_ids": [
+        "fwd_1f4e513843c5b27d"
+      ],
+      "context_label": "no_context",
+      "optimization_context_type": "default_fixture_scenario",
+      "outputs_differ_from_default": false,
+      "run_id": "opt_43155548eca4be2a",
+      "scenario_count": 1,
+      "selected_actions": [
+        "action:increase_inventory_buffer:equipment:euv_scanner",
+        "action:increase_inventory_buffer:chemical:specialty_gas",
+        "action:increase_inventory_buffer:material:silicon_wafer"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "optimization_fixture_graph:resilience_planning_only"
+      ]
+    },
+    {
+      "after_cvar95": 14.5799,
+      "after_simulation_run_ids": [
+        "fwd_f06dcc792ad417bd"
+      ],
+      "before_cvar95": 15.8242,
+      "before_simulation_run_ids": [
+        "fwd_6630afa8c4a0caa7"
+      ],
+      "context_label": "forward_scenario_payload",
+      "optimization_context_type": "forward_scenario_payload",
+      "outputs_differ_from_default": true,
+      "run_id": "opt_946912b946762ff8",
+      "scenario_count": 1,
+      "selected_actions": [
+        "action:increase_inventory_buffer:equipment:euv_scanner",
+        "action:increase_inventory_buffer:chemical:specialty_gas",
+        "action:increase_inventory_buffer:material:silicon_wafer"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "optimization_fixture_graph:resilience_planning_only"
+      ]
+    },
+    {
+      "after_cvar95": 24.5781,
+      "after_simulation_run_ids": [
+        "fwd_f06dcc792ad417bd",
+        "fwd_0887e087e3b11da7"
+      ],
+      "before_cvar95": 25.6349,
+      "before_simulation_run_ids": [
+        "fwd_6630afa8c4a0caa7",
+        "fwd_e1439ebdf5578bab"
+      ],
+      "context_label": "scenario_set",
+      "optimization_context_type": "scenario_set",
+      "outputs_differ_from_default": true,
+      "run_id": "opt_a13b7aad30c3dfa6",
+      "scenario_count": 2,
+      "selected_actions": [
+        "action:increase_inventory_buffer:equipment:euv_scanner",
+        "action:increase_inventory_buffer:chemical:specialty_gas",
+        "action:increase_inventory_buffer:material:silicon_wafer"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "optimization_fixture_graph:resilience_planning_only"
+      ]
+    },
+    {
+      "after_cvar95": 35.9539,
+      "after_simulation_run_ids": [
+        "fwd_2e8c14263e134ac0",
+        "fwd_ef244ce663dcaec7",
+        "fwd_5578c142547e4a40"
+      ],
+      "before_cvar95": 36.9126,
+      "before_simulation_run_ids": [
+        "fwd_85f96368fae0e9bd",
+        "fwd_c3d0178f2e93f21c",
+        "fwd_b67546b14a534867"
+      ],
+      "context_label": "reverse_stress_payload",
+      "optimization_context_type": "reverse_stress_payload",
+      "outputs_differ_from_default": true,
+      "run_id": "opt_2aec6f1d9dd558bb",
+      "scenario_count": 3,
+      "selected_actions": [
+        "action:increase_inventory_buffer:equipment:euv_scanner",
+        "action:increase_inventory_buffer:chemical:specialty_gas",
+        "action:increase_inventory_buffer:material:silicon_wafer"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "optimization_fixture_graph:resilience_planning_only"
+      ]
+    }
+  ],
+  "seed": 42,
+  "simulation_version": "semirisk_forward_mc_v0.1",
+  "source_manifest_id": "semirisk_fixture_manifest_f8fa1615a0a7",
+  "warnings": [
+    "fixture_graph:not_production_ready",
+    "validation_fixture_proxy:not_calibrated"
+  ]
+}

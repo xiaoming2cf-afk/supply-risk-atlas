@@ -1,0 +1,19 @@
+canonical_name,heuristic_feature_version,heuristic_level,heuristic_score,literature_feature_version,literature_level,literature_score,node_id,node_type,score_delta
+Photoresist,semirisk_risk_score_heuristic_v0.1,guarded,39.22,semirisk_risk_score_likelihood_impact_v0.1,severe,75.99,chemical:photoresist,chemical,36.77
+Specialty gas,semirisk_risk_score_heuristic_v0.1,guarded,34.19,semirisk_risk_score_likelihood_impact_v0.1,critical,87.46,chemical:specialty_gas,chemical,53.27
+Applied Materials,semirisk_risk_score_heuristic_v0.1,guarded,33.01,semirisk_risk_score_likelihood_impact_v0.1,critical,91.47,company:applied_materials,company,58.46
+ASML,semirisk_risk_score_heuristic_v0.1,elevated,52.5,semirisk_risk_score_likelihood_impact_v0.1,critical,94.52,company:asml,company,42.02
+Intel,semirisk_risk_score_heuristic_v0.1,guarded,43.65,semirisk_risk_score_likelihood_impact_v0.1,critical,91.91,company:intel,company,48.26
+Samsung Electronics,semirisk_risk_score_heuristic_v0.1,guarded,46.85,semirisk_risk_score_likelihood_impact_v0.1,critical,90.69,company:samsung,company,43.84
+TSMC,semirisk_risk_score_heuristic_v0.1,elevated,58.33,semirisk_risk_score_likelihood_impact_v0.1,critical,96.61,company:tsmc,company,38.28
+South Korea,semirisk_risk_score_heuristic_v0.1,guarded,36.42,semirisk_risk_score_likelihood_impact_v0.1,critical,85.49,country:kr,country,49.07
+Netherlands,semirisk_risk_score_heuristic_v0.1,guarded,38.15,semirisk_risk_score_likelihood_impact_v0.1,elevated,52.9,country:nl,country,14.75
+Taiwan,semirisk_risk_score_heuristic_v0.1,guarded,44.26,semirisk_risk_score_likelihood_impact_v0.1,critical,98.32,country:tw,country,54.06
+United States,semirisk_risk_score_heuristic_v0.1,guarded,45.71,semirisk_risk_score_likelihood_impact_v0.1,critical,99.0,country:us,country,53.29
+EUV scanner,semirisk_risk_score_heuristic_v0.1,elevated,59.13,semirisk_risk_score_likelihood_impact_v0.1,critical,95.59,equipment:euv_scanner,equipment,36.46
+Silicon wafer,semirisk_risk_score_heuristic_v0.1,guarded,40.56,semirisk_risk_score_likelihood_impact_v0.1,critical,87.46,material:silicon_wafer,material,46.9
+Lithography,semirisk_risk_score_heuristic_v0.1,elevated,57.58,semirisk_risk_score_likelihood_impact_v0.1,critical,94.25,process_stage:lithography,process_stage,36.67
+Packaging and test,semirisk_risk_score_heuristic_v0.1,guarded,34.89,semirisk_risk_score_likelihood_impact_v0.1,critical,89.55,process_stage:packaging_test,process_stage,54.66
+Wafer fabrication,semirisk_risk_score_heuristic_v0.1,elevated,63.33,semirisk_risk_score_likelihood_impact_v0.1,critical,96.63,process_stage:wafer_fabrication,process_stage,33.3
+Advanced logic,semirisk_risk_score_heuristic_v0.1,elevated,60.13,semirisk_risk_score_likelihood_impact_v0.1,critical,95.27,product_grade:advanced_logic,product_grade,35.14
+HBM,semirisk_risk_score_heuristic_v0.1,guarded,46.99,semirisk_risk_score_likelihood_impact_v0.1,critical,89.7,product_grade:hbm,product_grade,42.71

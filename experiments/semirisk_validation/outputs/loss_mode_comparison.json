@@ -1,0 +1,599 @@
+{
+  "feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
+  "fixture_graph": true,
+  "graph_version": "semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a",
+  "optimization_version": "semirisk_intervention_optimizer_v0.1",
+  "rows": [
+    {
+      "cvar_95": 25.5691,
+      "expected_loss": 25.5691,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.947253,
+        "min_functionality": 0.736263,
+        "points": 8
+      },
+      "loss_mode": "affected_mean",
+      "p95_loss": 25.5691,
+      "run_id": "fwd_b6aa155cd1014164",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "warnings": [
+        "affected_mean:legacy_baseline",
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 8
+    },
+    {
+      "cvar_95": 26.1763,
+      "expected_loss": 26.1763,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.947253,
+        "min_functionality": 0.736263,
+        "points": 8
+      },
+      "loss_mode": "graph_weighted_loss",
+      "p95_loss": 26.1763,
+      "run_id": "fwd_2d492fa26c4b2556",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 7
+    },
+    {
+      "cvar_95": 26.3737,
+      "expected_loss": 26.3737,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.947253,
+        "min_functionality": 0.736263,
+        "points": 8
+      },
+      "loss_mode": "demand_fulfillment_loss",
+      "p95_loss": 26.3737,
+      "run_id": "fwd_1364fbd87473e0ee",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 6
+    },
+    {
+      "cvar_95": 24.9911,
+      "expected_loss": 24.9911,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.947253,
+        "min_functionality": 0.736263,
+        "points": 8
+      },
+      "loss_mode": "capacity_functionality_loss",
+      "p95_loss": 24.9911,
+      "run_id": "fwd_60f61e49fbb30308",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 9
+    },
+    {
+      "cvar_95": 15.8242,
+      "expected_loss": 15.8242,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.947253,
+        "min_functionality": 0.736263,
+        "points": 8
+      },
+      "loss_mode": "resilience_integral_loss",
+      "p95_loss": 15.8242,
+      "run_id": "fwd_cf811e3052a3aa61",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 14
+    },
+    {
+      "cvar_95": 59.2672,
+      "expected_loss": 59.2672,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.881848,
+        "min_functionality": 0.409241,
+        "points": 8
+      },
+      "loss_mode": "affected_mean",
+      "p95_loss": 59.2672,
+      "run_id": "fwd_d16dbfee3432b407",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "warnings": [
+        "affected_mean:legacy_baseline",
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 1
+    },
+    {
+      "cvar_95": 59.0759,
+      "expected_loss": 59.0759,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.881848,
+        "min_functionality": 0.409241,
+        "points": 8
+      },
+      "loss_mode": "graph_weighted_loss",
+      "p95_loss": 59.0759,
+      "run_id": "fwd_e95d702a8cc121c2",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 2
+    },
+    {
+      "cvar_95": 56.1667,
+      "expected_loss": 56.1667,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.881848,
+        "min_functionality": 0.409241,
+        "points": 8
+      },
+      "loss_mode": "demand_fulfillment_loss",
+      "p95_loss": 56.1667,
+      "run_id": "fwd_2598658292bb75cb",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 3
+    },
+    {
+      "cvar_95": 52.3584,
+      "expected_loss": 52.3584,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.881848,
+        "min_functionality": 0.409241,
+        "points": 8
+      },
+      "loss_mode": "capacity_functionality_loss",
+      "p95_loss": 52.3584,
+      "run_id": "fwd_bdb96ccc95d2a759",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 4
+    },
+    {
+      "cvar_95": 35.4455,
+      "expected_loss": 35.4455,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.881848,
+        "min_functionality": 0.409241,
+        "points": 8
+      },
+      "loss_mode": "resilience_integral_loss",
+      "p95_loss": 35.4455,
+      "run_id": "fwd_0d7858e369d676e0",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 5
+    },
+    {
+      "cvar_95": 22.4906,
+      "expected_loss": 22.4906,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.966474,
+        "min_functionality": 0.832369,
+        "points": 8
+      },
+      "loss_mode": "affected_mean",
+      "p95_loss": 22.4906,
+      "run_id": "fwd_e4881929a9ccf415",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "warnings": [
+        "affected_mean:legacy_baseline",
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 10
+    },
+    {
+      "cvar_95": 16.7631,
+      "expected_loss": 16.7631,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.966474,
+        "min_functionality": 0.832369,
+        "points": 8
+      },
+      "loss_mode": "graph_weighted_loss",
+      "p95_loss": 16.7631,
+      "run_id": "fwd_82c73c5e206a2d6e",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 13
+    },
+    {
+      "cvar_95": 7.0803,
+      "expected_loss": 7.0803,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.966474,
+        "min_functionality": 0.832369,
+        "points": 8
+      },
+      "loss_mode": "demand_fulfillment_loss",
+      "p95_loss": 7.0803,
+      "run_id": "fwd_0eff0469fa638b60",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 20
+    },
+    {
+      "cvar_95": 8.358,
+      "expected_loss": 8.358,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.966474,
+        "min_functionality": 0.832369,
+        "points": 8
+      },
+      "loss_mode": "capacity_functionality_loss",
+      "p95_loss": 8.358,
+      "run_id": "fwd_aee07532a87af652",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 19
+    },
+    {
+      "cvar_95": 10.0579,
+      "expected_loss": 10.0579,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.966474,
+        "min_functionality": 0.832369,
+        "points": 8
+      },
+      "loss_mode": "resilience_integral_loss",
+      "p95_loss": 10.0579,
+      "run_id": "fwd_d8b55f377daf316f",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 18
+    },
+    {
+      "cvar_95": 19.1279,
+      "expected_loss": 19.1279,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.956541,
+        "min_functionality": 0.782707,
+        "points": 8
+      },
+      "loss_mode": "affected_mean",
+      "p95_loss": 19.1279,
+      "run_id": "fwd_9040ffcc4bd79f41",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "warnings": [
+        "affected_mean:legacy_baseline",
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 12
+    },
+    {
+      "cvar_95": 12.3703,
+      "expected_loss": 12.3703,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.956541,
+        "min_functionality": 0.782707,
+        "points": 8
+      },
+      "loss_mode": "graph_weighted_loss",
+      "p95_loss": 12.3703,
+      "run_id": "fwd_7cebf36bb6d4d2f4",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 16
+    },
+    {
+      "cvar_95": 21.7293,
+      "expected_loss": 21.7293,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.956541,
+        "min_functionality": 0.782707,
+        "points": 8
+      },
+      "loss_mode": "demand_fulfillment_loss",
+      "p95_loss": 21.7293,
+      "run_id": "fwd_31456de14820f54a",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 11
+    },
+    {
+      "cvar_95": 11.198,
+      "expected_loss": 11.198,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.956541,
+        "min_functionality": 0.782707,
+        "points": 8
+      },
+      "loss_mode": "capacity_functionality_loss",
+      "p95_loss": 11.198,
+      "run_id": "fwd_f29441809679d02c",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 17
+    },
+    {
+      "cvar_95": 13.0376,
+      "expected_loss": 13.0376,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "functionality_curve_summary": {
+        "end_functionality": 0.956541,
+        "min_functionality": 0.782707,
+        "points": 8
+      },
+      "loss_mode": "resilience_integral_loss",
+      "p95_loss": 13.0376,
+      "run_id": "fwd_75f28dac415d789e",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ],
+      "worst_scenario_rank": 15
+    }
+  ],
+  "seed": 42,
+  "simulation_version": "semirisk_forward_mc_v0.1",
+  "source_manifest_id": "semirisk_fixture_manifest_f8fa1615a0a7",
+  "warnings": [
+    "fixture_graph:not_production_ready",
+    "validation_fixture_proxy:not_calibrated"
+  ]
+}

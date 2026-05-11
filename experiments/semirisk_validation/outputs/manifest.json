@@ -1,0 +1,17 @@
+{
+  "config_hash": "0a8a40035cc38c38",
+  "feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
+  "fixture_graph": true,
+  "git_commit": "9049207cce2c3b5852ff1f28408b850d3e976954",
+  "graph_version": "semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a",
+  "heuristic_feature_version": "semirisk_risk_score_heuristic_v0.1",
+  "optimization_version": "semirisk_intervention_optimizer_v0.1",
+  "reverse_simulation_version": "semirisk_reverse_stress_v0.1",
+  "seed": 42,
+  "simulation_version": "semirisk_forward_mc_v0.1",
+  "source_manifest_id": "semirisk_fixture_manifest_f8fa1615a0a7",
+  "warnings": [
+    "fixture_graph:not_production_ready",
+    "validation_outputs:not_production_decision"
+  ]
+}

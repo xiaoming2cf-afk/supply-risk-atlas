@@ -1,0 +1,711 @@
+{
+  "feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
+  "fixture_graph": true,
+  "graph_version": "semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a",
+  "optimization_version": "semirisk_intervention_optimizer_v0.1",
+  "rows": [
+    {
+      "cvar_95": 10.6354,
+      "downstream_node_count": 12,
+      "expected_loss": 10.6354,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "max",
+      "run_id": "fwd_704cfd60dd6efb0d",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:photoresist:chemical:photoresist:process_stage:lithography",
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:lithography:requires:photoresist:process_stage:lithography:chemical:photoresist"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 27.8697,
+      "downstream_node_count": 12,
+      "expected_loss": 27.8697,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "additive_cap",
+      "run_id": "fwd_3cfad40d07f62196",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:lithography:requires:photoresist:process_stage:lithography:chemical:photoresist",
+        "path:edge:lithography:requires:euv_scanner:equipment:euv_scanner:process_stage:lithography"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 24.5967,
+      "downstream_node_count": 12,
+      "expected_loss": 24.5967,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "noisy_or",
+      "run_id": "fwd_cb264fc286c0573c",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:lithography:requires:photoresist:process_stage:lithography:chemical:photoresist",
+        "path:edge:tsmc:participates_in:lithography:process_stage:lithography:company:tsmc"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 10.6354,
+      "downstream_node_count": 12,
+      "expected_loss": 10.6354,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "leontief_bottleneck",
+      "run_id": "fwd_8ea31ecd020dfe14",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:photoresist:chemical:photoresist:process_stage:lithography",
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:lithography:requires:photoresist:process_stage:lithography:chemical:photoresist"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 14.3336,
+      "downstream_node_count": 12,
+      "expected_loss": 14.3336,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "psi_recursive",
+      "run_id": "fwd_7a2edbf9d6a7506e",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:photoresist:chemical:photoresist:process_stage:lithography",
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:lithography:requires:photoresist:process_stage:lithography:chemical:photoresist"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 15.8242,
+      "downstream_node_count": 12,
+      "expected_loss": 15.8242,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "auto_semiconductor",
+      "run_id": "fwd_cf811e3052a3aa61",
+      "scenario_id": "material_shortage_photoresist",
+      "scenario_type": "material_shortage",
+      "targets": "chemical:photoresist",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:photoresist:chemical:photoresist:process_stage:lithography",
+        "path:edge:tsmc:participates_in:wafer_fabrication:company:tsmc:process_stage:wafer_fabrication",
+        "path:edge:tsmc:participates_in:lithography:company:tsmc:process_stage:lithography"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 14.1776,
+      "downstream_node_count": 12,
+      "expected_loss": 14.1776,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "max",
+      "run_id": "fwd_ca63dbde28fab07a",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:euv_scanner:equipment:euv_scanner:process_stage:lithography",
+        "path:edge:fab18:requires:euv_scanner:equipment:euv_scanner:facility:tsmc_fab18",
+        "path:edge:euv_scanner:restricted_by:export_control_placeholder:equipment:euv_scanner:policy_event:export_control_placeholder"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 47.4858,
+      "downstream_node_count": 12,
+      "expected_loss": 47.4858,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "additive_cap",
+      "run_id": "fwd_55968384479d7f40",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "top_transmission_path_ids": [
+        "path:edge:tsmc:participates_in:wafer_fabrication:company:tsmc:process_stage:wafer_fabrication",
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:asml:supplies:euv_scanner:company:asml:equipment:euv_scanner"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 41.7194,
+      "downstream_node_count": 12,
+      "expected_loss": 41.7194,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "noisy_or",
+      "run_id": "fwd_389c62ab5c32dccc",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:tsmc:participates_in:wafer_fabrication:company:tsmc:process_stage:wafer_fabrication",
+        "path:edge:fab18:requires:euv_scanner:facility:tsmc_fab18:equipment:euv_scanner"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 14.1776,
+      "downstream_node_count": 12,
+      "expected_loss": 14.1776,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "leontief_bottleneck",
+      "run_id": "fwd_6d6280cbb8699681",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:euv_scanner:equipment:euv_scanner:process_stage:lithography",
+        "path:edge:fab18:requires:euv_scanner:equipment:euv_scanner:facility:tsmc_fab18",
+        "path:edge:euv_scanner:restricted_by:export_control_placeholder:equipment:euv_scanner:policy_event:export_control_placeholder"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 17.9539,
+      "downstream_node_count": 12,
+      "expected_loss": 17.9539,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "psi_recursive",
+      "run_id": "fwd_2eefad8fa1417ae3",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "top_transmission_path_ids": [
+        "path:edge:lithography:requires:euv_scanner:equipment:euv_scanner:process_stage:lithography",
+        "path:edge:lithography:requires:euv_scanner:process_stage:lithography:equipment:euv_scanner",
+        "path:edge:fab18:requires:euv_scanner:equipment:euv_scanner:facility:tsmc_fab18"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 35.4455,
+      "downstream_node_count": 12,
+      "expected_loss": 35.4455,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "auto_semiconductor",
+      "run_id": "fwd_0d7858e369d676e0",
+      "scenario_id": "export_control_euv",
+      "scenario_type": "export_control",
+      "targets": "equipment:euv_scanner",
+      "top_transmission_path_ids": [
+        "path:edge:tsmc:participates_in:wafer_fabrication:company:tsmc:process_stage:wafer_fabrication",
+        "path:edge:asml:supplies:euv_scanner:company:asml:equipment:euv_scanner",
+        "path:edge:tsmc:participates_in:lithography:company:tsmc:process_stage:lithography"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 4.9912,
+      "downstream_node_count": 12,
+      "expected_loss": 4.9912,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "max",
+      "run_id": "fwd_09fa5abafbc0a36f",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "top_transmission_path_ids": [
+        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
+        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
+        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 12.1942,
+      "downstream_node_count": 12,
+      "expected_loss": 12.1942,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "additive_cap",
+      "run_id": "fwd_7388b0bc7b8a0d26",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "top_transmission_path_ids": [
+        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
+        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
+        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 9.9289,
+      "downstream_node_count": 12,
+      "expected_loss": 9.9289,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "noisy_or",
+      "run_id": "fwd_3a3a6cec35d59f4c",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "top_transmission_path_ids": [
+        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
+        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
+        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 4.9912,
+      "downstream_node_count": 12,
+      "expected_loss": 4.9912,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "leontief_bottleneck",
+      "run_id": "fwd_f8286cca7376379d",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "top_transmission_path_ids": [
+        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
+        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
+        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 6.1788,
+      "downstream_node_count": 12,
+      "expected_loss": 6.1788,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "psi_recursive",
+      "run_id": "fwd_cf5f2d57e29b6292",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "top_transmission_path_ids": [
+        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
+        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
+        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 10.0579,
+      "downstream_node_count": 12,
+      "expected_loss": 10.0579,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "auto_semiconductor",
+      "run_id": "fwd_d8b55f377daf316f",
+      "scenario_id": "earthquake_taiwan",
+      "scenario_type": "earthquake",
+      "targets": "country:tw",
+      "top_transmission_path_ids": [
+        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
+        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
+        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 9.2068,
+      "downstream_node_count": 12,
+      "expected_loss": 9.2068,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "max",
+      "run_id": "fwd_05c760d2e97e0ce9",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "top_transmission_path_ids": [
+        "path:edge:hbm:requires:packaging:product_grade:hbm:process_stage:packaging_test",
+        "path:edge:gpu_accelerator:depends_on:hbm:product_grade:hbm:component:gpu_accelerator",
+        "path:edge:samsung:produces:hbm:product_grade:hbm:company:samsung"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 25.2799,
+      "downstream_node_count": 12,
+      "expected_loss": 25.2799,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "additive_cap",
+      "run_id": "fwd_db94ab63baf77ef2",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "top_transmission_path_ids": [
+        "path:edge:hbm:requires:packaging:product_grade:hbm:process_stage:packaging_test",
+        "path:edge:gpu_accelerator:depends_on:hbm:product_grade:hbm:component:gpu_accelerator",
+        "path:edge:samsung:produces:hbm:product_grade:hbm:company:samsung"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 19.4882,
+      "downstream_node_count": 12,
+      "expected_loss": 19.4882,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "noisy_or",
+      "run_id": "fwd_d325a46efdd8dfba",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "top_transmission_path_ids": [
+        "path:edge:hbm:requires:packaging:product_grade:hbm:process_stage:packaging_test",
+        "path:edge:gpu_accelerator:depends_on:hbm:product_grade:hbm:component:gpu_accelerator",
+        "path:edge:samsung:produces:hbm:product_grade:hbm:company:samsung"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 9.2068,
+      "downstream_node_count": 12,
+      "expected_loss": 9.2068,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": false,
+      "propagation_mode": "leontief_bottleneck",
+      "run_id": "fwd_74db189e8c5f3f1c",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "top_transmission_path_ids": [
+        "path:edge:hbm:requires:packaging:product_grade:hbm:process_stage:packaging_test",
+        "path:edge:gpu_accelerator:depends_on:hbm:product_grade:hbm:component:gpu_accelerator",
+        "path:edge:samsung:produces:hbm:product_grade:hbm:company:samsung"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 10.6388,
+      "downstream_node_count": 12,
+      "expected_loss": 10.6388,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "psi_recursive",
+      "run_id": "fwd_4e3b14d91b224dd8",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "top_transmission_path_ids": [
+        "path:edge:hbm:requires:packaging:product_grade:hbm:process_stage:packaging_test",
+        "path:edge:gpu_accelerator:depends_on:hbm:product_grade:hbm:component:gpu_accelerator",
+        "path:edge:samsung:produces:hbm:product_grade:hbm:company:samsung"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    },
+    {
+      "cvar_95": 13.0376,
+      "downstream_node_count": 12,
+      "expected_loss": 13.0376,
+      "formula_refs": [
+        "multi_component_supply_chain_resilience_functionality_loss",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "production_network_input_output_propagation",
+        "resilience_triangle_functionality_loss"
+      ],
+      "multi_source_accumulation_changes_results": true,
+      "propagation_mode": "auto_semiconductor",
+      "run_id": "fwd_75f28dac415d789e",
+      "scenario_id": "demand_spike_hbm",
+      "scenario_type": "demand_spike",
+      "targets": "product_grade:hbm",
+      "top_transmission_path_ids": [
+        "path:edge:hbm:requires:packaging:product_grade:hbm:process_stage:packaging_test",
+        "path:edge:samsung:participates_in:wafer_fabrication:company:samsung:process_stage:wafer_fabrication",
+        "path:edge:samsung:produces:hbm:company:samsung:product_grade:hbm"
+      ],
+      "warnings": [
+        "fixture_graph:not_production_ready",
+        "fixture_graph:promoted_test_graph_only",
+        "fixture_proxy_loss_weights",
+        "no_dollar_loss_without_private_exposure_data",
+        "not_financial_loss"
+      ]
+    }
+  ],
+  "seed": 42,
+  "simulation_version": "semirisk_forward_mc_v0.1",
+  "source_manifest_id": "semirisk_fixture_manifest_f8fa1615a0a7",
+  "warnings": [
+    "fixture_graph:not_production_ready",
+    "validation_fixture_proxy:not_calibrated"
+  ]
+}

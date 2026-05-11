@@ -1,0 +1,1115 @@
+{
+  "feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
+  "fixture_graph": true,
+  "graph_version": "semirisk_kg_v0_1_20260501T000000Z_6ed40afa3b7a",
+  "optimization_version": "semirisk_intervention_optimizer_v0.1",
+  "rows": [
+    {
+      "ablated_impact": 0.999998,
+      "ablated_likelihood": 0.759883,
+      "ablated_rank": 5,
+      "ablated_score": 49.39,
+      "ablated_vulnerability_modifier": 0.65,
+      "ablation_factor": "concentration",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "source_concentration_hhi",
+        "country_concentration"
+      ],
+      "baseline_impact": 0.999998,
+      "baseline_likelihood": 0.759883,
+      "baseline_rank": 5,
+      "baseline_score": 75.99,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 13,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "chemical:photoresist",
+      "rank_delta": 0,
+      "score_delta": -26.6,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999949,
+      "ablated_likelihood": 0.945217,
+      "ablated_rank": 4,
+      "ablated_score": 61.44,
+      "ablated_vulnerability_modifier": 0.65,
+      "ablation_factor": "concentration",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "source_concentration_hhi",
+        "country_concentration"
+      ],
+      "baseline_impact": 0.999949,
+      "baseline_likelihood": 0.945217,
+      "baseline_rank": 3,
+      "baseline_score": 94.52,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 14,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:asml",
+      "rank_delta": 1,
+      "score_delta": -33.08,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.94364,
+      "ablated_likelihood": 0.961028,
+      "ablated_rank": 3,
+      "ablated_score": 74.82,
+      "ablated_vulnerability_modifier": 0.82499405,
+      "ablation_factor": "concentration",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "source_concentration_hhi",
+        "country_concentration"
+      ],
+      "baseline_impact": 0.94364,
+      "baseline_likelihood": 0.961028,
+      "baseline_rank": 4,
+      "baseline_score": 90.69,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:samsung",
+      "rank_delta": -1,
+      "score_delta": -15.87,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.972362,
+      "ablated_likelihood": 0.993598,
+      "ablated_rank": 1,
+      "ablated_score": 85.32,
+      "ablated_vulnerability_modifier": 0.88307655,
+      "ablation_factor": "concentration",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "source_concentration_hhi",
+        "country_concentration"
+      ],
+      "baseline_impact": 0.972362,
+      "baseline_likelihood": 0.993598,
+      "baseline_rank": 1,
+      "baseline_score": 96.61,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 39,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:tsmc",
+      "rank_delta": 0,
+      "score_delta": -11.29,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.965593,
+      "ablated_likelihood": 0.990012,
+      "ablated_rank": 2,
+      "ablated_score": 84.43,
+      "ablated_vulnerability_modifier": 0.8832358,
+      "ablation_factor": "concentration",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "source_concentration_hhi",
+        "country_concentration"
+      ],
+      "baseline_impact": 0.965593,
+      "baseline_likelihood": 0.990012,
+      "baseline_rank": 2,
+      "baseline_score": 95.59,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "equipment:euv_scanner",
+      "rank_delta": 0,
+      "score_delta": -11.16,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999998,
+      "ablated_likelihood": 0.759883,
+      "ablated_rank": 5,
+      "ablated_score": 62.74,
+      "ablated_vulnerability_modifier": 0.8257,
+      "ablation_factor": "substitution_gap",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "substitution_gap"
+      ],
+      "baseline_impact": 0.999998,
+      "baseline_likelihood": 0.759883,
+      "baseline_rank": 5,
+      "baseline_score": 75.99,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 13,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "chemical:photoresist",
+      "rank_delta": 0,
+      "score_delta": -13.25,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999949,
+      "ablated_likelihood": 0.945217,
+      "ablated_rank": 3,
+      "ablated_score": 74.76,
+      "ablated_vulnerability_modifier": 0.791,
+      "ablation_factor": "substitution_gap",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "substitution_gap"
+      ],
+      "baseline_impact": 0.999949,
+      "baseline_likelihood": 0.945217,
+      "baseline_rank": 3,
+      "baseline_score": 94.52,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 14,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:asml",
+      "rank_delta": 0,
+      "score_delta": -19.76,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.94364,
+      "ablated_likelihood": 0.961028,
+      "ablated_rank": 4,
+      "ablated_score": 74.4,
+      "ablated_vulnerability_modifier": 0.82045,
+      "ablation_factor": "substitution_gap",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "substitution_gap"
+      ],
+      "baseline_impact": 0.94364,
+      "baseline_likelihood": 0.961028,
+      "baseline_rank": 4,
+      "baseline_score": 90.69,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:samsung",
+      "rank_delta": 0,
+      "score_delta": -16.29,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.972362,
+      "ablated_likelihood": 0.993598,
+      "ablated_rank": 1,
+      "ablated_score": 77.19,
+      "ablated_vulnerability_modifier": 0.7989999999999999,
+      "ablation_factor": "substitution_gap",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "substitution_gap"
+      ],
+      "baseline_impact": 0.972362,
+      "baseline_likelihood": 0.993598,
+      "baseline_rank": 1,
+      "baseline_score": 96.61,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 39,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:tsmc",
+      "rank_delta": 0,
+      "score_delta": -19.42,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.965593,
+      "ablated_likelihood": 0.990012,
+      "ablated_rank": 2,
+      "ablated_score": 75.89,
+      "ablated_vulnerability_modifier": 0.7939,
+      "ablation_factor": "substitution_gap",
+      "affected_explanation_fields": [
+        "vulnerability_modifier",
+        "substitution_gap"
+      ],
+      "baseline_impact": 0.965593,
+      "baseline_likelihood": 0.990012,
+      "baseline_rank": 2,
+      "baseline_score": 95.59,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "equipment:euv_scanner",
+      "rank_delta": 0,
+      "score_delta": -19.7,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999998,
+      "ablated_likelihood": 0.759883,
+      "ablated_rank": 4,
+      "ablated_score": 75.99,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "policy_risk",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "restricted_by"
+      ],
+      "baseline_impact": 0.999998,
+      "baseline_likelihood": 0.759883,
+      "baseline_rank": 5,
+      "baseline_score": 75.99,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 13,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "chemical:photoresist",
+      "rank_delta": -1,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999949,
+      "ablated_likelihood": 0.945217,
+      "ablated_rank": 2,
+      "ablated_score": 94.52,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "policy_risk",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "restricted_by"
+      ],
+      "baseline_impact": 0.999949,
+      "baseline_likelihood": 0.945217,
+      "baseline_rank": 3,
+      "baseline_score": 94.52,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 14,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:asml",
+      "rank_delta": -1,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.94364,
+      "ablated_likelihood": 0.961028,
+      "ablated_rank": 3,
+      "ablated_score": 90.69,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "policy_risk",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "restricted_by"
+      ],
+      "baseline_impact": 0.94364,
+      "baseline_likelihood": 0.961028,
+      "baseline_rank": 4,
+      "baseline_score": 90.69,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:samsung",
+      "rank_delta": -1,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.972362,
+      "ablated_likelihood": 0.993598,
+      "ablated_rank": 1,
+      "ablated_score": 96.61,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "policy_risk",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "restricted_by"
+      ],
+      "baseline_impact": 0.972362,
+      "baseline_likelihood": 0.993598,
+      "baseline_rank": 1,
+      "baseline_score": 96.61,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 39,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:tsmc",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.965593,
+      "ablated_likelihood": 0.813612,
+      "ablated_rank": 5,
+      "ablated_score": 70.64,
+      "ablated_vulnerability_modifier": 0.8992,
+      "ablation_factor": "policy_risk",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "restricted_by"
+      ],
+      "baseline_impact": 0.965593,
+      "baseline_likelihood": 0.990012,
+      "baseline_rank": 2,
+      "baseline_score": 95.59,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "equipment:euv_scanner",
+      "rank_delta": 3,
+      "score_delta": -24.95,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999998,
+      "ablated_likelihood": 0.759883,
+      "ablated_rank": 5,
+      "ablated_score": 75.99,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "event_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "impacted_by"
+      ],
+      "baseline_impact": 0.999998,
+      "baseline_likelihood": 0.759883,
+      "baseline_rank": 5,
+      "baseline_score": 75.99,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 13,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "chemical:photoresist",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999949,
+      "ablated_likelihood": 0.945217,
+      "ablated_rank": 3,
+      "ablated_score": 94.52,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "event_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "impacted_by"
+      ],
+      "baseline_impact": 0.999949,
+      "baseline_likelihood": 0.945217,
+      "baseline_rank": 3,
+      "baseline_score": 94.52,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 14,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:asml",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.94364,
+      "ablated_likelihood": 0.961028,
+      "ablated_rank": 4,
+      "ablated_score": 90.69,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "event_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "impacted_by"
+      ],
+      "baseline_impact": 0.94364,
+      "baseline_likelihood": 0.961028,
+      "baseline_rank": 4,
+      "baseline_score": 90.69,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:samsung",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.972362,
+      "ablated_likelihood": 0.993598,
+      "ablated_rank": 1,
+      "ablated_score": 96.61,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "event_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "impacted_by"
+      ],
+      "baseline_impact": 0.972362,
+      "baseline_likelihood": 0.993598,
+      "baseline_rank": 1,
+      "baseline_score": 96.61,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 39,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:tsmc",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.965593,
+      "ablated_likelihood": 0.990012,
+      "ablated_rank": 2,
+      "ablated_score": 95.59,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "event_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "vulnerability_modifier",
+        "impacted_by"
+      ],
+      "baseline_impact": 0.965593,
+      "baseline_likelihood": 0.990012,
+      "baseline_rank": 2,
+      "baseline_score": 95.59,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "equipment:euv_scanner",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999998,
+      "ablated_likelihood": 0.759883,
+      "ablated_rank": 5,
+      "ablated_score": 75.99,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "market_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "market_indicator"
+      ],
+      "baseline_impact": 0.999998,
+      "baseline_likelihood": 0.759883,
+      "baseline_rank": 5,
+      "baseline_score": 75.99,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 13,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "chemical:photoresist",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.999949,
+      "ablated_likelihood": 0.945217,
+      "ablated_rank": 3,
+      "ablated_score": 94.52,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "market_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "market_indicator"
+      ],
+      "baseline_impact": 0.999949,
+      "baseline_likelihood": 0.945217,
+      "baseline_rank": 3,
+      "baseline_score": 94.52,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 14,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:asml",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.94364,
+      "ablated_likelihood": 0.961028,
+      "ablated_rank": 4,
+      "ablated_score": 90.69,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "market_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "market_indicator"
+      ],
+      "baseline_impact": 0.94364,
+      "baseline_likelihood": 0.961028,
+      "baseline_rank": 4,
+      "baseline_score": 90.69,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:samsung",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.972362,
+      "ablated_likelihood": 0.993598,
+      "ablated_rank": 1,
+      "ablated_score": 96.61,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "market_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "market_indicator"
+      ],
+      "baseline_impact": 0.972362,
+      "baseline_likelihood": 0.993598,
+      "baseline_rank": 1,
+      "baseline_score": 96.61,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 39,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:tsmc",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.965593,
+      "ablated_likelihood": 0.990012,
+      "ablated_rank": 2,
+      "ablated_score": 95.59,
+      "ablated_vulnerability_modifier": 1.0,
+      "ablation_factor": "market_pressure",
+      "affected_explanation_fields": [
+        "likelihood",
+        "market_indicator"
+      ],
+      "baseline_impact": 0.965593,
+      "baseline_likelihood": 0.990012,
+      "baseline_rank": 2,
+      "baseline_score": 95.59,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "equipment:euv_scanner",
+      "rank_delta": 0,
+      "score_delta": 0.0,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.979998,
+      "ablated_likelihood": 0.759883,
+      "ablated_rank": 5,
+      "ablated_score": 72.23,
+      "ablated_vulnerability_modifier": 0.97,
+      "ablation_factor": "recovery_difficulty",
+      "affected_explanation_fields": [
+        "impact",
+        "vulnerability_modifier",
+        "recovery_difficulty"
+      ],
+      "baseline_impact": 0.999998,
+      "baseline_likelihood": 0.759883,
+      "baseline_rank": 5,
+      "baseline_score": 75.99,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 13,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "chemical:photoresist",
+      "rank_delta": 0,
+      "score_delta": -3.76,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.979949,
+      "ablated_likelihood": 0.945217,
+      "ablated_rank": 3,
+      "ablated_score": 89.85,
+      "ablated_vulnerability_modifier": 0.97,
+      "ablation_factor": "recovery_difficulty",
+      "affected_explanation_fields": [
+        "impact",
+        "vulnerability_modifier",
+        "recovery_difficulty"
+      ],
+      "baseline_impact": 0.999949,
+      "baseline_likelihood": 0.945217,
+      "baseline_rank": 3,
+      "baseline_score": 94.52,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 14,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:asml",
+      "rank_delta": 0,
+      "score_delta": -4.67,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.92364,
+      "ablated_likelihood": 0.961028,
+      "ablated_rank": 4,
+      "ablated_score": 86.1,
+      "ablated_vulnerability_modifier": 0.97,
+      "ablation_factor": "recovery_difficulty",
+      "affected_explanation_fields": [
+        "impact",
+        "vulnerability_modifier",
+        "recovery_difficulty"
+      ],
+      "baseline_impact": 0.94364,
+      "baseline_likelihood": 0.961028,
+      "baseline_rank": 4,
+      "baseline_score": 90.69,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:samsung",
+      "rank_delta": 0,
+      "score_delta": -4.59,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.9523619999999999,
+      "ablated_likelihood": 0.993598,
+      "ablated_rank": 1,
+      "ablated_score": 91.79,
+      "ablated_vulnerability_modifier": 0.97,
+      "ablation_factor": "recovery_difficulty",
+      "affected_explanation_fields": [
+        "impact",
+        "vulnerability_modifier",
+        "recovery_difficulty"
+      ],
+      "baseline_impact": 0.972362,
+      "baseline_likelihood": 0.993598,
+      "baseline_rank": 1,
+      "baseline_score": 96.61,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 39,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "company:tsmc",
+      "rank_delta": 0,
+      "score_delta": -4.82,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    },
+    {
+      "ablated_impact": 0.945593,
+      "ablated_likelihood": 0.990012,
+      "ablated_rank": 2,
+      "ablated_score": 90.81,
+      "ablated_vulnerability_modifier": 0.97,
+      "ablation_factor": "recovery_difficulty",
+      "affected_explanation_fields": [
+        "impact",
+        "vulnerability_modifier",
+        "recovery_difficulty"
+      ],
+      "baseline_impact": 0.965593,
+      "baseline_likelihood": 0.990012,
+      "baseline_rank": 2,
+      "baseline_score": 95.59,
+      "baseline_vulnerability_modifier": 1.0,
+      "evidence_ref_count": 28,
+      "formula_refs": [
+        "nist_sp_800_30_r1_likelihood_impact",
+        "oecd_supply_chain_resilience_critical_dependency",
+        "oecd_trade_dependency_hhi_concentration",
+        "resilience_triangle_functionality_loss",
+        "production_network_input_output_propagation",
+        "production_shortage_interdependency_perfect_complements"
+      ],
+      "node_id": "equipment:euv_scanner",
+      "rank_delta": 0,
+      "score_delta": -4.78,
+      "warnings": [
+        "ablation_fixture_proxy:not_calibrated",
+        "fixture_graph:not_production_ready",
+        "fixture_proxy_not_calibrated",
+        "not_financial_loss",
+        "not_for_production_decision"
+      ]
+    }
+  ],
+  "seed": 42,
+  "simulation_version": "semirisk_forward_mc_v0.1",
+  "source_manifest_id": "semirisk_fixture_manifest_f8fa1615a0a7",
+  "warnings": [
+    "fixture_graph:not_production_ready",
+    "ablation_fixture_proxy:not_calibrated"
+  ]
+}
