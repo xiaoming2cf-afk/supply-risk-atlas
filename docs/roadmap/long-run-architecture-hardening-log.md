@@ -359,3 +359,55 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Run history remains in-memory and process-local.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 9 security hardening and audit.
+
+## Gate 9 - Security Hardening And Audit
+
+- Gate name: Gate 9 security tests, scan scripts, CI wiring, and docs
+- Current HEAD before commit: `d33289b99f435b8d7637a1ea706550f648193c66`
+- Files changed:
+  - `.github/workflows/ci.yml`
+  - `services/api/security/validation.py`
+  - `services/api/runtime/run_store.py`
+  - `tests/security/test_no_raw_payload_exposure.py`
+  - `tests/security/test_no_private_diagnostics.py`
+  - `tests/security/test_no_secret_like_strings.py`
+  - `tests/security/test_unsafe_compliance_language.py`
+  - `tests/security/test_report_sanitization.py`
+  - `scripts/check-no-raw-payloads.py`
+  - `scripts/check-no-one-line-python.py`
+  - `scripts/security_scan.py`
+  - `docs/security/security-boundaries.md`
+  - `docs/security/threat-model.md`
+  - `docs/security/report-sanitization.md`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `python -m pytest tests/security -q` (first run exposed two overly strict assertions; fixed and reran)
+  - `python scripts/check-no-raw-payloads.py`
+  - `python scripts/check-no-one-line-python.py`
+  - `python scripts/security_scan.py` (first run exposed a false positive on Render hostnames; tightened the secret token regex and reran)
+  - `python -m pytest tests/security -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1 npm.cmd run smoke:web`
+- Pass/fail: pass
+- Evidence:
+  - Security tests passed: 17 tests.
+  - Full pytest passed.
+  - Raw/private payload scan passed.
+  - Python readability scan passed.
+  - Security scan passed.
+  - Web typecheck passed.
+  - Web build passed.
+  - Browser smoke passed: 26 checks.
+  - CI now explicitly runs `tests/security`, raw payload scan, source readability scan, and security scan in the Python job.
+  - User-provided secret-like text is redacted before scenario execution and sanitized run-history storage.
+  - Report tests cover JSON and Markdown sanitization, raw payload exclusion, private diagnostics exclusion, unsafe compliance-language rejection, and no secret-like string echo.
+- Screenshots/text evidence:
+  - `artifacts/browser-smoke/report.json` records the passing 26-check smoke run after Gate 9.
+- Unresolved limitations:
+  - Security scan scripts are lightweight repository checks, not a substitute for a full SAST/DAST program.
+  - Run history remains bounded in-memory storage.
+  - Threat model covers current fixture/proxy surfaces; future live connectors require a separate ingestion and PII review.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 10 deployment and CI modernization.

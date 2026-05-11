@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime, timezone
+import re
 from threading import Lock
 from typing import Any
 
@@ -19,6 +20,11 @@ SENSITIVE_KEY_PARTS = (
     "password",
     "private_diagnostic",
 )
+SECRET_VALUE_PATTERNS = (
+    re.compile(r"(?i)\b(?:api[_-]?key|token|secret|password)\s*[:=]\s*['\"]?[A-Za-z0-9._\-]{8,}"),
+    re.compile(r"(?<![A-Za-z0-9])sk-[A-Za-z0-9._\-]{8,}"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{12,}"),
+)
 
 
 def sanitized_run_copy(value: Any) -> Any:
@@ -34,6 +40,8 @@ def sanitized_run_copy(value: Any) -> Any:
         return [sanitized_run_copy(item) for item in value[:64]]
     if isinstance(value, tuple):
         return [sanitized_run_copy(item) for item in value[:64]]
+    if isinstance(value, str) and any(pattern.search(value) for pattern in SECRET_VALUE_PATTERNS):
+        return "[redacted]"
     return deepcopy(value)
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import math
 import os
+import re
 from typing import Any
 
 from ml.optimization.constraints import ALLOWED_INTERVENTION_TYPES
@@ -23,6 +24,11 @@ UNSAFE_PHRASES = (
     "illegal rerout" + "ing",
     "workaround sanctions",
     "avoid export controls",
+)
+SECRET_VALUE_PATTERNS = (
+    re.compile(r"(?i)\b(?:api[_-]?key|token|secret|password)\s*[:=]\s*['\"]?[A-Za-z0-9._\-]{8,}"),
+    re.compile(r"(?<![A-Za-z0-9])sk-[A-Za-z0-9._\-]{8,}"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{12,}"),
 )
 
 
@@ -159,7 +165,13 @@ def _bounded_text(value: Any, *, field: str) -> str:
             "Request includes unsafe compliance-language.",
             field=field,
         )
+    if _looks_secret_like(text):
+        return "[redacted]"
     return text
+
+
+def _looks_secret_like(text: str) -> bool:
+    return any(pattern.search(text) for pattern in SECRET_VALUE_PATTERNS)
 
 
 def _require_enum(payload: dict[str, Any], field: str, allowed: set[str], code: str) -> None:
