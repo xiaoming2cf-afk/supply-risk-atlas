@@ -299,3 +299,29 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Report run refs are included as sanitized context refs; sections are still recomputed from bounded fixture payloads when selected.
   - Platform remains fixture/proxy based and not production ready.
 - Next gate decision: proceed to Gate 7 validation experiment gap check.
+
+## Gate 7 - Validation Dashboard Data
+
+- Gate name: Gate 7 function iteration and validation dashboard data
+- Current HEAD before commit: `e3cd3438120ef021a8b290fc995958c36b75d637`
+- Files changed:
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `python -m pytest tests/validation -q`
+  - `python experiments/semirisk_validation/run_validation.py --output-dir <TEMP>/semirisk_validation_<guid>`
+- Pass/fail: pass
+- Evidence:
+  - Existing validation modules are present: `ml/validation/sensitivity.py`, `ml/validation/ablation.py`, `ml/validation/stability.py`.
+  - Existing runner/config/docs are present: `experiments/semirisk_validation/run_validation.py`, `experiments/semirisk_validation/configs/base.yaml`, `experiments/semirisk_validation/README.md`, `docs/model/model-validation-plan.md`.
+  - Validation tests passed: 6 tests.
+  - Temporary runner execution wrote all expected JSON/CSV outputs and manifest without fetching live data or touching committed platform outputs.
+  - Runner output families verified: `risk_method_comparison`, `hhi_sensitivity`, `loss_mode_comparison`, `propagation_mode_comparison`, `optimizer_context_consistency`, `ablation_study`, and `manifest`.
+  - Config covers requested HHI thresholds around 0.20 and 0.40, all requested loss modes, all requested propagation modes, optimizer context consistency cases, and ablation factors.
+- Screenshots/text evidence:
+  - Temporary output directory contained paired JSON and CSV files for all six experiment families plus `manifest.json` and `manifest.csv`.
+- Unresolved limitations:
+  - The committed validation outputs remain deterministic fixture/proxy artifacts, not production validation.
+  - Validation outputs are not wired into a new frontend page in this gate.
+  - No live data was fetched.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 8 page-level UX iteration.
