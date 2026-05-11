@@ -54,6 +54,14 @@ from services.api.prediction_center import (
     path_transmission_score,
     ranked_paths_for_target,
 )
+from services.api.routes import graph as graph_routes
+from services.api.routes import optimization as optimization_routes
+from services.api.routes import reports as report_routes
+from services.api.routes import reverse_stress as reverse_stress_routes
+from services.api.routes import risk as risk_routes
+from services.api.routes import scenarios as scenario_routes
+from services.api.routes import system_health as system_health_routes
+from services.api.runtime.cache import BoundedRunCache, SnapshotCache
 from sra_core.reports.investigation import REPORT_VERSION, generate_investigation_report
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
@@ -73,6 +81,8 @@ TAIWAN_PROVINCE_DISPLAY = "中国台湾省"
 TAIWAN_RAW_CODES = {"TW", "TWN"}
 DASHBOARD_PAYLOAD_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 DASHBOARD_PAYLOAD_CACHE_LOCK = Lock()
+SNAPSHOT_CACHE = SnapshotCache(max_items=8)
+RUN_CACHE = BoundedRunCache(max_items=32)
 PATH_DIRECTIONS = {"upstream", "downstream", "both"}
 MAX_DASHBOARD_QUERY_LIST_ITEMS = 32
 MAX_DASHBOARD_QUERY_TOKEN_LENGTH = 80
@@ -266,9 +276,11 @@ def route_entity(entity_id: str, request_id: str | None = None) -> dict[str, Any
 
 def route_graph_snapshots(request_id: str | None = None) -> dict[str, Any]:
     result = run_public_real_pipeline()
-    paths = build_path_index(result.edge_states)
-    return make_envelope(
-        {
+    as_of_time = result.snapshot.as_of_time.isoformat()
+
+    def build_payload() -> dict[str, Any]:
+        paths = build_path_index(result.edge_states)
+        return {
             "snapshot": result.snapshot.model_dump(mode="json"),
             "edge_states": [edge.model_dump(mode="json") for edge in result.edge_states],
             "path_index": [path.model_dump(mode="json") for path in paths[:20]],
@@ -278,7 +290,14 @@ def route_graph_snapshots(request_id: str | None = None) -> dict[str, Any]:
                 "sources": [source.source_id for source in result.real.sources],
                 "freshness": [item.as_dict() for item in result.real.freshness],
             },
-        },
+        }
+
+    return make_envelope(
+        SNAPSHOT_CACHE.get_or_set(
+            graph_version=result.snapshot.graph_version,
+            as_of_time=as_of_time,
+            factory=build_payload,
+        ),
         metadata=metadata_for_result(result),
         request_id=request_id,
     )
@@ -322,8 +341,13 @@ def route_semiconductor_graph_snapshot(request_id: str | None = None) -> dict[st
             request_id=request_id,
             warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
         )
+    payload = SNAPSHOT_CACHE.get_or_set(
+        graph_version=snapshot.graph_version,
+        as_of_time=snapshot.as_of_time.isoformat(),
+        factory=lambda: snapshot.model_dump(mode="json"),
+    )
     return make_envelope(
-        snapshot.model_dump(mode="json"),
+        payload,
         metadata=semiconductor_metadata(snapshot),
         request_id=request_id,
         warnings=_semiconductor_fixture_warnings(snapshot),
@@ -447,12 +471,14 @@ def route_forward_scenario(
             request_id=request_id,
             warnings=[f"forward_scenario_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
         )
-    return make_envelope(
+    response = make_envelope(
         result,
         metadata=semiconductor_metadata(snapshot, feature_version=FORWARD_SIMULATION_VERSION),
         request_id=request_id,
         warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
+    RUN_CACHE.put_summary("forward_scenario", response)
+    return response
 
 
 def route_reverse_scenario(
@@ -479,12 +505,14 @@ def route_reverse_scenario(
             request_id=request_id,
             warnings=[f"reverse_scenario_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
         )
-    return make_envelope(
+    response = make_envelope(
         result,
         metadata=semiconductor_metadata(snapshot, feature_version=REVERSE_SIMULATION_VERSION),
         request_id=request_id,
         warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
+    RUN_CACHE.put_summary("reverse_stress", response)
+    return response
 
 
 def route_intervention_optimization(
@@ -510,12 +538,14 @@ def route_intervention_optimization(
             request_id=request_id,
             warnings=[f"optimization_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
         )
-    return make_envelope(
+    response = make_envelope(
         result,
         metadata=semiconductor_metadata(snapshot, feature_version=OPTIMIZATION_VERSION),
         request_id=request_id,
         warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
+    RUN_CACHE.put_summary("intervention_optimization", response)
+    return response
 
 
 def route_investigation_report(
@@ -533,12 +563,14 @@ def route_investigation_report(
             request_id=request_id,
             warnings=[f"report_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
         )
-    return make_envelope(
+    response = make_envelope(
         result,
         metadata=semiconductor_metadata(snapshot, feature_version=REPORT_VERSION),
         request_id=request_id,
         warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
     )
+    RUN_CACHE.put_summary("investigation_report", response)
+    return response
 
 
 def route_graph_diff(request_id: str | None = None) -> dict[str, Any]:
@@ -827,6 +859,10 @@ def route_dashboard_page(
         request_id=request_id,
         warnings=_real_data_warnings(result),
     )
+
+
+def route_system_health_center(request_id: str | None = None) -> dict[str, Any]:
+    return route_dashboard_page("system-health-center", request_id=request_id)
 
 
 def _semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
@@ -2947,6 +2983,52 @@ def create_app() -> Any:
             ),
         )
 
+    system_health_routes.register(
+        app,
+        Header=Header,
+        route_system_health_center=route_system_health_center,
+    )
+    graph_routes.register(
+        app,
+        Header=Header,
+        Query=Query,
+        route_graph_snapshots=route_graph_snapshots,
+        route_graph_diff=route_graph_diff,
+        route_semiconductor_graph_snapshot=route_semiconductor_graph_snapshot,
+        route_semiconductor_graph_neighborhood=route_semiconductor_graph_neighborhood,
+    )
+    risk_routes.register(
+        app,
+        Header=Header,
+        Query=Query,
+        route_semirisk_entity_risk=route_semirisk_entity_risk,
+        route_semirisk_risk_portfolio=route_semirisk_risk_portfolio,
+    )
+    scenario_routes.register(
+        app,
+        Body=Body,
+        Header=Header,
+        route_forward_scenario=route_forward_scenario,
+    )
+    reverse_stress_routes.register(
+        app,
+        Body=Body,
+        Header=Header,
+        route_reverse_scenario=route_reverse_scenario,
+    )
+    optimization_routes.register(
+        app,
+        Body=Body,
+        Header=Header,
+        route_intervention_optimization=route_intervention_optimization,
+    )
+    report_routes.register(
+        app,
+        Body=Body,
+        Header=Header,
+        route_investigation_report=route_investigation_report,
+    )
+
     @app.get("/health", include_in_schema=False)
     @app.get("/api/v1/health")
     def http_health(x_request_id: str | None = Header(default=None)) -> dict[str, Any]:
@@ -3026,53 +3108,6 @@ def create_app() -> Any:
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
         return route_entity(entity_id, request_id=x_request_id)
-
-    @app.get("/graph", include_in_schema=False)
-    @app.get("/api/v1/graph")
-    @app.get("/api/v1/graph/snapshots")
-    def http_graph(x_request_id: str | None = Header(default=None)) -> dict[str, Any]:
-        return route_graph_snapshots(request_id=x_request_id)
-
-    @app.get("/api/v1/graph/diff")
-    def http_graph_diff(x_request_id: str | None = Header(default=None)) -> dict[str, Any]:
-        return route_graph_diff(request_id=x_request_id)
-
-    @app.get("/api/v1/graph/snapshot")
-    def http_semiconductor_graph_snapshot(
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_semiconductor_graph_snapshot(request_id=x_request_id)
-
-    @app.get("/api/v1/graph/neighborhood")
-    def http_semiconductor_graph_neighborhood(
-        node_id: str = Query(default="company:tsmc"),
-        depth: int = Query(default=1, ge=0, le=3),
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_semiconductor_graph_neighborhood(
-            node_id=node_id,
-            depth=depth,
-            request_id=x_request_id,
-        )
-
-    @app.get("/api/v1/risk/entities/{entity_id}")
-    def http_semirisk_entity_risk(
-        entity_id: str,
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_semirisk_entity_risk(entity_id=entity_id, request_id=x_request_id)
-
-    @app.get("/api/v1/risk/portfolio")
-    def http_semirisk_risk_portfolio(
-        node_type: str | None = Query(default="company"),
-        limit: int = Query(default=20, ge=1, le=100),
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_semirisk_risk_portfolio(
-            node_type=node_type,
-            limit=limit,
-            request_id=x_request_id,
-        )
 
     @app.get("/features", include_in_schema=False)
     @app.get("/api/v1/features")
@@ -3192,34 +3227,6 @@ def create_app() -> Any:
             },
             request_id=x_request_id,
         )
-
-    @app.post("/api/v1/scenarios/forward")
-    def http_forward_scenario(
-        payload: dict[str, Any] | None = Body(default=None),
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_forward_scenario(payload=payload, request_id=x_request_id)
-
-    @app.post("/api/v1/scenarios/reverse")
-    def http_reverse_scenario(
-        payload: dict[str, Any] | None = Body(default=None),
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_reverse_scenario(payload=payload, request_id=x_request_id)
-
-    @app.post("/api/v1/optimization/interventions")
-    def http_intervention_optimization(
-        payload: dict[str, Any] | None = Body(default=None),
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_intervention_optimization(payload=payload, request_id=x_request_id)
-
-    @app.post("/api/v1/reports/investigation")
-    def http_investigation_report(
-        payload: dict[str, Any] | None = Body(default=None),
-        x_request_id: str | None = Header(default=None),
-    ) -> dict[str, Any]:
-        return route_investigation_report(payload=payload, request_id=x_request_id)
 
     @app.get("/reports", include_in_schema=False)
     @app.get("/api/v1/reports")

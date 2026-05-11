@@ -55,3 +55,47 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Platform remains fixture/proxy based and not production ready.
   - `apps/web/AGENTS.md` and `apps/web/CLAUDE.md` remain pre-existing untracked files and are not part of this gate.
 - Next gate decision: proceed to Gate 1 backend route architecture split.
+
+## Gate 1 - Backend Route Architecture Split
+
+- Gate name: Gate 1 backend route architecture split
+- Current HEAD before commit: `febe25c0bc49412badbbedce9a9b707d397b6f2a`
+- Files changed:
+  - `services/api/main.py`
+  - `services/api/routes/__init__.py`
+  - `services/api/routes/system_health.py`
+  - `services/api/routes/graph.py`
+  - `services/api/routes/risk.py`
+  - `services/api/routes/scenarios.py`
+  - `services/api/routes/reverse_stress.py`
+  - `services/api/routes/optimization.py`
+  - `services/api/routes/reports.py`
+  - `services/api/runtime/__init__.py`
+  - `services/api/runtime/envelope.py`
+  - `services/api/runtime/errors.py`
+  - `services/api/runtime/cache.py`
+  - `services/api/security/__init__.py`
+  - `services/api/security/validation.py`
+  - `services/api/security/headers.py`
+  - `tests/api/test_route_architecture_split.py`
+  - `docs/roadmap/long-run-architecture-hardening-log.md`
+- Commands run:
+  - `python -m pytest tests/api/test_route_architecture_split.py tests/api/test_api_endpoints.py tests/api/test_api_routes.py tests/api/test_scenario_forward.py tests/api/test_scenario_reverse.py tests/api/test_optimization_routes.py tests/api/test_report_export.py tests/api/test_semirisk_risk_score.py tests/api/test_system_health_semiconductor_graph.py -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+- Pass/fail: pass
+- Evidence:
+  - Targeted API route suite passed.
+  - Full pytest passed, 217 tests.
+  - Web typecheck passed.
+  - Web build passed.
+  - `main.py` remains import-compatible for `route_system_health_center`, graph snapshot/neighborhood, risk, forward, reverse, optimization, and investigation report route functions.
+  - Public FastAPI URLs remain registered through route modules.
+  - Snapshot cache is keyed by graph version and as-of time.
+  - Bounded run cache stores sanitized summaries only; raw payload and secret-like keys are dropped.
+- Unresolved limitations:
+  - Route handler implementation bodies still live in `services/api/main.py`; this gate moves public HTTP registration and runtime helpers first while keeping the compatibility facade stable.
+  - Gate 2 will expand validation/security behavior beyond the initial placeholder security helpers.
+  - Platform remains fixture/proxy based and not production ready.
+- Next gate decision: proceed to Gate 2 API input validation and security boundary.
