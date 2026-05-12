@@ -1,0 +1,33 @@
+{
+  "source_id": "gdelt_semiconductor_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "gdelt-lite-2026-0001",
+      "event_time": "2026-05-01T08:00:00+00:00",
+      "event_type": "policy_export_control",
+      "location": { "country": "US", "region": "North America" },
+      "affected_entities": ["company:asml", "product:euv_lithography"],
+      "summary": "Public event metadata summary reports export-control policy discussion affecting lithography equipment.",
+      "source_name": "GDELT",
+      "tone_or_severity_proxy": 0.58,
+      "provenance_url": "https://www.gdeltproject.org/example/event-0001",
+      "license_or_terms_ref": "https://www.gdeltproject.org/about.html",
+      "confidence": 0.61
+    },
+    {
+      "source_record_id": "gdelt-lite-2026-0002",
+      "event_time": "2026-05-03T12:30:00+00:00",
+      "event_type": "natural_hazard",
+      "location": { "country": "TW", "region": "Hsinchu" },
+      "affected_entities": ["company:tsmc", "region:taiwan"],
+      "summary": "Public event metadata summary reports earthquake monitoring near semiconductor manufacturing region.",
+      "source_name": "GDELT",
+      "tone_or_severity_proxy": 0.42,
+      "provenance_url": "https://www.gdeltproject.org/example/event-0002",
+      "license_or_terms_ref": "https://www.gdeltproject.org/about.html",
+      "confidence": 0.57
+    }
+  ]
+}

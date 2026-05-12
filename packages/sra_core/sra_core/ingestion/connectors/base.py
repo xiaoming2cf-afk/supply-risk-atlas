@@ -101,6 +101,7 @@ class PublicEvidenceConnector:
                 as_of_time=as_of_time,
                 retrieved_at=retrieved_at,
                 payload_summary=row.get("summary") or row.get("title") or row.get("name"),
+                metadata=row,
             )
             for index, row in enumerate(records_payload)
             if isinstance(row, dict)

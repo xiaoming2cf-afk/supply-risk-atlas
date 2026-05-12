@@ -47,6 +47,7 @@ class ConnectorRecord:
     license_or_terms_ref: str
     payload_summary: str
     payload_stored: bool = False
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_payload(
@@ -60,6 +61,7 @@ class ConnectorRecord:
         as_of_time: str | None = None,
         retrieved_at: str | None = None,
         payload_summary: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> "ConnectorRecord":
         return cls(
             source_id=source_id,
@@ -71,6 +73,7 @@ class ConnectorRecord:
             license_or_terms_ref=license_or_terms_ref,
             payload_summary=sanitize_external_text(payload_summary or _summary_from_payload(payload)),
             payload_stored=False,
+            metadata=sanitize_metadata(metadata or {}),
         )
 
     def to_public_dict(self) -> dict[str, Any]:
@@ -84,6 +87,7 @@ class ConnectorRecord:
             "license_or_terms_ref": self.license_or_terms_ref,
             "payload_summary": self.payload_summary,
             "payload_stored": self.payload_stored,
+            "metadata": self.metadata,
         }
 
 
@@ -133,3 +137,19 @@ def _summary_from_payload(payload: Any) -> str:
     if isinstance(payload, list):
         return f"{len(payload)} records"
     return str(payload)
+
+
+def sanitize_metadata(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            sanitize_external_text(key, max_length=80): sanitize_metadata(item)
+            for key, item in value.items()
+            if "body" not in str(key).lower() and "raw_payload" not in str(key).lower()
+        }
+    if isinstance(value, list):
+        return [sanitize_metadata(item) for item in value[:100]]
+    if isinstance(value, str):
+        return sanitize_external_text(value)
+    if isinstance(value, int | float | bool) or value is None:
+        return value
+    return sanitize_external_text(value)

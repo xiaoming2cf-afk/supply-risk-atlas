@@ -20,6 +20,8 @@ from sra_core.ingestion.connectors.errors import (
 )
 from sra_core.ingestion.connectors.rate_limit import InMemoryRateLimiter, RateLimitPolicy
 from sra_core.ingestion.connectors.result import ConnectorFetchResult, ConnectorRecord
+from sra_core.ingestion.connectors.gdelt_semiconductor_lite import GdeltSemiconductorLiteConnector
+from sra_core.ingestion.connectors.sec_edgar_lite import SecEdgarLiteConnector
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -144,6 +146,7 @@ __all__ = [
     "ConnectorRecord",
     "ConnectorUnavailableError",
     "GdeltConnector",
+    "GdeltSemiconductorLiteConnector",
     "GleifConnector",
     "InMemoryRateLimiter",
     "LiveFetchDisabledError",
@@ -153,6 +156,7 @@ __all__ = [
     "PublicSourceConnector",
     "RateLimitPolicy",
     "SecEdgarConnector",
+    "SecEdgarLiteConnector",
     "UsgsEarthquakesConnector",
     "WorldBankConnector",
     "connector_for_source",

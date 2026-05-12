@@ -269,3 +269,43 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Deferred paid/proprietary sources remain registry-only.
 - Next gate decision:
   - Proceed to Gate 5 SEC EDGAR Lite and GDELT Semiconductor Lite fixture connectors.
+
+## Gate 5 - SEC EDGAR Lite And GDELT Semiconductor Lite Connectors
+
+- Current HEAD before Gate 5: `b544097`
+- Gate name: first fixture-first public connector batch
+- Files changed:
+  - `docs/data/sec-edgar-lite-connector.md`
+  - `docs/data/gdelt-semiconductor-lite-connector.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/base.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/result.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/sec_edgar_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/gdelt_semiconductor_lite.py`
+  - `tests/ingestion/fixtures/sec_edgar_lite_sample.json`
+  - `tests/ingestion/fixtures/gdelt_semiconductor_lite_sample.json`
+  - `tests/ingestion/test_sec_edgar_lite.py`
+  - `tests/ingestion/test_gdelt_semiconductor_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_sec_edgar_lite.py tests/ingestion/test_gdelt_semiconductor_lite.py tests/ingestion/test_connector_base.py tests/ingestion/test_connector_cache.py tests/ingestion/test_no_startup_network.py -q`
+  - `python -m pytest tests/ingestion tests/sources tests/contract -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/quality -q`
+- Pass/fail status: pass
+- Evidence:
+  - SEC EDGAR Lite fixture connector replays bounded disclosure metadata, computes payload hashes, sanitizes summaries, and promotes to `company_disclosure_event`.
+  - SEC live mode remains controlled unavailable unless a compliant `SEC_USER_AGENT` and explicit CIK/ticker are supplied; bulk live download is not implemented.
+  - GDELT Semiconductor Lite fixture connector replays event metadata, computes payload hashes, sanitizes summaries, and promotes to `risk_event`.
+  - GDELT live mode remains controlled unavailable and rejects broad out-of-scope queries.
+  - Connector records gained sanitized metadata for promotion, while `payload_stored=false` and raw body fields remain filtered.
+  - No startup network tests still pass.
+- Limitations:
+  - Connectors are fixture-first and not enabled for live ingestion.
+  - Promotion outputs are connector-level records only; graph integration is deferred to the promoted graph pipeline gate.
+  - SEC/GDELT source registry status remains disabled pending explicit promotion/activation gates.
+- Source/legal notes:
+  - No live SEC or GDELT calls were performed.
+  - No raw filing bodies, article bodies, or downloaded bulk data were committed.
+  - Outputs contain summaries, payload hashes, source refs, provenance URLs, confidence, and license/terms refs only.
+- Next gate decision:
+  - Proceed to Gate 6 UN Comtrade Lite and WITS Lite connectors.
