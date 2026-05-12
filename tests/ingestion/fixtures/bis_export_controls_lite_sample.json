@@ -1,0 +1,19 @@
+{
+  "source_id": "bis_export_controls_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "bis-lite-advanced-computing-2026",
+      "jurisdiction": "US",
+      "policy_type": "export_control",
+      "policy_title": "Advanced computing and semiconductor manufacturing controls summary",
+      "publication_date": "2026-01-15",
+      "affected_items": ["advanced computing chips", "semiconductor manufacturing equipment"],
+      "summary": "Public BIS-style policy metadata summary for compliance risk and resilience planning.",
+      "provenance_url": "https://www.bis.gov/example/advanced-computing-controls",
+      "license_or_terms_ref": "https://www.bis.gov/about/website-policies",
+      "confidence": 0.63
+    }
+  ]
+}

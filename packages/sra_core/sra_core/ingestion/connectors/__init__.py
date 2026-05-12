@@ -11,6 +11,7 @@ from sra_core.contracts.domain import StrictModel
 from sra_core.ingestion.registry import load_source_registry
 from sra_core.ingestion.connectors.base import ConnectorConfig, ConnectorMode, PublicEvidenceConnector
 from sra_core.ingestion.connectors.cache import ConnectorCache, ConnectorCachePolicy
+from sra_core.ingestion.connectors.bis_export_controls_lite import BisExportControlsLiteConnector
 from sra_core.ingestion.connectors.errors import (
     ConnectorError,
     ConnectorPayloadError,
@@ -21,11 +22,14 @@ from sra_core.ingestion.connectors.errors import (
 from sra_core.ingestion.connectors.rate_limit import InMemoryRateLimiter, RateLimitPolicy
 from sra_core.ingestion.connectors.result import ConnectorFetchResult, ConnectorRecord
 from sra_core.ingestion.connectors.gdelt_semiconductor_lite import GdeltSemiconductorLiteConnector
+from sra_core.ingestion.connectors.nga_world_port_index_lite import NgaWorldPortIndexLiteConnector
+from sra_core.ingestion.connectors.ofac_sanctions_list_lite import OfacSanctionsListLiteConnector
 from sra_core.ingestion.connectors.sec_edgar_lite import SecEdgarLiteConnector
 from sra_core.ingestion.connectors.un_comtrade_semiconductor_trade_lite import (
     UnComtradeSemiconductorTradeLiteConnector,
 )
 from sra_core.ingestion.connectors.wits_trade_tariff_lite import WitsTradeTariffLiteConnector
+from sra_core.ingestion.connectors.usgs_earthquake_lite import UsgsEarthquakeLiteConnector
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -155,7 +159,9 @@ __all__ = [
     "InMemoryRateLimiter",
     "LiveFetchDisabledError",
     "NgaWorldPortIndexConnector",
+    "NgaWorldPortIndexLiteConnector",
     "OfacConnector",
+    "OfacSanctionsListLiteConnector",
     "PublicEvidenceConnector",
     "PublicSourceConnector",
     "RateLimitPolicy",
@@ -163,7 +169,9 @@ __all__ = [
     "SecEdgarLiteConnector",
     "UnComtradeSemiconductorTradeLiteConnector",
     "UsgsEarthquakesConnector",
+    "UsgsEarthquakeLiteConnector",
     "WitsTradeTariffLiteConnector",
+    "BisExportControlsLiteConnector",
     "WorldBankConnector",
     "connector_for_source",
 ]

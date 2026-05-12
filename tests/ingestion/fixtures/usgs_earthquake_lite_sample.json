@@ -1,0 +1,21 @@
+{
+  "source_id": "usgs_earthquake_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "usgs-lite-tw-2026-0001",
+      "event_time": "2026-04-21T07:10:00+00:00",
+      "latitude": 24.8,
+      "longitude": 121.0,
+      "magnitude": 5.4,
+      "depth_km": 18.0,
+      "place": "Near Hsinchu semiconductor manufacturing region, Taiwan",
+      "summary": "Public USGS-style earthquake metadata near a semiconductor manufacturing region.",
+      "provenance_url": "https://earthquake.usgs.gov/example/tw-0001",
+      "license_or_terms_ref": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "confidence": 0.74
+    }
+  ]
+}
+

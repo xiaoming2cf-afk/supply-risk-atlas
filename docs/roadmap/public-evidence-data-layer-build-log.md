@@ -346,3 +346,55 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Outputs contain only summaries, hashes, source refs, provenance URLs, confidence, and terms refs.
 - Next gate decision:
   - Proceed to Gate 7 USGS, World Port Index, OFAC, and BIS connector batch.
+
+## Gate 7 - USGS, World Port Index, OFAC, And BIS Connectors
+
+- Current HEAD before Gate 7: `30d6851`
+- Gate name: hazard, logistics, sanctions, and export-control connector batch
+- Files changed:
+  - `docs/data/usgs-earthquake-lite.md`
+  - `docs/data/nga-world-port-index-lite.md`
+  - `docs/data/ofac-sanctions-list-lite.md`
+  - `docs/data/bis-export-controls-lite.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/usgs_earthquake_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/nga_world_port_index_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/ofac_sanctions_list_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/bis_export_controls_lite.py`
+  - `tests/ingestion/fixtures/usgs_earthquake_lite_sample.json`
+  - `tests/ingestion/fixtures/nga_world_port_index_lite_sample.json`
+  - `tests/ingestion/fixtures/ofac_sanctions_list_lite_sample.json`
+  - `tests/ingestion/fixtures/bis_export_controls_lite_sample.json`
+  - `tests/ingestion/test_usgs_earthquake_lite.py`
+  - `tests/ingestion/test_nga_world_port_index_lite.py`
+  - `tests/ingestion/test_ofac_sanctions_list_lite.py`
+  - `tests/ingestion/test_bis_export_controls_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_usgs_earthquake_lite.py tests/ingestion/test_nga_world_port_index_lite.py tests/ingestion/test_ofac_sanctions_list_lite.py tests/ingestion/test_bis_export_controls_lite.py -q`
+  - `python -m pytest tests/ingestion/test_usgs_earthquake_lite.py tests/ingestion/test_nga_world_port_index_lite.py tests/ingestion/test_ofac_sanctions_list_lite.py tests/ingestion/test_bis_export_controls_lite.py -q` rerun after OFAC fixture wording assertion fix
+  - `python -m pytest tests/ingestion tests/sources tests/contract -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/security/test_unsafe_compliance_language.py tests/quality -q`
+- Pass/fail status:
+  - First focused run: fail
+  - Focused rerun: pass
+  - Full ingestion/sources/contracts: pass
+  - Security/quality guards: pass
+- Failures and exact causes:
+  - Initial focused run failed because the OFAC test expected `compliance risk awareness` while the fixture summary used `compliance-risk awareness`. The test assertion was corrected; connector behavior did not change.
+- Evidence:
+  - USGS fixture connector promotes earthquake metadata to `natural_hazard_event` summaries.
+  - World Port Index fixture connector promotes public port metadata to `logistics_facility` summaries and labels it as non-navigational context.
+  - OFAC fixture connector promotes sanctions metadata to compliance-risk summaries only and tests exclude operational routing/avoidance language.
+  - BIS fixture connector promotes export-control policy metadata to compliance-context summaries only and tests exclude operational restricted-trade guidance.
+  - All four live modes return controlled unavailable; no live polling/fetching is enabled.
+- Limitations:
+  - Connectors are fixture-only/live-disabled.
+  - Promoted graph integration is deferred.
+  - Hazard-to-facility proximity mapping and logistics route construction are deferred to entity resolution/promoted graph gates.
+- Source/legal notes:
+  - No USGS, NGA, OFAC, or BIS live calls were performed.
+  - No raw source payloads or bulk downloads were committed.
+  - Sanctions/export-control outputs are compliance-risk context only and do not include operational restricted-trade guidance.
+- Next gate decision:
+  - Proceed to Gate 8 entity resolution, crosswalks, and taxonomy enrichment.
