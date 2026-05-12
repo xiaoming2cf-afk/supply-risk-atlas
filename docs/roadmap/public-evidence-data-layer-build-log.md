@@ -212,3 +212,44 @@
   - This gate provides fixture-first architecture only; live GDELT retrieval is controlled unavailable.
   - Event extraction is metadata/summarization oriented and not a production monitoring feed.
 - Next gate decision: proceed to Gate 6 promoted graph pipeline.
+
+## Gate 6 - Promoted Graph Pipeline
+
+- Current HEAD before commit: `f8de0f3`
+- Gate name: deterministic promoted public-evidence graph pipeline
+- Changed files:
+  - `configs/ontology/semiconductor.yaml`
+  - `data/promoted/latest/graph_snapshot.json`
+  - `data/promoted/latest/manifest.json`
+  - `data/promoted/latest/source_status.json`
+  - `docs/data/promoted-graph-pipeline.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `graph_kernel/graph_versioning.py`
+  - `graph_kernel/promoted_pipeline.py`
+  - `graph_kernel/source_manifest.py`
+  - `packages/sra_core/sra_core/ingestion/semiconductor_promote.py`
+  - `scripts/build_promoted_graph.py`
+  - `tests/graph_invariants/test_graph_versioning.py`
+  - `tests/graph_invariants/test_promoted_pipeline.py`
+- Commands run:
+  - `python -m pytest tests/graph_invariants/test_promoted_pipeline.py tests/graph_invariants/test_graph_versioning.py tests/graph_invariants/test_semiconductor_snapshot.py tests/ingestion/test_semiconductor_fixture_promotion.py -q` (first run exposed inherited ontology direction issue; final run passed)
+  - `python -m pytest tests/graph_invariants tests/ingestion -q`
+  - `python scripts/build_promoted_graph.py`
+  - `Select-String -Path data\promoted\latest\*.json -Pattern 'filing_body|article_body|secret|token|authorization' -CaseSensitive:$false`
+- Pass/fail: pass
+- Evidence:
+  - Promoted build emitted graph version `semirisk_kg_v0_1_20260501T000000Z_4edf1048cea7`.
+  - Promoted source manifest id is `promoted_public_evidence_manifest_29468c97b23c`.
+  - Sanitized promoted snapshot has 33 nodes and 49 edges.
+  - Tests prove deterministic rebuilds, graph-version changes on fixture input changes, provenance/quality counts, sanitized output writes, and optional SQLite snapshot persistence.
+  - Search over promoted artifacts found no `filing_body`, `article_body`, `secret`, `token`, or `authorization` matches.
+  - Ontology now allows the existing accepted fixture relation `component depends_on product_grade`, which removes the inherited graph-quality failure for `component:gpu_accelerator` depending on `product_grade:hbm`.
+- Source/legal notes:
+  - No live ingestion was run.
+  - Generated promoted artifacts contain source refs, payload hashes, summaries, provenance URLs, and terms refs only.
+  - `data/promoted/latest` artifacts are small derived graph/manifest files; no raw bulk source data is committed.
+- Limitations:
+  - Promoted graph mode remains public-evidence fixture architecture, not production data.
+  - API serving of promoted graph mode begins in Gate 7.
+  - SEC and GDELT live connectors remain disabled by default.
+- Next gate decision: proceed to Gate 7 graph view API backed by fixture/promoted graph and frontend endpoint preference.

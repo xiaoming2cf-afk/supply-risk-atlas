@@ -1,0 +1,154 @@
+{
+  "as_of_time": "2026-05-01T00:00:00+00:00",
+  "calibration_status": "proxy_fixture_not_production_calibrated",
+  "data_mode": "promoted_public_evidence_fixture",
+  "edge_count": 49,
+  "graph_mode": "promoted",
+  "graph_version": "semirisk_kg_v0_1_20260501T000000Z_4edf1048cea7",
+  "license_terms": [
+    {
+      "allowed_use": [
+        "research",
+        "derived_risk_analysis",
+        "internal_review"
+      ],
+      "license_or_terms_summary": "Public terms allow derived research analysis with attribution; raw redistribution is not approved by this registry.",
+      "publisher": "Georgetown CSET Emerging Technology Observatory",
+      "redistribution_limits": "Do not redistribute raw payloads; expose only hashes, summaries, lineage, and derived graph facts.",
+      "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+      "terms_url": "https://eto.tech/terms/"
+    },
+    {
+      "allowed_use": [
+        "research",
+        "event_monitoring",
+        "derived_risk_analysis"
+      ],
+      "license_or_terms_summary": "Public event metadata may be analyzed with attribution; article payloads must be summarized, not exposed.",
+      "publisher": "The GDELT Project",
+      "redistribution_limits": "Do not expose article text or raw GDELT payloads; expose event summaries and lineage refs.",
+      "source_id": "gdelt_semiconductor_events",
+      "terms_url": "https://www.gdeltproject.org/about.html"
+    },
+    {
+      "allowed_use": [
+        "research",
+        "policy_risk_analysis",
+        "internal_review"
+      ],
+      "license_or_terms_summary": "Public policy facts may be summarized with attribution; this registry does not provide compliance advice.",
+      "publisher": "Global Trade Alert",
+      "redistribution_limits": "Do not expose raw intervention payloads; expose normalized policy summaries and graph evidence only.",
+      "source_id": "global_trade_alert_semiconductor_export_controls",
+      "terms_url": "https://www.globaltradealert.org/terms-of-use"
+    },
+    {
+      "allowed_use": [
+        "research",
+        "filing_risk_factor_analysis",
+        "internal_review"
+      ],
+      "license_or_terms_summary": "Public filings may support attributed derived analysis; request headers and rate limits must follow SEC guidance.",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "redistribution_limits": "Do not expose raw filing payloads through platform API or UI.",
+      "source_id": "sec_edgar",
+      "terms_url": "https://www.sec.gov/os/accessing-edgar-data"
+    },
+    {
+      "allowed_use": [
+        "research",
+        "derived_market_indicator",
+        "internal_review"
+      ],
+      "license_or_terms_summary": "Public summaries may support attributed analysis; raw reports and tables must not be redistributed.",
+      "publisher": "World Semiconductor Trade Statistics",
+      "redistribution_limits": "Do not expose raw reports or tables; expose only normalized indicators with lineage.",
+      "source_id": "wsts_historical_billings",
+      "terms_url": "https://www.wsts.org/terms"
+    }
+  ],
+  "manifest_hash": "0bbf5ad461d6a4100dc2399b3bbae960a0e5a0014546e8a516951b36fae44c8e",
+  "manifest_version": "promoted_graph_manifest_v0.1",
+  "node_count": 33,
+  "production_status": "not_production_ready",
+  "raw_record_index": [
+    {
+      "as_of_time": "2026-05-01T00:00:00+00:00",
+      "license_or_terms_ref": "https://eto.tech/terms/",
+      "payload_hash": "6a70c2badffddfab2067748e2dfed8e45a259d0729b49162b26b638b98c6f827",
+      "provenance_url": "https://eto.tech/dataset-docs/chipexplorer/",
+      "raw_id": "raw:eto_cset_advanced_semiconductor_supply_chain:eto-semiconductor-network-2026-05:6a70c2badffddfab",
+      "raw_payload_summary": "Fixture-only semiconductor supply-chain relationships for companies, stages, facilities, inputs, and routes.",
+      "retrieved_at": "2026-05-01T00:00:00+00:00",
+      "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+      "source_record_id": "eto-semiconductor-network-2026-05"
+    },
+    {
+      "as_of_time": "2026-05-01T00:00:00+00:00",
+      "license_or_terms_ref": "https://www.gdeltproject.org/about.html",
+      "payload_hash": "dbe242ebe58aa124a23c63d706be5480db6f1b3f952a754851c0fe41296fe639",
+      "provenance_url": "https://www.gdeltproject.org/",
+      "raw_id": "raw:gdelt_semiconductor_events:gdelt-semiconductor-earthquake-region-lite-2026-04:dbe242ebe58aa124",
+      "raw_payload_summary": "Fixture-only GDELT semiconductor event metadata summary; article text is excluded.",
+      "retrieved_at": "2026-05-01T00:00:00+00:00",
+      "source_id": "gdelt_semiconductor_events",
+      "source_record_id": "gdelt-semiconductor-earthquake-region-lite-2026-04"
+    },
+    {
+      "as_of_time": "2026-05-01T00:00:00+00:00",
+      "license_or_terms_ref": "https://www.gdeltproject.org/about.html",
+      "payload_hash": "3589920bd75ff14b4a72abb0df4b2bf7e0ddb8775dea40e26224cb2911139807",
+      "provenance_url": "https://www.gdeltproject.org/",
+      "raw_id": "raw:gdelt_semiconductor_events:gdelt-semiconductor-risk-placeholder-2026-04:3589920bd75ff14b",
+      "raw_payload_summary": "Fixture-only GDELT-style semiconductor event monitoring summary; no article body or raw payload is exposed.",
+      "retrieved_at": "2026-05-01T00:00:00+00:00",
+      "source_id": "gdelt_semiconductor_events",
+      "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+    },
+    {
+      "as_of_time": "2026-05-01T00:00:00+00:00",
+      "license_or_terms_ref": "https://www.globaltradealert.org/terms-of-use",
+      "payload_hash": "889fef910419b7af8e5a1245a1c7c72d0c608a894eb542542d32eda1234a74a8",
+      "provenance_url": "https://www.globaltradealert.org/",
+      "raw_id": "raw:global_trade_alert_semiconductor_export_controls:gta-export-control-placeholder-2026-04:889fef910419b7af",
+      "raw_payload_summary": "Fixture-only export-control policy placeholder normalized for graph lineage; not compliance advice.",
+      "retrieved_at": "2026-05-01T00:00:00+00:00",
+      "source_id": "global_trade_alert_semiconductor_export_controls",
+      "source_record_id": "gta-export-control-placeholder-2026-04"
+    },
+    {
+      "as_of_time": "2026-05-01T00:00:00+00:00",
+      "license_or_terms_ref": "https://www.sec.gov/os/accessing-edgar-data",
+      "payload_hash": "52bf61feb6cb26fc2836af39a84cf3040a93aa31da6e36b5e5df7277ca6842ab",
+      "provenance_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000010/",
+      "raw_id": "raw:sec_edgar:sec-edgar-0000320193-2026-q1-risk-factor-lite:52bf61feb6cb26fc",
+      "raw_payload_summary": "Fixture-only SEC EDGAR filing risk-factor metadata summary; filing text is excluded.",
+      "retrieved_at": "2026-05-01T00:00:00+00:00",
+      "source_id": "sec_edgar",
+      "source_record_id": "sec-edgar-0000320193-2026-q1-risk-factor-lite"
+    },
+    {
+      "as_of_time": "2026-05-01T00:00:00+00:00",
+      "license_or_terms_ref": "https://www.wsts.org/terms",
+      "payload_hash": "656a92099af925fbac0ac1d0eeb6a38f9b5c71b1fe4fbfcb2079be0a9aa78d37",
+      "provenance_url": "https://www.wsts.org/",
+      "raw_id": "raw:wsts_historical_billings:wsts-monthly-billings-2026-03:656a92099af925fb",
+      "raw_payload_summary": "Fixture-only WSTS-style monthly billings indicator for semiconductor market pressure.",
+      "retrieved_at": "2026-05-01T00:00:00+00:00",
+      "source_id": "wsts_historical_billings",
+      "source_record_id": "wsts-monthly-billings-2026-03"
+    }
+  ],
+  "source_manifest_id": "promoted_public_evidence_manifest_29468c97b23c",
+  "source_status": "ready",
+  "source_status_counts": {
+    "disabled_review_required": 2,
+    "fixture_connector": 4
+  },
+  "warnings": [
+    "promoted_graph:public_fixture_evidence_not_production_ready",
+    "live_ingestion:disabled",
+    "raw_payloads_excluded",
+    "financial_loss:not_modeled"
+  ]
+}

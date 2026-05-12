@@ -150,7 +150,7 @@ edge_types:
     description: Operational, production, or logistics dependency not covered by direct supply.
     required_fields: *edge_required_fields
     source: [company, facility, process_stage, component, product_grade, route]
-    target: [company, facility, process_stage, equipment, material, chemical, component, technology_node, route]
+    target: [company, facility, process_stage, equipment, material, chemical, component, product_grade, technology_node, route]
     allowed_edge_directions: { source_to_target: true }
     example: { source_node_type: product_grade, target_node_type: technology_node }
     version: v0.1

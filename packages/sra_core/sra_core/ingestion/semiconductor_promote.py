@@ -63,11 +63,38 @@ def promote_semiconductor_fixtures(
     registry_path: str | Path | None = None,
     as_of_time: datetime | str = DEFAULT_SEMIRISK_AS_OF_TIME,
 ) -> SemiconductorPromotionResult:
-    as_of = parse_semirisk_time(as_of_time)
     records = replay_semiconductor_fixtures(fixture_dir=fixture_dir, registry_path=registry_path)
+    return promote_semiconductor_records(
+        records=records,
+        registry_path=registry_path,
+        as_of_time=as_of_time,
+        source_ids=SEMICONDUCTOR_SOURCE_IDS,
+        manifest_prefix="semirisk_fixture_manifest",
+        fixture_graph=True,
+    )
+
+
+def promote_semiconductor_records(
+    *,
+    records: list[SemiconductorRawRecord],
+    registry_path: str | Path | None = None,
+    as_of_time: datetime | str = DEFAULT_SEMIRISK_AS_OF_TIME,
+    source_ids: tuple[SemiconductorSourceId, ...] | None = None,
+    manifest_prefix: str = "semirisk_fixture_manifest",
+    fixture_graph: bool = True,
+) -> SemiconductorPromotionResult:
+    as_of = parse_semirisk_time(as_of_time)
     registry = load_semiconductor_registry(registry_path)
     registry_by_source = {source["source_id"]: source for source in registry.get("sources", [])}
-    source_manifest = _source_manifest(records, registry_by_source, as_of)
+    ordered_source_ids = source_ids or tuple(sorted({record.source_id for record in records}))
+    source_manifest = _source_manifest(
+        records,
+        registry_by_source,
+        as_of,
+        source_ids=ordered_source_ids,
+        manifest_prefix=manifest_prefix,
+        fixture_graph=fixture_graph,
+    )
 
     entity_by_id: dict[str, SemiconductorEntity] = {}
     events: dict[str, SemiconductorEvent] = {}
@@ -144,7 +171,10 @@ def _promote_record(
             confidence=float(row.get("confidence", 0.0)),
             valid_from=parse_semirisk_time(row["event_time"]),
             valid_to=row.get("valid_to"),
-            attributes={"source_record_id": record.source_record_id},
+            attributes={
+                **dict(row.get("attributes") or {}),
+                "source_record_id": record.source_record_id,
+            },
         )
         events[event.event_id] = event
 
@@ -215,9 +245,13 @@ def _source_manifest(
     records: list[SemiconductorRawRecord],
     registry_by_source: dict[str, dict[str, Any]],
     as_of_time: datetime,
+    *,
+    source_ids: tuple[SemiconductorSourceId, ...],
+    manifest_prefix: str,
+    fixture_graph: bool,
 ) -> dict[str, Any]:
     rows = []
-    for source_id in SEMICONDUCTOR_SOURCE_IDS:
+    for source_id in source_ids:
         source_records = [record for record in records if record.source_id == source_id]
         latest = max((record.source_published_at or record.as_of_time for record in source_records), default=None)
         freshness_sla_hours = int(registry_by_source.get(source_id, {}).get("freshness_sla_hours") or 1)
@@ -239,11 +273,12 @@ def _source_manifest(
         "as_of_time": as_of_time.isoformat(),
         "sources": rows,
     }
-    manifest_id = f"semirisk_fixture_manifest_{payload_hash(manifest_basis)[:12]}"
+    manifest_id = f"{manifest_prefix}_{payload_hash(manifest_basis)[:12]}"
     return {
         "source_manifest_id": manifest_id,
         "as_of_time": as_of_time.isoformat(),
-        "fixture_graph": True,
+        "fixture_graph": fixture_graph,
+        "graph_mode": "fixture" if fixture_graph else "promoted",
         "record_count": len(records),
         "sources": rows,
         "stale_source_count": sum(1 for row in rows if row["status"] == "stale"),
