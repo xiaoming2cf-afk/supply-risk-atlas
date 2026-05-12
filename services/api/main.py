@@ -71,6 +71,7 @@ from services.api.services.scenario_service import route_forward_scenario
 from services.api.services.system_health_service import (
     semiconductor_graph_health_payload as _semiconductor_graph_health_payload,
     semiconductor_only_system_health_payload as _semiconductor_only_system_health_payload,
+    source_registry_readiness_payload as _source_registry_readiness_payload,
 )
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
@@ -787,6 +788,7 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
                 f"{last_updated} point-in-time guard enforced observed_time and ingest_time cutoffs",
             ],
             "sourceRegistry": _source_registry_payload(result),
+            "sourceRegistryReadiness": _source_registry_readiness_payload(),
             "entityResolution": _entity_resolution_payload(result),
             "evidenceLineage": _evidence_lineage_payload(result),
             "dataCatalog": _data_catalog_payload(result),

@@ -1,7 +1,20 @@
-registry_version: semiconductor-source-registry-v0.1
-generated_at: "2026-05-10T00:00:00Z"
+registry_version: semiconductor-source-registry-v0.2
+generated_at: "2026-05-12T00:00:00Z"
+
+defaults: &common_source_defaults
+  requires_api_key: false
+  enabled_by_default: false
+  live_fetch_default: false
+  freshness_sla_hours: 720
+  graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
+  owner: data-ingestion
+  pii_risk: low
+  raw_payload_storage_policy: hash_and_summary_only
+  api_visibility_policy: summary_and_lineage_only
+
 sources:
-  - source_id: eto_cset_advanced_semiconductor_supply_chain
+  - <<: *common_source_defaults
+    source_id: eto_cset_advanced_semiconductor_supply_chain
     publisher: Georgetown CSET Emerging Technology Observatory
     source_url: https://eto.tech/dataset-docs/chipexplorer/
     terms_url: https://eto.tech/terms/
@@ -9,18 +22,17 @@ sources:
     allowed_use: [research, derived_risk_analysis, internal_review]
     redistribution_limits: Do not redistribute raw payloads; expose only hashes, summaries, lineage, and derived graph facts.
     attribution: Emerging Technology Observatory, Georgetown CSET
-    requires_api_key: false
     enabled_by_default: true
     update_frequency: monthly
-    freshness_sla_hours: 720
-    connector: unavailable:live_connector_not_implemented
+    connector: fixture:v0.1
     raw_contract: data_contracts/raw_schema/eto_supply_chain_raw.schema.json
     silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
-    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
-    owner: data-ingestion
-    review_status: approved_for_governance_registration
+    review_status: approved_for_fixture
+    source_tier: tier_0
+    data_category: supply_chain_structure
 
-  - source_id: wsts_historical_billings
+  - <<: *common_source_defaults
+    source_id: wsts_historical_billings
     publisher: World Semiconductor Trade Statistics
     source_url: https://www.wsts.org/
     terms_url: https://www.wsts.org/terms
@@ -28,18 +40,17 @@ sources:
     allowed_use: [research, derived_market_indicator, internal_review]
     redistribution_limits: Do not expose raw reports or tables; expose only normalized indicators with lineage.
     attribution: World Semiconductor Trade Statistics
-    requires_api_key: false
     enabled_by_default: true
     update_frequency: monthly
-    freshness_sla_hours: 720
-    connector: unavailable:live_connector_not_implemented
+    connector: fixture:v0.1
     raw_contract: data_contracts/raw_schema/wsts_billings_raw.schema.json
     silver_contract: data_contracts/silver_schema/semiconductor_market_indicator.schema.json
-    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
-    owner: data-ingestion
-    review_status: approved_for_governance_registration
+    review_status: approved_for_fixture
+    source_tier: tier_0
+    data_category: market_indicator
 
-  - source_id: global_trade_alert_semiconductor_export_controls
+  - <<: *common_source_defaults
+    source_id: global_trade_alert_semiconductor_export_controls
     publisher: Global Trade Alert
     source_url: https://www.globaltradealert.org/
     terms_url: https://www.globaltradealert.org/terms-of-use
@@ -47,18 +58,18 @@ sources:
     allowed_use: [research, policy_risk_analysis, internal_review]
     redistribution_limits: Do not expose raw intervention payloads; expose normalized policy summaries and graph evidence only.
     attribution: Global Trade Alert
-    requires_api_key: false
     enabled_by_default: true
     update_frequency: weekly
     freshness_sla_hours: 168
-    connector: unavailable:live_connector_not_implemented
+    connector: fixture:v0.1
     raw_contract: data_contracts/raw_schema/gta_export_controls_raw.schema.json
     silver_contract: data_contracts/silver_schema/semiconductor_event.schema.json
-    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
-    owner: data-ingestion
-    review_status: approved_for_governance_registration
+    review_status: approved_for_fixture
+    source_tier: tier_0
+    data_category: policy_export_control
 
-  - source_id: gdelt_semiconductor_events
+  - <<: *common_source_defaults
+    source_id: gdelt_semiconductor_events
     publisher: The GDELT Project
     source_url: https://www.gdeltproject.org/
     terms_url: https://www.gdeltproject.org/about.html
@@ -66,18 +77,18 @@ sources:
     allowed_use: [research, event_monitoring, derived_risk_analysis]
     redistribution_limits: Do not expose article text or raw GDELT payloads; expose event summaries and lineage refs.
     attribution: The GDELT Project
-    requires_api_key: false
     enabled_by_default: true
     update_frequency: 15_minutes
     freshness_sla_hours: 6
-    connector: unavailable:live_connector_not_implemented
+    connector: fixture:v0.1
     raw_contract: data_contracts/raw_schema/gdelt_semiconductor_event_raw.schema.json
     silver_contract: data_contracts/silver_schema/semiconductor_event.schema.json
-    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
-    owner: data-ingestion
-    review_status: approved_for_governance_registration
+    review_status: approved_for_fixture
+    source_tier: tier_0
+    data_category: event_news
 
-  - source_id: sec_edgar
+  - <<: *common_source_defaults
+    source_id: sec_edgar_lite
     publisher: U.S. Securities and Exchange Commission
     source_url: https://www.sec.gov/edgar/sec-api-documentation
     terms_url: https://www.sec.gov/os/accessing-edgar-data
@@ -85,18 +96,35 @@ sources:
     allowed_use: [research, filing_risk_factor_analysis, internal_review]
     redistribution_limits: Do not expose raw filing payloads through platform API or UI.
     attribution: U.S. Securities and Exchange Commission EDGAR
-    requires_api_key: false
-    enabled_by_default: false
     update_frequency: daily
     freshness_sla_hours: 72
-    connector: disabled:v0.2_review_required
-    raw_contract: data_contracts/raw_schema/sec_edgar_raw.schema.json
-    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
-    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
-    owner: data-ingestion
-    review_status: disabled_pending_v0.2_review
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/sec_edgar_lite_raw.schema.json
+    silver_contract: data_contracts/silver_schema/company_disclosure_event.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: event_news
 
-  - source_id: un_comtrade
+  - <<: *common_source_defaults
+    source_id: gdelt_semiconductor_lite
+    publisher: The GDELT Project
+    source_url: https://www.gdeltproject.org/
+    terms_url: https://www.gdeltproject.org/about.html
+    license_or_terms_summary: Public event metadata may be analyzed with attribution; article bodies must not be stored or exposed.
+    allowed_use: [research, event_monitoring, derived_risk_analysis]
+    redistribution_limits: Do not expose article text or raw GDELT payloads; expose event summaries and lineage refs.
+    attribution: The GDELT Project
+    update_frequency: 15_minutes
+    freshness_sla_hours: 6
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/gdelt_semiconductor_lite_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_risk_event.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: event_news
+
+  - <<: *common_source_defaults
+    source_id: un_comtrade_semiconductor_trade_lite
     publisher: United Nations Comtrade
     source_url: https://comtradeplus.un.org/
     terms_url: https://comtradeplus.un.org/TermsOfUse
@@ -104,13 +132,307 @@ sources:
     allowed_use: [research, trade_flow_analysis, internal_review]
     redistribution_limits: Do not expose bulk raw trade payloads; expose governed indicators and lineage only.
     attribution: United Nations Comtrade
-    requires_api_key: false
-    enabled_by_default: false
     update_frequency: monthly
     freshness_sla_hours: 2160
-    connector: disabled:v0.2_review_required
-    raw_contract: data_contracts/raw_schema/un_comtrade_raw.schema.json
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/un_comtrade_semiconductor_trade_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_trade_flow.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: trade_flow
+
+  - <<: *common_source_defaults
+    source_id: world_bank_wits_trade_tariff_lite
+    publisher: World Bank WITS
+    source_url: https://wits.worldbank.org/
+    terms_url: https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets
+    license_or_terms_summary: Public WITS indicators may support attributed derived research summaries.
+    allowed_use: [research, tariff_indicator_analysis, internal_review]
+    redistribution_limits: Do not expose bulk raw tables; expose bounded indicators and lineage only.
+    attribution: World Bank WITS
+    update_frequency: monthly
+    freshness_sla_hours: 2160
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/wits_trade_tariff_raw.schema.json
+    silver_contract: data_contracts/silver_schema/trade_tariff_indicator.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: trade_flow
+
+  - <<: *common_source_defaults
+    source_id: usgs_earthquake_lite
+    publisher: U.S. Geological Survey
+    source_url: https://earthquake.usgs.gov/earthquakes/feed/
+    terms_url: https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+    license_or_terms_summary: Public earthquake metadata may be summarized with USGS attribution.
+    allowed_use: [research, natural_hazard_analysis, internal_review]
+    redistribution_limits: Expose hazard metadata summaries and lineage only; do not imply warning or navigation service.
+    attribution: U.S. Geological Survey
+    update_frequency: hourly
+    freshness_sla_hours: 24
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/usgs_earthquake_raw.schema.json
+    silver_contract: data_contracts/silver_schema/natural_hazard_event.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: natural_hazard
+
+  - <<: *common_source_defaults
+    source_id: nga_world_port_index_lite
+    publisher: National Geospatial-Intelligence Agency
+    source_url: https://msi.nga.mil/Publications/WPI
+    terms_url: https://www.nga.mil/about/Legal.html
+    license_or_terms_summary: Public port index metadata may support attributed logistics context; no navigational decision support claim.
+    allowed_use: [research, logistics_context, internal_review]
+    redistribution_limits: Expose bounded facility summaries and lineage only.
+    attribution: National Geospatial-Intelligence Agency World Port Index
+    update_frequency: irregular
+    freshness_sla_hours: 8760
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/nga_world_port_index_raw.schema.json
+    silver_contract: data_contracts/silver_schema/logistics_facility.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: logistics
+
+  - <<: *common_source_defaults
+    source_id: ofac_sanctions_list_lite
+    publisher: U.S. Department of the Treasury OFAC
+    source_url: https://ofac.treasury.gov/sanctions-list-service
+    terms_url: https://home.treasury.gov/privacy-policy
+    license_or_terms_summary: Public sanctions list metadata may be summarized for compliance risk awareness only.
+    allowed_use: [research, sanctions_compliance, internal_review]
+    redistribution_limits: Do not provide sanctions evasion or bypass advice; expose compliance warnings and lineage only.
+    attribution: U.S. Department of the Treasury OFAC
+    update_frequency: daily
+    freshness_sla_hours: 24
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/ofac_sanctions_list_raw.schema.json
+    silver_contract: data_contracts/silver_schema/sanctions_screening_event.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: sanctions_compliance
+
+  - <<: *common_source_defaults
+    source_id: bis_export_controls_lite
+    publisher: U.S. Bureau of Industry and Security
+    source_url: https://www.bis.gov/
+    terms_url: https://www.bis.gov/about/website-policies
+    license_or_terms_summary: Public BIS policy summaries may support compliance risk awareness and resilience planning.
+    allowed_use: [research, policy_risk_analysis, internal_review]
+    redistribution_limits: No evasion or circumvention advice; expose policy summaries and lineage only.
+    attribution: U.S. Bureau of Industry and Security
+    update_frequency: weekly
+    freshness_sla_hours: 168
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/bis_export_controls_raw.schema.json
+    silver_contract: data_contracts/silver_schema/export_control_policy_event.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: policy_export_control
+
+  - <<: *common_source_defaults
+    source_id: federal_register_export_controls_lite
+    publisher: Federal Register
+    source_url: https://www.federalregister.gov/
+    terms_url: https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site/legal-status
+    license_or_terms_summary: Public rule metadata may support attributed policy summaries after review.
+    allowed_use: [research, policy_risk_analysis, internal_review]
+    redistribution_limits: Expose bounded summaries and lineage only; no legal advice.
+    attribution: Federal Register
+    update_frequency: daily
+    freshness_sla_hours: 72
+    connector: disabled:review_required
+    raw_contract: data_contracts/raw_schema/federal_register_export_controls_raw.schema.json
+    silver_contract: data_contracts/silver_schema/export_control_policy_event.schema.json
+    review_status: disabled_review_required
+    source_tier: tier_2
+    data_category: policy_export_control
+
+  - <<: *common_source_defaults
+    source_id: world_bank_macro_indicators_lite
+    publisher: World Bank
+    source_url: https://data.worldbank.org/
+    terms_url: https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets
+    license_or_terms_summary: Public macro indicators may support attributed context summaries.
+    allowed_use: [research, macro_context, internal_review]
+    redistribution_limits: Expose bounded indicators and lineage only.
+    attribution: World Bank
+    update_frequency: monthly
+    freshness_sla_hours: 2160
+    connector: disabled:review_required
+    raw_contract: data_contracts/raw_schema/world_bank_macro_indicators_raw.schema.json
+    silver_contract: data_contracts/silver_schema/trade_tariff_indicator.schema.json
+    review_status: disabled_review_required
+    source_tier: tier_2
+    data_category: market_indicator
+
+  - <<: *common_source_defaults
+    source_id: ourairports_lite
+    publisher: OurAirports
+    source_url: https://ourairports.com/data/
+    terms_url: https://ourairports.com/data/
+    license_or_terms_summary: Public airport metadata terms require review before live ingestion.
+    allowed_use: [research, logistics_context, internal_review]
+    redistribution_limits: Expose bounded logistics summaries and lineage only after terms review.
+    attribution: OurAirports
+    update_frequency: monthly
+    freshness_sla_hours: 2160
+    connector: disabled:review_required
+    raw_contract: data_contracts/raw_schema/ourairports_raw.schema.json
+    silver_contract: data_contracts/silver_schema/logistics_facility.schema.json
+    review_status: terms_review_required
+    source_tier: tier_2
+    data_category: logistics
+
+  - <<: *common_source_defaults
+    source_id: openalex_crossref_literature_lite
+    publisher: OpenAlex and Crossref
+    source_url: https://openalex.org/
+    terms_url: https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication
+    license_or_terms_summary: Public literature metadata may support methodology citations; source terms require connector review.
+    allowed_use: [research, literature_methodology, internal_review]
+    redistribution_limits: Expose citation summaries and lineage only.
+    attribution: OpenAlex and Crossref
+    update_frequency: monthly
+    freshness_sla_hours: 2160
+    connector: disabled:review_required
+    raw_contract: data_contracts/raw_schema/openalex_crossref_literature_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_risk_event.schema.json
+    review_status: disabled_review_required
+    source_tier: tier_2
+    data_category: literature_methodology
+
+  - <<: *common_source_defaults
+    source_id: company_annual_report_manual_upload
+    publisher: User-provided public company filings
+    source_url: https://www.sec.gov/edgar/search/
+    terms_url: https://www.sec.gov/os/accessing-edgar-data
+    license_or_terms_summary: Manual uploads require source review and sanitizer before use.
+    allowed_use: [research, manual_review, internal_review]
+    redistribution_limits: Raw uploaded documents must not be exposed through API or UI.
+    attribution: User-provided public document with original source attribution
+    update_frequency: irregular
+    freshness_sla_hours: 8760
+    connector: disabled:manual_upload_review_required
+    raw_contract: data_contracts/raw_schema/company_annual_report_manual_upload_raw.schema.json
+    silver_contract: data_contracts/silver_schema/company_disclosure_event.schema.json
+    review_status: disabled_review_required
+    source_tier: tier_2
+    data_category: manual_upload
+    pii_risk: medium
+
+  - <<: *common_source_defaults
+    source_id: customs_trade_manual_upload
+    publisher: User-provided public customs/trade tables
+    source_url: https://comtradeplus.un.org/
+    terms_url: https://comtradeplus.un.org/TermsOfUse
+    license_or_terms_summary: Manual uploads require terms review and sanitizer before use.
+    allowed_use: [research, manual_review, internal_review]
+    redistribution_limits: Raw uploaded tables must not be exposed through API or UI.
+    attribution: User-provided public table with original source attribution
+    update_frequency: irregular
+    freshness_sla_hours: 8760
+    connector: disabled:manual_upload_review_required
+    raw_contract: data_contracts/raw_schema/customs_trade_manual_upload_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_trade_flow.schema.json
+    review_status: disabled_review_required
+    source_tier: tier_2
+    data_category: manual_upload
+    pii_risk: medium
+
+  - <<: *common_source_defaults
+    source_id: paid_semi_market_data
+    publisher: Paid semiconductor market data vendors
+    source_url: https://example.invalid/paid-semi-market-data
+    terms_url: https://example.invalid/terms-review-required
+    license_or_terms_summary: Deferred paid/proprietary source; not allowed for fetch or runtime use in this platform phase.
+    allowed_use: [deferred]
+    redistribution_limits: Paid/proprietary raw or derived data must not be ingested or redistributed by this project.
+    attribution: deferred
+    requires_api_key: true
+    update_frequency: irregular
+    connector: deferred:not_allowed
+    raw_contract: data_contracts/raw_schema/deferred_paid_source_raw.schema.json
     silver_contract: data_contracts/silver_schema/semiconductor_market_indicator.schema.json
-    graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
-    owner: data-ingestion
-    review_status: disabled_pending_v0.2_review
+    review_status: deferred_paid_or_proprietary
+    source_tier: tier_3
+    data_category: market_indicator
+    api_visibility_policy: registry_only
+
+  - <<: *common_source_defaults
+    source_id: proprietary_factset_supply_chain
+    publisher: FactSet or similar proprietary supply-chain vendor
+    source_url: https://example.invalid/proprietary-factset
+    terms_url: https://example.invalid/terms-review-required
+    license_or_terms_summary: Deferred proprietary source; not allowed for fetch or runtime use.
+    allowed_use: [deferred]
+    redistribution_limits: Proprietary data must not be ingested or exposed.
+    attribution: deferred
+    requires_api_key: true
+    update_frequency: irregular
+    connector: deferred:not_allowed
+    raw_contract: data_contracts/raw_schema/deferred_proprietary_source_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
+    review_status: deferred_paid_or_proprietary
+    source_tier: tier_3
+    data_category: supply_chain_structure
+    api_visibility_policy: registry_only
+
+  - <<: *common_source_defaults
+    source_id: bloomberg_supply_chain
+    publisher: Bloomberg or similar proprietary data vendor
+    source_url: https://example.invalid/bloomberg-supply-chain
+    terms_url: https://example.invalid/terms-review-required
+    license_or_terms_summary: Deferred proprietary source; not allowed for fetch or runtime use.
+    allowed_use: [deferred]
+    redistribution_limits: Proprietary data must not be ingested or exposed.
+    attribution: deferred
+    requires_api_key: true
+    update_frequency: irregular
+    connector: deferred:not_allowed
+    raw_contract: data_contracts/raw_schema/deferred_proprietary_source_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
+    review_status: deferred_paid_or_proprietary
+    source_tier: tier_3
+    data_category: supply_chain_structure
+    api_visibility_policy: registry_only
+
+  - <<: *common_source_defaults
+    source_id: wind_or_choice_private_data
+    publisher: Wind, Choice, or similar private market-data vendor
+    source_url: https://example.invalid/private-market-data
+    terms_url: https://example.invalid/terms-review-required
+    license_or_terms_summary: Deferred private market data; not allowed for fetch or runtime use.
+    allowed_use: [deferred]
+    redistribution_limits: Private data must not be ingested or exposed.
+    attribution: deferred
+    requires_api_key: true
+    update_frequency: irregular
+    connector: deferred:not_allowed
+    raw_contract: data_contracts/raw_schema/deferred_private_source_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_market_indicator.schema.json
+    review_status: deferred_paid_or_proprietary
+    source_tier: tier_3
+    data_category: market_indicator
+    api_visibility_policy: registry_only
+
+  - <<: *common_source_defaults
+    source_id: company_private_order_data
+    publisher: Private company order data
+    source_url: https://example.invalid/private-order-data
+    terms_url: https://example.invalid/terms-review-required
+    license_or_terms_summary: Deferred private company data; not allowed for fetch or runtime use.
+    allowed_use: [deferred]
+    redistribution_limits: Private order data must not be ingested or exposed.
+    attribution: deferred
+    requires_api_key: true
+    update_frequency: irregular
+    connector: deferred:not_allowed
+    raw_contract: data_contracts/raw_schema/deferred_private_source_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_trade_flow.schema.json
+    review_status: deferred_paid_or_proprietary
+    source_tier: tier_3
+    data_category: supply_chain_structure
+    pii_risk: high
+    api_visibility_policy: registry_only

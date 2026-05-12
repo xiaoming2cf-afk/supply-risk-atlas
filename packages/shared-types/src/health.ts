@@ -49,6 +49,40 @@ export interface SourceRegistrySummary {
   sources: SourceRegistryRow[];
 }
 
+export interface SourceRegistryReadiness {
+  registry_version: string;
+  generated_at: string | null;
+  status: "ready" | "degraded" | "unavailable";
+  source_count: number;
+  enabled_count: number;
+  disabled_count: number;
+  live_default_count: number;
+  terms_review_count: number;
+  deferred_count: number;
+  source_status_counts: Record<string, number>;
+  connector_status_counts: Record<string, number>;
+  source_tier_counts: Record<string, number>;
+  sources: Array<{
+    source_id: string;
+    publisher: string;
+    source_tier: string;
+    data_category: string;
+    enabled_by_default: boolean;
+    live_fetch_default: boolean;
+    status: string;
+    connector_status: string;
+    license_policy: {
+      api_visible_summary_allowed: boolean;
+      payload_storage_allowed: boolean;
+      redistribution_allowed: boolean;
+      attribution_required: boolean;
+      terms_review_required: boolean;
+      manual_review_note: string;
+    };
+  } & Record<string, unknown>>;
+  warnings: string[];
+}
+
 export interface EntityResolutionSummary {
   totalEntities: number;
   averageConfidence: number;
@@ -142,6 +176,7 @@ export interface SystemHealthData {
   stages: PipelineStage[];
   logs: string[];
   sourceRegistry: SourceRegistrySummary;
+  sourceRegistryReadiness?: SourceRegistryReadiness;
   entityResolution: EntityResolutionSummary;
   evidenceLineage: EvidenceLineageSummary;
   dataCatalog?: DataCatalogSummary;

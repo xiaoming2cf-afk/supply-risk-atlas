@@ -84,6 +84,13 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert "registryReady=true" in warning_text
     assert "ontologyReady=true" in warning_text
     assert "fixtureGraph: true" in warning_text
+    readiness = payload["data"]["sourceRegistryReadiness"]
+    assert readiness["registry_version"] == "semiconductor-source-registry-v0.2"
+    assert readiness["source_count"] == 23
+    assert readiness["enabled_count"] == 4
+    assert readiness["live_default_count"] == 0
+    assert readiness["connector_status_counts"]["fixture_connector"] == 4
+    assert "live_fetch_disabled_by_default" in readiness["warnings"]
     _assert_no_raw_payload(payload)
 
 

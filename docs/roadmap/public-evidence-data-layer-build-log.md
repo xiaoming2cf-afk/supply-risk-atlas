@@ -117,3 +117,59 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Store is metadata/sanitized-artifact only by default.
 - Next gate decision:
   - Proceed to Gate 2 source registry runtime and expanded source catalog.
+
+## Gate 2 - Source Registry Runtime And Expanded Catalog
+
+- Current HEAD before Gate 2: `e097080`
+- Gate name: executable source registry runtime and public source catalog expansion
+- Files changed:
+  - `configs/sources/semiconductor.yaml`
+  - `data_contracts/ingestion_schema/semiconductor_source_registry.schema.json`
+  - `docs/data/public-source-catalog.md`
+  - `docs/data/source-registry-runtime.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/shared-types/src/health.ts`
+  - `packages/sra_core/sra_core/sources/__init__.py`
+  - `packages/sra_core/sra_core/sources/license_policy.py`
+  - `packages/sra_core/sra_core/sources/models.py`
+  - `packages/sra_core/sra_core/sources/registry.py`
+  - `packages/sra_core/sra_core/sources/source_status.py`
+  - `services/api/main.py`
+  - `services/api/services/system_health_service.py`
+  - `tests/api/test_system_health_semiconductor_graph.py`
+  - `tests/ingestion/test_semiconductor_source_registry.py`
+  - `tests/sources/test_source_license_policy.py`
+  - `tests/sources/test_source_registry_runtime.py`
+  - `tests/sources/test_source_status.py`
+- Commands run:
+  - `python -m pytest tests/sources tests/ingestion/test_semiconductor_source_registry.py tests/api/test_system_health_semiconductor_graph.py -q`
+  - `python -m pytest tests/sources tests/ingestion/test_semiconductor_source_registry.py tests/api/test_system_health_semiconductor_graph.py -q` rerun after API-facing warning token fix
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/api -q`
+- Pass/fail status:
+  - First focused run: fail
+  - Focused rerun: pass
+  - Quality tests: pass
+  - Web typecheck: pass
+  - API tests: pass
+- Failures and exact causes:
+  - Initial focused run failed because an API-visible readiness warning used the key text `raw_payload_storage_disabled_by_default`; existing health tests reject the `raw_payload` token in API responses. The warning was renamed to `payload_storage_disabled_by_default` while keeping the storage-control meaning.
+- Evidence:
+  - Runtime loads 23 governed semiconductor sources from `configs/sources/semiconductor.yaml`.
+  - Catalog tiers are present: 4 Tier 0 fixture sources, 8 Tier 1 disabled public connector candidates, 6 Tier 2 review-required sources, and 5 Tier 3 deferred paid/proprietary sources.
+  - Runtime source readiness reports 4 enabled fixture sources, 0 live-default sources, 5 deferred sources, and degraded status because review/deferred sources are present.
+  - System Health now includes `sourceRegistryReadiness` with source, connector, and tier counts.
+  - API health response remains sanitized and does not include raw payload bodies or `raw_payload` response keys.
+- Limitations:
+  - This gate does not implement connector fetch logic, public ingestion, promoted graph generation, or SQLite runtime integration.
+  - Tier 1 sources are registered but disabled pending connector gates.
+  - Tier 2 sources require source/terms/manual-upload review before ingestion.
+  - Tier 3 paid/proprietary/private sources are registry-only and must not be fetched by default.
+- Source/legal notes:
+  - No network calls were added or run.
+  - No live ingestion was run.
+  - Source entries include publisher, source URL, terms URL, attribution, allowed-use notes, and redistribution limits.
+  - Raw payload storage remains disabled by default; API-visible summaries and lineage remain bounded and source-bound.
+- Next gate decision:
+  - Proceed to Gate 3 public connector framework after committing Gate 2.

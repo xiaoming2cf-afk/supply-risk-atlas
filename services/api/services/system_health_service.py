@@ -3,12 +3,35 @@ from __future__ import annotations
 from typing import Any
 
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
+from sra_core.sources import source_registry_readiness
 from sra_core.contracts.semiconductor import DEFAULT_SEMIRISK_AS_OF_TIME
 
 from services.api.services.common import (
     semiconductor_default_time,
     semiconductor_fixture_warnings,
 )
+
+
+def source_registry_readiness_payload() -> dict[str, Any]:
+    try:
+        return source_registry_readiness()
+    except Exception as exc:
+        return {
+            "registry_version": "unavailable",
+            "generated_at": None,
+            "status": "unavailable",
+            "source_count": 0,
+            "enabled_count": 0,
+            "disabled_count": 0,
+            "live_default_count": 0,
+            "terms_review_count": 0,
+            "deferred_count": 0,
+            "source_status_counts": {},
+            "connector_status_counts": {},
+            "source_tier_counts": {},
+            "sources": [],
+            "warnings": [f"source_registry_unavailable:{type(exc).__name__}"],
+        }
 
 
 def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
@@ -69,6 +92,7 @@ def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
             "dataNodeCount": 0,
             "sources": [],
         },
+        "sourceRegistryReadiness": source_registry_readiness_payload(),
         "entityResolution": {
             "totalEntities": 0,
             "averageConfidence": 0.0,
@@ -137,4 +161,3 @@ def semiconductor_graph_health_payload() -> dict[str, Any]:
         "staleSourceCount": snapshot.stale_source_count,
         "warnings": warnings,
     }
-
