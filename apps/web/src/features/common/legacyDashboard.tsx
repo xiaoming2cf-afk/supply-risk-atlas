@@ -70,6 +70,9 @@ import type {
 import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel } from "@supply-risk/design-system";
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "../../app/components";
 import { useI18n } from "../../app/i18n";
+import { GraphQualityChart, SourceFreshnessChart } from "./charts";
+import { DataModeBadge, GraphVersionBadge, NotProductionReadyBanner, SourceManifestBadge } from "./data-cards";
+import { SourceCatalogTable } from "./tables";
 import { useRunHistory } from "./useRunHistory";
 
 export interface PageRenderProps {
@@ -4153,6 +4156,28 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const graphReadiness = health.semiconductorGraph?.fixtureGraphReady ? "ready" : "degraded";
   const modelReadiness = health.semiconductorGraph?.fixtureGraphReady ? "fixture_ready" : "unavailable";
   const validationReadiness = "deterministic_fixture_suite";
+  const chartMetadata = {
+    graphVersion: health.semiconductorGraph?.graphVersion,
+    sourceManifestId: health.semiconductorGraph?.sourceManifestId,
+    warnings: health.semiconductorGraph?.warnings ?? [],
+  };
+  const sourceFreshnessData = health.sourceRegistry.sources.map((source) => ({
+    label: source.id,
+    value: source.recordCount,
+  }));
+  const graphQualityData = health.semiconductorGraph
+    ? [
+        { label: "nodes", value: health.semiconductorGraph.nodeCount },
+        { label: "edges", value: health.semiconductorGraph.edgeCount },
+        { label: "unresolved", value: health.semiconductorGraph.unresolvedEntityCount },
+      ]
+    : [];
+  const sourceCatalogRows = health.sourceRegistry.sources.map((source) => ({
+    id: source.id,
+    status: source.status,
+    records: source.recordCount,
+    license: source.license,
+  }));
 
   return (
     <div className="page-grid">
@@ -4212,6 +4237,25 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         <p className="public-data-note">
           service, graph, model, and validation readiness are fixture/proxy readiness signals only; production status remains not_production_ready.
         </p>
+      </Panel>
+
+      <Panel title="Evidence-bound chart and table components" subtitle="Reusable chart/table components render controlled states with source metadata.">
+        <div className="lineage-chips" style={{ marginBottom: 12 }}>
+          <DataModeBadge value="fixture" />
+          <GraphVersionBadge value={health.semiconductorGraph?.graphVersion ?? "unavailable"} />
+          <SourceManifestBadge value={health.semiconductorGraph?.sourceManifestId ?? "unavailable"} />
+        </div>
+        <NotProductionReadyBanner />
+        <div className="driver-grid" style={{ marginTop: 16 }}>
+          <SourceFreshnessChart data={sourceFreshnessData} metadata={chartMetadata} />
+          <GraphQualityChart data={graphQualityData} metadata={chartMetadata} />
+        </div>
+        <SourceCatalogTable
+          rows={sourceCatalogRows}
+          columns={["id", "status", "records", "license"]}
+          limit={6}
+          metadata={chartMetadata}
+        />
       </Panel>
 
       <div className="page-grid split-layout">

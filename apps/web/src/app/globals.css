@@ -640,3 +640,131 @@ button {
   color: #ffd6d6;
   font-size: 12px;
 }
+
+.chart-frame,
+.table-frame,
+.data-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.chart-frame h3,
+.table-frame h3,
+.data-card h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.bar-chart {
+  display: grid;
+  gap: 8px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(120px, 3fr) minmax(44px, auto);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.bar-label,
+.bar-value {
+  overflow-wrap: anywhere;
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+}
+
+.stacked-bar {
+  display: flex;
+  height: 16px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.line-chart {
+  width: 100%;
+  max-height: 160px;
+}
+
+.heatmap-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.heatmap-chart span {
+  min-height: 34px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table-frame table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table-frame th,
+.table-frame td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.metadata-line,
+.warning-text,
+.muted {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.warning-text {
+  color: #f2b84b;
+}
+
+.metadata-badge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.metadata-badge strong {
+  font-weight: 600;
+}
+
+.metadata-badge-warn {
+  border-color: rgba(242, 184, 75, 0.52);
+}

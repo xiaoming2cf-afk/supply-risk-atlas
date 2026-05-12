@@ -545,3 +545,37 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Evidence-context and policy/compliance entries remain distinct from real supply-chain dependency edges.
 - Next gate decision:
   - Proceed to Gate 11 frontend chart/table component system.
+
+## Gate 11 - Frontend Chart/Table Component System
+
+- Current HEAD before Gate 11: `fde0d50`
+- Gate name: reusable chart, table, and metadata-card components
+- Files changed:
+  - `apps/web/src/features/common/charts/*`
+  - `apps/web/src/features/common/tables/*`
+  - `apps/web/src/features/common/data-cards/*`
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `apps/web/src/app/globals.css`
+  - `scripts/browser-smoke.mjs`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
+- Evidence:
+  - Added lightweight in-repo chart primitives and named wrappers for risk ranking, risk components, HHI, trade flow, heatmap, timelines, Monte Carlo/CVaR/functionality, optimizer, validation, freshness, and graph quality charts.
+  - Added reusable table primitive and named wrappers for source catalog, connector status, graph nodes/edges, evidence refs, risk rankings, scenario/reverse/optimizer/validation/trade/policy/hazard/logistics tables.
+  - Added metadata/data cards including version, data mode, graph version, source manifest, calibration, not-production-ready, evidence count, graph quality, and source freshness components.
+  - System Health renders controlled chart/table states with source/version/warning metadata.
+  - Browser smoke now checks chart/table controlled states and passed 27 checks.
+- Limitations:
+  - Components use lightweight SVG/CSS and table markup; no new chart dependency was added.
+  - Full page-level chart/table integration is deferred to Gate 13.
+  - Some charts render empty/degraded states until corresponding API data is available.
+- Source/legal notes:
+  - No fake chart data was added.
+  - Displayed System Health charts/tables use existing API source registry and graph metadata.
+- Next gate decision:
+  - Proceed to Gate 12 Graph Explorer v3 interaction modes.

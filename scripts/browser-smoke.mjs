@@ -329,6 +329,18 @@ async function main() {
         healthState.firstNavId === "system-health-center" &&
         (semiriskSystemHealthReady ? healthHasSemiriskEvidence : healthHasControlledDegradedState),
     });
+    const chartTableTerms = [
+      "Evidence-bound chart and table components",
+      "Source freshness",
+      "Graph quality",
+      "SourceCatalog",
+      "not_production_ready",
+    ];
+    checks.push({
+      page: "chart/table component controlled states",
+      present: chartTableTerms.filter((term) => healthState.text.includes(term)),
+      passed: !semiriskSystemHealthReady || chartTableTerms.every((term) => healthState.text.includes(term)),
+    });
 
     await navigate(client, `${webUrl}#company-risk-360`);
     const riskEvidenceTerms = [
