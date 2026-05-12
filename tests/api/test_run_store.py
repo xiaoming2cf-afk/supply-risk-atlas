@@ -42,10 +42,12 @@ def test_run_store_endpoints_list_and_get_sanitized_runs() -> None:
     assert listed.status_code == 200
     assert listed_payload["status"] == "success"
     assert listed_payload["data"]["run_store_version"] == "semirisk_run_store_v0.1"
-    assert listed_payload["data"]["runs"][0]["run_id"] == run_id
-    assert listed_payload["data"]["runs"][0]["run_type"] == "forward_scenario"
-    assert listed_payload["data"]["runs"][0]["graph_version"]
-    assert listed_payload["data"]["runs"][0]["source_manifest_id"]
+    listed_run = next(run for run in listed_payload["data"]["runs"] if run["run_id"] == run_id)
+    assert listed_run["run_type"] == "forward_scenario"
+    assert listed_run["graph_version"]
+    assert listed_run["source_manifest_id"]
+    assert listed_run["data_mode"]
+    assert listed_run["graph_mode"]
 
     detail = client.get(f"/api/v1/runs/{run_id}", headers={"x-request-id": "req_run_detail"})
     detail_payload = detail.json()
@@ -69,3 +71,32 @@ def test_run_store_not_found_uses_controlled_404() -> None:
     assert response.status_code == 404
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == "not_found"
+
+
+def test_report_detail_endpoint_returns_sanitized_persisted_report() -> None:
+    from services.api.services import report_service
+
+    report_service.REPORT_STORE.clear()
+    client = _client()
+    response = client.post(
+        "/api/v1/reports/investigation",
+        json={"entity_id": "company:tsmc", "format": "json"},
+        headers={"x-request-id": "req_report_create"},
+    )
+    assert response.status_code == 200
+    report_id = response.json()["data"]["report_id"]
+
+    detail = client.get(f"/api/v1/reports/{report_id}", headers={"x-request-id": "req_report_detail"})
+    payload = detail.json()
+    rendered = json.dumps(payload, sort_keys=True).lower()
+
+    assert detail.status_code == 200
+    assert payload["status"] == "success"
+    assert payload["data"]["report_id"] == report_id
+    assert payload["data"]["content_hash"]
+    assert payload["data"]["raw_payload_excluded"] is True
+    assert payload["data"]["private_diagnostics_excluded"] is True
+    assert payload["data"]["data_mode"]
+    assert payload["data"]["graph_mode"]
+    assert '"raw_payload":' not in rendered
+    assert '"private_diagnostics":' not in rendered

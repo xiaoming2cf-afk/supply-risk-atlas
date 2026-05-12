@@ -81,6 +81,7 @@ export interface SupplyRiskApiClient {
   runReverseStress(input: ReverseStressInput): Promise<ApiResult<ReverseStressResult>>;
   optimizeInterventions(input: InterventionOptimizationInput): Promise<ApiResult<InterventionOptimizationResult>>;
   generateInvestigationReport(input: InvestigationReportInput): Promise<ApiResult<InvestigationReportData>>;
+  getInvestigationReport(reportId: string): Promise<ApiResult<InvestigationReportData>>;
   listRuns(): Promise<ApiResult<RunHistoryData>>;
   getRun(runId: string): Promise<ApiResult<RunDetailData>>;
 }
@@ -421,6 +422,8 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
+    getInvestigationReport: (reportId) =>
+      requestJson(baseUrl, `/reports/${encodeURIComponent(reportId)}`, undefined, clientOptions),
     listRuns: () => requestJson(baseUrl, "/runs", undefined, clientOptions),
     getRun: (runId) => requestJson(baseUrl, `/runs/${encodeURIComponent(runId)}`, undefined, clientOptions),
   };

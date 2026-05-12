@@ -29,6 +29,8 @@ class SQLiteRunStore:
                 "graph_version": data.get("graph_version") or _nested_get(data, "versions", "graph_version"),
                 "source_manifest_id": data.get("source_manifest_id")
                 or _nested_get(data, "versions", "source_manifest_id"),
+                "data_mode": data.get("data_mode") or _nested_get(data, "versions", "data_mode") or "fixture",
+                "graph_mode": data.get("graph_mode") or _nested_get(data, "versions", "graph_mode") or "fixture",
                 "request_hash": data.get("request_hash"),
                 "summary": _summary_for_run(data),
                 "warnings": payload.get("warnings") or data.get("warnings") or [],
@@ -92,8 +94,12 @@ class SQLiteRunStore:
             (self.max_items,),
         )
 
+    def clear(self) -> None:
+        self.store.execute("DELETE FROM run_record")
+
 
 def _row_to_run(row: dict[str, Any]) -> dict[str, Any]:
+    versions = json.loads(row["versions_json"])
     return {
         "run_id": row["run_id"],
         "run_type": row["run_type"],
@@ -101,11 +107,13 @@ def _row_to_run(row: dict[str, Any]) -> dict[str, Any]:
         "status": row["status"],
         "graph_version": row["graph_version"],
         "source_manifest_id": row["source_manifest_id"],
+        "data_mode": versions.get("data_mode") or "fixture",
+        "graph_mode": versions.get("graph_mode") or "fixture",
         "request_hash": row["request_hash"],
         "summary": json.loads(row["summary_json"]),
         "warnings": json.loads(row["warnings_json"]),
         "evidence_refs": json.loads(row["evidence_refs_json"]),
-        "versions": json.loads(row["versions_json"]),
+        "versions": versions,
     }
 
 

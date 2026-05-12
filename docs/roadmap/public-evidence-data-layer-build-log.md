@@ -712,3 +712,52 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Compliance-related table rows remain audit context only and do not provide workaround guidance.
 - Next gate decision:
   - Proceed to Gate 15 promoted run/report persistence integration.
+
+## Gate 15 - Promoted Run/Report Persistence Integration
+
+- Current HEAD before Gate 15: `37047eb`
+- Gate name: optional SQLite run/report persistence and report retrieval API
+- Files changed:
+  - `docs/data/persistent-store.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/api-client/src/dashboard.ts`
+  - `services/api/main.py`
+  - `services/api/routes/reports.py`
+  - `services/api/runtime/run_store.py`
+  - `services/api/services/report_service.py`
+  - `services/api/services/run_service.py`
+  - `services/api/storage/report_store.py`
+  - `services/api/storage/run_store_sqlite.py`
+  - `tests/api/test_run_store.py`
+  - `tests/storage/test_report_persistence.py`
+  - `tests/storage/test_run_persistence.py`
+- Commands run:
+  - `python -m pytest tests/storage/test_run_persistence.py tests/storage/test_report_persistence.py tests/api/test_run_store.py -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py tests/security/test_no_secret_like_strings.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/storage/test_run_persistence.py tests/storage/test_report_persistence.py tests/api/test_run_store.py -q` rerun after run-list assertion fix
+  - `python -m pytest tests/api tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py tests/security/test_no_secret_like_strings.py tests/storage/test_run_persistence.py tests/storage/test_report_persistence.py -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd run smoke:web`
+  - Local API evidence command for `POST /api/v1/reports/investigation` and `GET /api/v1/reports/{report_id}`
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First run-store API test assumed the newly created forward scenario would be the first run listed. SQLite mode can retain other sanitized summaries during a local test session, so the assertion now finds the created run by `run_id` instead of relying on list position.
+- Evidence:
+  - `SUPPLY_RISK_STORAGE_MODE=sqlite` now selects `SQLiteRunStore`; `SUPPLY_RISK_STORAGE_MODE=memory` remains supported by `RunStore`.
+  - Run summaries now include `data_mode` and `graph_mode`.
+  - SQLite run store persists sanitized summaries across store instances and retains bounded cleanup behavior.
+  - Reports are stored through `ReportStore` in SQLite mode and `MemoryReportStore` in memory mode.
+  - Added `GET /api/v1/reports/{report_id}` for sanitized report retrieval.
+  - Local endpoint evidence returned HTTP 200 for report generation and HTTP 200 for report retrieval with keys including `content_hash`, `data_mode`, and `graph_mode`.
+  - Browser smoke passed 37 checks.
+- Limitations:
+  - SQLite is still the only persistent backend; Postgres remains deferred.
+  - Retrieved reports are sanitized report records, not raw evidence payloads or full external source documents.
+  - Runtime SQLite files are generated local state and were intentionally not committed.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, secrets, API keys, authorization headers, cookies, internal paths, article bodies, or filing bodies are stored or exposed by run/report APIs.
+- Next gate decision:
+  - Proceed to Gate 16 System Health and data-mode transparency.

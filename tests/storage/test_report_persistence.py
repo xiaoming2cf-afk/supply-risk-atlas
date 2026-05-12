@@ -33,6 +33,8 @@ def test_report_store_persists_sanitized_report(tmp_path) -> None:
     assert loaded["versions"]["source_manifest_id"] == "manifest_test"
     assert loaded["raw_payload_excluded"] is True
     assert loaded["private_diagnostics_excluded"] is True
+    assert loaded["data_mode"] == "fixture"
+    assert loaded["graph_mode"] == "fixture"
     assert loaded["content_hash"]
     assert loaded["markdown"] == "# Sanitized report"
     assert "must-not-store" not in rendered

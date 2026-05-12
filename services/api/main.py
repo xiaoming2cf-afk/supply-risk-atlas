@@ -70,7 +70,7 @@ from services.api.services.graph_service import (
 )
 from services.api.services.analytics_service import route_analytics_export, route_analytics_table
 from services.api.services.optimization_service import route_intervention_optimization
-from services.api.services.report_service import route_investigation_report
+from services.api.services.report_service import route_investigation_report, route_report_detail
 from services.api.services.reverse_stress_service import route_reverse_scenario
 from services.api.services.risk_service import (
     route_semirisk_entity_risk,
@@ -2634,6 +2634,7 @@ def create_app() -> Any:
         Body=Body,
         Header=Header,
         route_investigation_report=route_investigation_report,
+        route_report_detail=route_report_detail,
     )
     run_routes.register(
         app,

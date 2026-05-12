@@ -7,7 +7,14 @@ SupplyRiskAtlas uses SQLite as its first durable research store. The store is fo
 - `SUPPLY_RISK_STORAGE_MODE=memory|sqlite`
 - `SUPPLY_RISK_SQLITE_PATH=data/runtime/supply_risk_atlas.db`
 
-Tests use temporary SQLite databases. Local development may use SQLite when the configured path is writable. Existing in-memory run history remains the fallback until a later integration gate switches runtime services by configuration.
+Tests use temporary SQLite databases. Local development may use SQLite when the configured path is writable. In-memory run history remains available through `SUPPLY_RISK_STORAGE_MODE=memory`.
+
+Run and report retention:
+
+- `SUPPLY_RISK_RUN_STORE_SIZE` bounds sanitized run summaries.
+- `SUPPLY_RISK_REPORT_STORE_SIZE` bounds sanitized report records.
+- `GET /api/v1/reports/{report_id}` retrieves a stored sanitized report.
+- `POST /api/v1/reports/investigation` remains the report generation endpoint.
 
 ## Stored Data
 

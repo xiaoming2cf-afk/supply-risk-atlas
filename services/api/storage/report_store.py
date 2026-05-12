@@ -20,6 +20,8 @@ class ReportStore:
         if not report_id:
             return None
         versions = clean.get("versions") if isinstance(clean.get("versions"), dict) else {}
+        clean.setdefault("data_mode", clean.get("data_mode") or versions.get("data_mode") or "fixture")
+        clean.setdefault("graph_mode", clean.get("graph_mode") or versions.get("graph_mode") or "fixture")
         clean_markdown = sanitized_run_copy(markdown) if markdown is not None else None
         content_hash = payload_hash({"report": clean, "markdown": clean_markdown})
         self.store.execute(
@@ -67,6 +69,9 @@ class ReportStore:
             """,
             (self.max_items,),
         )
+
+    def clear(self) -> None:
+        self.store.execute("DELETE FROM report_record")
 
 
 def _json(value: Any) -> str:

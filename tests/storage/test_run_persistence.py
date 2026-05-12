@@ -39,6 +39,8 @@ def test_sqlite_run_store_persists_sanitized_summaries(tmp_path) -> None:
 
     assert listed[0]["run_id"] == "run_1"
     assert listed[0]["graph_version"] == "graph_test"
+    assert listed[0]["data_mode"] == "fixture"
+    assert listed[0]["graph_mode"] == "fixture"
     assert listed[0]["request_hash"] == "request_hash_test"
     assert detail is not None
     assert detail["summary"]["expected_loss"] == 12.5
