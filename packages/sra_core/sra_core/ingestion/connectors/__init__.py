@@ -9,6 +9,17 @@ from pydantic import Field
 from sra_core.contracts.data import PayloadFormat, RawRecord, SourceManifest
 from sra_core.contracts.domain import StrictModel
 from sra_core.ingestion.registry import load_source_registry
+from sra_core.ingestion.connectors.base import ConnectorConfig, ConnectorMode, PublicEvidenceConnector
+from sra_core.ingestion.connectors.cache import ConnectorCache, ConnectorCachePolicy
+from sra_core.ingestion.connectors.errors import (
+    ConnectorError,
+    ConnectorPayloadError,
+    ConnectorRateLimitError,
+    ConnectorUnavailableError,
+    LiveFetchDisabledError,
+)
+from sra_core.ingestion.connectors.rate_limit import InMemoryRateLimiter, RateLimitPolicy
+from sra_core.ingestion.connectors.result import ConnectorFetchResult, ConnectorRecord
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -118,3 +129,31 @@ def connector_for_source(source_id: str) -> PublicSourceConnector:
         return connectors[source_id]()
     except KeyError as exc:
         raise ValueError(f"unsupported public source connector: {source_id}") from exc
+
+
+__all__ = [
+    "ConnectorBatch",
+    "ConnectorCache",
+    "ConnectorCachePolicy",
+    "ConnectorConfig",
+    "ConnectorError",
+    "ConnectorFetchResult",
+    "ConnectorMode",
+    "ConnectorPayloadError",
+    "ConnectorRateLimitError",
+    "ConnectorRecord",
+    "ConnectorUnavailableError",
+    "GdeltConnector",
+    "GleifConnector",
+    "InMemoryRateLimiter",
+    "LiveFetchDisabledError",
+    "NgaWorldPortIndexConnector",
+    "OfacConnector",
+    "PublicEvidenceConnector",
+    "PublicSourceConnector",
+    "RateLimitPolicy",
+    "SecEdgarConnector",
+    "UsgsEarthquakesConnector",
+    "WorldBankConnector",
+    "connector_for_source",
+]

@@ -173,3 +173,48 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Raw payload storage remains disabled by default; API-visible summaries and lineage remain bounded and source-bound.
 - Next gate decision:
   - Proceed to Gate 3 public connector framework after committing Gate 2.
+
+## Gate 3 - Public Connector Framework
+
+- Current HEAD before Gate 3: `bd418a9`
+- Gate name: source-policy-aware connector framework
+- Files changed:
+  - `docs/data/public-connector-framework.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/base.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/cache.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/errors.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/http_client.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/rate_limit.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/result.py`
+  - `tests/ingestion/fixtures/connector_framework_sample.json`
+  - `tests/ingestion/test_connector_base.py`
+  - `tests/ingestion/test_connector_cache.py`
+  - `tests/ingestion/test_connector_rate_limit.py`
+  - `tests/ingestion/test_no_startup_network.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_connector_base.py tests/ingestion/test_connector_cache.py tests/ingestion/test_connector_rate_limit.py tests/ingestion/test_no_startup_network.py -q`
+  - `python -m pytest tests/ingestion tests/sources -q`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py -q`
+- Pass/fail status: pass
+- Evidence:
+  - Connector framework supports `fixture`, `dry_run`, `live_disabled`, and reserved `live` modes.
+  - Fixture replay emits only sanitized metadata records with payload hashes, provenance URLs, terms refs, summaries, timestamps, and `payload_stored=false`.
+  - Dry-run mode returns a no-network result with sanitized parameters.
+  - Live-disabled mode returns controlled unavailable status and does not call live fetch.
+  - Rate limiter enforces bounded windowed request counts.
+  - Connector cache stores metadata only by default; sanitized record metadata is optional.
+  - Import/instantiation tests monkeypatch `urllib.request.urlopen` and prove no startup network calls occur.
+  - Existing ingestion fixture/source tests still pass.
+- Limitations:
+  - No source-specific SEC, GDELT, trade, hazard, logistics, sanctions, or export-control connector implementation was added in this gate.
+  - Live mode remains architecture-only and returns controlled unavailable unless a future explicit connector implements it.
+  - Runtime API services are not yet triggering connector fetches.
+- Source/legal notes:
+  - No live fetch was performed.
+  - No raw source payload bodies or bulk downloads were committed.
+  - External text summaries are sanitized for HTML/script and common prompt-injection phrases.
+- Next gate decision:
+  - Proceed to Gate 4 data contracts for expanded sources.
