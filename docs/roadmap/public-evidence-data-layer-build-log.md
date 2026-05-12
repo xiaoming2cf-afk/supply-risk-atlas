@@ -41,3 +41,42 @@
   - Deployed acceptance depends on current Render state; future commits still require redeploy verification.
   - Static HTML is not sufficient evidence for Graph Explorer v2 because the client renders after hydration.
 - Next gate decision: proceed to Gate 1 persistent SQLite storage foundation.
+
+## Gate 1 - Persistent Storage Foundation
+
+- Current HEAD before commit: `f5915e2`
+- Gate name: SQLite persistent research store foundation
+- Changed files:
+  - `docs/data/persistent-store.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `services/api/storage/__init__.py`
+  - `services/api/storage/schema.sql`
+  - `services/api/storage/sqlite_store.py`
+  - `services/api/storage/migrations.py`
+  - `services/api/storage/models.py`
+  - `services/api/storage/manifest_store.py`
+  - `services/api/storage/run_store_sqlite.py`
+  - `services/api/storage/report_store.py`
+  - `tests/storage/test_sqlite_store.py`
+  - `tests/storage/test_manifest_store.py`
+  - `tests/storage/test_run_persistence.py`
+  - `tests/storage/test_report_persistence.py`
+- Commands run:
+  - `python -m pytest tests/storage -q` (first run exposed test/store sanitizer fixes)
+  - `python -m pytest tests/storage tests/api/test_run_store.py tests/security/test_no_raw_payload_exposure.py -q`
+- Pass/fail: pass
+- Evidence:
+  - SQLite schema initializes required tables: source manifests, raw-record index, silver entities/events, graph snapshots/nodes/edges, run records, report records, and audit events.
+  - Storage tests use temporary SQLite databases.
+  - Run summaries persist across store instances and enforce retention.
+  - Manifest/raw-record-index tests store payload hash, summary, provenance URL, and terms ref without storing raw payload content.
+  - Report store persists sanitized JSON/Markdown and returns explicit exclusion flags.
+  - Existing in-memory run-store endpoint tests still pass.
+- Source/legal notes:
+  - Store records license/terms refs and provenance URLs.
+  - Raw payload body storage is not implemented by default.
+  - SQLite persistence is for governed research metadata and sanitized artifacts only.
+- Limitations:
+  - Runtime API services still use the existing in-memory run store until Gate 8 integration.
+  - SQLite is the only persistent backend in this phase; Postgres remains deferred.
+- Next gate decision: proceed to Gate 2 source registry runtime.
