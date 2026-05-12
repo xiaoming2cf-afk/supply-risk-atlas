@@ -74,3 +74,46 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - No public-source payloads were added.
 - Next gate decision:
   - Proceed to Gate 1 after preflight baseline.
+
+## Gate 1 - SQLite Persistent Storage Foundation
+
+- Current HEAD before Gate 1: `8426294`
+- Gate name: SQLite persistent research store foundation
+- Files changed:
+  - `docs/data/persistent-store.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `services/api/storage/__init__.py`
+  - `services/api/storage/sqlite_store.py`
+  - `services/api/storage/schema.sql`
+  - `services/api/storage/migrations.py`
+  - `services/api/storage/models.py`
+  - `services/api/storage/manifest_store.py`
+  - `services/api/storage/run_store_sqlite.py`
+  - `services/api/storage/report_store.py`
+  - `tests/storage/test_sqlite_store.py`
+  - `tests/storage/test_run_persistence.py`
+  - `tests/storage/test_manifest_store.py`
+  - `tests/storage/test_report_persistence.py`
+- Commands run:
+  - `python -m pytest tests/storage -q`
+  - `python -m pytest tests/storage tests/api/test_run_store.py tests/security/test_no_raw_payload_exposure.py -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail status: pass
+- Evidence:
+  - SQLite schema initializes all required Gate 1 tables: source manifests/status, raw-record index, silver entities/events, market/trade/policy/logistics/hazard records, graph snapshots/nodes/edges/view cache, run/report records, audit events, and validation artifacts.
+  - Storage tests use temporary SQLite databases.
+  - Raw-record index stores payload hash, summary, provenance URL, license/terms ref, retrieval/as-of timestamps, and `raw_payload_stored=false` by default.
+  - SQLite run store persists sanitized summaries and retention cleanup works.
+  - Existing in-memory `RunStore` remains available and tested as fallback.
+  - Report store persists sanitized JSON/Markdown and content hash while excluding raw payload/private diagnostics.
+  - Raw payload exposure security test still passes.
+- Limitations:
+  - Runtime API services are not yet switched to SQLite; that integration is deferred to the persistence integration gate.
+  - SQLite is local lightweight persistence only; Postgres remains deferred.
+  - No public connectors or promoted graph pipeline were added in this gate.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw downloaded bulk data was committed.
+  - Store is metadata/sanitized-artifact only by default.
+- Next gate decision:
+  - Proceed to Gate 2 source registry runtime and expanded source catalog.
