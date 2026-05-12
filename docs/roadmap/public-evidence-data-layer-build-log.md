@@ -80,3 +80,39 @@
   - Runtime API services still use the existing in-memory run store until Gate 8 integration.
   - SQLite is the only persistent backend in this phase; Postgres remains deferred.
 - Next gate decision: proceed to Gate 2 source registry runtime.
+
+## Gate 2 - Source Registry Runtime
+
+- Current HEAD before commit: `bd14559`
+- Gate name: executable semiconductor source registry runtime
+- Changed files:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/shared-types/src/health.ts`
+  - `packages/sra_core/sra_core/sources/__init__.py`
+  - `packages/sra_core/sra_core/sources/registry.py`
+  - `packages/sra_core/sra_core/sources/source_status.py`
+  - `packages/sra_core/sra_core/sources/license_policy.py`
+  - `services/api/main.py`
+  - `services/api/services/system_health_service.py`
+  - `tests/sources/test_source_registry_runtime.py`
+  - `tests/sources/test_source_license_policy.py`
+  - `tests/api/test_system_health_semiconductor_graph.py`
+- Commands run:
+  - `python -m pytest tests/sources tests/api/test_system_health_semiconductor_graph.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+- Pass/fail: pass
+- Evidence:
+  - Runtime registry loads `configs/sources/semiconductor.yaml` and validates required governance fields.
+  - Readiness summary reports six governed sources, four fixture connectors, and two disabled-review-required sources.
+  - License policy reports terms URLs, allowed use, and redistribution limits.
+  - System Health API payload includes `sourceRegistryReadiness`.
+  - System Health UI displays source registry and connector readiness without adding a new page.
+- Source/legal notes:
+  - Gate 2 performs no network calls and no live ingestion.
+  - Disabled sources remain disabled pending review.
+  - Registry warnings explicitly include `source_registry:no_live_fetch_in_runtime`.
+- Limitations:
+  - Connector runtime only reports readiness; connector fetch framework begins in Gate 3.
+  - Registry statuses are based on configuration and known fixture connector availability, not live endpoint probes.
+- Next gate decision: proceed to Gate 3 public connector framework.

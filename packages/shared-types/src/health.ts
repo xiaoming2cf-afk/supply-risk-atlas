@@ -135,6 +135,32 @@ export interface SemiconductorGraphHealth {
   unresolvedEntityCount: number;
   staleSourceCount: number;
   warnings: string[];
+  sourceRegistryReadiness?: SourceRegistryReadiness;
+}
+
+export interface SourceRegistryReadiness {
+  registry_version: string;
+  generated_at: string;
+  status: "ready" | "degraded" | "unavailable" | string;
+  source_count: number;
+  enabled_count: number;
+  disabled_count: number;
+  unavailable_count: number;
+  connector_status_counts: Record<string, number>;
+  license_status_counts: Record<string, number>;
+  warnings: string[];
+  sources: Array<{
+    source_id: string;
+    publisher: string;
+    runtime_status: string;
+    connector_status: string;
+    license_terms_status: string;
+    terms_url: string;
+    source_url: string;
+    freshness_sla_hours: number;
+    review_status: string;
+    owner: string;
+  }>;
 }
 
 export interface SystemHealthData {
@@ -146,4 +172,5 @@ export interface SystemHealthData {
   evidenceLineage: EvidenceLineageSummary;
   dataCatalog?: DataCatalogSummary;
   semiconductorGraph?: SemiconductorGraphHealth;
+  sourceRegistryReadiness?: SourceRegistryReadiness;
 }

@@ -4153,6 +4153,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const graphReadiness = health.semiconductorGraph?.fixtureGraphReady ? "ready" : "degraded";
   const modelReadiness = health.semiconductorGraph?.fixtureGraphReady ? "fixture_ready" : "unavailable";
   const validationReadiness = "deterministic_fixture_suite";
+  const registryReadiness = health.sourceRegistryReadiness ?? health.semiconductorGraph?.sourceRegistryReadiness;
 
   return (
     <div className="page-grid">
@@ -4204,6 +4205,8 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <Field label="graph_readiness" value={graphReadiness} />
           <Field label="model_readiness" value={modelReadiness} />
           <Field label="validation_readiness" value={validationReadiness} />
+          <Field label="source_registry_readiness" value={registryReadiness?.status ?? "unavailable"} />
+          <Field label="connector_readiness" value={`${registryReadiness?.enabled_count ?? 0} enabled / ${registryReadiness?.unavailable_count ?? 0} unavailable`} />
           <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />
           <Field label="production_status" value="not_production_ready" />
           <Field label="graph_version" value={health.semiconductorGraph?.graphVersion ?? "unavailable"} />
@@ -4237,6 +4240,26 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         </Panel>
 
         <div className="page-grid">
+          {registryReadiness ? (
+            <Panel title="Source registry runtime" subtitle="Configured source readiness only; no live ingestion runs during app startup.">
+              <div className="field-grid">
+                <Field label="registry_version" value={registryReadiness.registry_version} />
+                <Field label="sources" value={registryReadiness.source_count} />
+                <Field label="fixture_connectors" value={registryReadiness.connector_status_counts.fixture_connector ?? 0} />
+                <Field label="live_unavailable" value={registryReadiness.unavailable_count} />
+                <Field label="disabled_review" value={registryReadiness.disabled_count} />
+                <Field label="terms_registered" value={registryReadiness.license_status_counts.terms_registered ?? 0} />
+              </div>
+              <ul className="evidence-list compact">
+                {registryReadiness.sources.slice(0, 6).map((source) => (
+                  <li key={source.source_id}>
+                    {source.source_id}: {source.connector_status} / {source.license_terms_status}
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ) : null}
+
           <Panel title="Build pipeline" subtitle="Current graph and scoring run progress.">
             <ul className="timeline-list">
               {health.stages.map((stage) => {

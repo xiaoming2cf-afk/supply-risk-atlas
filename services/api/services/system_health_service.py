@@ -4,6 +4,7 @@ from typing import Any
 
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.contracts.semiconductor import DEFAULT_SEMIRISK_AS_OF_TIME
+from sra_core.sources.registry import source_registry_readiness
 
 from services.api.services.common import (
     semiconductor_default_time,
@@ -13,6 +14,7 @@ from services.api.services.common import (
 
 def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
     graph_health = semiconductor_graph_health_payload()
+    registry_readiness = source_registry_readiness()
     now = semiconductor_default_time().isoformat()
     return {
         "services": [
@@ -68,6 +70,7 @@ def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
             "goldEdgeEventCount": 0,
             "dataNodeCount": 0,
             "sources": [],
+            "sourceRegistryReadiness": registry_readiness,
         },
         "entityResolution": {
             "totalEntities": 0,
@@ -85,10 +88,12 @@ def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
             "records": [],
         },
         "semiconductorGraph": graph_health,
+        "sourceRegistryReadiness": registry_readiness,
     }
 
 
 def semiconductor_graph_health_payload() -> dict[str, Any]:
+    registry_readiness = source_registry_readiness()
     try:
         snapshot = build_semiconductor_fixture_snapshot()
     except Exception as exc:
@@ -112,6 +117,7 @@ def semiconductor_graph_health_payload() -> dict[str, Any]:
             "unresolvedEntityCount": 0,
             "staleSourceCount": 0,
             "warnings": [f"fixture_graph_unavailable:{type(exc).__name__}"],
+            "sourceRegistryReadiness": registry_readiness,
         }
     warnings = semiconductor_fixture_warnings(snapshot)
     return {
@@ -136,5 +142,5 @@ def semiconductor_graph_health_payload() -> dict[str, Any]:
         "unresolvedEntityCount": snapshot.unresolved_entity_count,
         "staleSourceCount": snapshot.stale_source_count,
         "warnings": warnings,
+        "sourceRegistryReadiness": registry_readiness,
     }
-

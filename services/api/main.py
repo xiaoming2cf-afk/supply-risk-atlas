@@ -72,6 +72,7 @@ from services.api.services.system_health_service import (
     semiconductor_graph_health_payload as _semiconductor_graph_health_payload,
     semiconductor_only_system_health_payload as _semiconductor_only_system_health_payload,
 )
+from sra_core.sources.registry import source_registry_readiness
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
 from sra_core.contracts.domain import (
@@ -791,6 +792,7 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
             "evidenceLineage": _evidence_lineage_payload(result),
             "dataCatalog": _data_catalog_payload(result),
             "semiconductorGraph": _semiconductor_graph_health_payload(),
+            "sourceRegistryReadiness": source_registry_readiness(),
         },
     }
 

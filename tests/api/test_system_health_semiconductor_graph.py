@@ -84,6 +84,11 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert "registryReady=true" in warning_text
     assert "ontologyReady=true" in warning_text
     assert "fixtureGraph: true" in warning_text
+    readiness = payload["data"]["sourceRegistryReadiness"]
+    assert readiness["source_count"] == 6
+    assert readiness["connector_status_counts"]["fixture_connector"] == 4
+    assert readiness["connector_status_counts"]["disabled_review_required"] == 2
+    assert "source_registry:no_live_fetch_in_runtime" in readiness["warnings"]
     _assert_no_raw_payload(payload)
 
 
@@ -141,6 +146,7 @@ def test_dev_server_semirisk_graph_and_health_routes(dev_server_base_url: str) -
     assert neighborhood_status == 200
     assert health["data"]["semiconductorGraph"]["graphVersion"].startswith("semirisk_kg_v0_1_")
     assert snapshot["data"]["graph_version"] == health["data"]["semiconductorGraph"]["graphVersion"]
+    assert health["data"]["sourceRegistryReadiness"]["source_count"] == 6
     assert neighborhood["data"]["node_id"] == "company:tsmc"
     _assert_no_raw_payload(health)
     _assert_no_raw_payload(snapshot)
