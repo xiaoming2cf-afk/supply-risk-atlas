@@ -168,6 +168,44 @@ export interface SemiconductorGraphHealth {
   missingProvenanceCount: number;
   unresolvedEntityCount: number;
   staleSourceCount: number;
+  dataMode?: "fixture" | "promoted" | "live_disabled" | "live_enabled" | string;
+  graphMode?: "fixture" | "promoted" | string;
+  productionStatus?: "not_production_ready" | "research_fixture" | "public_evidence_promoted" | string;
+  notProductionReady?: boolean;
+  calibrationStatus?: string;
+  warnings: string[];
+}
+
+export interface PlatformStatus {
+  apiReadiness: string;
+  graphReadiness: string;
+  sourceRegistryReadiness: string;
+  connectorReadiness: string;
+  storageReadiness: {
+    status: string;
+    storageMode: "memory" | "sqlite" | string;
+    pathRedacted: boolean;
+    path: "redacted" | string;
+  };
+  modelReadiness: string;
+  deploymentVersionReadiness: {
+    status: string;
+    apiVersion: string;
+    webVersion: string;
+    warnings: string[];
+  };
+  dataMode: "fixture" | "promoted" | "live_disabled" | "live_enabled" | string;
+  graphMode: "fixture" | "promoted" | string;
+  productionStatus: "not_production_ready" | "research_fixture" | "public_evidence_promoted" | string;
+  notProductionReady: boolean;
+  calibrationStatus: string[];
+  sourceManifestId: string;
+  graphVersion: string;
+  connectorStatusCounts: Record<string, number>;
+  sourceStatusCounts: Record<string, number>;
+  sourceCount: number;
+  enabledSourceCount: number;
+  liveDefaultCount: number;
   warnings: string[];
 }
 
@@ -181,4 +219,5 @@ export interface SystemHealthData {
   evidenceLineage: EvidenceLineageSummary;
   dataCatalog?: DataCatalogSummary;
   semiconductorGraph?: SemiconductorGraphHealth;
+  platformStatus?: PlatformStatus;
 }

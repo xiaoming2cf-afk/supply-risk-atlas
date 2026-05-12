@@ -4606,10 +4606,45 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const graphReadiness = health.semiconductorGraph?.fixtureGraphReady ? "ready" : "degraded";
   const modelReadiness = health.semiconductorGraph?.fixtureGraphReady ? "fixture_ready" : "unavailable";
   const validationReadiness = "deterministic_fixture_suite";
+  const platformStatus = health.platformStatus ?? {
+    apiReadiness: serviceSummaryStatus,
+    graphReadiness,
+    sourceRegistryReadiness: health.sourceRegistryReadiness?.status ?? "unavailable",
+    connectorReadiness: health.sourceRegistryReadiness ? "available" : "unavailable",
+    storageReadiness: {
+      status: "unavailable",
+      storageMode: "memory",
+      pathRedacted: true,
+      path: "redacted",
+    },
+    modelReadiness,
+    deploymentVersionReadiness: {
+      status: "not_verified",
+      apiVersion: "not_verified",
+      webVersion: "not_verified",
+      warnings: ["deployment_version_not_verified"],
+    },
+    dataMode: health.semiconductorGraph?.dataMode ?? "fixture",
+    graphMode: health.semiconductorGraph?.graphMode ?? "fixture",
+    productionStatus: health.semiconductorGraph?.productionStatus ?? "research_fixture",
+    notProductionReady: true,
+    calibrationStatus: [
+      health.semiconductorGraph?.calibrationStatus ?? "fixture_proxy_not_calibrated",
+      "not_financial_loss",
+    ],
+    sourceManifestId: health.semiconductorGraph?.sourceManifestId ?? "unavailable",
+    graphVersion: health.semiconductorGraph?.graphVersion ?? "unavailable",
+    connectorStatusCounts: health.sourceRegistryReadiness?.connector_status_counts ?? {},
+    sourceStatusCounts: health.sourceRegistryReadiness?.source_status_counts ?? {},
+    sourceCount: health.sourceRegistryReadiness?.source_count ?? health.sourceRegistry.sourceCount,
+    enabledSourceCount: health.sourceRegistryReadiness?.enabled_count ?? 0,
+    liveDefaultCount: health.sourceRegistryReadiness?.live_default_count ?? 0,
+    warnings: health.semiconductorGraph?.warnings ?? ["not_production_ready"],
+  };
   const chartMetadata = {
-    graphVersion: health.semiconductorGraph?.graphVersion,
-    sourceManifestId: health.semiconductorGraph?.sourceManifestId,
-    warnings: health.semiconductorGraph?.warnings ?? [],
+    graphVersion: platformStatus.graphVersion,
+    sourceManifestId: platformStatus.sourceManifestId,
+    warnings: platformStatus.warnings ?? health.semiconductorGraph?.warnings ?? [],
   };
   const sourceFreshnessData = health.sourceRegistry.sources.map((source) => ({
     label: source.id,
@@ -4628,13 +4663,30 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
     records: source.recordCount,
     license: source.license,
   }));
-  const connectorStatusRows = health.sourceRegistry.sources.map((source) => ({
-    id: source.id,
-    connector_status: source.status,
-    update_frequency: source.updateFrequency,
-    record_count: source.recordCount,
-    license: source.license,
-  }));
+  const connectorStatusRows =
+    health.sourceRegistryReadiness?.sources.map((source) => ({
+      id: source.source_id,
+      connector_status: source.connector_status,
+      source_status: source.status,
+      source_tier: source.source_tier,
+      license: source.license_or_terms_summary ?? source.license_policy.manual_review_note,
+    })) ??
+    health.sourceRegistry.sources.map((source) => ({
+      id: source.id,
+      connector_status: source.status,
+      source_status: source.status,
+      source_tier: source.type,
+      license: source.license,
+    }));
+  const connectorStatusSummary = Object.entries(platformStatus.connectorStatusCounts)
+    .map(([status, count]) => `${status}:${count}`)
+    .join("; ") || "unavailable";
+  const sourceStatusSummary = Object.entries(platformStatus.sourceStatusCounts)
+    .map(([status, count]) => `${status}:${count}`)
+    .join("; ") || "unavailable";
+  const calibrationStatus = Array.isArray(platformStatus.calibrationStatus)
+    ? platformStatus.calibrationStatus.join(";")
+    : String(platformStatus.calibrationStatus ?? "fixture_proxy_not_calibrated");
 
   return (
     <div className="page-grid">
@@ -4683,24 +4735,38 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
       <Panel title="Readiness boundary" subtitle="Fixture readiness is shown separately from production readiness.">
         <div className="field-grid">
           <Field label="service_readiness" value={serviceSummaryStatus} />
-          <Field label="graph_readiness" value={graphReadiness} />
-          <Field label="model_readiness" value={modelReadiness} />
+          <Field label="api_readiness" value={platformStatus.apiReadiness} />
+          <Field label="graph_readiness" value={platformStatus.graphReadiness} />
+          <Field label="source_registry_readiness" value={platformStatus.sourceRegistryReadiness} />
+          <Field label="connector_readiness" value={platformStatus.connectorReadiness} />
+          <Field label="storage_readiness" value={platformStatus.storageReadiness.status} />
+          <Field label="storage_mode" value={platformStatus.storageReadiness.storageMode} />
+          <Field label="storage_path" value={platformStatus.storageReadiness.pathRedacted ? "redacted" : platformStatus.storageReadiness.path} />
+          <Field label="model_readiness" value={platformStatus.modelReadiness} />
+          <Field label="deployment_version_readiness" value={platformStatus.deploymentVersionReadiness.status} />
           <Field label="validation_readiness" value={validationReadiness} />
           <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />
-          <Field label="production_status" value="not_production_ready" />
-          <Field label="graph_version" value={health.semiconductorGraph?.graphVersion ?? "unavailable"} />
-          <Field label="source_manifest_id" value={health.semiconductorGraph?.sourceManifestId ?? "unavailable"} />
+          <Field label="data_mode" value={platformStatus.dataMode} />
+          <Field label="graph_mode" value={platformStatus.graphMode} />
+          <Field label="production_status" value={platformStatus.productionStatus} />
+          <Field label="not_production_ready" value={platformStatus.notProductionReady ? "true" : "false"} />
+          <Field label="calibration_status" value={calibrationStatus} />
+          <Field label="connector_statuses" value={connectorStatusSummary} />
+          <Field label="source_statuses" value={sourceStatusSummary} />
+          <Field label="graph_version" value={platformStatus.graphVersion} />
+          <Field label="source_manifest_id" value={platformStatus.sourceManifestId} />
         </div>
         <p className="public-data-note">
-          service, graph, model, and validation readiness are fixture/proxy readiness signals only; production status remains not_production_ready.
+          service, graph, source, connector, storage, model, deployment, and validation readiness are fixture/proxy/promoted-public-evidence readiness signals only; production status remains not_production_ready.
         </p>
       </Panel>
 
       <Panel title="Evidence-bound chart and table components" subtitle="Reusable chart/table components render controlled states with source metadata.">
         <div className="lineage-chips" style={{ marginBottom: 12 }}>
-          <DataModeBadge value="fixture" />
-          <GraphVersionBadge value={health.semiconductorGraph?.graphVersion ?? "unavailable"} />
-          <SourceManifestBadge value={health.semiconductorGraph?.sourceManifestId ?? "unavailable"} />
+          <DataModeBadge value={platformStatus.dataMode} />
+          <DataModeBadge label="graph_mode" value={platformStatus.graphMode} />
+          <GraphVersionBadge value={platformStatus.graphVersion} />
+          <SourceManifestBadge value={platformStatus.sourceManifestId} />
         </div>
         <NotProductionReadyBanner />
         <div className="driver-grid" style={{ marginTop: 16 }}>
@@ -4720,7 +4786,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         />
         <ConnectorStatusTable
           rows={connectorStatusRows}
-          columns={["id", "connector_status", "update_frequency", "record_count", "license"]}
+          columns={["id", "connector_status", "source_status", "source_tier", "license"]}
           limit={6}
           metadata={chartMetadata}
         />
@@ -4813,6 +4879,11 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                   <Field label="fixtureManifestReady" value={health.semiconductorGraph.fixtureManifestReady ? "true" : "false"} />
                   <Field label="fixtureGraph" value={health.semiconductorGraph.fixtureGraph ? "true" : "false"} />
                   <Field label="fixtureGraphReady" value={health.semiconductorGraph.fixtureGraphReady ? "true" : "false"} />
+                  <Field label="data_mode" value={health.semiconductorGraph.dataMode ?? platformStatus.dataMode} />
+                  <Field label="graph_mode" value={health.semiconductorGraph.graphMode ?? platformStatus.graphMode} />
+                  <Field label="production_status" value={health.semiconductorGraph.productionStatus ?? platformStatus.productionStatus} />
+                  <Field label="not_production_ready" value={(health.semiconductorGraph.notProductionReady ?? platformStatus.notProductionReady) ? "true" : "false"} />
+                  <Field label="calibration_status" value={health.semiconductorGraph.calibrationStatus ?? calibrationStatus} />
                   <Field label="graphVersion" value={health.semiconductorGraph.graphVersion} />
                   <Field label="sourceManifestId" value={health.semiconductorGraph.sourceManifestId} />
                   <Field label="nodeCount" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />

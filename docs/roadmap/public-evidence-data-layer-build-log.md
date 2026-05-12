@@ -761,3 +761,50 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - No raw payloads, private diagnostics, secrets, API keys, authorization headers, cookies, internal paths, article bodies, or filing bodies are stored or exposed by run/report APIs.
 - Next gate decision:
   - Proceed to Gate 16 System Health and data-mode transparency.
+
+## Gate 16 - System Health And Data-Mode Transparency
+
+- Current HEAD before Gate 16: `372125a`
+- Gate name: storage/source/connector/deployment readiness and data-mode transparency
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `docs/deployment/render.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/shared-types/src/health.ts`
+  - `scripts/browser-smoke.mjs`
+  - `services/api/main.py`
+  - `services/api/services/system_health_service.py`
+  - `tests/api/test_system_health_semiconductor_graph.py`
+  - `tests/api/test_system_health_storage_sources.py`
+- Commands run:
+  - `python -m pytest tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py -q` rerun after cache/test fixes
+  - `python -m pytest tests/api -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - `npm.cmd run smoke:web` rerun after smoke case-insensitive term matching fix
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First new storage/source health test rejected the field name `requires_api_key` from the public source catalog. That is policy metadata, not a leaked key or secret value, so the over-broad assertion was removed while path/secret checks remain.
+  - Promoted graph-mode transparency initially read a cached System Health payload. `route_dashboard_page` now keeps the dashboard cache but refreshes `semiconductorGraph`, `sourceRegistryReadiness`, and `platformStatus` per System Health request.
+  - First browser-smoke run failed because the new smoke terms were checked case-sensitively while the existing `Field` component renders labels uppercase. Smoke now checks those transparency terms case-insensitively.
+- Evidence:
+  - System Health API now includes `platformStatus` with API, graph, source registry, connector, storage, model, and deployment-version readiness.
+  - `platformStatus.storageReadiness.path` is always `redacted`, with `pathRedacted=true`.
+  - System Health includes `dataMode`, `graphMode`, `productionStatus`, `notProductionReady`, `calibrationStatus`, `graphVersion`, `sourceManifestId`, connector status counts, and source status counts.
+  - The frontend System Health Center renders `data_mode`, `graph_mode`, `storage_readiness`, `connector_readiness`, `deployment_version_readiness`, `calibration_status`, and `not_production_ready`.
+  - Browser smoke passed 37 checks and now checks data-mode and not-production-ready transparency terms.
+- Limitations:
+  - Deployment version readiness remains `not_verified` until Gate 17 adds the dedicated version endpoint and deployed version checker.
+  - System Health continues to label the platform as fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+  - SQLite path visibility is intentionally redacted; local runtime database files remain generated state and are not committed.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, or PII are exposed by the new health fields.
+  - Source catalog `requires_api_key` remains visible only as a boolean policy field and does not contain credential material.
+- Next gate decision:
+  - Proceed to Gate 17 deployment/version consistency.

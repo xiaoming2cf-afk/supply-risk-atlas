@@ -73,6 +73,12 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert graph["registryReady"] is True
     assert graph["ontologyReady"] is True
     assert graph["fixtureGraphReady"] is True
+    assert graph["dataMode"] in {"fixture", "promoted"}
+    assert graph["graphMode"] in {"fixture", "promoted"}
+    assert graph["productionStatus"] in {"research_fixture", "public_evidence_promoted"}
+    assert graph["notProductionReady"] is True
+    assert "fixture_proxy_not_calibrated" in graph["calibrationStatus"]
+    assert "not_financial_loss" in graph["calibrationStatus"]
     assert "fixture_graph:not_production_ready" in graph["warnings"]
     warning_text = " ".join(graph["warnings"])
     assert "graphVersion" in warning_text
@@ -91,6 +97,22 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert readiness["live_default_count"] == 0
     assert readiness["connector_status_counts"]["fixture_connector"] == 4
     assert "live_fetch_disabled_by_default" in readiness["warnings"]
+    platform = payload["data"]["platformStatus"]
+    assert platform["apiReadiness"] == "ready"
+    assert platform["graphReadiness"] in {"ready", "degraded"}
+    assert platform["sourceRegistryReadiness"] == readiness["status"]
+    assert platform["connectorReadiness"] == "ready"
+    assert platform["storageReadiness"]["storageMode"] in {"memory", "sqlite"}
+    assert platform["storageReadiness"]["pathRedacted"] is True
+    assert platform["storageReadiness"]["path"] == "redacted"
+    assert platform["deploymentVersionReadiness"]["status"] == "not_verified"
+    assert platform["dataMode"] in {"fixture", "promoted"}
+    assert platform["graphMode"] in {"fixture", "promoted"}
+    assert platform["notProductionReady"] is True
+    assert "fixture_proxy_not_calibrated" in platform["calibrationStatus"]
+    assert "not_financial_loss" in platform["calibrationStatus"]
+    assert platform["sourceManifestId"] == graph["sourceManifestId"]
+    assert platform["graphVersion"] == graph["graphVersion"]
     _assert_no_raw_payload(payload)
 
 
@@ -147,6 +169,7 @@ def test_dev_server_semirisk_graph_and_health_routes(dev_server_base_url: str) -
     assert snapshot_status == 200
     assert neighborhood_status == 200
     assert health["data"]["semiconductorGraph"]["graphVersion"].startswith("semirisk_kg_v0_1_")
+    assert health["data"]["platformStatus"]["storageReadiness"]["path"] == "redacted"
     assert snapshot["data"]["graph_version"] == health["data"]["semiconductorGraph"]["graphVersion"]
     assert neighborhood["data"]["node_id"] == "company:tsmc"
     _assert_no_raw_payload(health)

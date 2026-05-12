@@ -354,6 +354,13 @@ async function main() {
       "ontologyReady",
       "fixtureGraph",
       "fixture_graph:not_production_ready",
+      "data_mode",
+      "graph_mode",
+      "storage_readiness",
+      "connector_readiness",
+      "deployment_version_readiness",
+      "calibration_status",
+      "not_production_ready",
     ];
     const healthState = await waitFor(
       client,
@@ -361,7 +368,7 @@ async function main() {
       (state) =>
         state.title === "System Health Center" &&
         (semiriskSystemHealthReady
-          ? healthSemiriskTerms.every((term) => state.text.includes(term))
+          ? healthSemiriskTerms.every((term) => state.text.toLowerCase().includes(term.toLowerCase()))
           : (
               state.text.includes("Source registry") ||
               state.text.includes("Data temporarily unavailable") ||
@@ -381,8 +388,9 @@ async function main() {
       healthState.text.includes("Data temporarily unavailable") ||
       healthState.text.includes("Public data unavailable") ||
       healthState.text.includes("Partial public data") ||
-      /unavailable|degraded/i.test(healthState.text);
-    const healthHasSemiriskEvidence = healthSemiriskTerms.every((term) => healthState.text.includes(term));
+        /unavailable|degraded/i.test(healthState.text);
+    const healthTextLower = healthState.text.toLowerCase();
+    const healthHasSemiriskEvidence = healthSemiriskTerms.every((term) => healthTextLower.includes(term.toLowerCase()));
     checks.push({
       page: "System Health Center public route",
       title: healthState.title,
@@ -401,12 +409,13 @@ async function main() {
       "Source freshness",
       "Graph quality",
       "SourceCatalog",
+      "data_mode",
       "not_production_ready",
     ];
     checks.push({
       page: "chart/table component controlled states",
-      present: chartTableTerms.filter((term) => healthState.text.includes(term)),
-      passed: !semiriskSystemHealthReady || chartTableTerms.every((term) => healthState.text.includes(term)),
+      present: chartTableTerms.filter((term) => healthTextLower.includes(term.toLowerCase())),
+      passed: !semiriskSystemHealthReady || chartTableTerms.every((term) => healthTextLower.includes(term.toLowerCase())),
     });
 
     const pageVisualizationChecks = [
