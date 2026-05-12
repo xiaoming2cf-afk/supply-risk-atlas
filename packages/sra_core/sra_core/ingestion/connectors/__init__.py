@@ -22,6 +22,10 @@ from sra_core.ingestion.connectors.rate_limit import InMemoryRateLimiter, RateLi
 from sra_core.ingestion.connectors.result import ConnectorFetchResult, ConnectorRecord
 from sra_core.ingestion.connectors.gdelt_semiconductor_lite import GdeltSemiconductorLiteConnector
 from sra_core.ingestion.connectors.sec_edgar_lite import SecEdgarLiteConnector
+from sra_core.ingestion.connectors.un_comtrade_semiconductor_trade_lite import (
+    UnComtradeSemiconductorTradeLiteConnector,
+)
+from sra_core.ingestion.connectors.wits_trade_tariff_lite import WitsTradeTariffLiteConnector
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -157,7 +161,9 @@ __all__ = [
     "RateLimitPolicy",
     "SecEdgarConnector",
     "SecEdgarLiteConnector",
+    "UnComtradeSemiconductorTradeLiteConnector",
     "UsgsEarthquakesConnector",
+    "WitsTradeTariffLiteConnector",
     "WorldBankConnector",
     "connector_for_source",
 ]

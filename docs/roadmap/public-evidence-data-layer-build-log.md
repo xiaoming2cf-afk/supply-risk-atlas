@@ -309,3 +309,40 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Outputs contain summaries, payload hashes, source refs, provenance URLs, confidence, and license/terms refs only.
 - Next gate decision:
   - Proceed to Gate 6 UN Comtrade Lite and WITS Lite connectors.
+
+## Gate 6 - UN Comtrade Lite And WITS Lite Connectors
+
+- Current HEAD before Gate 6: `2ea30f2`
+- Gate name: trade-flow and tariff public connector batch
+- Files changed:
+  - `docs/data/un-comtrade-semiconductor-trade-lite.md`
+  - `docs/data/wits-trade-tariff-lite.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/un_comtrade_semiconductor_trade_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/wits_trade_tariff_lite.py`
+  - `tests/ingestion/fixtures/un_comtrade_semiconductor_trade_lite_sample.json`
+  - `tests/ingestion/fixtures/wits_trade_tariff_lite_sample.json`
+  - `tests/ingestion/test_un_comtrade_semiconductor_trade_lite.py`
+  - `tests/ingestion/test_wits_trade_tariff_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_un_comtrade_semiconductor_trade_lite.py tests/ingestion/test_wits_trade_tariff_lite.py tests/ingestion -q`
+  - `python -m pytest tests/sources tests/contract -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/quality -q`
+- Pass/fail status: pass
+- Evidence:
+  - UN Comtrade Lite fixture connector replays semiconductor-related HS proxy trade-flow summaries and promotes to `trade_flow` records.
+  - Promotion computes dependency share, country/product HHI, significant dependency, and high dependency flags.
+  - WITS Lite fixture connector replays tariff/market indicator summaries and promotes to `trade_tariff_indicator` records.
+  - Both live modes return controlled unavailable and do not fetch in CI.
+  - Tests verify no raw bulk trade payload exposure.
+- Limitations:
+  - HS-code mappings are proxy context and not a complete semiconductor supply-chain mapping.
+  - Connectors remain fixture-only/live-disabled.
+  - Chart/table integration and promoted graph consumption are deferred to later gates.
+- Source/legal notes:
+  - No UN Comtrade or WITS live calls were performed.
+  - No raw bulk trade data was committed.
+  - Outputs contain only summaries, hashes, source refs, provenance URLs, confidence, and terms refs.
+- Next gate decision:
+  - Proceed to Gate 7 USGS, World Port Index, OFAC, and BIS connector batch.
