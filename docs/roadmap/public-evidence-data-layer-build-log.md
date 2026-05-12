@@ -116,3 +116,37 @@
   - Connector runtime only reports readiness; connector fetch framework begins in Gate 3.
   - Registry statuses are based on configuration and known fixture connector availability, not live endpoint probes.
 - Next gate decision: proceed to Gate 3 public connector framework.
+
+## Gate 3 - Public Connector Framework
+
+- Current HEAD before commit: `b66ff44`
+- Gate name: bounded public evidence connector framework
+- Changed files:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/base.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/http_client.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/rate_limit.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/cache.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/errors.py`
+  - `tests/ingestion/test_connector_base.py`
+  - `tests/ingestion/test_connector_cache.py`
+  - `tests/ingestion/test_connector_rate_limit.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_connector_base.py tests/ingestion/test_connector_cache.py tests/ingestion/test_connector_rate_limit.py tests/ingestion/test_public_source_connectors.py -q`
+- Pass/fail: pass
+- Evidence:
+  - Connector imports do not call network fetch.
+  - Connector fetch requires an explicit request mode.
+  - Fixture, dry-run, unavailable, and disabled-live behavior are covered.
+  - HTTP helper requires HTTPS, timeout, and bounded byte count.
+  - Metadata cache stores result metadata only, not raw payload bodies.
+  - Existing public connector boundary tests still pass.
+- Source/legal notes:
+  - Live mode remains disabled by default.
+  - Connector result metadata records source URL, provenance URL, payload hash, retrieval time, and license ref.
+  - Raw payload storage is not implemented in the metadata cache.
+- Limitations:
+  - The framework does not yet include source-specific SEC/GDELT lite promotion; those begin in Gates 4 and 5.
+  - Base live fetch raises controlled unavailable unless a connector explicitly implements it.
+- Next gate decision: proceed to Gates 4 and 5 fixture-first SEC EDGAR and GDELT lite connectors.

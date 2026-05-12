@@ -9,6 +9,11 @@ from pydantic import Field
 from sra_core.contracts.data import PayloadFormat, RawRecord, SourceManifest
 from sra_core.contracts.domain import StrictModel
 from sra_core.ingestion.registry import load_source_registry
+from sra_core.ingestion.connectors.base import (
+    ConnectorFetchResult,
+    ConnectorRequest,
+    PublicEvidenceConnector,
+)
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -118,3 +123,15 @@ def connector_for_source(source_id: str) -> PublicSourceConnector:
         return connectors[source_id]()
     except KeyError as exc:
         raise ValueError(f"unsupported public source connector: {source_id}") from exc
+
+
+__all__ = [
+    "ConnectorBatch",
+    "ConnectorFetchResult",
+    "ConnectorRequest",
+    "PublicEvidenceConnector",
+    "PublicSourceConnector",
+    "SecEdgarConnector",
+    "GdeltConnector",
+    "connector_for_source",
+]
