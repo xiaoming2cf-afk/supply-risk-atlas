@@ -367,3 +367,65 @@ export interface SemiriskGraphNeighborhoodData {
   edges: Array<Record<string, unknown>>;
   warnings: string[];
 }
+
+export interface GraphViewMetadata {
+  view_version: string;
+  mode: string;
+  graph_version: string;
+  source_manifest_id: string;
+  as_of_time: string;
+  data_mode?: string;
+  graph_mode?: string;
+  warnings: string[];
+}
+
+export interface GraphTimelineData extends GraphViewMetadata {
+  events: Array<Record<string, unknown>>;
+  layout_hints: Record<string, unknown>;
+}
+
+export interface GraphGeoData extends GraphViewMetadata {
+  countries: Array<Record<string, unknown>>;
+  cross_border_edges: Array<Record<string, unknown>>;
+  concentration_metrics: Array<Record<string, unknown>>;
+  layout_hints: Record<string, unknown>;
+}
+
+export interface GraphMatrixData extends GraphViewMetadata {
+  nodes: string[];
+  adjacency_matrix: Array<Record<string, unknown>>;
+  dependency_matrix: Array<Record<string, unknown>>;
+  trade_concentration_matrix: Array<Record<string, unknown>>;
+  policy_exposure_matrix: Array<Record<string, unknown>>;
+  layout_hints: Record<string, unknown>;
+}
+
+export interface GraphLayersData extends GraphViewMetadata {
+  layers: Array<Record<string, unknown>>;
+}
+
+export interface GraphEvidenceData extends GraphViewMetadata {
+  evidence_refs: Array<Record<string, unknown>>;
+  limit: number;
+}
+
+export interface GraphScenarioOverlayData extends GraphViewMetadata {
+  run_id: string | null;
+  simulation_version: string;
+  affected_nodes: Array<Record<string, unknown>>;
+  affected_paths: Array<Record<string, unknown>>;
+  loss_contributions: Array<Record<string, unknown>>;
+  status: string;
+}
+
+export interface AnalyticsChartsData extends GraphViewMetadata {
+  charts: Record<string, Array<Record<string, unknown>>>;
+  limit: number;
+}
+
+export interface AnalyticsTablesData extends GraphViewMetadata {
+  tables: Record<string, Array<Record<string, unknown>>>;
+  limit: number;
+  offset: number;
+  next_offset: number;
+}

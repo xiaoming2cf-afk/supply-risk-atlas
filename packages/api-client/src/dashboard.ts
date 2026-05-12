@@ -3,12 +3,20 @@ import type {
   ApiMode,
   ApiResult,
   ApiSourceStatus,
+  AnalyticsChartsData,
+  AnalyticsTablesData,
   CausalEvidenceBoardData,
   CompanyRisk360Data,
   ForwardScenarioInput,
   ForwardScenarioResult,
   GlobalRiskCockpitData,
   GraphExplorerData,
+  GraphEvidenceData,
+  GraphGeoData,
+  GraphLayersData,
+  GraphMatrixData,
+  GraphScenarioOverlayData,
+  GraphTimelineData,
   GraphExplorerQuery,
   GraphVersionStudioData,
   InterventionOptimizationInput,
@@ -50,6 +58,14 @@ export interface SupplyRiskApiClient {
   getSystemHealthCenter(): Promise<ApiResult<SystemHealthData>>;
   getSemiriskGraphSnapshot(): Promise<ApiResult<SemiriskGraphSnapshotData>>;
   getSemiriskGraphNeighborhood(nodeId: string, depth?: number): Promise<ApiResult<SemiriskGraphNeighborhoodData>>;
+  getGraphTimeline(options?: { limit?: number }): Promise<ApiResult<GraphTimelineData>>;
+  getGraphGeo(options?: { limit?: number }): Promise<ApiResult<GraphGeoData>>;
+  getGraphMatrix(options?: { limit?: number }): Promise<ApiResult<GraphMatrixData>>;
+  getGraphLayers(): Promise<ApiResult<GraphLayersData>>;
+  getGraphEvidence(options?: { sourceId?: string | null; limit?: number }): Promise<ApiResult<GraphEvidenceData>>;
+  getGraphScenarioOverlay(options?: { runId?: string | null }): Promise<ApiResult<GraphScenarioOverlayData>>;
+  getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
+  getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
   getSemiriskEntityRisk(entityId: string): Promise<ApiResult<SemiriskEntityRiskScore>>;
   getSemiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiResult<SemiriskRiskPortfolioData>>;
   runForwardScenario(input: ForwardScenarioInput): Promise<ApiResult<ForwardScenarioResult>>;
@@ -280,6 +296,41 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(
         baseUrl,
         `/graph/neighborhood${queryString({ node_id: nodeId, depth })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphTimeline: (options) =>
+      requestJson(baseUrl, `/graph/timeline${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphGeo: (options) =>
+      requestJson(baseUrl, `/graph/geo${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphMatrix: (options) =>
+      requestJson(baseUrl, `/graph/matrix${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphLayers: () => requestJson(baseUrl, "/graph/layers", undefined, clientOptions),
+    getGraphEvidence: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/evidence${queryString({ source_id: options?.sourceId ?? undefined, limit: options?.limit })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphScenarioOverlay: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/scenario-overlay${queryString({ run_id: options?.runId ?? undefined })}`,
+        undefined,
+        clientOptions,
+      ),
+    getAnalyticsCharts: (options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/charts${queryString({ chart_id: options?.chartId ?? undefined, limit: options?.limit })}`,
+        undefined,
+        clientOptions,
+      ),
+    getAnalyticsTables: (options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/tables${queryString({ table_id: options?.tableId ?? undefined, limit: options?.limit, offset: options?.offset })}`,
         undefined,
         clientOptions,
       ),

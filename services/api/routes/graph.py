@@ -14,6 +14,14 @@ def register(
     route_graph_focus: Callable[..., dict[str, Any]],
     route_graph_clusters: Callable[..., dict[str, Any]],
     route_graph_path_view: Callable[..., dict[str, Any]],
+    route_graph_timeline: Callable[..., dict[str, Any]],
+    route_graph_geo: Callable[..., dict[str, Any]],
+    route_graph_matrix: Callable[..., dict[str, Any]],
+    route_graph_layers: Callable[..., dict[str, Any]],
+    route_graph_evidence: Callable[..., dict[str, Any]],
+    route_graph_scenario_overlay: Callable[..., dict[str, Any]],
+    route_analytics_charts: Callable[..., dict[str, Any]],
+    route_analytics_tables: Callable[..., dict[str, Any]],
     route_semiconductor_graph_snapshot: Callable[..., dict[str, Any]],
     route_semiconductor_graph_neighborhood: Callable[..., dict[str, Any]],
 ) -> None:
@@ -55,6 +63,68 @@ def register(
         return route_graph_path_view(
             source_node_id=source_node_id,
             target_node_id=target_node_id,
+            request_id=x_request_id,
+        )
+
+    @app.get("/api/v1/graph/timeline")
+    def http_graph_timeline(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_timeline(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/geo")
+    def http_graph_geo(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_geo(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/matrix")
+    def http_graph_matrix(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_matrix(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/layers")
+    def http_graph_layers(x_request_id: str | None = Header(default=None)) -> dict[str, Any]:
+        return route_graph_layers(request_id=x_request_id)
+
+    @app.get("/api/v1/graph/evidence")
+    def http_graph_evidence(
+        source_id: str | None = Query(default=None),
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_evidence(source_id=source_id, limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/scenario-overlay")
+    def http_graph_scenario_overlay(
+        run_id: str | None = Query(default=None),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_scenario_overlay(run_id=run_id, request_id=x_request_id)
+
+    @app.get("/api/v1/analytics/charts")
+    def http_analytics_charts(
+        chart_id: str | None = Query(default=None),
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_analytics_charts(chart_id=chart_id, limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/analytics/tables")
+    def http_analytics_tables(
+        table_id: str | None = Query(default=None),
+        limit: int = Query(default=50, ge=1, le=500),
+        offset: int = Query(default=0, ge=0),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_analytics_tables(
+            table_id=table_id,
+            limit=limit,
+            offset=offset,
             request_id=x_request_id,
         )
 

@@ -508,3 +508,40 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - OFAC/BIS outputs remain compliance-context summaries only.
 - Next gate decision:
   - Proceed to Gate 10 graph APIs for additional views and chart/table data.
+
+## Gate 10 - Graph APIs For Additional Views And Chart/Table Data
+
+- Current HEAD before Gate 10: `c099022`
+- Gate name: graph timeline/geo/matrix/layers/evidence/scenario-overlay APIs and analytics chart/table payloads
+- Files changed:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `services/api/main.py`
+  - `services/api/routes/graph.py`
+  - `services/api/services/graph_service.py`
+  - `tests/api/test_graph_chart_table_endpoints.py`
+- Commands run:
+  - `python -m pytest tests/api/test_graph_chart_table_endpoints.py tests/api/test_graph_view_endpoints.py tests/api/test_graph_promoted_mode.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/api tests/quality tests/security/test_no_raw_payload_exposure.py -q`
+  - `npm.cmd --workspace apps/web run build`
+- Pass/fail status: pass
+- Evidence:
+  - Added graph endpoints: `/api/v1/graph/timeline`, `/api/v1/graph/geo`, `/api/v1/graph/matrix`, `/api/v1/graph/layers`, `/api/v1/graph/evidence`, and `/api/v1/graph/scenario-overlay`.
+  - Added analytics endpoints: `/api/v1/analytics/charts` and `/api/v1/analytics/tables`.
+  - Existing graph endpoints remain registered and tests still pass.
+  - Table/chart responses include graph version, source manifest, data mode, graph mode, warnings, bounds, and pagination/limit metadata.
+  - Default table limit is bounded and max API limit is 500.
+  - Promoted graph mode works for additional graph views.
+  - TypeScript shared graph types and API client methods compile.
+- Limitations:
+  - Chart/table endpoints are backend data contracts and controlled payloads; frontend visual components are deferred to Gate 11.
+  - Scenario overlay is a controlled empty state until a selected run is supplied and connected.
+  - Some chart datasets are intentionally empty when model/run artifacts are not available.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, article bodies, filing bodies, authorization headers, or API keys are exposed by new endpoints.
+  - Evidence-context and policy/compliance entries remain distinct from real supply-chain dependency edges.
+- Next gate decision:
+  - Proceed to Gate 11 frontend chart/table component system.
