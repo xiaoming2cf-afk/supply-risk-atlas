@@ -62,10 +62,14 @@ function NodeInspector({ node }: { node: GraphNode }) {
 }
 
 function EdgeInspector({ edge }: { edge: GraphLink }) {
+  const evidenceContext =
+    edge.edgeType === "evidence_context" ||
+    edge.metadata?.derived_context === true ||
+    edge.metadata?.not_supply_chain_dependency === true;
   return (
-    <div className="inspector-stack edge-inspector">
+    <div className={`inspector-stack edge-inspector ${evidenceContext ? "is-evidence-context" : ""}`}>
       <div className="inspector-grid">
-        <Field label="Edge type" value={edge.edgeType ?? edge.label} />
+        <Field label={evidenceContext ? "Link type" : "Edge type"} value={evidenceContext ? "evidence-context link" : edge.edgeType ?? edge.label} />
         <Field label="Role" value={edge.edgeRole ?? "context"} />
         <Field label="Risk score" value={`${edge.riskScore ?? Math.round(edge.weight * 100)}/100`} />
         <Field label="Weight" value={formatPercent(edge.transmissionWeight ?? edge.weight)} />
@@ -74,7 +78,10 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
         <Field label="Source country" value={edge.sourceCountry ?? "global"} />
         <Field label="Target country" value={edge.targetCountry ?? "global"} />
       </div>
-      <EvidenceRefs refs={[edge.sourceId ?? "public_source_manifest", edge.edgeType ?? edge.edgeRole ?? "graph_edge"]} />
+      {evidenceContext ? (
+        <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
+      ) : null}
+      <EvidenceRefs refs={[edge.sourceId ?? "public_source_manifest", edge.edgeType ?? edge.edgeRole ?? "graph_edge", String(edge.metadata?.source ?? "")]} />
       <p className="inspector-note">
         {edge.source} -&gt; {edge.target}
       </p>

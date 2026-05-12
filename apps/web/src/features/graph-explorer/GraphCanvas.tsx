@@ -123,7 +123,11 @@ export function GraphCanvas({
         const selectedAdjacency = link.source === selectedNodeId || link.target === selectedNodeId;
         const firstNeighbor = firstNeighborNodeIds.has(link.source) || firstNeighborNodeIds.has(link.target);
         const focused = activePath || selected || selectedPathStep || selectedAdjacency || firstNeighbor;
-        const color = graphColorByLevel[link.level];
+        const evidenceContext =
+          link.edgeType === "evidence_context" ||
+          link.metadata?.derived_context === true ||
+          link.metadata?.not_supply_chain_dependency === true;
+        const color = evidenceContext ? "#64748b" : graphColorByLevel[link.level];
         const baseWidth = link.transmissionWeight ?? link.weight;
         return {
           id: link.id,
@@ -135,12 +139,14 @@ export function GraphCanvas({
           interactionWidth: 18,
           animated: activePath || selectedPathStep,
           label: showEdgeLabels ? link.label : undefined,
+          className: evidenceContext ? "risk-flow-evidence-context-link" : undefined,
           data: { activePath, label: link.label, level: link.level },
           markerEnd: { type: MarkerType.ArrowClosed, color },
           style: {
             stroke: color,
             strokeOpacity: focused || mode === "overview" || mode === "geo" ? (selected || selectedPathStep ? 0.98 : 0.72) : 0.2,
             strokeWidth: selected || selectedPathStep || activePath ? 4.8 : Math.max(1.1, Math.min(4.2, baseWidth * 4.6)),
+            strokeDasharray: evidenceContext ? "6 6" : undefined,
           },
         };
       }),
@@ -179,12 +185,20 @@ export function GraphCanvas({
         onEdgeClick={(_, edge) => onSelectEdge(edge.id)}
         onEdgeMouseEnter={(event, edge) => {
           const link = links.find((candidate) => candidate.id === edge.id);
+          const evidenceContext =
+            link?.edgeType === "evidence_context" ||
+            link?.metadata?.derived_context === true ||
+            link?.metadata?.not_supply_chain_dependency === true;
           setTooltip({
             x: event.clientX,
             y: event.clientY,
             title: edge.label ? String(edge.label) : link?.label ?? edge.id,
-            meta: `${link?.edgeRole ?? link?.edgeType ?? "edge"} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
-            detail: `${link?.sourceCountry ?? "global"} -> ${link?.targetCountry ?? "global"}`,
+            meta: evidenceContext
+              ? "evidence-context link / not supply-chain dependency"
+              : `${link?.edgeRole ?? link?.edgeType ?? "edge"} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
+            detail: evidenceContext
+              ? "This is not a supply-chain dependency edge."
+              : `${link?.sourceCountry ?? "global"} -> ${link?.targetCountry ?? "global"}`,
           });
         }}
         onEdgeMouseLeave={() => setTooltip(null)}

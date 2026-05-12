@@ -324,8 +324,10 @@ function buildSearchContextGraph(graph: GraphExplorerData, matchedNodeIds: Set<s
       x: node.x,
       y: node.y,
       metadata: {
-        derived_context: "search_result_metadata",
-        source: sourceLabel,
+        derived_context: true,
+        not_supply_chain_dependency: true,
+        source: "search_result_metadata",
+        source_label: sourceLabel,
         country: countryCode,
       },
       countryCode,
@@ -335,20 +337,26 @@ function buildSearchContextGraph(graph: GraphExplorerData, matchedNodeIds: Set<s
       criticalityScore: 0,
     });
     links.push({
-      id: `search-context-edge:${node.id}`,
+      id: `search-context-link:${node.id}`,
       source: contextId,
       target: node.id,
-      label: "source evidence",
+      label: "evidence-context link",
       weight: 0.25,
       level: node.level,
-      edgeType: "evidence",
+      edgeType: "evidence_context",
       riskScore: graphScore(node.riskScore ?? node.score),
       confidence: Number.isFinite(confidence) ? confidence : 0.5,
       sourceId: sourceLabel,
       transmissionWeight: 0.25,
       sourceCountry: countryCode,
       targetCountry: countryCode,
-      edgeRole: "evidence",
+      edgeRole: "evidence_context",
+      metadata: {
+        derived_context: true,
+        not_supply_chain_dependency: true,
+        source: "search_result_metadata",
+        source_label: sourceLabel,
+      },
     });
   }
   return { nodes, links };

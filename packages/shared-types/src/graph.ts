@@ -84,7 +84,7 @@ export interface GraphNode {
   score: number;
   x: number;
   y: number;
-  metadata: Record<string, string | number>;
+  metadata: Record<string, string | number | boolean | null>;
   countryCode?: string;
   entityType?: string;
   riskScore?: number;
@@ -120,6 +120,7 @@ export interface GraphLink {
   sourceCountry?: string;
   targetCountry?: string;
   edgeRole?: "transmission" | "governance" | "evidence" | "location" | "classification" | "context" | string;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 export interface GraphStatCount {

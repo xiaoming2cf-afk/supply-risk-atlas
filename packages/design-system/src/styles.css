@@ -2477,6 +2477,23 @@ textarea:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.inspector-warning {
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(100, 116, 139, 0.32);
+  border-radius: 7px;
+  color: #334155;
+  background: rgba(100, 116, 139, 0.08);
+  font-size: 0.76rem;
+  font-weight: 760;
+  line-height: 1.4;
+}
+
+.edge-inspector.is-evidence-context {
+  border-left: 3px solid #64748b;
+  padding-left: 10px;
+}
+
 .evidence-list.compact li {
   padding: 8px 9px;
   border: 1px solid var(--line);
@@ -2759,6 +2776,11 @@ textarea:focus-visible {
 
 .risk-flow .react-flow__edge-path {
   filter: none;
+}
+
+.risk-flow .risk-flow-evidence-context-link .react-flow__edge-path {
+  stroke-dasharray: 6 6;
+  filter: drop-shadow(0 0 2px rgba(100, 116, 139, 0.18));
 }
 
 .risk-flow .react-flow__edge-textbg {

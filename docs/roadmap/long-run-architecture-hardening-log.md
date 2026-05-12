@@ -503,3 +503,108 @@ This log records gate-by-gate evidence for the architecture hardening sequence. 
   - Deployed Render web app appeared stale during best-effort smoke and needs redeploy before remote acceptance can be claimed.
   - Actual GitHub CI status was not fetched after these local commits.
 - Next gate decision: stop; requested gate sequence is implemented, tested locally, and documented.
+
+## Final Acceptance, Remote Repair, And Service Extraction Prep
+
+- Gate name: Final acceptance, remote deployment repair evidence, service extraction prep, graph view APIs, and derived context safety
+- Current HEAD before this work: `2283eb93ff569a67bc0f31bae338200816d089f2`
+- Files changed:
+  - `apps/web/src/features/graph-explorer/GraphCanvas.tsx`
+  - `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+  - `apps/web/src/features/graph-explorer/graphViewModel.ts`
+  - `packages/design-system/src/styles.css`
+  - `packages/shared-types/src/graph.ts`
+  - `services/api/main.py`
+  - `services/api/routes/graph.py`
+  - `services/api/services/__init__.py`
+  - `services/api/services/common.py`
+  - `services/api/services/graph_service.py`
+  - `services/api/services/optimization_service.py`
+  - `services/api/services/report_service.py`
+  - `services/api/services/reverse_stress_service.py`
+  - `services/api/services/risk_service.py`
+  - `services/api/services/run_service.py`
+  - `services/api/services/scenario_service.py`
+  - `services/api/services/system_health_service.py`
+  - `tests/api/test_graph_view_endpoints.py`
+  - `tests/api/test_service_layer_extraction.py`
+  - `tests/quality/test_graph_context_safety.py`
+- Commands run:
+  - `git rev-parse HEAD`
+  - `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --commit 2283eb93ff569a67bc0f31bae338200816d089f2 --limit 10 --json ...` (failed: GitHub CLI unavailable)
+  - GitHub Actions REST API query for `head_sha=2283eb93ff569a67bc0f31bae338200816d089f2`
+  - `render --version` (failed: Render CLI unavailable)
+  - `Get-ChildItem Env: | Where-Object { $_.Name -match 'RENDER' } | Select-Object Name`
+  - Deployed web hash checks for `#system-health-center`, `#graph-explorer`, `#shock-simulator`, `#reverse-stress-lab`, `#intervention-optimizer`, and `#investigation-report`
+  - Remote API checks for `GET /api/v1/health`, `GET /api/v1/graph/snapshot`, `GET /api/v1/risk/entities/company:tsmc`
+  - Remote API checks for `POST /api/v1/scenarios/forward`, `POST /api/v1/scenarios/reverse`, `POST /api/v1/optimization/interventions`, `POST /api/v1/reports/investigation`
+  - `python -m pytest tests/api/test_route_architecture_split.py tests/api/test_run_store.py -q`
+  - `python -m pytest tests/api/test_service_layer_extraction.py tests/api/test_graph_view_endpoints.py tests/quality/test_graph_context_safety.py tests/api/test_route_architecture_split.py tests/api/test_run_store.py -q`
+  - `python -m pytest tests/api/test_service_layer_extraction.py tests/api/test_graph_view_endpoints.py tests/quality/test_graph_context_safety.py tests/security -q`
+  - `python -m pytest -q`
+  - `python -m pytest tests/security tests/api tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - `npm.cmd run smoke:web -- --mode=deployed`
+  - `git diff --check`
+- Pass/fail:
+  - GitHub CI evidence: pass for commit `2283eb9`.
+  - Remote API endpoint evidence: pass for required existing deployed API endpoints.
+  - Render redeploy automation: blocked locally because no Render CLI, no `RENDER_*` credentials, and no Render MCP redeploy tool was exposed in this session.
+  - Deployed web smoke: failed in deployed best-effort mode because Render web is still stale and shows the old dense Graph Explorer surface.
+  - Local code acceptance: pass.
+- CI evidence:
+  - `ci #29`: `success`, completed, URL `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25715160381`, updated `2026-05-12T05:24:47Z`.
+  - `Quality Gates #29`: `success`, completed, URL `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25715160379`, updated `2026-05-12T05:25:27Z`.
+- Remote web evidence:
+  - `https://supply-risk-atlas-web.onrender.com/#system-health-center`: HTTP 200, fast, app shell shape.
+  - `https://supply-risk-atlas-web.onrender.com/#graph-explorer`: HTTP 200, fast, app shell shape, Graph Explorer v2 title not present in static shell.
+  - `https://supply-risk-atlas-web.onrender.com/#shock-simulator`: HTTP 200, fast, app shell shape.
+  - `https://supply-risk-atlas-web.onrender.com/#reverse-stress-lab`: HTTP 200, fast, app shell shape.
+  - `https://supply-risk-atlas-web.onrender.com/#intervention-optimizer`: HTTP 200, fast, app shell shape.
+  - `https://supply-risk-atlas-web.onrender.com/#investigation-report`: HTTP 200, fast, app shell shape.
+  - Deployed smoke observed the old Graph Explorer surface: v2 title absent, legend absent, layer controls absent, fixture warning absent, and old dense graph copy present. No raw page body is recorded here.
+- Render repair decision:
+  - Automated redeploy could not be triggered from this environment.
+  - Required manual Render steps: redeploy both API and web services from latest `main`; if web remains stale, use Render web service "Clear build cache and deploy"; confirm the web service is building the latest commit; verify `VITE_SUPPLY_RISK_API_BASE`/API base URL and `SUPPLY_RISK_CORS_ORIGINS` still point at the deployed API/web origins; rerun `npm.cmd run smoke:web -- --mode=deployed`.
+- Remote API evidence:
+  - `GET /api/v1/health`: HTTP 200, fast, envelope `success`, data keys include service/status/data_mode/deployment_target/source manifest reference/graph version, warnings count 0.
+  - `GET /api/v1/graph/snapshot`: HTTP 200, normal, envelope `success`, data keys include graph_version/source_manifest_id/as_of_time/nodes/edges/quality_report, warnings count 4.
+  - `GET /api/v1/risk/entities/company:tsmc`: HTTP 200, normal, envelope `success`, data keys include score/scoring_method/formula_version/likelihood/impact/evidence refs, warnings count 4.
+  - `POST /api/v1/scenarios/forward`: HTTP 200, normal, envelope `success`, data keys include run_id/graph_version/source_manifest_id/simulation_version/loss_mode/propagation_mode, warnings count 5.
+  - `POST /api/v1/scenarios/reverse`: HTTP 200, normal, envelope `success`, data keys include run_id/graph_version/source_manifest_id/simulation_version/threshold basis/ranked shock sets, warnings count 3.
+  - `POST /api/v1/optimization/interventions`: HTTP 200, normal, envelope `success`, data keys include run_id/graph_version/source_manifest_id/optimization_version/context/run ids/recommended actions, warnings count 2.
+  - `POST /api/v1/reports/investigation`: HTTP 200, normal, envelope `success`, data keys include report_id/report_version/entity/risk_score/evidence_summary/graph_context/versions/methodology, nested versions include graph_version and source_manifest_id, warnings count 5.
+- Service extraction evidence:
+  - Created `services/api/services/` and moved real implementation bodies for graph snapshot/neighborhood/view APIs, risk, forward scenario, reverse stress, optimization, report, run history, and system-health fixture helpers.
+  - `services/api/main.py` remains a compatibility facade and route-registration host.
+  - `services/api/main.py` line count changed from the recorded 3189-line baseline to 2681 by the same PowerShell count method; `rg` physical line indicator now ends at line 2901.
+  - Old `services.api.main.route_*` imports continue to work in tests.
+- Graph view endpoint evidence:
+  - Added `GET /api/v1/graph/view`, `GET /api/v1/graph/focus`, `GET /api/v1/graph/clusters`, and `GET /api/v1/graph/path-view`.
+  - Overview responses cap at 20 nodes and 35 edges.
+  - Focus responses cap at 25 nodes and 40 edges.
+  - Path view returns only path nodes/edges plus evidence refs.
+  - Responses include `nodes`, `edges`, `clusters` where applicable, `layout_hints`, `layers`, `legend`, `graph_version`, `source_manifest_id`, warnings, and fixture limitations.
+  - Graph view tests assert no `raw_id`, `payload_hash`, private diagnostics, or secret-like strings in the serialized view response.
+- Derived evidence-context safety evidence:
+  - Search fallback now creates `search-context-link:*` with label `evidence-context link`, not `search-context-edge:*`.
+  - Metadata includes `derived_context: true`, `not_supply_chain_dependency: true`, and `source: "search_result_metadata"`.
+  - Graph canvas styles evidence-context links with a distinct dashed slate treatment.
+  - Inspector states: "This is not a supply-chain dependency edge."
+  - Quality tests assert this naming, metadata, inspector warning, and distinct canvas class remain present.
+- Final local test evidence:
+  - Full pytest passed.
+  - Focused security/API/model/simulation/optimization/report/quality pytest passed.
+  - Web typecheck passed.
+  - Web production build passed.
+  - Local browser smoke passed: 26 checks.
+  - Deployed browser smoke remains best-effort and did not complete because the Render web deployment is stale.
+- Unresolved limitations:
+  - Render web remains stale until a Render redeploy/cache-clear is performed with credentials outside this session.
+  - The new graph view APIs are implemented locally but not available on deployed API until Render deploys the new commit.
+  - The platform remains fixture/proxy based, not production ready, not a production decision engine, not a financial-loss engine, and has no live connectors.
+  - Run history remains bounded in-memory storage.
+  - Graph view APIs expose sanitized fixture graph views, not production supply-chain telemetry.
+- Next gate decision: commit the service extraction, graph view APIs, derived context safety hardening, tests, and log evidence; remote Render repair remains pending manual redeploy/cache-clear.

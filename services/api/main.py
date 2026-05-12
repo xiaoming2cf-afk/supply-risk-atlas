@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
-import os
 from threading import Lock
 from typing import Any
 from uuid import uuid4
@@ -21,33 +19,10 @@ except Exception:  # pragma: no cover - allows contract tests without FastAPI in
     RequestValidationError = None  # type: ignore[assignment]
     JSONResponse = None  # type: ignore[assignment]
 
-from graph_kernel.graph_diff import diff_edge_states
-from graph_kernel.semiconductor_snapshot import (
-    build_semiconductor_fixture_snapshot,
-    neighborhood as semiconductor_neighborhood,
-)
 from graph_kernel.path_index import build_path_index
 from ml.models.dchgt_sc import DCHGTSCSkeleton
-from ml.risk_scoring.semirisk_score import (
-    FEATURE_VERSION as SEMIRISK_RISK_FEATURE_VERSION,
-    RISK_SCORE_WARNING_FIXTURE_GRAPH,
-    RiskScoreUnavailable,
-    rank_risk_portfolio,
-    score_semirisk_entity,
-)
-from ml.optimization.interventions import (
-    OPTIMIZATION_VERSION,
-    run_intervention_optimization,
-)
 from ml.simulation.counterfactual import build_counterfactual_edges
-from ml.simulation.monte_carlo import run_forward_monte_carlo
-from ml.simulation.reverse_stress import run_reverse_stress
 from ml.simulation.scenario import build_scenario_simulation, normalize_scenario_shock
-from ml.simulation.scenario_schema import (
-    FORWARD_SIMULATION_VERSION,
-    REVERSE_SIMULATION_VERSION,
-    ScenarioValidationError,
-)
 from services.api.prediction_center import (
     build_prediction_center_payload,
     build_prediction_payloads,
@@ -63,19 +38,40 @@ from services.api.routes import risk as risk_routes
 from services.api.routes import runs as run_routes
 from services.api.routes import scenarios as scenario_routes
 from services.api.routes import system_health as system_health_routes
-from services.api.runtime.cache import SnapshotCache
 from services.api.runtime.errors import ControlledApiError
-from services.api.runtime.run_store import RUN_STORE_VERSION, RunStore
 from services.api.security.headers import cors_origins, security_headers
 from services.api.security.validation import (
-    sanitized_payload,
-    validate_forward_payload,
-    validate_optimization_payload,
-    validate_report_payload,
     validate_request_size,
-    validate_reverse_payload,
 )
-from sra_core.reports.investigation import REPORT_VERSION, generate_investigation_report
+from services.api.services.common import (
+    semiconductor_default_time as _semiconductor_default_time,
+    semiconductor_fixture_warnings as _semiconductor_fixture_warnings,
+    semiconductor_metadata,
+)
+from services.api.services.graph_service import (
+    SNAPSHOT_CACHE,
+    route_graph_clusters,
+    route_graph_diff,
+    route_graph_focus,
+    route_graph_path_view,
+    route_graph_snapshots,
+    route_graph_view,
+    route_semiconductor_graph_neighborhood,
+    route_semiconductor_graph_snapshot,
+)
+from services.api.services.optimization_service import route_intervention_optimization
+from services.api.services.report_service import route_investigation_report
+from services.api.services.reverse_stress_service import route_reverse_scenario
+from services.api.services.risk_service import (
+    route_semirisk_entity_risk,
+    route_semirisk_risk_portfolio,
+)
+from services.api.services.run_service import RUN_CACHE, RUN_STORE, route_run_detail, route_runs
+from services.api.services.scenario_service import route_forward_scenario
+from services.api.services.system_health_service import (
+    semiconductor_graph_health_payload as _semiconductor_graph_health_payload,
+    semiconductor_only_system_health_payload as _semiconductor_only_system_health_payload,
+)
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
 from sra_core.contracts.domain import (
@@ -85,7 +81,6 @@ from sra_core.contracts.domain import (
     SimulationRequest,
     VersionMetadata,
 )
-from sra_core.contracts.semiconductor import DEFAULT_SEMIRISK_AS_OF_TIME
 from sra_core.real_pipeline import real_metadata, run_public_real_pipeline
 
 
@@ -94,19 +89,6 @@ TAIWAN_PROVINCE_DISPLAY = "中国台湾省"
 TAIWAN_RAW_CODES = {"TW", "TWN"}
 DASHBOARD_PAYLOAD_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 DASHBOARD_PAYLOAD_CACHE_LOCK = Lock()
-
-
-def _run_store_size() -> int:
-    try:
-        configured = int(os.getenv("SUPPLY_RISK_RUN_STORE_SIZE", "32"))
-    except ValueError:
-        return 32
-    return max(1, min(configured, 256))
-
-
-SNAPSHOT_CACHE = SnapshotCache(max_items=8)
-RUN_STORE = RunStore(max_items=_run_store_size())
-RUN_CACHE = RUN_STORE
 PATH_DIRECTIONS = {"upstream", "downstream", "both"}
 MAX_DASHBOARD_QUERY_LIST_ITEMS = 32
 MAX_DASHBOARD_QUERY_TOKEN_LENGTH = 80
@@ -294,398 +276,6 @@ def route_entity(entity_id: str, request_id: str | None = None) -> dict[str, Any
     return make_envelope(
         _entity_payload(entity),
         metadata=metadata_for_result(result),
-        request_id=request_id,
-    )
-
-
-def route_graph_snapshots(request_id: str | None = None) -> dict[str, Any]:
-    result = run_public_real_pipeline()
-    as_of_time = result.snapshot.as_of_time.isoformat()
-
-    def build_payload() -> dict[str, Any]:
-        paths = build_path_index(result.edge_states)
-        return {
-            "snapshot": result.snapshot.model_dump(mode="json"),
-            "edge_states": [edge.model_dump(mode="json") for edge in result.edge_states],
-            "path_index": [path.model_dump(mode="json") for path in paths[:20]],
-            "source_manifest": {
-                "manifest_ref": result.real.source_manifest_ref,
-                "checksum": result.real.source_manifest_checksum,
-                "sources": [source.source_id for source in result.real.sources],
-                "freshness": [item.as_dict() for item in result.real.freshness],
-            },
-        }
-
-    return make_envelope(
-        SNAPSHOT_CACHE.get_or_set(
-            graph_version=result.snapshot.graph_version,
-            as_of_time=as_of_time,
-            factory=build_payload,
-        ),
-        metadata=metadata_for_result(result),
-        request_id=request_id,
-    )
-
-
-def semiconductor_metadata(
-    snapshot: Any | None = None,
-    *,
-    feature_version: str = "semirisk_features_unavailable",
-) -> VersionMetadata:
-    graph_version = snapshot.graph_version if snapshot is not None else "semirisk_kg_unavailable"
-    source_manifest_id = snapshot.source_manifest_id if snapshot is not None else "semirisk_fixture_manifest_unavailable"
-    as_of_time = snapshot.as_of_time if snapshot is not None else _semiconductor_default_time()
-    return VersionMetadata(
-        graph_version=graph_version,
-        feature_version=feature_version,
-        label_version="semirisk_labels_unavailable",
-        model_version="semirisk_model_unavailable",
-        as_of_time=as_of_time,
-        audit_ref="semirisk_fixture_graph_v0.1",
-        lineage_ref=source_manifest_id,
-        data_mode="real",
-        freshness_status="partial",
-        source_count=4,
-        source_manifest_ref=source_manifest_id,
-    )
-
-
-def _semiconductor_default_time() -> datetime:
-    return datetime.fromisoformat(DEFAULT_SEMIRISK_AS_OF_TIME.replace("Z", "+00:00"))
-
-
-def route_semiconductor_graph_snapshot(request_id: str | None = None) -> dict[str, Any]:
-    try:
-        snapshot = build_semiconductor_fixture_snapshot()
-    except Exception as exc:
-        return make_error_envelope(
-            "semiconductor_graph_unavailable",
-            "SemiRisk-KG fixture graph could not be built.",
-            metadata=semiconductor_metadata(),
-            request_id=request_id,
-            warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
-        )
-    payload = SNAPSHOT_CACHE.get_or_set(
-        graph_version=snapshot.graph_version,
-        as_of_time=snapshot.as_of_time.isoformat(),
-        factory=lambda: snapshot.model_dump(mode="json"),
-    )
-    return make_envelope(
-        payload,
-        metadata=semiconductor_metadata(snapshot),
-        request_id=request_id,
-        warnings=_semiconductor_fixture_warnings(snapshot),
-    )
-
-
-def route_semiconductor_graph_neighborhood(
-    node_id: str = "company:tsmc",
-    depth: int = 1,
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        snapshot = build_semiconductor_fixture_snapshot()
-        payload = semiconductor_neighborhood(snapshot, node_id=node_id, depth=depth)
-    except KeyError as exc:
-        return make_error_envelope(
-            "semiconductor_graph_node_not_found",
-            str(exc),
-            metadata=semiconductor_metadata(),
-            request_id=request_id,
-            field="node_id",
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except Exception as exc:
-        return make_error_envelope(
-            "semiconductor_graph_unavailable",
-            "SemiRisk-KG fixture graph neighborhood could not be built.",
-            metadata=semiconductor_metadata(),
-            request_id=request_id,
-            warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
-        )
-    return make_envelope(
-        payload,
-        metadata=semiconductor_metadata(snapshot),
-        request_id=request_id,
-        warnings=_semiconductor_fixture_warnings(snapshot),
-    )
-
-
-def route_semirisk_entity_risk(
-    entity_id: str = "company:tsmc",
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        snapshot = build_semiconductor_fixture_snapshot()
-    except Exception as exc:
-        return make_error_envelope(
-            "semirisk_risk_graph_unavailable",
-            "SemiRisk fixture graph could not be built for Risk Score v0.",
-            metadata=semiconductor_metadata(feature_version=SEMIRISK_RISK_FEATURE_VERSION),
-            request_id=request_id,
-            warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
-        )
-    try:
-        payload = score_semirisk_entity(entity_id, snapshot=snapshot)
-    except RiskScoreUnavailable as exc:
-        return make_error_envelope(
-            "semirisk_risk_score_unavailable",
-            str(exc),
-            metadata=semiconductor_metadata(
-                snapshot,
-                feature_version=SEMIRISK_RISK_FEATURE_VERSION,
-            ),
-            request_id=request_id,
-            field="entity_id",
-            warnings=[RISK_SCORE_WARNING_FIXTURE_GRAPH],
-        )
-    return make_envelope(
-        payload,
-        metadata=semiconductor_metadata(snapshot, feature_version=SEMIRISK_RISK_FEATURE_VERSION),
-        request_id=request_id,
-        warnings=payload.get("warnings", [RISK_SCORE_WARNING_FIXTURE_GRAPH]),
-    )
-
-
-def route_semirisk_risk_portfolio(
-    node_type: str | None = "company",
-    limit: int = 20,
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        snapshot = build_semiconductor_fixture_snapshot()
-        payload = rank_risk_portfolio(snapshot=snapshot, node_type=node_type, limit=limit)
-    except Exception as exc:
-        return make_error_envelope(
-            "semirisk_risk_portfolio_unavailable",
-            "SemiRisk fixture graph portfolio scores could not be built.",
-            metadata=semiconductor_metadata(feature_version=SEMIRISK_RISK_FEATURE_VERSION),
-            request_id=request_id,
-            warnings=[f"risk_portfolio_failed:{type(exc).__name__}", RISK_SCORE_WARNING_FIXTURE_GRAPH],
-        )
-    return make_envelope(
-        payload,
-        metadata=semiconductor_metadata(snapshot, feature_version=SEMIRISK_RISK_FEATURE_VERSION),
-        request_id=request_id,
-        warnings=payload.get("warnings", [RISK_SCORE_WARNING_FIXTURE_GRAPH]),
-    )
-
-
-def route_forward_scenario(
-    payload: dict[str, Any] | None = None,
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        payload = validate_forward_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
-        result = run_forward_monte_carlo(payload, snapshot=snapshot)
-    except ControlledApiError as exc:
-        return make_error_envelope(
-            exc.code,
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=FORWARD_SIMULATION_VERSION),
-            request_id=request_id,
-            field=exc.field,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except ScenarioValidationError as exc:
-        return make_error_envelope(
-            "forward_scenario_validation_error",
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=FORWARD_SIMULATION_VERSION),
-            request_id=request_id,
-            field=exc.field,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except Exception as exc:
-        return make_error_envelope(
-            "forward_scenario_unavailable",
-            "Forward Monte Carlo scenario could not run against the SemiRisk fixture graph.",
-            metadata=semiconductor_metadata(feature_version=FORWARD_SIMULATION_VERSION),
-            request_id=request_id,
-            warnings=[f"forward_scenario_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
-        )
-    response = make_envelope(
-        result,
-        metadata=semiconductor_metadata(snapshot, feature_version=FORWARD_SIMULATION_VERSION),
-        request_id=request_id,
-        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
-    )
-    RUN_CACHE.put_summary("forward_scenario", response)
-    return response
-
-
-def route_reverse_scenario(
-    payload: dict[str, Any] | None = None,
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        payload = validate_reverse_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
-        result = run_reverse_stress(payload, snapshot=snapshot)
-    except ControlledApiError as exc:
-        return make_error_envelope(
-            exc.code,
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=REVERSE_SIMULATION_VERSION),
-            request_id=request_id,
-            field=exc.field,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except ScenarioValidationError as exc:
-        return make_error_envelope(
-            "reverse_scenario_validation_error",
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=REVERSE_SIMULATION_VERSION),
-            request_id=request_id,
-            field=exc.field,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except Exception as exc:
-        return make_error_envelope(
-            "reverse_scenario_unavailable",
-            "Reverse stress search could not run against the SemiRisk fixture graph.",
-            metadata=semiconductor_metadata(feature_version=REVERSE_SIMULATION_VERSION),
-            request_id=request_id,
-            warnings=[f"reverse_scenario_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
-        )
-    response = make_envelope(
-        result,
-        metadata=semiconductor_metadata(snapshot, feature_version=REVERSE_SIMULATION_VERSION),
-        request_id=request_id,
-        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
-    )
-    RUN_CACHE.put_summary("reverse_stress", response)
-    return response
-
-
-def route_intervention_optimization(
-    payload: dict[str, Any] | None = None,
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        payload = validate_optimization_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
-        result = run_intervention_optimization(payload, snapshot=snapshot)
-    except ControlledApiError as exc:
-        return make_error_envelope(
-            exc.code,
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=OPTIMIZATION_VERSION),
-            request_id=request_id,
-            field=exc.field,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except ValueError as exc:
-        return make_error_envelope(
-            "optimization_validation_error",
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=OPTIMIZATION_VERSION),
-            request_id=request_id,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except Exception as exc:
-        return make_error_envelope(
-            "optimization_unavailable",
-            "Intervention optimizer could not run against the SemiRisk fixture graph.",
-            metadata=semiconductor_metadata(feature_version=OPTIMIZATION_VERSION),
-            request_id=request_id,
-            warnings=[f"optimization_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
-        )
-    response = make_envelope(
-        result,
-        metadata=semiconductor_metadata(snapshot, feature_version=OPTIMIZATION_VERSION),
-        request_id=request_id,
-        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
-    )
-    RUN_CACHE.put_summary("intervention_optimization", response)
-    return response
-
-
-def route_investigation_report(
-    payload: dict[str, Any] | None = None,
-    request_id: str | None = None,
-) -> dict[str, Any]:
-    try:
-        payload = validate_report_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
-        result = sanitized_payload(generate_investigation_report(payload))
-    except ControlledApiError as exc:
-        return make_error_envelope(
-            exc.code,
-            str(exc),
-            metadata=semiconductor_metadata(feature_version=REPORT_VERSION),
-            request_id=request_id,
-            field=exc.field,
-            warnings=["fixture_graph:not_production_ready"],
-        )
-    except Exception as exc:
-        return make_error_envelope(
-            "investigation_report_unavailable",
-            "Investigation report could not be generated from the SemiRisk fixture graph.",
-            metadata=semiconductor_metadata(feature_version=REPORT_VERSION),
-            request_id=request_id,
-            warnings=[f"report_failed:{type(exc).__name__}", "fixture_graph:not_production_ready"],
-        )
-    response = make_envelope(
-        result,
-        metadata=semiconductor_metadata(snapshot, feature_version=REPORT_VERSION),
-        request_id=request_id,
-        warnings=result.get("warnings", ["fixture_graph:not_production_ready"]),
-    )
-    RUN_CACHE.put_summary("investigation_report", response)
-    return response
-
-
-def route_runs(request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
-    runs = RUN_STORE.list_summaries()
-    payload = {
-        "run_store_version": RUN_STORE_VERSION,
-        "graph_version": snapshot.graph_version,
-        "source_manifest_id": snapshot.source_manifest_id,
-        "as_of_time": snapshot.as_of_time,
-        "count": len(runs),
-        "max_items": RUN_STORE.max_items,
-        "runs": runs,
-        "warnings": ["fixture_graph:not_production_ready", "run_history:sanitized_summaries_only"],
-    }
-    return make_envelope(
-        payload,
-        metadata=semiconductor_metadata(snapshot, feature_version=RUN_STORE_VERSION),
-        request_id=request_id,
-        warnings=payload["warnings"],
-    )
-
-
-def route_run_detail(run_id: str, request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
-    run = RUN_STORE.get(run_id)
-    if run is None:
-        raise LookupError(f"Run not found: {run_id}")
-    payload = {
-        **run,
-        "run_store_version": RUN_STORE_VERSION,
-        "graph_version": run.get("graph_version") or snapshot.graph_version,
-        "source_manifest_id": run.get("source_manifest_id") or snapshot.source_manifest_id,
-        "raw_payload_excluded": True,
-        "private_diagnostics_excluded": True,
-        "warnings": sorted(set([*run.get("warnings", []), "fixture_graph:not_production_ready", "run_history:sanitized_summaries_only"])),
-    }
-    return make_envelope(
-        payload,
-        metadata=semiconductor_metadata(snapshot, feature_version=RUN_STORE_VERSION),
-        request_id=request_id,
-        warnings=payload["warnings"],
-    )
-
-
-def route_graph_diff(request_id: str | None = None) -> dict[str, Any]:
-    earlier = run_public_real_pipeline()
-    later = run_public_real_pipeline()
-    return make_envelope(
-        diff_edge_states(earlier.edge_states, later.edge_states),
-        metadata=metadata_for_result(later),
         request_id=request_id,
     )
 
@@ -972,71 +562,6 @@ def route_system_health_center(request_id: str | None = None) -> dict[str, Any]:
     return route_dashboard_page("system-health-center", request_id=request_id)
 
 
-def _semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
-    graph_health = _semiconductor_graph_health_payload()
-    now = _semiconductor_default_time().isoformat()
-    return {
-        "services": [
-            {
-                "id": "semirisk-fixture-graph",
-                "service": "SemiRisk-KG fixture graph",
-                "owner": "platform",
-                "status": "degraded" if graph_health["status"] != "unavailable" else "down",
-                "latencyMs": 0,
-                "freshnessMinutes": 0,
-                "errorRate": 0.0 if graph_health["status"] != "unavailable" else 1.0,
-            },
-            {
-                "id": "public-real-pipeline",
-                "service": "Public evidence graph pipeline",
-                "owner": "platform",
-                "status": "down",
-                "latencyMs": 0,
-                "freshnessMinutes": 0,
-                "errorRate": 1.0,
-            },
-        ],
-        "stages": [
-            {"id": "stage-semiconductor-fixture", "label": "SemiRisk fixture graph build", "status": "complete" if graph_health["status"] != "unavailable" else "blocked", "processed": 1 if graph_health["status"] != "unavailable" else 0, "total": 1},
-            {"id": "stage-public-real", "label": "Public evidence graph pipeline", "status": "blocked", "processed": 0, "total": 1},
-        ],
-        "logs": [
-            f"{now} semirisk fixture graph readiness returned while public pipeline was unavailable",
-            f"{now} public_real_pipeline_unavailable:{type(exc).__name__}",
-        ],
-        "sourceRegistry": {
-            "manifestRef": graph_health["sourceManifestId"],
-            "checksum": graph_health["sourceManifestId"],
-            "asOfTime": now,
-            "catalogSource": "semirisk_fixture_graph",
-            "promotedGraph": {"status": "partial", "manifest": None},
-            "sourceCount": 0,
-            "rawRecordCount": 0,
-            "silverEntityCount": 0,
-            "silverEventCount": 0,
-            "goldEdgeEventCount": 0,
-            "dataNodeCount": 0,
-            "sources": [],
-        },
-        "entityResolution": {
-            "totalEntities": 0,
-            "averageConfidence": 0.0,
-            "byEntityType": [],
-            "bySource": [],
-        },
-        "evidenceLineage": {
-            "manifestRef": graph_health["sourceManifestId"],
-            "checksum": graph_health["sourceManifestId"],
-            "asOfTime": now,
-            "rawRecordCount": 0,
-            "silverEventCount": 0,
-            "goldEdgeEventCount": 0,
-            "records": [],
-        },
-        "semiconductorGraph": graph_health,
-    }
-
-
 def _dashboard_query(**values: Any) -> dict[str, Any]:
     direction = str(values.get("path_direction") or "both").strip().lower()
     if direction not in PATH_DIRECTIONS:
@@ -1070,83 +595,6 @@ def route_shock_simulator(
         request_id=request_id,
         warnings=_real_data_warnings(result),
     )
-
-
-def _semiconductor_fixture_warnings(snapshot: Any) -> list[str]:
-    warnings = [
-        "fixture_graph:not_production_ready",
-        (
-            "semirisk_fixture_metadata: "
-            f"graphVersion={snapshot.graph_version}; "
-            f"sourceManifestId={snapshot.source_manifest_id}; "
-            f"nodeCount={snapshot.node_count}; "
-            f"edgeCount={snapshot.edge_count}; "
-            "registryReady=true; "
-            "ontologyReady=true; "
-            "fixtureGraph: true"
-        ),
-    ]
-    if snapshot.stale_source_count:
-        warnings.append(f"fixture_source_freshness_degraded:{snapshot.stale_source_count}")
-    if snapshot.missing_provenance_count:
-        warnings.append(f"missing_graph_provenance:{snapshot.missing_provenance_count}")
-    if snapshot.unresolved_entity_count:
-        warnings.append(f"unresolved_graph_entities:{snapshot.unresolved_entity_count}")
-    quality_status = (snapshot.quality_report or {}).get("status")
-    if quality_status not in {None, "pass"}:
-        warnings.append(f"graph_quality_{quality_status}")
-    return warnings
-
-
-def _semiconductor_graph_health_payload() -> dict[str, Any]:
-    try:
-        snapshot = build_semiconductor_fixture_snapshot()
-    except Exception as exc:
-        return {
-            "label": "SemiRisk-KG v0.1 fixture graph",
-            "status": "unavailable",
-            "fixtureGraph": True,
-            "registryReady": False,
-            "ontologyReady": False,
-            "fixtureManifestReady": False,
-            "fixtureGraphReady": False,
-            "graphVersion": "unavailable",
-            "ontologyVersion": "unavailable",
-            "sourceManifestId": "unavailable",
-            "asOfTime": DEFAULT_SEMIRISK_AS_OF_TIME,
-            "nodeCount": 0,
-            "edgeCount": 0,
-            "nodeCountByType": {},
-            "edgeCountByType": {},
-            "missingProvenanceCount": 0,
-            "unresolvedEntityCount": 0,
-            "staleSourceCount": 0,
-            "warnings": [f"fixture_graph_unavailable:{type(exc).__name__}"],
-        }
-    warnings = _semiconductor_fixture_warnings(snapshot)
-    return {
-        "label": "SemiRisk-KG v0.1 fixture graph",
-        "status": "ready"
-        if snapshot.quality_report.get("status") == "pass" and snapshot.stale_source_count == 0
-        else "degraded",
-        "fixtureGraph": True,
-        "registryReady": True,
-        "ontologyReady": True,
-        "fixtureManifestReady": True,
-        "fixtureGraphReady": True,
-        "graphVersion": snapshot.graph_version,
-        "ontologyVersion": snapshot.ontology_version,
-        "sourceManifestId": snapshot.source_manifest_id,
-        "asOfTime": snapshot.as_of_time.isoformat(),
-        "nodeCount": snapshot.node_count,
-        "edgeCount": snapshot.edge_count,
-        "nodeCountByType": snapshot.node_count_by_type,
-        "edgeCountByType": snapshot.edge_count_by_type,
-        "missingProvenanceCount": snapshot.missing_provenance_count,
-        "unresolvedEntityCount": snapshot.unresolved_entity_count,
-        "staleSourceCount": snapshot.stale_source_count,
-        "warnings": warnings,
-    }
 
 
 def _real_data_warnings(result: Any) -> list[str]:
@@ -3122,6 +2570,10 @@ def create_app() -> Any:
         Query=Query,
         route_graph_snapshots=route_graph_snapshots,
         route_graph_diff=route_graph_diff,
+        route_graph_view=route_graph_view,
+        route_graph_focus=route_graph_focus,
+        route_graph_clusters=route_graph_clusters,
+        route_graph_path_view=route_graph_path_view,
         route_semiconductor_graph_snapshot=route_semiconductor_graph_snapshot,
         route_semiconductor_graph_neighborhood=route_semiconductor_graph_neighborhood,
     )
