@@ -70,6 +70,7 @@ import type {
 import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel } from "@supply-risk/design-system";
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "../../app/components";
 import { useI18n } from "../../app/i18n";
+import { EvidenceAuditPanel } from "../evidence-board/EvidenceAuditPanel";
 import {
   CVaRTailChart,
   DependencyHeatmap,
@@ -4408,36 +4409,22 @@ export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData })
           </p>
         </Panel>
 
-        <Panel title="Evidence audit table" subtitle="Source filters and confidence fields are bounded display summaries only.">
-          <div className="lineage-chips" style={{ marginBottom: 12 }}>
-            <SourceFreshnessCard status="fixture_proxy_not_live" />
-            <EvidenceCountCard count={board.evidence.length} />
-          </div>
-          <div className="field-grid">
-            <Field label="source_filter" value={activeClaim.source} />
-            <Field label="confidence_filter" value={`>= ${formatPercent(Math.min(...board.evidence.map((item) => item.confidence)))}`} />
-            <Field label="evidence_to_graph_path" value={`evidence:${activeClaim.id}`} />
-            <Field label="model_component" value={activeClaim.method === "graph-inference" ? "path_transmission" : "evidence_weight"} />
-          </div>
-          <EvidenceRefsTable
-            rows={board.evidence.map((item) => ({
-              id: item.id,
-              claim: item.claim,
-              source: item.source,
-              method: item.method,
-              confidence: item.confidence,
-              disagreement: item.disagreement,
-              graph_path_ref: `evidence:${item.id}`,
-            }))}
-            columns={["id", "source", "method", "confidence", "disagreement", "graph_path_ref"]}
-            limit={10}
-            metadata={{
-              graphVersion: data.systemHealthCenter.semiconductorGraph?.graphVersion,
-              sourceManifestId: data.systemHealthCenter.semiconductorGraph?.sourceManifestId,
-              warnings: data.systemHealthCenter.semiconductorGraph?.warnings ?? [],
-            }}
-          />
-        </Panel>
+        <EvidenceAuditPanel
+          activeSource={activeClaim.source}
+          confidenceFloor={`>= ${formatPercent(Math.min(...board.evidence.map((item) => item.confidence)))}`}
+          graphVersion={data.systemHealthCenter.semiconductorGraph?.graphVersion}
+          rows={board.evidence.map((item) => ({
+            id: item.id,
+            claim: item.claim,
+            source: item.source,
+            method: item.method,
+            confidence: item.confidence,
+            disagreement: item.disagreement,
+            graph_path_ref: `evidence:${item.id}`,
+          }))}
+          sourceManifestId={data.systemHealthCenter.semiconductorGraph?.sourceManifestId}
+          warnings={data.systemHealthCenter.semiconductorGraph?.warnings ?? []}
+        />
 
         <Panel title="Evidence quality" subtitle="Confidence and disagreement are tracked separately.">
           <div className="table-wrap">

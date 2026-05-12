@@ -4,6 +4,8 @@ import type {
   ApiResult,
   ApiSourceStatus,
   AnalyticsChartsData,
+  AnalyticsExportData,
+  AnalyticsNamedTableData,
   AnalyticsTablesData,
   CausalEvidenceBoardData,
   CompanyRisk360Data,
@@ -71,6 +73,8 @@ export interface SupplyRiskApiClient {
   getGraphScenarioOverlay(options?: { runId?: string | null }): Promise<ApiResult<GraphScenarioOverlayData>>;
   getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
   getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
+  getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
+  exportAnalyticsTable(tableId: string, options?: { format?: "json" | "csv" | "markdown"; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsExportData>>;
   getSemiriskEntityRisk(entityId: string): Promise<ApiResult<SemiriskEntityRiskScore>>;
   getSemiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiResult<SemiriskRiskPortfolioData>>;
   runForwardScenario(input: ForwardScenarioInput): Promise<ApiResult<ForwardScenarioResult>>;
@@ -356,6 +360,24 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(
         baseUrl,
         `/analytics/tables${queryString({ table_id: options?.tableId ?? undefined, limit: options?.limit, offset: options?.offset })}`,
+        undefined,
+        clientOptions,
+      ),
+    getAnalyticsTable: (tableId, options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/tables/${encodeURIComponent(tableId)}${queryString({ limit: options?.limit, offset: options?.offset })}`,
+        undefined,
+        clientOptions,
+      ),
+    exportAnalyticsTable: (tableId, options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/export/${encodeURIComponent(tableId)}${queryString({
+          format: options?.format,
+          limit: options?.limit,
+          offset: options?.offset,
+        })}`,
         undefined,
         clientOptions,
       ),

@@ -31,6 +31,7 @@ from services.api.prediction_center import (
     ranked_paths_for_target,
 )
 from services.api.routes import graph as graph_routes
+from services.api.routes import analytics as analytics_routes
 from services.api.routes import optimization as optimization_routes
 from services.api.routes import reports as report_routes
 from services.api.routes import reverse_stress as reverse_stress_routes
@@ -67,6 +68,7 @@ from services.api.services.graph_service import (
     route_semiconductor_graph_neighborhood,
     route_semiconductor_graph_snapshot,
 )
+from services.api.services.analytics_service import route_analytics_export, route_analytics_table
 from services.api.services.optimization_service import route_intervention_optimization
 from services.api.services.report_service import route_investigation_report
 from services.api.services.reverse_stress_service import route_reverse_scenario
@@ -2594,6 +2596,13 @@ def create_app() -> Any:
         route_analytics_tables=route_analytics_tables,
         route_semiconductor_graph_snapshot=route_semiconductor_graph_snapshot,
         route_semiconductor_graph_neighborhood=route_semiconductor_graph_neighborhood,
+    )
+    analytics_routes.register(
+        app,
+        Header=Header,
+        Query=Query,
+        route_analytics_export=route_analytics_export,
+        route_analytics_table=route_analytics_table,
     )
     risk_routes.register(
         app,

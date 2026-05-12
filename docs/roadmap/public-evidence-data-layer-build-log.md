@@ -662,3 +662,53 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Compliance-related evidence remains display-only and does not provide evasion or workaround advice.
 - Next gate decision:
   - Proceed to Gate 14 analytics tables, exports, and evidence audit.
+
+## Gate 14 - Analytics Tables, Exports, And Evidence Audit
+
+- Current HEAD before Gate 14: `3e5be72`
+- Gate name: sanitized analytics table/export endpoints and Evidence Board audit UI
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `apps/web/src/features/common/exports/index.ts`
+  - `apps/web/src/features/common/exports/sanitizedExport.ts`
+  - `apps/web/src/features/evidence-board/EvidenceAuditPanel.tsx`
+  - `docs/security/evidence-audit-and-export.md`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `services/api/main.py`
+  - `services/api/routes/__init__.py`
+  - `services/api/routes/analytics.py`
+  - `services/api/services/analytics_service.py`
+  - `tests/api/test_analytics_tables.py`
+  - `tests/security/test_export_sanitization.py`
+- Commands run:
+  - `python -m pytest tests/api/test_analytics_tables.py tests/security/test_export_sanitization.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api/test_analytics_tables.py tests/security/test_export_sanitization.py -q` rerun after export metadata wording fix
+  - `python -m pytest tests/api/test_graph_chart_table_endpoints.py tests/api/test_analytics_tables.py tests/security/test_export_sanitization.py tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - PowerShell endpoint evidence command using an invalid bash heredoc syntax failed, then was rerun using PowerShell here-string syntax
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First security export test failed because analytics export metadata inherited the phrase `source_payloads_excluded` from graph view limitations. Analytics export/table metadata now normalizes that wording to `source_content_excluded`.
+  - A manual endpoint evidence command failed because it used bash heredoc syntax in PowerShell; the corrected PowerShell here-string command returned HTTP 200 evidence for named table and CSV export endpoints.
+- Evidence:
+  - Added `GET /api/v1/analytics/tables/{table_id}`.
+  - Added `GET /api/v1/analytics/export/{table_id}` with `json`, `csv`, and `markdown` formats.
+  - Supported named tables include source catalog, source status, connector status, evidence refs, graph quality, risk rankings, trade flows, policy events, hazard events, and logistics facilities.
+  - Exports include table id, format, export time, row count, content hash, graph version, source manifest id, data mode, graph mode, and warnings.
+  - Rows are bounded by request limit and hard capped at 500 for export.
+  - Evidence Board now uses `EvidenceAuditPanel` with sanitized visible rows and export-scope metadata.
+  - Browser smoke passed 37 checks after the Evidence Board audit component integration.
+- Limitations:
+  - Analytics exports are bounded summaries, not bulk data dumps.
+  - Source catalog rows intentionally omit raw/source payload fields and private diagnostics fields.
+  - CSV/Markdown exports are returned inside the existing JSON envelope rather than as file downloads in this gate.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, article bodies, filing bodies, authorization headers, cookies, API keys, secrets, private diagnostics, or internal paths are exposed by the new export tests.
+  - Compliance-related table rows remain audit context only and do not provide workaround guidance.
+- Next gate decision:
+  - Proceed to Gate 15 promoted run/report persistence integration.

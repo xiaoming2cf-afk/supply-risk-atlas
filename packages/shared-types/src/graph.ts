@@ -439,3 +439,23 @@ export interface AnalyticsTablesData extends GraphViewMetadata {
   offset: number;
   next_offset: number;
 }
+
+export interface AnalyticsNamedTableData extends GraphViewMetadata {
+  table_id: string;
+  rows: Array<Record<string, unknown>>;
+  limit: number;
+  offset: number;
+  next_offset: number;
+  row_count: number;
+}
+
+export interface AnalyticsExportData extends GraphViewMetadata {
+  table_id: string;
+  format: "json" | "csv" | "markdown" | string;
+  export_time: string;
+  row_count: number;
+  limit: number;
+  offset: number;
+  content_hash: string;
+  content: unknown;
+}
