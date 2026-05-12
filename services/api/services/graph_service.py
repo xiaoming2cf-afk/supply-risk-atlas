@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
+import os
 from typing import Any
 
 from graph_kernel.graph_diff import diff_edge_states
@@ -43,6 +44,14 @@ GRAPH_LEGEND = [
     {"id": "active_path", "label": "Selected transmission path", "semantics": "path_only"},
     {"id": "cluster", "label": "Aggregated overview cluster", "semantics": "aggregate"},
 ]
+
+
+def _build_active_semiconductor_snapshot() -> Any:
+    if os.getenv("SUPPLY_RISK_GRAPH_MODE", "fixture").strip().lower() == "promoted":
+        from graph_kernel.promoted_pipeline import build_promoted_graph_snapshot
+
+        return build_promoted_graph_snapshot()
+    return build_semiconductor_fixture_snapshot()
 
 
 def metadata_for_result(result: Any) -> VersionMetadata:
@@ -90,7 +99,7 @@ def route_graph_diff(request_id: str | None = None) -> dict[str, Any]:
 
 def route_semiconductor_graph_snapshot(request_id: str | None = None) -> dict[str, Any]:
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = _build_active_semiconductor_snapshot()
     except Exception as exc:
         return make_error_envelope(
             "semiconductor_graph_unavailable",
@@ -118,7 +127,7 @@ def route_semiconductor_graph_neighborhood(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = _build_active_semiconductor_snapshot()
         payload = semiconductor_neighborhood(snapshot, node_id=node_id, depth=depth)
     except KeyError as exc:
         return make_error_envelope(
@@ -149,7 +158,7 @@ def route_graph_view(
     mode: str = "overview",
     request_id: str | None = None,
 ) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     selected_nodes = _overview_node_ids(snapshot)
     selected_edges = _edges_between(snapshot, selected_nodes)[:OVERVIEW_EDGE_CAP]
     payload = _view_payload(
@@ -174,7 +183,7 @@ def route_graph_focus(
     depth: int = 1,
     request_id: str | None = None,
 ) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     node_ids = {node.node_id for node in snapshot.nodes}
     if node_id not in node_ids:
         return make_error_envelope(
@@ -206,7 +215,7 @@ def route_graph_focus(
 
 
 def route_graph_clusters(request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     clusters = _clusters(snapshot)
     payload = {
         **_base_view_metadata(snapshot, mode="overview"),
@@ -234,7 +243,7 @@ def route_graph_path_view(
     target_node_id: str = "product_grade:advanced_logic",
     request_id: str | None = None,
 ) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     path_edges = _find_directed_path(snapshot, source_node_id, target_node_id)
     path_node_ids: list[str] = []
     if path_edges:
@@ -270,12 +279,16 @@ def route_graph_path_view(
 
 
 def _base_view_metadata(snapshot: Any, *, mode: str) -> dict[str, Any]:
+    graph_mode = getattr(snapshot, "graph_mode", "fixture")
+    data_mode = getattr(snapshot, "data_mode", "fixture")
     return {
         "view_version": GRAPH_VIEW_VERSION,
         "mode": mode,
         "graph_version": snapshot.graph_version,
         "source_manifest_id": snapshot.source_manifest_id,
         "as_of_time": snapshot.as_of_time.isoformat(),
+        "data_mode": data_mode,
+        "graph_mode": graph_mode,
         "layers": GRAPH_LAYERS,
         "legend": GRAPH_LEGEND,
         "warnings": semiconductor_fixture_warnings(snapshot),
@@ -512,4 +525,3 @@ def _node_type_priority(node_type: str) -> int:
         "country": 3,
     }
     return priorities.get(node_type, 1)
-

@@ -1,0 +1,17 @@
+{
+  "counts_by_source_id": {
+    "bis_export_controls_lite": 2,
+    "eto_cset_advanced_semiconductor_supply_chain": 56,
+    "gdelt_semiconductor_events": 7,
+    "gdelt_semiconductor_lite": 8,
+    "global_trade_alert_semiconductor_export_controls": 8,
+    "nga_world_port_index_lite": 2,
+    "ofac_sanctions_list_lite": 1,
+    "sec_edgar_lite": 4,
+    "un_comtrade_semiconductor_trade_lite": 12,
+    "usgs_earthquake_lite": 2,
+    "world_bank_wits_trade_tariff_lite": 4,
+    "wsts_historical_billings": 4
+  },
+  "source_count": 12
+}

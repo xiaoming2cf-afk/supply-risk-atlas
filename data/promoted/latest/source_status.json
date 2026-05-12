@@ -1,0 +1,21 @@
+{
+  "source_count": 12,
+  "source_ids": [
+    "bis_export_controls_lite",
+    "eto_cset_advanced_semiconductor_supply_chain",
+    "gdelt_semiconductor_events",
+    "gdelt_semiconductor_lite",
+    "global_trade_alert_semiconductor_export_controls",
+    "nga_world_port_index_lite",
+    "ofac_sanctions_list_lite",
+    "sec_edgar_lite",
+    "un_comtrade_semiconductor_trade_lite",
+    "usgs_earthquake_lite",
+    "world_bank_wits_trade_tariff_lite",
+    "wsts_historical_billings"
+  ],
+  "status": "fixture_replayed_promoted",
+  "warnings": [
+    "live_fetch_disabled_by_default"
+  ]
+}

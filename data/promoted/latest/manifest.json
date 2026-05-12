@@ -1,0 +1,38 @@
+{
+  "checksum": "23245551e6f882c4eeb6abf4256435ecaabb487a152be639e1b8a979d6a8a987",
+  "connector_status_counts": {
+    "disabled_review_required": 8,
+    "fixture_connector": 4
+  },
+  "data_mode": "public_evidence_promoted",
+  "generated_at": "2026-05-12T00:00:00Z",
+  "graph_mode": "promoted",
+  "graph_version": "promoted_public_evidence_v0_1_3fb1e8c7550755e5",
+  "registry_version": "semiconductor-source-registry-v0.2",
+  "source_count": 12,
+  "source_ids": [
+    "bis_export_controls_lite",
+    "eto_cset_advanced_semiconductor_supply_chain",
+    "gdelt_semiconductor_events",
+    "gdelt_semiconductor_lite",
+    "global_trade_alert_semiconductor_export_controls",
+    "nga_world_port_index_lite",
+    "ofac_sanctions_list_lite",
+    "sec_edgar_lite",
+    "un_comtrade_semiconductor_trade_lite",
+    "usgs_earthquake_lite",
+    "world_bank_wits_trade_tariff_lite",
+    "wsts_historical_billings"
+  ],
+  "source_manifest_id": "public_evidence_manifest_23245551e6f882c4",
+  "status_counts": {
+    "disabled_review_required": 8,
+    "enabled_fixture": 4
+  },
+  "warnings": [
+    "live_fetch_disabled_by_default",
+    "payload_storage_disabled_by_default",
+    "some_sources_require_terms_review",
+    "paid_or_proprietary_sources_are_registry_only"
+  ]
+}

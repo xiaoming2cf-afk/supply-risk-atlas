@@ -445,3 +445,66 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - HS mappings are explicitly labeled as public-data proxies.
 - Next gate decision:
   - Proceed to Gate 9 promoted graph pipeline with expanded sources.
+
+## Gate 9 - Promoted Graph Pipeline With Expanded Sources
+
+- Current HEAD before Gate 9: `710797d`
+- Gate name: deterministic promoted public-evidence graph pipeline
+- Files changed:
+  - `docs/data/promoted-graph-pipeline.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `graph_kernel/graph_versioning.py`
+  - `graph_kernel/source_manifest.py`
+  - `graph_kernel/promoted_graph_quality.py`
+  - `graph_kernel/promoted_pipeline.py`
+  - `scripts/build_promoted_graph.py`
+  - `services/api/services/common.py`
+  - `services/api/services/graph_service.py`
+  - `tests/api/test_graph_promoted_mode.py`
+  - `tests/graph_invariants/test_graph_versioning.py`
+  - `tests/graph_invariants/test_promoted_pipeline.py`
+  - `tests/graph_invariants/test_promoted_graph_no_raw_payloads.py`
+  - `tests/graph_invariants/test_promoted_graph_source_coverage.py`
+  - `data/promoted/latest/manifest.json`
+  - `data/promoted/latest/graph_snapshot.json`
+  - `data/promoted/latest/source_status.json`
+  - `data/promoted/latest/quality_report.json`
+  - `data/promoted/latest/source_coverage.json`
+  - `data/promoted/latest/entity_resolution_report.json`
+- Commands run:
+  - `python -m pytest tests/graph_invariants/test_graph_versioning.py tests/graph_invariants/test_promoted_pipeline.py tests/graph_invariants/test_promoted_graph_no_raw_payloads.py tests/graph_invariants/test_promoted_graph_source_coverage.py -q`
+  - `python -m pytest tests/graph_invariants/test_graph_versioning.py tests/graph_invariants/test_promoted_pipeline.py tests/graph_invariants/test_promoted_graph_no_raw_payloads.py tests/graph_invariants/test_promoted_graph_source_coverage.py -q` rerun after source-coverage ref handling fix
+  - `python -m pytest tests/api/test_graph_promoted_mode.py tests/api/test_graph_view_endpoints.py -q`
+  - `python -m pytest tests/api/test_graph_promoted_mode.py tests/api/test_graph_view_endpoints.py -q` rerun after metadata data-mode compatibility fix
+  - `python scripts/build_promoted_graph.py`
+  - Sanitized artifact token check for `raw_payload`, `article_body`, `filing_body`, `authorization`, and `api_key`
+  - `python -m pytest tests/graph_invariants tests/api/test_graph_promoted_mode.py tests/api/test_graph_view_endpoints.py tests/ingestion tests/sources -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py tests/quality -q`
+- Pass/fail status:
+  - First graph invariant run: fail
+  - Graph invariant rerun: pass
+  - First API graph run: fail
+  - API graph rerun: pass
+  - Artifact build: pass
+  - Combined graph/API/ingestion/source tests: pass
+  - Security/quality guards: pass
+- Failures and exact causes:
+  - Source coverage initially treated serialized source refs as strings only; dumped graph refs are dictionaries. Coverage now accepts both strings and dictionaries.
+  - Promoted API graph view initially set envelope `VersionMetadata.data_mode` to `public_evidence_promoted`, but the existing contract only permits `real|synthetic|mock`. Payload-level graph data keeps `data_mode=public_evidence_promoted`; envelope metadata maps to the existing compatible value.
+- Evidence:
+  - Promoted graph version is deterministic for stable inputs and changes when graph inputs change.
+  - Promoted snapshot includes `data_mode=public_evidence_promoted`, `graph_mode=promoted`, graph/source versions, warnings, quality report, and source coverage.
+  - Pipeline replays existing SemiRisk fixture graph plus SEC, GDELT, UN Comtrade, WITS, USGS, World Port Index, OFAC, and BIS fixture connectors.
+  - `SUPPLY_RISK_GRAPH_MODE=promoted` makes `/api/v1/graph/view` return promoted graph metadata while default fixture graph views remain capped and compatible.
+  - Generated artifacts are small and sanitized; token check found no `raw_payload`, article/filing bodies, authorization, or API-key strings.
+- Limitations:
+  - Promoted graph is public-evidence research infrastructure, not production ready.
+  - Entity resolution remains deterministic starter crosswalks.
+  - Promoted graph edge semantics are evidence/proxy context and do not claim complete supplier truth.
+  - SQLite snapshot storage is available through explicit `store_sqlite=True`; default artifact build did not write runtime SQLite.
+- Source/legal notes:
+  - No live connector fetch was performed.
+  - No raw payloads or bulk source downloads were committed.
+  - OFAC/BIS outputs remain compliance-context summaries only.
+- Next gate decision:
+  - Proceed to Gate 10 graph APIs for additional views and chart/table data.
