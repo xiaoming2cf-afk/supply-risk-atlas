@@ -359,6 +359,8 @@ async function main() {
       "storage_readiness",
       "connector_readiness",
       "deployment_version_readiness",
+      "api_version",
+      "web_build_version",
       "calibration_status",
       "not_production_ready",
     ];

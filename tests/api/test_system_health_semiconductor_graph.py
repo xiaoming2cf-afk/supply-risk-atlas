@@ -105,7 +105,9 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert platform["storageReadiness"]["storageMode"] in {"memory", "sqlite"}
     assert platform["storageReadiness"]["pathRedacted"] is True
     assert platform["storageReadiness"]["path"] == "redacted"
-    assert platform["deploymentVersionReadiness"]["status"] == "not_verified"
+    assert platform["deploymentVersionReadiness"]["status"] in {"reported", "not_verified"}
+    assert platform["deploymentVersionReadiness"]["apiVersion"] == "0.1.0"
+    assert platform["deploymentVersionReadiness"]["apiGitCommit"]
     assert platform["dataMode"] in {"fixture", "promoted"}
     assert platform["graphMode"] in {"fixture", "promoted"}
     assert platform["notProductionReady"] is True

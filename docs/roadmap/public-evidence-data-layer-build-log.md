@@ -808,3 +808,53 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Source catalog `requires_api_key` remains visible only as a boolean policy field and does not contain credential material.
 - Next gate decision:
   - Proceed to Gate 17 deployment/version consistency.
+
+## Gate 17 - Deployment And Version Consistency
+
+- Current HEAD before Gate 17: `14bbaa9`
+- Gate name: API version endpoint, deployed-version checker, and System Health version display
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `docs/deployment/render.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/shared-types/src/health.ts`
+  - `scripts/browser-smoke.mjs`
+  - `scripts/check-deployed-version.py`
+  - `services/api/dev_server.py`
+  - `services/api/main.py`
+  - `services/api/routes/__init__.py`
+  - `services/api/routes/version.py`
+  - `services/api/services/system_health_service.py`
+  - `services/api/services/version_service.py`
+  - `tests/api/test_system_health_semiconductor_graph.py`
+  - `tests/api/test_system_health_storage_sources.py`
+  - `tests/api/test_version_endpoint.py`
+- Commands run:
+  - `python -m pytest tests/api/test_version_endpoint.py tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/api -q`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `python scripts/check-deployed-version.py --expected-commit 372125a --api-url http://127.0.0.1:1/api/v1 --web-url http://127.0.0.1:1`
+  - `python -m py_compile scripts/check-deployed-version.py`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
+- Failures and exact causes:
+  - The `check-deployed-version.py` command against intentionally closed localhost ports exited `1` with sanitized `stale_or_unverified` evidence, as designed. This was used to verify mismatch reporting without printing raw payloads and was not acceptance evidence for a live deployment.
+- Evidence:
+  - Added `GET /api/v1/version`.
+  - FastAPI and the local dev server both route `/api/v1/version`.
+  - Version payload includes `git_commit`, `build_time`, `app_version`, `data_mode`, `graph_mode`, `storage_mode`, `source_manifest_id`, `graph_version`, `environment`, `not_production_ready`, calibration status, and warnings.
+  - Version tests assert sanitized payload shape and no SQLite path/internal runtime path leakage.
+  - System Health displays `api_version`, `api_git_commit`, `api_build_time`, `web_build_version`, `web_build_time`, and deployment environment when available.
+  - `scripts/check-deployed-version.py` compares expected commit, API `/api/v1/version`, and web commit visibility while printing only sanitized status fields.
+  - Browser smoke passed 37 checks and now includes API/web version fields in the System Health terms.
+- Limitations:
+  - Web build commit visibility depends on `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` being supplied by the deployment environment; otherwise System Health reports `not_verified`.
+  - Render redeploy was not attempted from this local environment.
+  - Node.js 20 action deprecation warning remediation remains documented as deployment/CI maintenance; no GitHub Actions update was required by this local gate.
+- Source/legal notes:
+  - No live ingestion was run.
+  - Version and deployment checks do not print raw HTML, response bodies, environment dumps, internal filesystem paths, secrets, cookies, authorization headers, API keys, raw payloads, article bodies, or filing bodies.
+- Next gate decision:
+  - Proceed to Gate 18 final acceptance.

@@ -12,6 +12,7 @@ from services.api.services.common import (
     semiconductor_default_time,
     semiconductor_fixture_warnings,
 )
+from services.api.services.version_service import build_version_payload
 
 
 def source_registry_readiness_payload() -> dict[str, Any]:
@@ -228,6 +229,7 @@ def platform_status_payload(
     live_default_count = int(registry_readiness.get("live_default_count") or 0)
     registry_status = str(registry_readiness.get("status") or "unavailable")
     graph_status = str(graph_health.get("status") or "unavailable")
+    version = build_version_payload()
 
     warnings = [
         "not_production_ready",
@@ -238,6 +240,7 @@ def platform_status_payload(
     ]
     warnings.extend(str(warning) for warning in graph_health.get("warnings", []) if warning)
     warnings.extend(str(warning) for warning in registry_readiness.get("warnings", []) if warning)
+    warnings.extend(str(warning) for warning in version.get("warnings", []) if warning)
 
     return {
         "apiReadiness": "ready",
@@ -252,10 +255,14 @@ def platform_status_payload(
         },
         "modelReadiness": "fixture_ready" if graph_status != "unavailable" else "unavailable",
         "deploymentVersionReadiness": {
-            "status": "not_verified",
-            "apiVersion": "not_verified",
+            "status": "reported" if version["git_commit"] != "unknown" else "not_verified",
+            "apiVersion": str(version["app_version"]),
+            "apiGitCommit": str(version["git_commit"]),
+            "apiBuildTime": str(version["build_time"]),
             "webVersion": "not_verified",
-            "warnings": ["deployment_version_endpoint_deferred_to_gate_17"],
+            "webGitCommit": "not_verified",
+            "environment": str(version["environment"]),
+            "warnings": version["warnings"],
         },
         "dataMode": data_mode,
         "graphMode": graph_mode,

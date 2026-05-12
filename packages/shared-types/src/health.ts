@@ -191,7 +191,11 @@ export interface PlatformStatus {
   deploymentVersionReadiness: {
     status: string;
     apiVersion: string;
+    apiGitCommit?: string;
+    apiBuildTime?: string;
     webVersion: string;
+    webGitCommit?: string;
+    environment?: "local" | "render" | "unknown" | string;
     warnings: string[];
   };
   dataMode: "fixture" | "promoted" | "live_disabled" | "live_enabled" | string;

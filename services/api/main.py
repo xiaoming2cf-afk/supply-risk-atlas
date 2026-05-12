@@ -39,6 +39,7 @@ from services.api.routes import risk as risk_routes
 from services.api.routes import runs as run_routes
 from services.api.routes import scenarios as scenario_routes
 from services.api.routes import system_health as system_health_routes
+from services.api.routes import version as version_routes
 from services.api.runtime.errors import ControlledApiError
 from services.api.security.headers import cors_origins, security_headers
 from services.api.security.validation import (
@@ -84,6 +85,7 @@ from services.api.services.system_health_service import (
     platform_status_payload as _platform_status_payload,
     source_registry_readiness_payload as _source_registry_readiness_payload,
 )
+from services.api.services.version_service import route_version
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
 from sra_core.contracts.domain import (
@@ -2590,6 +2592,11 @@ def create_app() -> Any:
         app,
         Header=Header,
         route_system_health_center=route_system_health_center,
+    )
+    version_routes.register(
+        app,
+        Header=Header,
+        route_version=route_version,
     )
     graph_routes.register(
         app,

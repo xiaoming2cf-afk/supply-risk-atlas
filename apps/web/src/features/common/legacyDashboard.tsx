@@ -107,6 +107,9 @@ import {
 } from "./tables";
 import { useRunHistory } from "./useRunHistory";
 
+const WEB_BUILD_COMMIT = process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT ?? "not_verified";
+const WEB_BUILD_TIME = process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME ?? "not_verified";
+
 export interface PageRenderProps {
   data: Partial<SupplyRiskDashboardData>;
   apiClient: SupplyRiskApiClient;
@@ -4621,7 +4624,11 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
     deploymentVersionReadiness: {
       status: "not_verified",
       apiVersion: "not_verified",
+      apiGitCommit: "not_verified",
+      apiBuildTime: "not_verified",
       webVersion: "not_verified",
+      webGitCommit: "not_verified",
+      environment: "unknown",
       warnings: ["deployment_version_not_verified"],
     },
     dataMode: health.semiconductorGraph?.dataMode ?? "fixture",
@@ -4687,6 +4694,8 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const calibrationStatus = Array.isArray(platformStatus.calibrationStatus)
     ? platformStatus.calibrationStatus.join(";")
     : String(platformStatus.calibrationStatus ?? "fixture_proxy_not_calibrated");
+  const deploymentReadiness = platformStatus.deploymentVersionReadiness;
+  const webGitCommit = WEB_BUILD_COMMIT !== "not_verified" ? WEB_BUILD_COMMIT : deploymentReadiness.webGitCommit ?? "not_verified";
 
   return (
     <div className="page-grid">
@@ -4744,6 +4753,12 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <Field label="storage_path" value={platformStatus.storageReadiness.pathRedacted ? "redacted" : platformStatus.storageReadiness.path} />
           <Field label="model_readiness" value={platformStatus.modelReadiness} />
           <Field label="deployment_version_readiness" value={platformStatus.deploymentVersionReadiness.status} />
+          <Field label="api_version" value={deploymentReadiness.apiVersion} />
+          <Field label="api_git_commit" value={deploymentReadiness.apiGitCommit ?? "not_verified"} />
+          <Field label="api_build_time" value={deploymentReadiness.apiBuildTime ?? "not_verified"} />
+          <Field label="web_build_version" value={webGitCommit} />
+          <Field label="web_build_time" value={WEB_BUILD_TIME} />
+          <Field label="deployment_environment" value={deploymentReadiness.environment ?? "unknown"} />
           <Field label="validation_readiness" value={validationReadiness} />
           <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />
           <Field label="data_mode" value={platformStatus.dataMode} />
