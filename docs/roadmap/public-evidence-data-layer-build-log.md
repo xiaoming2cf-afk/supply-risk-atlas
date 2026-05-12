@@ -858,3 +858,45 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Version and deployment checks do not print raw HTML, response bodies, environment dumps, internal filesystem paths, secrets, cookies, authorization headers, API keys, raw payloads, article bodies, or filing bodies.
 - Next gate decision:
   - Proceed to Gate 18 final acceptance.
+
+## Gate 18 - Final Acceptance
+
+- Current HEAD before Gate 18: `5fec207`
+- Gate name: final no-regression acceptance
+- Files changed:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/storage tests/sources tests/ingestion tests/entity_resolution tests/contract tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
+- Failures and exact causes:
+  - No final local acceptance command failed.
+- Evidence:
+  - `python -m pytest tests/quality -q` passed: 8 tests.
+  - Combined subsystem pytest passed across storage, sources, ingestion, entity resolution, contracts, graph invariants, API, security, model, simulation, optimization, reports, and quality suites.
+  - Full `python -m pytest -q` passed.
+  - Web typecheck passed.
+  - Web production build passed with Next.js 16.3.0-canary.6.
+  - Local browser smoke passed 37 checks.
+  - Latest code commit before this log entry was `5fec207`.
+  - Local generated SQLite runtime files were removed after tests and were not committed.
+- Deployed status:
+  - Render redeploy was not performed from this environment.
+  - `npm.cmd run smoke:web -- --mode=deployed` was not accepted because deployment was not verified as updated to the latest local commits.
+  - Remote status remains explicitly unresolved until Render API/Web services are redeployed and checked with `/api/v1/version`, `scripts/check-deployed-version.py`, and deployed smoke.
+- Limitations:
+  - The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+  - SQLite is the only persistent backend; Postgres remains deferred.
+  - Public connectors are fixture-first and live-disabled by default.
+  - No live connectors, paid/proprietary feeds, GNN, LSTM, RandomForest, production decisioning, or financial-loss engine were introduced.
+  - Web build version is `not_verified` unless deployment supplies `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT`.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw downloaded bulk data was committed.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance are exposed by final acceptance tests.
+- Next gate decision:
+  - Stop after final acceptance; remote Render repair remains an operational follow-up requiring redeploy access/evidence.
