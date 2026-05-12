@@ -1,0 +1,43 @@
+# Public Evidence Data Layer Build Log
+
+## Gate 0 - Baseline And Render Status
+
+- Current HEAD: `97041b54573f35f8a771baa75c407ee2ba9e45d3`
+- Gate name: no-regression baseline and remote redeploy checklist
+- Changed files:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `git status -sb`
+  - `git rev-parse HEAD`
+  - `Invoke-WebRequest https://supply-risk-atlas-web.onrender.com/#graph-explorer`
+  - `Invoke-WebRequest https://supply-risk-atlas-api.onrender.com/api/v1/graph/view`
+  - `python -m pytest -q`
+  - `python -m pytest tests/security tests/api tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - `npm.cmd run smoke:web -- --mode=deployed`
+- Pass/fail: pass
+- Evidence:
+  - Full pytest passed.
+  - Focused security/API/model/simulation/optimization/report/quality pytest passed.
+  - Web typecheck passed.
+  - Web build passed.
+  - Local browser smoke passed: 26 checks.
+  - Deployed browser smoke passed: 26 checks.
+  - Deployed API `/api/v1/graph/view` returned HTTP 200.
+  - Deployed web root returned HTTP 200; static shell did not include Graph Explorer v2 text, but deployed browser smoke confirmed the live client rendered expected v2 checks.
+- Render redeploy checklist:
+  - Redeploy API service from latest `main`.
+  - Redeploy Web service from latest `main`.
+  - Clear Web build cache if Graph Explorer v2 does not appear.
+  - Verify `NEXT_PUBLIC_SUPPLY_RISK_API_URL`, `SUPPLY_RISK_API_ORIGIN`, `SUPPLY_RISK_CORS_ORIGINS`, data mode, graph mode, request limit, and run-store size variables.
+  - Rerun `npm.cmd run smoke:web -- --mode=deployed`.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw public-source payloads were downloaded or committed.
+  - Existing platform remains fixture/proxy based and not production ready.
+- Limitations:
+  - Deployed acceptance depends on current Render state; future commits still require redeploy verification.
+  - Static HTML is not sufficient evidence for Graph Explorer v2 because the client renders after hydration.
+- Next gate decision: proceed to Gate 1 persistent SQLite storage foundation.
