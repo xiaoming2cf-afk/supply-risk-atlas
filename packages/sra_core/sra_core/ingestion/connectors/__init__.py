@@ -14,6 +14,10 @@ from sra_core.ingestion.connectors.base import (
     ConnectorRequest,
     PublicEvidenceConnector,
 )
+from sra_core.ingestion.connectors.gdelt_semiconductor_lite import (
+    GdeltSemiconductorLiteConnector,
+)
+from sra_core.ingestion.connectors.sec_edgar_lite import SecEdgarLiteConnector
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -132,6 +136,8 @@ __all__ = [
     "PublicEvidenceConnector",
     "PublicSourceConnector",
     "SecEdgarConnector",
+    "SecEdgarLiteConnector",
     "GdeltConnector",
+    "GdeltSemiconductorLiteConnector",
     "connector_for_source",
 ]

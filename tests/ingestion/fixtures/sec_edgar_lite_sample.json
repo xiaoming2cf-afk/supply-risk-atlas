@@ -1,0 +1,80 @@
+{
+  "fixture_version": "public_evidence_lite_v0.1",
+  "source_id": "sec_edgar",
+  "records": [
+    {
+      "source_record_id": "sec-edgar-0000320193-2026-q1-risk-factor-lite",
+      "retrieved_at": "2026-05-01T00:00:00Z",
+      "source_published_at": "2026-01-30T00:00:00Z",
+      "as_of_time": "2026-05-01T00:00:00Z",
+      "provenance_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000010/",
+      "raw_payload_summary": "Fixture-only SEC EDGAR filing risk-factor metadata summary; filing text is excluded.",
+      "company_identifier": "CIK0000320193",
+      "company_name": "Apple Inc.",
+      "filing_date": "2026-01-30",
+      "disclosure_type": "10-Q risk factors",
+      "risk_factor_summary": "The disclosure summary notes supplier concentration and semiconductor component availability as operational risk factors.",
+      "supply_chain_keywords": ["semiconductor", "supply chain", "supplier concentration"],
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000010/",
+      "confidence": 0.72,
+      "entities": [
+        {
+          "node_id": "company:apple",
+          "node_type": "company",
+          "canonical_name": "Apple Inc.",
+          "aliases": ["Apple"],
+          "country_code": "US",
+          "sector_tags": ["electronics", "semiconductor_demand"],
+          "confidence": 0.72
+        },
+        {
+          "node_id": "risk_event:sec_edgar_apple_supplier_concentration_2026_q1",
+          "node_type": "risk_event",
+          "canonical_name": "Apple supplier concentration disclosure",
+          "aliases": ["SEC EDGAR supplier concentration disclosure"],
+          "country_code": "US",
+          "sector_tags": ["risk_event", "disclosure"],
+          "confidence": 0.72
+        }
+      ],
+      "events": [
+        {
+          "event_id": "risk_event:sec_edgar_apple_supplier_concentration_2026_q1",
+          "event_type": "risk_event",
+          "canonical_name": "Apple supplier concentration disclosure",
+          "event_time": "2026-01-30T00:00:00Z",
+          "summary": "Fixture-only SEC EDGAR disclosure event summarizing supplier concentration and semiconductor availability risk.",
+          "affected_entity_ids": ["company:apple", "product_grade:advanced_logic"],
+          "confidence": 0.72,
+          "attributes": {
+            "company_identifier": "CIK0000320193",
+            "filing_date": "2026-01-30",
+            "disclosure_type": "10-Q risk factors",
+            "supply_chain_keywords": ["semiconductor", "supply chain", "supplier concentration"],
+            "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000010/"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "edge:company_apple:evidence_for:sec_supplier_concentration_disclosure",
+          "source_node_id": "company:apple",
+          "target_node_id": "risk_event:sec_edgar_apple_supplier_concentration_2026_q1",
+          "edge_type": "evidence_for",
+          "weight": 0.35,
+          "confidence": 0.72,
+          "evidence_text_summary": "SEC EDGAR fixture metadata links Apple to a supplier concentration risk disclosure."
+        },
+        {
+          "edge_id": "edge:sec_supplier_concentration:evidence_for:advanced_logic",
+          "source_node_id": "risk_event:sec_edgar_apple_supplier_concentration_2026_q1",
+          "target_node_id": "product_grade:advanced_logic",
+          "edge_type": "evidence_for",
+          "weight": 0.28,
+          "confidence": 0.66,
+          "evidence_text_summary": "The disclosure summary references semiconductor component availability for advanced electronics demand."
+        }
+      ]
+    }
+  ]
+}

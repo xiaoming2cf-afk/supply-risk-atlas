@@ -20,6 +20,7 @@ SemiconductorSourceId = Literal[
     "wsts_historical_billings",
     "global_trade_alert_semiconductor_export_controls",
     "gdelt_semiconductor_events",
+    "sec_edgar",
 ]
 
 SemiconductorNodeType = Literal[

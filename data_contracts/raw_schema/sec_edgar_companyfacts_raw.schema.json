@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "sec_edgar_companyfacts_raw",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": { "const": "sec_edgar" },
+    "source_record_id": { "type": "string", "minLength": 1 },
+    "retrieved_at": { "type": "string", "format": "date-time" },
+    "source_published_at": { "type": ["string", "null"], "format": "date-time" },
+    "as_of_time": { "type": "string", "format": "date-time" },
+    "payload_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "provenance_url": { "type": "string", "minLength": 1 },
+    "raw_payload_summary": { "type": "string", "minLength": 1 },
+    "license_or_terms_ref": { "type": "string", "minLength": 1 },
+    "company_identifier": { "type": "string", "minLength": 1 },
+    "filing_date": { "type": "string", "minLength": 1 },
+    "disclosure_type": { "type": "string", "minLength": 1 },
+    "risk_factor_summary": { "type": "string", "minLength": 1 },
+    "supply_chain_keywords": { "type": "array", "items": { "type": "string" } },
+    "source_url": { "type": "string", "minLength": 1 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  },
+  "required": [
+    "source_id",
+    "source_record_id",
+    "retrieved_at",
+    "source_published_at",
+    "as_of_time",
+    "payload_hash",
+    "provenance_url",
+    "raw_payload_summary",
+    "license_or_terms_ref",
+    "company_identifier",
+    "filing_date",
+    "disclosure_type",
+    "risk_factor_summary",
+    "supply_chain_keywords",
+    "source_url",
+    "confidence"
+  ]
+}

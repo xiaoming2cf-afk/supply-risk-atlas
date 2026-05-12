@@ -90,8 +90,8 @@ sources:
     update_frequency: daily
     freshness_sla_hours: 72
     connector: disabled:v0.2_review_required
-    raw_contract: data_contracts/raw_schema/sec_edgar_raw.schema.json
-    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
+    raw_contract: data_contracts/raw_schema/sec_edgar_companyfacts_raw.schema.json
+    silver_contract: data_contracts/silver_schema/company_disclosure_event.schema.json
     graph_contract: data_contracts/graph_schema/semirisk_graph_snapshot.schema.json
     owner: data-ingestion
     review_status: disabled_pending_v0.2_review

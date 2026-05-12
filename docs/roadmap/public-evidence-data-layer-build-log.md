@@ -150,3 +150,65 @@
   - The framework does not yet include source-specific SEC/GDELT lite promotion; those begin in Gates 4 and 5.
   - Base live fetch raises controlled unavailable unless a connector explicitly implements it.
 - Next gate decision: proceed to Gates 4 and 5 fixture-first SEC EDGAR and GDELT lite connectors.
+
+## Gate 4 - SEC EDGAR Risk-Factor Lite Connector
+
+- Current HEAD before commit: `a3a04e1`
+- Gate name: fixture-first SEC EDGAR risk-factor lite connector
+- Changed files:
+  - `configs/sources/semiconductor.yaml`
+  - `data_contracts/raw_schema/sec_edgar_companyfacts_raw.schema.json`
+  - `data_contracts/silver_schema/company_disclosure_event.schema.json`
+  - `docs/data/sec-edgar-lite-connector.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/contracts/semiconductor.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/sec_edgar_lite.py`
+  - `tests/ingestion/fixtures/sec_edgar_lite_sample.json`
+  - `tests/ingestion/test_sec_edgar_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_sec_edgar_lite.py tests/ingestion/test_gdelt_semiconductor_lite.py tests/ingestion/test_semiconductor_source_registry.py tests/sources -q`
+  - `python -m pytest tests/ingestion -q`
+- Pass/fail: pass
+- Evidence:
+  - SEC EDGAR lite fixture replay returns one sanitized `sec_edgar` raw-record index entry with payload hash, provenance URL, retrieved time, and terms reference.
+  - Promotion emits a company disclosure risk event and `evidence_for` graph links.
+  - Live mode remains disabled by default and requires `SUPPLY_RISK_SEC_EDGAR_USER_AGENT` before any future live implementation.
+  - Fixture/API-facing promotion output does not include raw filing payloads.
+- Source/legal notes:
+  - Source registry keeps SEC EDGAR disabled by default and documents SEC access guidance.
+  - Connector docs require explicit live trigger, rate limits, timeout, and SEC-compliant user-agent for any future live path.
+  - Full filing bodies are not committed, stored, or returned.
+- Limitations:
+  - This gate provides fixture-first architecture only; live SEC retrieval is controlled unavailable.
+  - The connector extracts summarized disclosure events, not complete filing analysis.
+- Next gate decision: proceed to Gate 5 GDELT semiconductor event lite connector.
+
+## Gate 5 - GDELT Semiconductor Event Lite Connector
+
+- Current HEAD before commit: `a3a04e1`
+- Gate name: fixture-first GDELT semiconductor event lite connector
+- Changed files:
+  - `docs/data/gdelt-semiconductor-lite-connector.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/gdelt_semiconductor_lite.py`
+  - `tests/ingestion/fixtures/gdelt_semiconductor_lite_sample.json`
+  - `tests/ingestion/test_gdelt_semiconductor_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_sec_edgar_lite.py tests/ingestion/test_gdelt_semiconductor_lite.py tests/ingestion/test_semiconductor_source_registry.py tests/sources -q`
+  - `python -m pytest tests/ingestion -q`
+- Pass/fail: pass
+- Evidence:
+  - GDELT lite fixture replay returns one sanitized `gdelt_semiconductor_events` raw-record index entry with payload hash, provenance URL, retrieved time, and terms reference.
+  - Query scope is bounded to semiconductor, chip supply chain, lithography, wafer fab, photoresist, export control, and earthquake plus semiconductor-region terms.
+  - Promotion emits a risk event plus `impacted_by` and `evidence_for` graph links.
+  - Live mode remains disabled by default.
+  - Fixture/API-facing promotion output does not include article bodies or raw news payloads.
+- Source/legal notes:
+  - GDELT article text is not committed, stored, or returned.
+  - Connector docs require explicit live trigger, timeouts, rate limits, and no uncontrolled news scraping for any future live path.
+- Limitations:
+  - This gate provides fixture-first architecture only; live GDELT retrieval is controlled unavailable.
+  - Event extraction is metadata/summarization oriented and not a production monitoring feed.
+- Next gate decision: proceed to Gate 6 promoted graph pipeline.
