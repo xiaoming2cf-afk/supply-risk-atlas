@@ -409,6 +409,64 @@ async function main() {
       passed: !semiriskSystemHealthReady || chartTableTerms.every((term) => healthState.text.includes(term)),
     });
 
+    const pageVisualizationChecks = [
+      {
+        page: "Entity Risk 360 visualization integration",
+        hash: "#company-risk-360",
+        title: "Entity Risk 360",
+        terms: ["Risk charts and evidence tables", "Risk component breakdown", "HHI concentration", "Evidence refs"],
+      },
+      {
+        page: "Shock Simulator visualization integration",
+        hash: "#shock-simulator",
+        title: "Shock Simulator",
+        terms: ["Forward analytics charts and tables", "Monte Carlo histogram", "Functionality curve", "ScenarioRun"],
+      },
+      {
+        page: "Reverse Stress Lab visualization integration",
+        hash: "#reverse-stress-lab",
+        title: "Reverse Stress Lab",
+        terms: ["Reverse stress charts and tables", "Top shock set path chart", "Ranked shock sets table"],
+      },
+      {
+        page: "Intervention Optimizer visualization integration",
+        hash: "#intervention-optimizer",
+        title: "Intervention Optimizer",
+        terms: ["Optimizer charts and action tables", "Optimizer before after", "OptimizerAction"],
+      },
+      {
+        page: "Investigation Report visualization integration",
+        hash: "#investigation-report",
+        title: "Investigation Report",
+        terms: ["Report metadata and evidence table", "Evidence summary table", "Evidence count"],
+      },
+      {
+        page: "Evidence Board visualization integration",
+        hash: "#causal-evidence-board",
+        title: "Causal Evidence Board",
+        terms: ["Evidence audit table", "Evidence refs", "Source freshness", "EVIDENCE_TO_GRAPH_PATH"],
+      },
+    ];
+    for (const check of pageVisualizationChecks) {
+      await navigate(client, `${webUrl}${check.hash}`);
+      const state = await waitFor(
+        client,
+        () => pageState(client),
+        (candidate) =>
+          candidate.title === check.title &&
+          (semiriskSystemHealthReady
+            ? check.terms.every((term) => candidate.text.includes(term))
+            : candidate.text.includes("Data temporarily unavailable") || candidate.text.includes("unavailable")),
+      );
+      checks.push({
+        page: check.page,
+        present: check.terms.filter((term) => state.text.includes(term)),
+        passed:
+          state.title === check.title &&
+          (!semiriskSystemHealthReady || check.terms.every((term) => state.text.includes(term))),
+      });
+    }
+
     await navigate(client, `${webUrl}#company-risk-360`);
     const riskEvidenceTerms = [
       "company:tsmc",

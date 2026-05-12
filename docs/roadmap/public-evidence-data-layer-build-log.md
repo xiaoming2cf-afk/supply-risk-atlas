@@ -624,3 +624,41 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Evidence-context links remain visually and semantically separate from dependency/supply/policy/event edges.
 - Next gate decision:
   - Proceed to Gate 13 page-level chart/table integration.
+
+## Gate 13 - Page-Level Chart/Table Integration
+
+- Current HEAD before Gate 13: `f6b9029`
+- Gate name: evidence-bound page visualizations and tables on existing public pages
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `scripts/browser-smoke.mjs`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd run smoke:web`
+  - `npm.cmd run smoke:web` rerun after case-sensitive Evidence Board smoke term fix
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First browser-smoke run failed because the new Evidence Board smoke term expected `evidence_to_graph_path` while the existing `Field` component renders labels uppercase as `EVIDENCE_TO_GRAPH_PATH`. The smoke expectation now matches the rendered label.
+- Evidence:
+  - Browser smoke passed 37 checks.
+  - Smoke verifies page-level visualization integration for Entity Risk 360, Shock Simulator, Reverse Stress Lab, Intervention Optimizer, Investigation Report, and Evidence Board.
+  - System Health continues to verify chart/table controlled states.
+  - Entity Risk 360 now shows risk component and HHI charts plus evidence/ranking tables.
+  - Shock Simulator now shows controlled Monte Carlo/functionality chart states and scenario run table before and after runs.
+  - Reverse Stress Lab now shows controlled shock-set chart/table states.
+  - Intervention Optimizer now shows controlled before/after and action table states.
+  - Investigation Report now shows report metadata/evidence tables before and after generation.
+  - Evidence Board now shows source freshness, confidence filter, evidence-to-graph path refs, and an evidence audit table.
+- Limitations:
+  - Some charts remain controlled empty states until the user explicitly runs a scenario, reverse stress search, optimizer, or report.
+  - Page integrations use existing fixture/proxy/promoted metadata only; no new live data or fake analytics were added.
+  - Detailed export/audit endpoints are deferred to Gate 14.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, internal paths, secrets, article bodies, or filing bodies are rendered.
+  - Compliance-related evidence remains display-only and does not provide evasion or workaround advice.
+- Next gate decision:
+  - Proceed to Gate 14 analytics tables, exports, and evidence audit.
