@@ -26,7 +26,12 @@ export function GraphLegend({ metadata }: { metadata: GraphVersionMetadata }) {
             {label}
           </span>
         ))}
+        <span className="graph-legend-item graph-legend-link-kind">
+          <i className="evidence-context-swatch" />
+          evidence-context link
+        </span>
       </div>
+      <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
       <div className="inspector-grid">
         <Field label="graph_version" value={metadata.graphVersion} />
         <Field label="source_manifest_id" value={metadata.sourceManifestId} />

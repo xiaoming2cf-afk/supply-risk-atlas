@@ -379,6 +379,16 @@ export interface GraphViewMetadata {
   warnings: string[];
 }
 
+export interface GraphBackendViewData extends GraphViewMetadata {
+  nodes: Array<Record<string, unknown>>;
+  edges: Array<Record<string, unknown>>;
+  clusters: Array<Record<string, unknown>>;
+  layout_hints: Record<string, unknown>;
+  layers: Array<Record<string, unknown>>;
+  legend: Array<Record<string, unknown>>;
+  fixture_limitations?: string[];
+}
+
 export interface GraphTimelineData extends GraphViewMetadata {
   events: Array<Record<string, unknown>>;
   layout_hints: Record<string, unknown>;

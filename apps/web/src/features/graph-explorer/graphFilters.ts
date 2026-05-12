@@ -8,6 +8,8 @@ export type GraphLayerCategory =
   | "substitution"
   | "trade"
   | "route"
+  | "hazard"
+  | "sanctions"
   | "simulation_trace";
 
 export const graphLayerCategories: GraphLayerCategory[] = [
@@ -18,6 +20,8 @@ export const graphLayerCategories: GraphLayerCategory[] = [
   "substitution",
   "trade",
   "route",
+  "hazard",
+  "sanctions",
   "simulation_trace",
 ];
 
@@ -30,6 +34,8 @@ export function edgeLayerCategory(link: GraphLink): GraphLayerCategory {
   if (text.includes("event") || text.includes("incident") || text.includes("pressure")) return "event";
   if (text.includes("substitut") || text.includes("alternative")) return "substitution";
   if (text.includes("trade") || text.includes("custom") || text.includes("export") || text.includes("import")) return "trade";
+  if (text.includes("hazard") || text.includes("earthquake") || text.includes("exposure")) return "hazard";
+  if (text.includes("sanction") || text.includes("screening") || text.includes("restricted party")) return "sanctions";
   if (text.includes("route") || text.includes("lane") || text.includes("carrier") || text.includes("logistic")) return "route";
   if (text.includes("supply") || text.includes("supplier") || text.includes("flow") || text.includes("facility")) return "supply";
   return "dependency";

@@ -768,3 +768,77 @@ button {
 .metadata-badge-warn {
   border-color: rgba(242, 184, 75, 0.52);
 }
+
+.graph-workbench-v3 .graph-v3-filter-panel {
+  gap: 10px;
+}
+
+.graph-endpoint-status,
+.graph-v3-panel {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.graph-endpoint-status {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.graph-endpoint-status.is-active {
+  border-color: rgba(67, 160, 71, 0.45);
+}
+
+.graph-endpoint-status.is-fallback,
+.graph-endpoint-status.is-loading {
+  border-color: rgba(242, 184, 75, 0.45);
+}
+
+.graph-v3-panel {
+  overflow-x: auto;
+}
+
+.graph-v3-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.graph-v3-panel th,
+.graph-v3-panel td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.graph-step-table {
+  display: grid;
+  gap: 8px;
+  padding-left: 18px;
+}
+
+.graph-step-table span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.matrix-weight-cell {
+  display: inline-flex;
+  min-width: 44px;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(57, 117, 91, 0.24);
+}
+
+.evidence-context-swatch {
+  width: 18px;
+  height: 0;
+  border-top: 2px dashed #64748b;
+  background: transparent !important;
+}

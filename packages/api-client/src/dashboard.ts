@@ -10,6 +10,7 @@ import type {
   ForwardScenarioInput,
   ForwardScenarioResult,
   GlobalRiskCockpitData,
+  GraphBackendViewData,
   GraphExplorerData,
   GraphEvidenceData,
   GraphGeoData,
@@ -58,6 +59,10 @@ export interface SupplyRiskApiClient {
   getSystemHealthCenter(): Promise<ApiResult<SystemHealthData>>;
   getSemiriskGraphSnapshot(): Promise<ApiResult<SemiriskGraphSnapshotData>>;
   getSemiriskGraphNeighborhood(nodeId: string, depth?: number): Promise<ApiResult<SemiriskGraphNeighborhoodData>>;
+  getGraphView(options?: { mode?: string }): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphFocus(options?: { nodeId?: string; depth?: number }): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphClusters(): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphPathView(options?: { sourceNodeId?: string; targetNodeId?: string }): Promise<ApiResult<GraphBackendViewData>>;
   getGraphTimeline(options?: { limit?: number }): Promise<ApiResult<GraphTimelineData>>;
   getGraphGeo(options?: { limit?: number }): Promise<ApiResult<GraphGeoData>>;
   getGraphMatrix(options?: { limit?: number }): Promise<ApiResult<GraphMatrixData>>;
@@ -296,6 +301,26 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(
         baseUrl,
         `/graph/neighborhood${queryString({ node_id: nodeId, depth })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphView: (options) =>
+      requestJson(baseUrl, `/graph/view${queryString({ mode: options?.mode })}`, undefined, clientOptions),
+    getGraphFocus: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/focus${queryString({ node_id: options?.nodeId, depth: options?.depth })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphClusters: () => requestJson(baseUrl, "/graph/clusters", undefined, clientOptions),
+    getGraphPathView: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/path-view${queryString({
+          source_node_id: options?.sourceNodeId,
+          target_node_id: options?.targetNodeId,
+        })}`,
         undefined,
         clientOptions,
       ),

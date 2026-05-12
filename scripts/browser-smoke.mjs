@@ -198,9 +198,11 @@ async function main() {
       (state) =>
         state.title === "Graph Explorer" &&
         state.hasV2Title &&
+        state.hasV3ModeSelector &&
         state.hasLegend &&
         state.hasLayerControls &&
         state.hasFixtureWarning &&
+        state.hasEvidenceContextSafety &&
         state.graphNodeCount >= 2 &&
         state.flowEdgeCount >= 1 &&
         state.graphNodeCount <= 20 &&
@@ -213,12 +215,16 @@ async function main() {
       hasLegend: graphV2Overview.hasLegend,
       hasLayerControls: graphV2Overview.hasLayerControls,
       hasFixtureWarning: graphV2Overview.hasFixtureWarning,
+      hasV3ModeSelector: graphV2Overview.hasV3ModeSelector,
+      hasEvidenceContextSafety: graphV2Overview.hasEvidenceContextSafety,
       passed:
         graphV2Overview.title === "Graph Explorer" &&
         graphV2Overview.hasV2Title &&
+        graphV2Overview.hasV3ModeSelector &&
         graphV2Overview.hasLegend &&
         graphV2Overview.hasLayerControls &&
         graphV2Overview.hasFixtureWarning &&
+        graphV2Overview.hasEvidenceContextSafety &&
         graphV2Overview.graphNodeCount >= 2 &&
         graphV2Overview.flowEdgeCount >= 1 &&
         graphV2Overview.graphNodeCount <= 20 &&
@@ -274,6 +280,67 @@ async function main() {
       page: "Graph Explorer v2 layer toggle",
       flowEdgeCount: graphV2LayerToggle.flowEdgeCount,
       passed: graphV2LayerToggle.hasLayerControls && graphV2LayerToggle.flowEdgeCount <= 40,
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Timeline'))?.click();
+    })()`);
+    const graphV3Timeline = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Timeline mode") && state.text.includes("event nodes") && state.flowEdgeCount <= 40,
+    );
+    checks.push({
+      page: "Graph Explorer v3 timeline mode",
+      flowEdgeCount: graphV3Timeline.flowEdgeCount,
+      passed: graphV3Timeline.text.includes("Timeline mode") && graphV3Timeline.flowEdgeCount <= 40,
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Geo'))?.click();
+    })()`);
+    const graphV3Geo = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Geo mode") && state.graphNodeCount <= 20 && state.flowEdgeCount <= 35,
+    );
+    checks.push({
+      page: "Graph Explorer v3 geo mode",
+      graphNodeCount: graphV3Geo.graphNodeCount,
+      flowEdgeCount: graphV3Geo.flowEdgeCount,
+      passed: graphV3Geo.text.includes("Geo mode") && graphV3Geo.graphNodeCount <= 20 && graphV3Geo.flowEdgeCount <= 35,
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Matrix'))?.click();
+    })()`);
+    const graphV3Matrix = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Matrix mode") && state.text.includes("dense node cloud"),
+    );
+    checks.push({
+      page: "Graph Explorer v3 matrix mode",
+      graphNodeCount: graphV3Matrix.graphNodeCount,
+      passed: graphV3Matrix.text.includes("Matrix mode") && graphV3Matrix.text.includes("dense node cloud"),
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Evidence'))?.click();
+    })()`);
+    const graphV3Evidence = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Evidence mode") && state.hasEvidenceContextSafety,
+    );
+    checks.push({
+      page: "Graph Explorer v3 evidence-context safety",
+      hasEvidenceContextSafety: graphV3Evidence.hasEvidenceContextSafety,
+      passed: graphV3Evidence.text.includes("Evidence mode") && graphV3Evidence.hasEvidenceContextSafety,
     });
 
     await navigate(client, `${webUrl}#system-health-center`);
@@ -1275,9 +1342,11 @@ async function graphV2State(client) {
       flowNodeCount: document.querySelectorAll('.react-flow__node').length,
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
       hasV2Title: text.includes('Graph Explorer v2'),
+      hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence'),
       hasLegend: text.includes('Legend'),
       hasLayerControls: text.includes('Layer controls'),
       hasFixtureWarning: text.includes('fixture_graph:not_production_ready'),
+      hasEvidenceContextSafety: text.includes('This is not a supply-chain dependency edge.'),
       layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
     };
   })()`);

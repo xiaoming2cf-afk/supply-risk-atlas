@@ -579,3 +579,48 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Displayed System Health charts/tables use existing API source registry and graph metadata.
 - Next gate decision:
   - Proceed to Gate 12 Graph Explorer v3 interaction modes.
+
+## Gate 12 - Graph Explorer V3 Interaction Modes
+
+- Current HEAD before Gate 12: `89d39ec`
+- Gate name: Graph Explorer v3 decluttered modes, filters, backend graph-view preference, and evidence-context safety
+- Files changed:
+  - `apps/web/src/app/globals.css`
+  - `apps/web/src/app/pages.tsx`
+  - `apps/web/src/features/graph-explorer/GraphControls.tsx`
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+  - `apps/web/src/features/graph-explorer/GraphLayers.tsx`
+  - `apps/web/src/features/graph-explorer/GraphLegend.tsx`
+  - `apps/web/src/features/graph-explorer/graphFilters.ts`
+  - `apps/web/src/features/graph-explorer/graphViewModel.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `scripts/browser-smoke.mjs`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/api/test_graph_view_endpoints.py tests/api/test_graph_chart_table_endpoints.py -q`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd run smoke:web`
+  - `python -m pytest tests/api -q`
+- Pass/fail status: pass
+- Evidence:
+  - Graph Explorer still preserves the v2 overview and focus caps: browser smoke reported overview 20 nodes / 17 edges and focus 14 nodes / 23 edges.
+  - Added v3 mode selector coverage for Overview, Focus, Path, Timeline, Geo, Matrix, Scenario overlay, and Evidence.
+  - Timeline, Geo, Matrix, and Evidence modes have controlled panels and browser-smoke checks.
+  - Matrix mode renders a bounded table/heatmap-style view instead of a dense node cloud.
+  - Layer controls now include hazard and sanctions layers while preserving dependency, supply, policy, event, substitution, trade, route, and simulation trace.
+  - Graph Explorer now prefers backend graph view endpoints through the API client and shows a controlled fallback label when only the dashboard graph payload is available.
+  - Evidence-context link safety copy remains visible: `This is not a supply-chain dependency edge.`
+  - Smoke report: `Browser smoke passed: 31 checks` with new Graph Explorer v3 timeline, geo, matrix, and evidence-context safety checks.
+- Limitations:
+  - Backend endpoint payloads are used as mode detail/status inputs; the existing dashboard graph payload remains the visual fallback for canvas rendering.
+  - Scenario overlay remains a controlled selected-run-only state when no run is selected.
+  - Matrix and evidence views are bounded summaries, not exhaustive graph exports.
+- Source/legal notes:
+  - No live ingestion was run.
+  - Export view summary contains only visible sanitized node/link metadata and graph/source version fields.
+  - Evidence-context links remain visually and semantically separate from dependency/supply/policy/event edges.
+- Next gate decision:
+  - Proceed to Gate 13 page-level chart/table integration.

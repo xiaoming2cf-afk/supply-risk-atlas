@@ -16,7 +16,7 @@ import {
 } from "./graphFilters";
 import { graphScore, riskLevelRank } from "./graphLayout";
 
-export type GraphViewMode = "overview" | "focus" | "path" | "timeline" | "geo" | "scenario";
+export type GraphViewMode = "overview" | "focus" | "path" | "timeline" | "geo" | "matrix" | "scenario" | "evidence";
 
 export type LegacyGraphExplorerMode =
   | GraphViewMode
@@ -24,7 +24,8 @@ export type LegacyGraphExplorerMode =
   | "upstream-downstream"
   | "geo-aggregate"
   | "risk-propagation"
-  | "event-timeline";
+  | "event-timeline"
+  | "scenario-overlay";
 
 export type GraphFocusDirection = "incoming" | "outgoing" | "both";
 
@@ -47,7 +48,12 @@ export interface GraphViewModelInput {
   searchQuery: string;
   nodeKind: GraphNodeKind | "all";
   enabledLayers: Set<GraphLayerCategory>;
+  confidenceMin: number;
+  countryFilter: string;
+  evidenceOnly: boolean;
   hideLowConfidence: boolean;
+  productFilter: string;
+  sourceFilter: string;
   pinnedNodeIds: Set<string>;
   focusDepth: number;
   focusDirection: GraphFocusDirection;
@@ -84,6 +90,7 @@ export function normalizeGraphViewMode(mode: LegacyGraphExplorerMode): GraphView
   if (mode === "risk-propagation") return "path";
   if (mode === "event-timeline") return "timeline";
   if (mode === "geo-aggregate") return "geo";
+  if (mode === "scenario-overlay") return "scenario";
   return mode;
 }
 
@@ -98,7 +105,9 @@ export function graphModeLabel(mode: GraphViewMode) {
     path: "Path",
     timeline: "Timeline",
     geo: "Geo",
+    matrix: "Matrix",
     scenario: "Scenario overlay",
+    evidence: "Evidence",
   }[mode];
 }
 
@@ -121,17 +130,23 @@ export function buildGraphViewModel(input: GraphViewModelInput): GraphViewModel 
   );
   const useSearchFocus = matchedNodeIds.size > 0 && (input.mode === "overview" || input.mode === "focus");
   const searchContext = buildSearchContextGraph(input.graph, matchedNodeIds);
-  const workingNodes = searchContext.nodes.length ? [...input.graph.nodes, ...searchContext.nodes] : input.graph.nodes;
+  const baseNodes = input.graph.nodes.filter((node) =>
+    graphNodePassesAdvancedFilters(node, input.sourceFilter, input.countryFilter, input.productFilter, input.evidenceOnly),
+  );
+  const workingNodes = searchContext.nodes.length ? [...baseNodes, ...searchContext.nodes] : baseNodes;
   const baseFilteredLinks = filterGraphLinks(input.graph.links, {
     enabledLayers: input.enabledLayers,
     hideLowConfidence: input.hideLowConfidence,
   });
-  const filteredLinks = searchContext.links.length ? [...baseFilteredLinks, ...searchContext.links] : baseFilteredLinks;
+  const advancedFilteredLinks = baseFilteredLinks.filter((link) =>
+    graphLinkPassesAdvancedFilters(link, input.sourceFilter, input.countryFilter, input.confidenceMin, input.evidenceOnly),
+  );
+  const filteredLinks = searchContext.links.length ? [...advancedFilteredLinks, ...searchContext.links] : advancedFilteredLinks;
   const nodeMap = new Map(workingNodes.map((node) => [node.id, node]));
   const rawLinkMap = new Map([...input.graph.links, ...searchContext.links].map((link) => [link.id, link]));
 
   if (input.mode === "overview" && matchedNodeIds.size === 0) {
-    const overview = buildOverviewGraph(input.graph);
+    const overview = buildOverviewGraph({ ...input.graph, nodes: baseNodes, links: advancedFilteredLinks });
     const selectedNode =
       overview.nodes.find((node) => node.id === input.selectedNodeId) ??
       nodeMap.get(input.selectedNodeId ?? "") ??
@@ -156,7 +171,7 @@ export function buildGraphViewModel(input: GraphViewModelInput): GraphViewModel 
   }
 
   if (input.mode === "geo" && matchedNodeIds.size === 0) {
-    const geo = buildGeoGraph(input.graph, selectedCountry?.code);
+    const geo = buildGeoGraph({ ...input.graph, nodes: baseNodes, links: advancedFilteredLinks }, selectedCountry?.code);
     if (geo.nodes.length >= 2 && geo.links.length >= 1) {
       return {
         activePath,
@@ -235,6 +250,13 @@ export function buildGraphViewModel(input: GraphViewModelInput): GraphViewModel 
   } else if (input.mode === "scenario") {
     input.pinnedNodeIds.forEach(addNode);
     addNeighborContext(selectedOrDefaultNodeId, "both", 1);
+  } else if (input.mode === "matrix") {
+    for (const node of criticalGraphNodes({ ...input.graph, nodes: baseNodes }).slice(0, overviewNodeLimit)) addNode(node.id);
+  } else if (input.mode === "evidence") {
+    filteredLinks
+      .filter((link) => Boolean(link.sourceId || link.metadata?.source || link.metadata?.source_label))
+      .slice(0, focusEdgeLimit)
+      .forEach(addLinkContext);
   } else if (input.mode === "geo") {
     addCountryNodeContext(input.graph, filteredLinks, selectedCountry?.code, addNode, addLinkContext);
   } else {
@@ -376,9 +398,78 @@ export function criticalGraphNodes(graph: GraphExplorerData): GraphNode[] {
 }
 
 function renderLimitsForMode(mode: GraphViewMode) {
-  if (mode === "overview" || mode === "geo") return { nodeLimit: overviewNodeLimit, edgeLimit: overviewEdgeLimit };
+  if (mode === "overview" || mode === "geo" || mode === "matrix") return { nodeLimit: overviewNodeLimit, edgeLimit: overviewEdgeLimit };
   if (mode === "focus" || mode === "scenario") return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
+  if (mode === "evidence") return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
   return { nodeLimit: pathNodeLimit, edgeLimit: pathEdgeLimit };
+}
+
+function graphNodePassesAdvancedFilters(
+  node: GraphNode,
+  sourceFilter: string,
+  countryFilter: string,
+  productFilter: string,
+  evidenceOnly: boolean,
+) {
+  if (sourceFilter !== "all" && !nodeSourceTokens(node).includes(sourceFilter)) return false;
+  if (countryFilter !== "all" && graphNodeCountry(node) !== countryFilter.toUpperCase()) return false;
+  if (productFilter !== "all") {
+    const productTokens = [
+      node.kind,
+      node.entityType ?? "",
+      String(node.metadata.product_grade ?? ""),
+      String(node.metadata.product_category ?? ""),
+      String(node.metadata.commodity_code ?? ""),
+      String(node.metadata.category ?? ""),
+    ].map((value) => value.toLowerCase());
+    if (!productTokens.includes(productFilter.toLowerCase())) return false;
+  }
+  if (evidenceOnly && nodeEvidenceTokens(node).length === 0) return false;
+  return true;
+}
+
+function graphLinkPassesAdvancedFilters(
+  link: GraphLink,
+  sourceFilter: string,
+  countryFilter: string,
+  confidenceMin: number,
+  evidenceOnly: boolean,
+) {
+  if ((link.confidence ?? 1) < confidenceMin) return false;
+  if (sourceFilter !== "all" && !linkSourceTokens(link).includes(sourceFilter)) return false;
+  if (countryFilter !== "all") {
+    const country = countryFilter.toUpperCase();
+    if (link.sourceCountry !== country && link.targetCountry !== country) return false;
+  }
+  if (evidenceOnly && !link.sourceId && !link.metadata?.source && !link.metadata?.source_label) return false;
+  return true;
+}
+
+function nodeSourceTokens(node: GraphNode) {
+  return [
+    String(node.metadata.source ?? ""),
+    String(node.metadata.source_id ?? ""),
+    String(node.metadata.sourceId ?? ""),
+    String(node.metadata.dataset ?? ""),
+  ].filter(Boolean);
+}
+
+function linkSourceTokens(link: GraphLink) {
+  return [
+    link.sourceId ?? "",
+    String(link.metadata?.source ?? ""),
+    String(link.metadata?.source_id ?? ""),
+    String(link.metadata?.source_label ?? ""),
+  ].filter(Boolean);
+}
+
+function nodeEvidenceTokens(node: GraphNode) {
+  return [
+    ...(node.riskDrivers ?? []),
+    String(node.metadata.source ?? ""),
+    String(node.metadata.source_id ?? ""),
+    String(node.metadata.evidence_ref ?? ""),
+  ].filter(Boolean);
 }
 
 function selectedCountryForInput(graph: GraphExplorerData, selectedCountryCode?: string) {

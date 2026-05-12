@@ -1,7 +1,12 @@
 import {
   Clock3,
+  Download,
+  FileSearch,
+  Filter,
+  Grid3X3,
   Map as MapIcon,
   Pin,
+  RotateCcw,
   Route,
   Share2,
   Workflow,
@@ -19,48 +24,76 @@ const graphModeOptions: Array<{ id: GraphViewMode; label: string; icon: LucideIc
   { id: "path", label: "Path", icon: Route },
   { id: "timeline", label: "Timeline", icon: Clock3 },
   { id: "geo", label: "Geo", icon: MapIcon },
+  { id: "matrix", label: "Matrix", icon: Grid3X3 },
   { id: "scenario", label: "Scenario overlay", icon: Workflow },
+  { id: "evidence", label: "Evidence", icon: FileSearch },
 ];
 
 export function GraphControls({
+  confidenceMin,
   countries,
+  countryFilter,
   criticalNodes,
+  evidenceOnly,
   filters,
   focusDepth,
   focusDirection,
   mode,
   nodeKind,
+  onConfidenceMinChange,
+  onCountryFilterChange,
   onCountrySelect,
   onCriticalNodeSelect,
+  onEvidenceOnlyChange,
+  onExportView,
   onFocusChange,
   onModeChange,
   onNodeKindChange,
   onPathSelect,
   onPinSelected,
+  onProductFilterChange,
+  onResetView,
   onSearchChange,
+  onSourceFilterChange,
   paths,
+  productFilter,
+  productOptions,
   query,
   renderCounts,
   selectedCountryCode,
   selectedNodeId,
   selectedPathId,
+  sourceFilter,
+  sourceOptions,
 }: {
+  confidenceMin: number;
   countries: CountryRiskSummary[];
+  countryFilter: string;
   criticalNodes: GraphNode[];
+  evidenceOnly: boolean;
   filters: GraphNodeKind[];
   focusDepth: number;
   focusDirection: GraphFocusDirection;
   mode: GraphViewMode;
   nodeKind: GraphNodeKind | "all";
+  onConfidenceMinChange: (value: number) => void;
+  onCountryFilterChange: (countryCode: string) => void;
   onCountrySelect: (countryCode: string) => void;
   onCriticalNodeSelect: (nodeId: string) => void;
+  onEvidenceOnlyChange: (enabled: boolean) => void;
+  onExportView: () => void;
   onFocusChange: (direction: GraphFocusDirection, depth: number) => void;
   onModeChange: (mode: GraphViewMode) => void;
   onNodeKindChange: (kind: GraphNodeKind | "all") => void;
   onPathSelect: (pathId: string) => void;
   onPinSelected: () => void;
+  onProductFilterChange: (value: string) => void;
+  onResetView: () => void;
   onSearchChange: (query: string) => void;
+  onSourceFilterChange: (value: string) => void;
   paths: GraphTransmissionPath[];
+  productFilter: string;
+  productOptions: string[];
   query: string;
   renderCounts: {
     edgeLimit: number;
@@ -73,10 +106,13 @@ export function GraphControls({
   selectedCountryCode?: string;
   selectedNodeId?: string;
   selectedPathId?: string;
+  sourceFilter: string;
+  sourceOptions: string[];
 }) {
   const { t } = useI18n();
   return (
     <>
+      <div className="section-kicker">View mode selector</div>
       <div className="graph-mode-toolbar" aria-label={t("Graph analysis mode")}>
         {graphModeOptions.map((option) => {
           const Icon = option.icon;
@@ -134,6 +170,69 @@ export function GraphControls({
         <button className={`control-button ${focusDirection === "both" && focusDepth > 1 ? "primary" : ""}`} onClick={() => onFocusChange("both", 2)} type="button">
           Two-hop
         </button>
+      </div>
+
+      <div className="graph-list-section graph-v3-filter-panel">
+        <div className="section-kicker">
+          <Filter aria-hidden="true" /> Evidence-bound filters
+        </div>
+        <label className="form-control compact">
+          <span>{t("Source filter")}</span>
+          <select value={sourceFilter} onChange={(event) => onSourceFilterChange(event.target.value)}>
+            <option value="all">{t("All sources")}</option>
+            {sourceOptions.map((source) => (
+              <option key={source} value={source}>
+                {source}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="form-control compact">
+          <span>{t("Country filter")}</span>
+          <select value={countryFilter} onChange={(event) => onCountryFilterChange(event.target.value)}>
+            <option value="all">{t("All countries")}</option>
+            {countries.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="form-control compact">
+          <span>{t("Product grade filter")}</span>
+          <select value={productFilter} onChange={(event) => onProductFilterChange(event.target.value)}>
+            <option value="all">{t("All product grades")}</option>
+            {productOptions.map((product) => (
+              <option key={product} value={product}>
+                {product}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="form-control compact">
+          <span>{t("Confidence threshold")} {Math.round(confidenceMin * 100)}%</span>
+          <input
+            aria-label={t("Confidence threshold")}
+            max={0.95}
+            min={0}
+            onChange={(event) => onConfidenceMinChange(Number(event.target.value))}
+            step={0.05}
+            type="range"
+            value={confidenceMin}
+          />
+        </label>
+        <label className="graph-layer-toggle evidence-only-toggle">
+          <input checked={evidenceOnly} onChange={(event) => onEvidenceOnlyChange(event.target.checked)} type="checkbox" />
+          <span>{t("Evidence only")}</span>
+        </label>
+        <div className="graph-toggle-row">
+          <button className="control-button" onClick={onResetView} type="button">
+            <RotateCcw aria-hidden="true" /> Reset view
+          </button>
+          <button className="control-button" onClick={onExportView} type="button">
+            <Download aria-hidden="true" /> Export view summary JSON
+          </button>
+        </div>
       </div>
 
       <div className="inspector-grid graph-stat-grid">

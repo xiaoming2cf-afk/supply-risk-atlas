@@ -66,9 +66,11 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
     edge.edgeType === "evidence_context" ||
     edge.metadata?.derived_context === true ||
     edge.metadata?.not_supply_chain_dependency === true;
+  const scenarioTrace = edge.edgeType === "simulation_trace" || edge.edgeRole === "simulation_trace" || edge.metadata?.scenario_trace === true;
   return (
     <div className={`inspector-stack edge-inspector ${evidenceContext ? "is-evidence-context" : ""}`}>
       <div className="inspector-grid">
+        <Field label="Inspector section" value={evidenceContext ? "Evidence context link" : scenarioTrace ? "Scenario trace" : "Real graph edge"} />
         <Field label={evidenceContext ? "Link type" : "Edge type"} value={evidenceContext ? "evidence-context link" : edge.edgeType ?? edge.label} />
         <Field label="Role" value={edge.edgeRole ?? "context"} />
         <Field label="Risk score" value={`${edge.riskScore ?? Math.round(edge.weight * 100)}/100`} />

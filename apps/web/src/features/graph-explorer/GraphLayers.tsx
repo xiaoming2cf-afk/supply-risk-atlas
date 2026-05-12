@@ -9,6 +9,8 @@ const layerLabels: Record<GraphLayerCategory, string> = {
   substitution: "Substitution",
   trade: "Trade",
   route: "Route",
+  hazard: "Hazard",
+  sanctions: "Sanctions",
   simulation_trace: "Simulation trace",
 };
 
