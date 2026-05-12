@@ -398,3 +398,50 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Sanctions/export-control outputs are compliance-risk context only and do not include operational restricted-trade guidance.
 - Next gate decision:
   - Proceed to Gate 8 entity resolution, crosswalks, and taxonomy enrichment.
+
+## Gate 8 - Entity Resolution, Crosswalks, And Taxonomy Enrichment
+
+- Current HEAD before Gate 8: `fa9c1a1`
+- Gate name: deterministic entity resolution and crosswalk helpers
+- Files changed:
+  - `docs/data/entity-resolution-and-crosswalks.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/entity_resolution/__init__.py`
+  - `packages/sra_core/sra_core/entity_resolution/aliases.py`
+  - `packages/sra_core/sra_core/entity_resolution/company_aliases.py`
+  - `packages/sra_core/sra_core/entity_resolution/country_codes.py`
+  - `packages/sra_core/sra_core/entity_resolution/commodity_crosswalk.py`
+  - `packages/sra_core/sra_core/entity_resolution/policy_item_crosswalk.py`
+  - `packages/sra_core/sra_core/entity_resolution/resolution_result.py`
+  - `tests/entity_resolution/test_aliases.py`
+  - `tests/entity_resolution/test_country_codes.py`
+  - `tests/entity_resolution/test_commodity_crosswalk.py`
+  - `tests/entity_resolution/test_policy_item_crosswalk.py`
+- Commands run:
+  - `python -m pytest tests/entity_resolution -q`
+  - `python -m pytest tests/entity_resolution -q` rerun after alias warning threshold fix
+  - `python -m pytest tests/ingestion tests/contract tests/sources -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail status:
+  - First entity-resolution run: fail
+  - Entity-resolution rerun: pass
+  - Ingestion/contract/source tests: pass
+  - Quality tests: pass
+- Failures and exact causes:
+  - Initial run failed because moderate-confidence country alias `Chinese Taipei` did not emit an approximate warning. The alias warning threshold was raised so mappings below 0.9 confidence carry an explicit warning.
+- Evidence:
+  - Company aliases resolve TSMC, ASML, Samsung Electronics, Intel, and Applied Materials.
+  - Country aliases resolve Taiwan/Chinese Taipei/TW, United States/USA/US, South Korea/Korea Rep./KR, Netherlands/NL, and Japan/JP.
+  - Commodity crosswalk resolves semiconductor HS proxy codes and warns on approximate/proxy mappings.
+  - Policy item crosswalk resolves EUV/lithography, advanced computing chips, HBM/memory, photoresist, and chemicals with confidence/warnings.
+  - Unknown or low-confidence mentions remain unresolved.
+- Limitations:
+  - Resolution helpers do not create graph edges or infer relationships.
+  - Facility/port-to-region and hazard proximity mapping are still lightweight and deferred to the promoted graph pipeline.
+  - Crosswalks are deterministic starter maps, not comprehensive reference data.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No proprietary mappings or private entity data were added.
+  - HS mappings are explicitly labeled as public-data proxies.
+- Next gate decision:
+  - Proceed to Gate 9 promoted graph pipeline with expanded sources.
