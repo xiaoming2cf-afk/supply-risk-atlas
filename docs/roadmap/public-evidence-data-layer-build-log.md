@@ -218,3 +218,54 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - External text summaries are sanitized for HTML/script and common prompt-injection phrases.
 - Next gate decision:
   - Proceed to Gate 4 data contracts for expanded sources.
+
+## Gate 4 - Data Contracts For Expanded Sources
+
+- Current HEAD before Gate 4: `bef3c74`
+- Gate name: raw, silver, and graph contracts for expanded public sources
+- Files changed:
+  - `data_contracts/raw_schema/sec_edgar_lite_raw.schema.json`
+  - `data_contracts/raw_schema/gdelt_semiconductor_lite_raw.schema.json`
+  - `data_contracts/raw_schema/un_comtrade_semiconductor_trade_raw.schema.json`
+  - `data_contracts/raw_schema/wits_trade_tariff_raw.schema.json`
+  - `data_contracts/raw_schema/usgs_earthquake_raw.schema.json`
+  - `data_contracts/raw_schema/nga_world_port_index_raw.schema.json`
+  - `data_contracts/raw_schema/ofac_sanctions_list_raw.schema.json`
+  - `data_contracts/raw_schema/bis_export_controls_raw.schema.json`
+  - Additional registry-reference raw contracts for review/deferred sources
+  - `data_contracts/silver_schema/company_disclosure_event.schema.json`
+  - `data_contracts/silver_schema/semiconductor_risk_event.schema.json`
+  - `data_contracts/silver_schema/semiconductor_trade_flow.schema.json`
+  - `data_contracts/silver_schema/trade_tariff_indicator.schema.json`
+  - `data_contracts/silver_schema/natural_hazard_event.schema.json`
+  - `data_contracts/silver_schema/logistics_facility.schema.json`
+  - `data_contracts/silver_schema/sanctions_screening_event.schema.json`
+  - `data_contracts/silver_schema/export_control_policy_event.schema.json`
+  - `data_contracts/graph_schema/evidence_context_link.schema.json`
+  - `data_contracts/graph_schema/trade_dependency_edge.schema.json`
+  - `data_contracts/graph_schema/logistics_route_edge.schema.json`
+  - `data_contracts/graph_schema/policy_restriction_edge.schema.json`
+  - `data_contracts/graph_schema/hazard_exposure_edge.schema.json`
+  - `tests/contract/test_expanded_source_contracts.py`
+  - `tests/contract/test_graph_evidence_context_contract.py`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `python -m pytest tests/contract -q`
+  - `python -m pytest tests/sources tests/ingestion/test_semiconductor_source_registry.py -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail status: pass
+- Evidence:
+  - Raw contracts require `source_id`, `source_record_id`, `retrieved_at`, `as_of_time`, `payload_hash`, `provenance_url`, summary, and license/terms ref.
+  - Silver contracts require source refs, confidence, validity window, and evidence summary.
+  - Graph edge contracts require explicit edge semantics, provenance refs, confidence, and evidence summary.
+  - Evidence-context link contract requires `derived_context=true`, `not_supply_chain_dependency=true`, and user-facing label `evidence-context link`.
+  - Source registry contract references now resolve to existing schema files.
+- Limitations:
+  - Contracts define data shapes only; no connector implementations, promoted graph pipeline, API chart/table endpoints, or frontend changes were added.
+  - Some Tier 2/Tier 3 contracts are registry/reference placeholders until later review or explicit connector gates.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw filing bodies, article bodies, bulk trade payloads, sanctions payloads, or private data were committed.
+  - Deferred paid/proprietary sources remain registry-only.
+- Next gate decision:
+  - Proceed to Gate 5 SEC EDGAR Lite and GDELT Semiconductor Lite fixture connectors.
