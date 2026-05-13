@@ -1,0 +1,70 @@
+# Semantic Graph Page Relevance Continuation Log
+
+## Gate 0 - Baseline And Current-State Inventory
+
+- Gate status: PASS
+- Current HEAD at inventory start: `a333f80`
+- Preserved untracked local files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`, `data/runtime/`
+- Commands run:
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+  - `python -m pytest tests/api -q` -> PASS
+  - `python -m pytest -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/security -q` -> PASS
+  - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py -q` -> PASS (`14 passed`)
+  - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
+- Semantic file inventory:
+  - `configs/ontology/semiconductor_chain_layers.yaml` -> present
+  - `configs/ontology/semiconductor_node_catalog.yaml` -> present
+  - `configs/ontology/semiconductor_edge_catalog.yaml` -> present
+  - `configs/ontology/semiconductor_relationship_semantics.yaml` -> present
+  - `configs/sources/semiconductor_node_source_map.yaml` -> present
+  - `graph_kernel/relationship_builder.py` -> present
+  - `graph_kernel/supply_demand_builder.py` -> present
+  - `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx` -> present
+  - `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx` -> present
+  - `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx` -> present
+  - `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx` -> present
+  - `apps/web/src/features/common/pageRelevance.ts` -> present
+- Node catalog inventory: `165` concrete nodes spanning L0-L11.
+- Public evidence connector inventory: SEC EDGAR Lite, GDELT semiconductor lite/events, UN Comtrade semiconductor trade lite, WITS trade tariff lite, USGS minerals lite, USGS earthquake lite, NGA World Port Index lite, OFAC sanctions list lite, Consolidated Screening List lite, BIS export controls lite, Federal Register export controls lite, ETO supply chain, GTA export controls, and WSTS billings. Connector framework helpers are also present.
+- Graph view inventory: overview, focus, path, timeline, geo, matrix, evidence, scenario overlay, source coverage, node catalog, supply relationships, demand relationships, production dependencies, and supply-demand balance.
+- Chart inventory: risk ranking, risk components, HHI concentration, trade flow, dependency heatmap, policy timeline, hazard timeline, Monte Carlo histogram/ECDF, CVaR tail, functionality curve, optimizer before/after, validation ablation, source freshness, graph quality, supply-demand balance, supplier HHI, critical input bottleneck, downstream demand pressure, product-to-process dependency, policy restriction impact, hazard exposure by layer, and supplier country concentration.
+- Table inventory: source catalog, connector status, graph nodes, graph edges, evidence refs, risk ranking, scenario runs, reverse stress results, optimizer actions, validation artifacts, trade flows, policy events, hazard events, logistics facilities, supply relationships, demand relationships, production dependencies, supplier concentration, product demand, critical inputs, and supply-demand balance.
+- Route inventory: public health/version/dashboard, graph snapshot/neighborhood/views, graph timeline/geo/matrix/layers/evidence/scenario overlay/node catalog/source coverage, relationship graph endpoints, risk, forward/reverse scenarios, intervention optimization, reports, run history, analytics chart/table/export, and legacy compatibility routes are registered.
+- Terminology normalization evidence: geography guard and semantic suites passed; API-visible and frontend-visible output remains normalized to `region:china_taiwan` / `中国台湾` with parent `country:CN` / `中国`.
+- Completed gates: Gates 1-8 were already implemented in this checkout and verified by the targeted tests above; no code gap required patching.
+- Failed tests: none.
+- Known limitations: platform remains fixture/proxy/promoted-public-evidence research infrastructure, live fetch remains disabled by default, and no production-readiness or audited capacity claim is made.
+- Deployment status: pending controlled GitHub/Render verification after final local acceptance.
+- Computer Use actions: none yet.
+
+## Gates 1-8 - Semantic Verification
+
+- Gate status: PASS
+- Changed files: this log only.
+- Evidence: existing implementation already contains the chain layers, node catalog, edge catalog, relationship semantics, node-source map, relationship-aware graph builders, four supply-demand graph views, page relevance policy, analytics tables/charts, and documentation.
+- Commands run:
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/security -q` -> PASS
+  - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py -q` -> PASS (`14 passed`)
+  - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
+- Relationship evidence: supply, demand, production dependency, and evidence context relationships remain distinct; evidence context links remain non-propagating and not supply-chain dependency edges.
+- Page relevance evidence: local smoke includes policy checks for major public analytical pages and confirms non-graph pages do not render dense graph canvases.
+- Next gate decision: proceed to final local acceptance and controlled deployment verification.
+
+## Final Local Acceptance
+
+- Acceptance status: PASS locally
+- Current HEAD before final local evidence commit: `a333f80`
+- Commands run:
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` -> PASS
+  - `python -m pytest -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+- Final local evidence: concept model files exist, node catalog has `165` concrete nodes, relationship classes remain separated, relationship graph endpoints and analytics endpoints pass API tests, page relevance policy is smoke-tested, and no raw payload or production-readiness claim is introduced.
+- Deployment status: pending controlled GitHub/Render verification after this log commit.
+- Computer Use actions: none yet.
