@@ -96,3 +96,12 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: connector fixtures and source outputs passed the repository-wide geography guard.
 - Limitations: connector live paths remain architecture-only unless separately enabled by reviewed source policy and explicit admin/CLI trigger.
 - Next gate decision: proceed to entity resolution and crosswalk policy checks.
+## Gate 8 - Entity Resolution And Crosswalks
+
+- Gate status: PASS
+- Changed files: `tests/entity_resolution/test_geography_resolution_policy.py`.
+- Commands run:
+  - `python -m pytest tests/entity_resolution tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`20 passed`)
+- Evidence: company, country/region, commodity, and policy crosswalk tests pass; legacy geography aliases resolve to `region:china_taiwan` with parent `country:CN` context.
+- Limitations: low-confidence entity mentions remain unresolved instead of fabricating relationships.
+- Next gate decision: proceed to relationship-aware graph construction.
