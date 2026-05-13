@@ -86,3 +86,13 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Evidence: raw contracts remain summary/hash/provenance only; graph contracts require provenance refs and relationship semantics; evidence-context remains separate.
 - Limitations: schemas define contracts only; connector and graph construction integration follows.
 - Next gate decision: proceed to connector framework and fixture connector verification.
+## Gate 7 - Connector Framework And Fixture Connectors
+
+- Gate status: PASS
+- Changed files: log only; required connector framework and fixture connectors already existed and were verified.
+- Commands run:
+  - `python -m pytest tests/ingestion tests/sources tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`75 passed`)
+- Evidence: connector framework, fixture connectors, source registry runtime, and no-startup-network tests passed; live fetch remains disabled by default.
+- Terminology normalization evidence: connector fixtures and source outputs passed the repository-wide geography guard.
+- Limitations: connector live paths remain architecture-only unless separately enabled by reviewed source policy and explicit admin/CLI trigger.
+- Next gate decision: proceed to entity resolution and crosswalk policy checks.
