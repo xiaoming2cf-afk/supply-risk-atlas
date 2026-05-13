@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_HOSTPORT = process.env.SUPPLY_RISK_API_HOSTPORT;
-const API_ORIGIN = process.env.SUPPLY_RISK_API_ORIGIN ?? (API_HOSTPORT ? `http://${API_HOSTPORT}` : undefined);
+const API_ORIGIN = process.env.SUPPLY_RISK_API_ORIGIN?.trim();
 const RENDER_WEB_HOSTNAME = "supply-risk-atlas-web.onrender.com";
 const RENDER_API_ORIGIN = "https://supply-risk-atlas-api.onrender.com";
 const MAX_PROXY_PATH_SEGMENTS = 8;
@@ -122,12 +122,15 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
 }
 
 function resolveApiOrigin(request: NextRequest): string | undefined {
-  if (API_ORIGIN) return API_ORIGIN;
   const requestHost = request.headers.get("host")?.split(":")[0]?.toLowerCase();
   const deployTarget = process.env.SUPPLY_RISK_DEPLOY_TARGET?.trim().toLowerCase() || RENDER_WEB_HOSTNAME;
   if (requestHost === deployTarget || requestHost === RENDER_WEB_HOSTNAME) {
+    if (API_HOSTPORT) return `http://${API_HOSTPORT}`;
+    if (API_ORIGIN) return API_ORIGIN;
     return RENDER_API_ORIGIN;
   }
+  if (API_ORIGIN) return API_ORIGIN;
+  if (API_HOSTPORT) return `http://${API_HOSTPORT}`;
   return undefined;
 }
 
