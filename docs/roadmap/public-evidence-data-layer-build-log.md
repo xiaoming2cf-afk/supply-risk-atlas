@@ -941,3 +941,43 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance were added.
 - Next gate decision:
   - Commit Gate C completion, then rerun final local acceptance.
+
+## Gate C Completion - Final Acceptance Rerun
+
+- Current HEAD before final rerun: `87d2dd2`
+- Gate name: post-extraction final acceptance
+- Files changed:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/storage tests/sources tests/ingestion tests/entity_resolution tests/contract tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - mandatory artifact existence check for connectors, storage schema, promoted graph pipeline, build log, chart/table files, and the eight Graph Explorer view files
+- Pass/fail status: pass
+- Failures and exact causes:
+  - No final rerun command failed.
+- Evidence:
+  - Quality tests passed.
+  - Combined Python subsystem suite passed.
+  - Full repository pytest passed.
+  - Web typecheck passed.
+  - Web production build passed.
+  - Browser smoke passed 37 checks.
+  - Mandatory artifact check reported: `All mandatory artifact files present.`
+  - Generated local SQLite runtime files were removed and were not committed.
+- Deployed status:
+  - Render deployment was not updated or accepted in this local run.
+  - Deployed smoke remains deferred until API/Web services are redeployed to the final commit and verified with `/api/v1/version`.
+- Limitations:
+  - Platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+  - Live connector execution remains disabled by default and was not run in tests.
+  - SQLite remains the only persistent backend in this phase.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw downloaded bulk data was committed.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance were introduced.
+- Next gate decision:
+  - Commit final acceptance evidence, then fast-forward local `main` from `code-quality-repair` so the post-`97041b5` work is present on main locally before push/PR.
