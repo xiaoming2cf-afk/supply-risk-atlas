@@ -7,8 +7,8 @@ const RENDER_API_ORIGIN = "https://supply-risk-atlas-api.onrender.com";
 const MAX_PROXY_PATH_SEGMENTS = 8;
 const MAX_PROXY_PATH_SEGMENT_LENGTH = 120;
 const TRANSIENT_UPSTREAM_STATUSES = new Set([502, 503, 504]);
-const MAX_GET_PROXY_ATTEMPTS = 4;
-const GET_PROXY_RETRY_DELAY_MS = 750;
+const MAX_GET_PROXY_ATTEMPTS = 10;
+const GET_PROXY_RETRY_DELAY_MS = 1500;
 
 type RouteContext = {
   params: Promise<{

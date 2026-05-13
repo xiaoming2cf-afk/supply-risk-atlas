@@ -242,7 +242,7 @@
 - Deployed API `/api/v1/version` reported `ea9fd54d78c0901cc5155f6a92de794d3992cf8e`.
 - Direct API and web proxy GET checks for Graph Explorer and risk portfolio returned HTTP 200 after Render warm-up.
 - Deployed smoke still did not complete consistently because first page fetches can receive transient 502 responses from the deployed web proxy before the API service is fully warm.
-- The web proxy now retries transient 502/503/504 responses for GET/HEAD requests only. POST requests remain non-retried by the proxy, and deployed write calls continue to use the direct API write base.
+- The web proxy now retries transient 502/503/504 responses for GET/HEAD requests only, with a retry window sized for Render free-tier cold starts. POST requests remain non-retried by the proxy, and deployed write calls continue to use the direct API write base.
 - Deployed smoke and CI real-API smoke now use a longer wait budget for slow service warm-up; default local proxy smoke keeps the existing stricter wait budget.
 - No secrets, cookies, tokens, account details, private URLs, or raw payloads were recorded.
 
