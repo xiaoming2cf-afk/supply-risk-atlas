@@ -125,7 +125,6 @@ function resolveApiOrigin(request: NextRequest): string | undefined {
   const requestHost = request.headers.get("host")?.split(":")[0]?.toLowerCase();
   const deployTarget = process.env.SUPPLY_RISK_DEPLOY_TARGET?.trim().toLowerCase() || RENDER_WEB_HOSTNAME;
   if (requestHost === deployTarget || requestHost === RENDER_WEB_HOSTNAME) {
-    if (API_HOSTPORT) return `http://${API_HOSTPORT}`;
     if (API_ORIGIN) return API_ORIGIN;
     return RENDER_API_ORIGIN;
   }
