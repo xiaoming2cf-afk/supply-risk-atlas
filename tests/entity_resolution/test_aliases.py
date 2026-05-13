@@ -19,10 +19,27 @@ def test_company_alias_resolution_returns_confidence_and_source_refs() -> None:
     assert result.warning is None
 
 
+def test_company_aliases_cover_requested_semiconductor_firms() -> None:
+    expected = {
+        "TSMC": "company:tsmc",
+        "Taiwan Semiconductor Manufacturing Company": "company:tsmc",
+        "ASML Holding": "company:asml",
+        "Samsung": "company:samsung_electronics",
+        "Samsung Electronics": "company:samsung_electronics",
+        "Intel Corporation": "company:intel",
+        "Applied Materials": "company:applied_materials",
+    }
+
+    for alias, resolved_id in expected.items():
+        result = resolve_company(alias, source_refs=("node_catalog:test",))
+        assert result.resolved_id == resolved_id
+        assert result.confidence >= 0.9
+        assert result.source_refs == ("node_catalog:test",)
+
+
 def test_low_confidence_unknown_company_stays_unresolved() -> None:
     result = resolve_company("Unverified Local Supplier")
 
     assert result.resolved is False
     assert result.resolved_id is None
     assert result.warning == "unresolved_low_confidence_mention"
-

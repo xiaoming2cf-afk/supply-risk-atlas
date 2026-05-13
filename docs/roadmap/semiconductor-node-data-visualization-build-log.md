@@ -189,3 +189,27 @@
   - Mineral and policy outputs are fixture/public-evidence proxy summaries, not operational coverage.
 - Next gate:
   - Proceed to Gate 6 entity resolution and crosswalks.
+
+## Gate 6 - Entity Resolution And Crosswalks
+
+- Current HEAD: `e0b9108`
+- Gate name: company alias and crosswalk coverage
+- Files changed:
+  - `packages/sra_core/sra_core/entity_resolution/company_aliases.py`
+  - `tests/entity_resolution/test_aliases.py`
+- Commands run:
+  - `python -m pytest tests/entity_resolution -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail: pass
+- Evidence:
+  - Entity-resolution tests passed: 13 tests.
+  - Quality tests passed: 8 tests.
+  - Requested company aliases now cover TSMC, Taiwan Semiconductor Manufacturing Company, ASML Holding, Samsung, Samsung Electronics, Intel Corporation, and Applied Materials.
+  - Existing country, commodity, and policy-item crosswalk tests still pass and keep low-confidence mentions unresolved.
+- Source/legal notes:
+  - Resolution helpers do not create graph relationships or production claims.
+  - Commodity mappings remain public-data proxies and carry approximate warnings where appropriate.
+- Limitations:
+  - Entity resolution is deterministic and conservative; unresolved mentions remain unresolved until evidence and confidence improve.
+- Next gate:
+  - Proceed to Gate 7 promoted graph pipeline updates.

@@ -10,10 +10,13 @@ COMPANY_ALIASES: dict[str, tuple[str, float]] = {
     "taiwan semiconductor manufacturing co": ("company:tsmc", 0.94),
     "asml": ("company:asml", 0.98),
     "asml holding": ("company:asml", 0.98),
+    "asml holding nv": ("company:asml", 0.96),
+    "samsung": ("company:samsung_electronics", 0.9),
     "samsung electronics": ("company:samsung_electronics", 0.96),
     "intel": ("company:intel", 0.95),
     "intel corporation": ("company:intel", 0.98),
     "applied materials": ("company:applied_materials", 0.96),
+    "applied materials inc": ("company:applied_materials", 0.95),
 }
 
 
@@ -24,4 +27,3 @@ def resolve_company(value: str, *, source_refs: tuple[str, ...] = ()) -> Resolut
         method="company_alias_exact",
         source_refs=source_refs,
     )
-
