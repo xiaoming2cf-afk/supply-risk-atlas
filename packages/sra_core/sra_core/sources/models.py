@@ -62,6 +62,7 @@ REQUIRED_SOURCE_FIELDS = {
     "pii_risk",
     "raw_payload_storage_policy",
     "api_visibility_policy",
+    "geography_normalization_policy",
 }
 
 
@@ -91,6 +92,7 @@ class SourceEntry:
     pii_risk: str
     raw_payload_storage_policy: str
     api_visibility_policy: str
+    geography_normalization_policy: str
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "SourceEntry":
@@ -122,6 +124,7 @@ class SourceEntry:
             pii_risk=str(raw.get("pii_risk", "")),
             raw_payload_storage_policy=str(raw.get("raw_payload_storage_policy", "")),
             api_visibility_policy=str(raw.get("api_visibility_policy", "")),
+            geography_normalization_policy=str(raw.get("geography_normalization_policy", "")),
         )
 
     def to_public_dict(self) -> dict[str, Any]:
@@ -150,6 +153,7 @@ class SourceEntry:
             "pii_risk": self.pii_risk,
             "payload_storage_policy": self.raw_payload_storage_policy,
             "api_visibility_policy": self.api_visibility_policy,
+            "geography_normalization_policy": self.geography_normalization_policy,
         }
 
 

@@ -69,3 +69,35 @@ def test_runtime_rows_are_api_visible_summaries_without_raw_payloads() -> None:
         assert "secret" not in row
         assert row["live_fetch_default"] is False
         assert row["license_policy"]["payload_storage_allowed"] is False
+        assert row["geography_normalization_policy"]
+
+
+def test_required_supply_demand_source_catalog_entries_exist() -> None:
+    registry = load_semiconductor_source_registry()
+
+    required = {
+        "eto_cset_advanced_semiconductor_supply_chain",
+        "oecd_semiconductor_value_chain_reports",
+        "wsts_historical_billings",
+        "sec_edgar_lite",
+        "gdelt_semiconductor_lite",
+        "un_comtrade_semiconductor_trade_lite",
+        "wits_trade_tariff_lite",
+        "usgs_mineral_commodity_summaries_lite",
+        "usgs_earthquake_lite",
+        "nga_world_port_index_lite",
+        "ofac_sanctions_list_lite",
+        "consolidated_screening_list_lite",
+        "bis_export_controls_lite",
+        "federal_register_export_controls_lite",
+        "company_annual_report_manual_upload",
+        "openalex_crossref_literature_lite",
+        "world_bank_macro_indicators_lite",
+        "proprietary_factset_supply_chain",
+        "bloomberg_supply_chain",
+        "wind_or_choice_private_data",
+        "company_private_order_data",
+        "paid_semiconductor_market_data",
+    }
+
+    assert required <= set(registry.source_ids())

@@ -61,6 +61,9 @@ redistribution limits. It does not store raw source payloads. API-visible output
 is limited to summaries, lineage, status, and derived facts when a future gate
 implements a connector and promotion path.
 
+Geography-bearing summaries must normalize API-visible labels to
+`region:china_taiwan` / 中国台湾 with parent country `country:CN` / 中国.
+
 Sanctions and export-control sources are for compliance risk awareness and
 resilience planning only. The platform must not provide evasion, bypass, or
 circumvention advice.

@@ -68,3 +68,12 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: geography-bearing source entries require normalization and the quality guard passed.
 - Limitations: mapping identifies candidate evidence coverage only; it does not authorize live fetch or assert complete coverage.
 - Next gate decision: proceed to expanded public source registry checks.
+## Gate 5 - Expanded Public Source Registry
+
+- Gate status: PASS
+- Changed files: `configs/sources/semiconductor.yaml`, `packages/sra_core/sra_core/sources/models.py`, `tests/sources/test_source_registry_runtime.py`, `docs/data/public-source-catalog.md`.
+- Commands run:
+  - `python -m pytest tests/sources/test_source_registry_runtime.py tests/sources/test_source_license_policy.py tests/sources/test_source_status.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`14 passed`)
+- Evidence: required public, review-required, and deferred sources are registry-visible; live fetch defaults remain disabled; geography normalization policy is present on API-visible registry rows.
+- Limitations: registry entries are source governance metadata, not executed live ingestion.
+- Next gate decision: proceed to data contract verification.
