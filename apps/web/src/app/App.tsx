@@ -240,7 +240,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!hasResolvedRuntimeHostname && !configuredApiBaseUrl) return;
+    if (!hasResolvedRuntimeHostname) return;
     void refreshData();
   }, [configuredApiBaseUrl, hasResolvedRuntimeHostname, refreshData]);
 

@@ -174,3 +174,27 @@
   - GitHub CI/Quality Gates: PASS.
   - Render API/Web: LIVE at latest commit.
   - Deployed smoke: INCOMPLETE best-effort due Render/browser timing.
+
+## Deployed Browser Proxy Race Fix
+
+- Gate status: IN PROGRESS
+- Reason: deployed best-effort smoke reached Entity Risk 360 but the page displayed a degraded `Failed to fetch` envelope for `risk/entities/company:tsmc`.
+- Exact cause: the client could start its first refresh before the browser hostname was resolved. On Render, that first refresh used the same-origin `/api/v1` proxy, and the current Render Web proxy path returns `502` in this environment. The later direct API configuration could race with that degraded state.
+- Files changed:
+  - `apps/web/src/app/App.tsx`
+  - `docs/roadmap/semantic-graph-page-relevance-continuation-log.md`
+- Change:
+  - Delay the dashboard refresh until runtime hostname resolution is complete, so deployed Web chooses the direct public API base URL before issuing dashboard requests.
+- Commands run:
+  - `python -m pytest tests/quality tests/api tests/security -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+- Computer Use actions:
+  - Used the authorized Chrome extension browser only for project-scoped Render dashboard verification.
+  - Confirmed Render API deploy `dep-d82bqbkvikkc73ejf320` and Web deploy `dep-d82bqhjbc2fs73c8kg5g` were live at commit `59750b66ea0aba69f790b6855ee9c993c9acf1b5`.
+  - No unrelated tabs, unrelated apps, credentials, cookies, tokens, screenshots with secrets, or private diagnostics were accessed or recorded.
+- Deployment status:
+  - This fix must be committed, pushed, and redeployed before rerunning deployed smoke.
+- Limitations:
+  - Web static HTML still does not expose a build commit, so Web version verification depends on Render deploy detail plus deployed behavior.
