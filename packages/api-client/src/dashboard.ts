@@ -81,6 +81,7 @@ export interface SupplyRiskApiClient {
   getGraphDemandRelationships(options?: { limit?: number }): Promise<ApiResult<GraphRelationshipData>>;
   getGraphProductionDependencies(options?: { limit?: number }): Promise<ApiResult<GraphRelationshipData>>;
   getGraphSupplyDemandBalance(options?: { limit?: number }): Promise<ApiResult<GraphSupplyDemandBalanceData>>;
+  getStageGraph(options?: { stageId?: string; relationshipClass?: string | null; limit?: number }): Promise<ApiResult<Record<string, unknown>>>;
   getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
   getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
   getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
@@ -391,6 +392,16 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(baseUrl, `/graph/production-dependencies${queryString({ limit: options?.limit })}`, undefined, clientOptions),
     getGraphSupplyDemandBalance: (options) =>
       requestJson(baseUrl, `/graph/supply-demand-balance${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getStageGraph: (options) =>
+      requestJson(
+        baseUrl,
+        `/stage-graph/${encodeURIComponent(options?.stageId ?? "L5_fabrication")}${queryString({
+          limit: options?.limit,
+          relationship_class: options?.relationshipClass ?? undefined,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
     getAnalyticsCharts: (options) =>
       requestJson(
         baseUrl,

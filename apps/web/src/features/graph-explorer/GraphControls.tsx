@@ -21,6 +21,7 @@ import { Field } from "../../app/components";
 import { useI18n } from "../../app/i18n";
 import { graphScore } from "./graphLayout";
 import { graphModeLabel, type GraphFocusDirection, type GraphViewMode } from "./graphViewModel";
+import { stageViewOptions, type RelationshipClassFilter, type StageId } from "./stage-views";
 
 const graphModeOptions: Array<{ id: GraphViewMode; label: string; icon: LucideIcon }> = [
   { id: "overview", label: "Overview", icon: Workflow },
@@ -65,6 +66,8 @@ export function GraphControls({
   onResetView,
   onSearchChange,
   onSourceFilterChange,
+  onRelationshipClassFilterChange,
+  onStageChange,
   paths,
   productFilter,
   productOptions,
@@ -73,8 +76,10 @@ export function GraphControls({
   selectedCountryCode,
   selectedNodeId,
   selectedPathId,
+  selectedStage,
   sourceFilter,
   sourceOptions,
+  relationshipClassFilter,
 }: {
   confidenceMin: number;
   countries: CountryRiskSummary[];
@@ -101,6 +106,8 @@ export function GraphControls({
   onResetView: () => void;
   onSearchChange: (query: string) => void;
   onSourceFilterChange: (value: string) => void;
+  onRelationshipClassFilterChange: (value: RelationshipClassFilter) => void;
+  onStageChange: (value: StageId) => void;
   paths: GraphTransmissionPath[];
   productFilter: string;
   productOptions: string[];
@@ -116,12 +123,46 @@ export function GraphControls({
   selectedCountryCode?: string;
   selectedNodeId?: string;
   selectedPathId?: string;
+  selectedStage: StageId;
   sourceFilter: string;
   sourceOptions: string[];
+  relationshipClassFilter: RelationshipClassFilter;
 }) {
   const { t } = useI18n();
   return (
     <>
+      <div className="graph-list-section">
+        <div className="section-kicker">Supply-chain stage selector</div>
+        <label className="form-control compact">
+          <span>{t("Supply-chain stage")}</span>
+          <select
+            data-testid="stage-selector"
+            value={selectedStage}
+            onChange={(event) => onStageChange(event.target.value as StageId)}
+          >
+            {stageViewOptions.map((stage) => (
+              <option key={stage.id} value={stage.id}>
+                {stage.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="form-control compact">
+          <span>{t("Relationship class")}</span>
+          <select
+            data-testid="relationship-class-selector"
+            value={relationshipClassFilter}
+            onChange={(event) => onRelationshipClassFilterChange(event.target.value as RelationshipClassFilter)}
+          >
+            <option value="all">{t("All relationship classes")}</option>
+            <option value="SUPPLY_RELATIONSHIP">{t("Supply")}</option>
+            <option value="DEMAND_RELATIONSHIP">{t("Demand")}</option>
+            <option value="PRODUCTION_DEPENDENCY">{t("Production dependency")}</option>
+            <option value="EVIDENCE_CONTEXT">{t("Evidence context")}</option>
+          </select>
+        </label>
+      </div>
+
       <div className="section-kicker">View mode selector</div>
       <div className="graph-mode-toolbar" aria-label={t("Graph analysis mode")}>
         {graphModeOptions.map((option) => {

@@ -275,11 +275,15 @@ async function main() {
       hasLayerControls: graphV2Overview.hasLayerControls,
       hasFixtureWarning: graphV2Overview.hasFixtureWarning,
       hasV3ModeSelector: graphV2Overview.hasV3ModeSelector,
+      hasStageSelector: graphV2Overview.hasStageSelector,
+      hasRelationshipClassSelector: graphV2Overview.hasRelationshipClassSelector,
       hasEvidenceContextSafety: graphV2Overview.hasEvidenceContextSafety,
       passed:
         graphV2Overview.title === "Graph Explorer" &&
         graphV2Overview.hasV2Title &&
         graphV2Overview.hasV3ModeSelector &&
+        graphV2Overview.hasStageSelector &&
+        graphV2Overview.hasRelationshipClassSelector &&
         graphV2Overview.hasLegend &&
         graphV2Overview.hasLayerControls &&
         graphV2Overview.hasFixtureWarning &&
@@ -453,6 +457,37 @@ async function main() {
       checks.push({
         page: `Graph Explorer supply-demand ${buttonLabel} mode`,
         passed: relationshipState.text.includes(titleText) && relationshipState.text.includes(detailText),
+      });
+    }
+
+    const stageViewChecks = [
+      ["L0_policy_macro", "PolicyMacroGraphView"],
+      ["L1_raw_minerals", "MineralDependencyGraphView"],
+      ["L4_equipment", "EquipmentProcessDependencyGraphView"],
+      ["L5_fabrication", "FabProcessGraphView"],
+      ["L8_logistics", "LogisticsRouteGraphView"],
+      ["L11_compliance", "ComplianceRiskGraphView"],
+    ];
+    for (const [stageId, viewName] of stageViewChecks) {
+      await evaluate(client, `(() => {
+        const stageSelect = document.querySelector('[data-testid="stage-selector"]');
+        if (!stageSelect) return;
+        stageSelect.value = ${JSON.stringify(stageId)};
+        stageSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      })()`);
+      const stageState = await waitFor(
+        client,
+        () => graphV2State(client),
+        (state) => state.text.includes(viewName) && state.hasStageSelector && state.hasRelationshipClassSelector,
+      );
+      checks.push({
+        page: `Graph Explorer stage view ${stageId}`,
+        viewName,
+        passed:
+          stageState.text.includes(viewName) &&
+          stageState.hasStageSelector &&
+          stageState.hasRelationshipClassSelector &&
+          stageState.text.includes("stage cap: 18 nodes / 30 edges"),
       });
     }
 
@@ -1574,6 +1609,8 @@ async function graphV2State(client) {
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
       hasV2Title: text.includes('Graph Explorer v2'),
       hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence') && text.includes('Source Coverage') && text.includes('Node Catalog'),
+      hasStageSelector: Boolean(document.querySelector('[data-testid="stage-selector"]')) && text.includes('Supply-chain stage selector'),
+      hasRelationshipClassSelector: Boolean(document.querySelector('[data-testid="relationship-class-selector"]')) && text.includes('Relationship class'),
       hasLegend: text.includes('Legend'),
       hasLayerControls: text.includes('Layer controls'),
       hasFixtureWarning: text.includes('fixture_graph:not_production_ready'),

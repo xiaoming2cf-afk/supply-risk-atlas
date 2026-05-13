@@ -1089,11 +1089,20 @@ def _concentration_metrics(snapshot: Any) -> list[dict[str, Any]]:
 def _chart_payloads(snapshot: Any, *, limit: int) -> dict[str, list[dict[str, Any]]]:
     nodes = sorted(snapshot.nodes, key=lambda node: (-float(node.confidence), node.node_id))
     edge_counts = Counter(edge.edge_type for edge in snapshot.edges)
+    node_counts = Counter(node.node_type for node in snapshot.nodes)
     source_counts = Counter(
         source_id
         for edge in snapshot.edges
         for source_id in source_ref_ids(edge.provenance_refs)
     )
+    relationship_payloads = _relationship_edge_payloads(snapshot)
+    supply_rows = supply_relationship_rows(relationship_payloads)
+    demand_rows = demand_relationship_rows(relationship_payloads)
+    production_rows = production_dependency_rows(relationship_payloads)
+    balance_rows = supply_demand_balance_rows(relationship_payloads)
+    supplier_concentration = _supplier_concentration(supply_rows)
+    policy_edges = [_edge_view(edge) for edge in snapshot.edges if _layer_for_edge(edge.edge_type) == "policy"]
+    hazard_edges = [_edge_view(edge) for edge in snapshot.edges if _layer_for_edge(edge.edge_type) == "hazard"]
     return {
         "risk_score_ranking": [
             {"id": node.node_id, "label": node.canonical_name, "score": node.confidence}
@@ -1133,6 +1142,28 @@ def _chart_payloads(snapshot: Any, *, limit: int) -> dict[str, list[dict[str, An
             if isinstance(value, (int, float, str))
         ][:limit],
         "evidence_refs_table": _evidence_rows(snapshot, limit=limit),
+        "stage_source_coverage": [
+            {"source_id": source_id, "evidence_count": count}
+            for source_id, count in sorted(source_counts.items())
+        ][:limit],
+        "stage_node_coverage": [
+            {"node_type": node_type, "node_count": count}
+            for node_type, count in sorted(node_counts.items())
+        ][:limit],
+        "stage_evidence_quality": [
+            {"edge_type": edge_type, "evidence_count": count}
+            for edge_type, count in sorted(edge_counts.items())
+        ][:limit],
+        "supply_demand_balance": balance_rows[:limit],
+        "supplier_concentration_hhi": supplier_concentration[:limit],
+        "critical_input_bottleneck": [
+            row for row in production_rows if row.get("bottleneck_flag") is True
+        ][:limit],
+        "downstream_demand_pressure": demand_rows[:limit],
+        "product_to_process_dependency": production_rows[:limit],
+        "policy_restriction_impact": policy_edges[:limit],
+        "hazard_exposure_by_layer": hazard_edges[:limit],
+        "supplier_country_concentration": supplier_concentration[:limit],
     }
 
 
@@ -1140,6 +1171,11 @@ def _table_payloads(snapshot: Any) -> dict[str, list[dict[str, Any]]]:
     nodes = [_node_view(node) for node in snapshot.nodes]
     edges = [_edge_view(edge) for edge in snapshot.edges]
     evidence = _evidence_rows(snapshot, limit=500)
+    relationship_payloads = _relationship_edge_payloads(snapshot)
+    supply_rows = supply_relationship_rows(relationship_payloads)
+    demand_rows = demand_relationship_rows(relationship_payloads)
+    production_rows = production_dependency_rows(relationship_payloads)
+    balance_rows = supply_demand_balance_rows(relationship_payloads)
     return {
         "source_catalog": [],
         "source_status": [],
@@ -1161,6 +1197,15 @@ def _table_payloads(snapshot: Any) -> dict[str, list[dict[str, Any]]]:
         "policy_events": [node for node in nodes if node["kind"] == "policy_event"],
         "hazard_events": [node for node in nodes if node["kind"] == "hazard_event"],
         "logistics_facilities": [node for node in nodes if node["kind"] == "logistics_facility"],
+        "supply_relationships": supply_rows,
+        "demand_relationships": demand_rows,
+        "production_dependencies": production_rows,
+        "supplier_concentration": _supplier_concentration(supply_rows),
+        "product_demand": demand_rows,
+        "critical_inputs": [
+            row for row in production_rows if row.get("bottleneck_flag") is True
+        ],
+        "supply_demand_balance": balance_rows,
     }
 
 

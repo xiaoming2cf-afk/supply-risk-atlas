@@ -31,6 +31,7 @@ from services.api.prediction_center import (
     ranked_paths_for_target,
 )
 from services.api.routes import graph as graph_routes
+from services.api.routes import stage_graph as stage_graph_routes
 from services.api.routes import analytics as analytics_routes
 from services.api.routes import optimization as optimization_routes
 from services.api.routes import reports as report_routes
@@ -74,6 +75,14 @@ from services.api.services.graph_service import (
     route_analytics_tables,
     route_semiconductor_graph_neighborhood,
     route_semiconductor_graph_snapshot,
+)
+from services.api.services.stage_graph_service import (
+    route_stage_graph,
+    route_stage_graph_charts,
+    route_stage_graph_evidence,
+    route_stage_graph_focus,
+    route_stage_graph_source_coverage,
+    route_stage_graph_tables,
 )
 from services.api.services.analytics_service import route_analytics_export, route_analytics_table
 from services.api.services.optimization_service import route_intervention_optimization
@@ -2630,6 +2639,17 @@ def create_app() -> Any:
         route_analytics_tables=route_analytics_tables,
         route_semiconductor_graph_snapshot=route_semiconductor_graph_snapshot,
         route_semiconductor_graph_neighborhood=route_semiconductor_graph_neighborhood,
+    )
+    stage_graph_routes.register(
+        app,
+        Header=Header,
+        Query=Query,
+        route_stage_graph=route_stage_graph,
+        route_stage_graph_focus=route_stage_graph_focus,
+        route_stage_graph_source_coverage=route_stage_graph_source_coverage,
+        route_stage_graph_evidence=route_stage_graph_evidence,
+        route_stage_graph_tables=route_stage_graph_tables,
+        route_stage_graph_charts=route_stage_graph_charts,
     )
     analytics_routes.register(
         app,

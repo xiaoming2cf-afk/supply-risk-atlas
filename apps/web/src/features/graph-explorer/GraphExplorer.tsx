@@ -38,6 +38,22 @@ import { DemandRelationshipView } from "./DemandRelationshipView";
 import { ProductionDependencyView } from "./ProductionDependencyView";
 import { SupplyDemandBalanceView } from "./SupplyDemandBalanceView";
 import { SupplyRelationshipView } from "./SupplyRelationshipView";
+import {
+  ComplianceRiskGraphView,
+  DesignIPDependencyGraphView,
+  DownstreamDemandGraphView,
+  EquipmentProcessDependencyGraphView,
+  EventTimelineGraphView,
+  FabProcessGraphView,
+  LogisticsRouteGraphView,
+  MaterialChemicalDependencyGraphView,
+  MineralDependencyGraphView,
+  PackagingTestingGraphView,
+  PolicyMacroGraphView,
+  ProductDemandGraphView,
+  type RelationshipClassFilter,
+  type StageId,
+} from "./stage-views";
 import { defaultGraphLayerSet, findFirstGraphSearchMatch, type GraphLayerCategory } from "./graphFilters";
 import {
   buildGraphViewModel,
@@ -77,12 +93,19 @@ export function GraphExplorer({
   const [sourceFilter, setSourceFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
+  const [selectedStage, setSelectedStage] = useState<StageId>("L5_fabrication");
+  const [relationshipClassFilter, setRelationshipClassFilter] = useState<RelationshipClassFilter>("all");
   const [confidenceMin, setConfidenceMin] = useState(0);
   const [evidenceOnly, setEvidenceOnly] = useState(false);
   const [endpointDetails, setEndpointDetails] = useState<GraphEndpointDetails>({
     source: "fallback",
     status: "fallback",
     message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
+  });
+  const [stageEndpointDetails, setStageEndpointDetails] = useState<GraphEndpointDetails>({
+    source: "fallback",
+    status: "fallback",
+    message: "Fallback stage graph payload: dashboard graph used until a backend stage endpoint responds.",
   });
   const [hideLowConfidence, setHideLowConfidence] = useState(false);
   const [showEdgeLabels, setShowEdgeLabels] = useState(false);
@@ -155,6 +178,58 @@ export function GraphExplorer({
       cancelled = true;
     };
   }, [apiClient, focusDepth, graph.selectedNodeId, graph.transmissionPaths, mode, selectedNodeId, selectedPathId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!apiClient) {
+      setStageEndpointDetails({
+        source: "fallback",
+        status: "fallback",
+        message: "Fallback stage graph payload: no backend API client is configured.",
+      });
+      return;
+    }
+
+    const loadStageEndpoint = async () => {
+      setStageEndpointDetails((current) => ({
+        ...current,
+        status: "loading",
+        message: "Backend stage graph endpoint loading.",
+      }));
+      const result = await apiClient.getStageGraph({
+        stageId: selectedStage,
+        relationshipClass: relationshipClassFilter === "all" ? null : relationshipClassFilter,
+        limit: 18,
+      });
+      if (cancelled) return;
+      if (result.data && result.envelope.status !== "error") {
+        setStageEndpointDetails({
+          data: result.data,
+          message: "Backend stage graph endpoint active.",
+          source: "backend",
+          status: "active",
+        });
+      } else {
+        setStageEndpointDetails({
+          source: "fallback",
+          status: "fallback",
+          message: result.envelope.warnings?.[0] ?? "Fallback stage graph payload: backend stage endpoint unavailable.",
+        });
+      }
+    };
+
+    void loadStageEndpoint().catch((error) => {
+      if (cancelled) return;
+      setStageEndpointDetails({
+        source: "fallback",
+        status: "fallback",
+        message: error instanceof Error ? error.message : "Fallback stage graph payload: backend stage endpoint unavailable.",
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient, relationshipClassFilter, selectedStage]);
 
   const view = useMemo(
     () =>
@@ -243,6 +318,8 @@ export function GraphExplorer({
     setSourceFilter("all");
     setCountryFilter("all");
     setProductFilter("all");
+    setSelectedStage("L5_fabrication");
+    setRelationshipClassFilter("all");
     setConfidenceMin(0);
     setEvidenceOnly(false);
     setHideLowConfidence(false);
@@ -353,6 +430,8 @@ export function GraphExplorer({
           onResetView={resetView}
           onSearchChange={setQuery}
           onSourceFilterChange={setSourceFilter}
+          onRelationshipClassFilterChange={setRelationshipClassFilter}
+          onStageChange={setSelectedStage}
           paths={graph.transmissionPaths ?? []}
           productFilter={productFilter}
           productOptions={productOptions}
@@ -368,8 +447,10 @@ export function GraphExplorer({
           selectedCountryCode={view.selectedCountry?.code}
           selectedNodeId={view.selectedNode?.id}
           selectedPathId={view.activePath?.id}
+          selectedStage={selectedStage}
           sourceFilter={sourceFilter}
           sourceOptions={sourceOptions}
+          relationshipClassFilter={relationshipClassFilter}
         />
         <GraphLayers
           enabledLayers={enabledLayers}
@@ -395,6 +476,14 @@ export function GraphExplorer({
           <span>edge labels hidden by default</span>
         </div>
         <EndpointStatusPanel details={endpointDetails} />
+        <EndpointStatusPanel details={stageEndpointDetails} />
+        <StageModePanel
+          endpointDetails={stageEndpointDetails}
+          metadata={metadata}
+          relationshipClassFilter={relationshipClassFilter}
+          selectedStage={selectedStage}
+          view={view}
+        />
         <div className="graph-canvas">
           {mode === "supply" ? (
             <SupplyRelationshipView view={view} endpointData={endpointDetails.data} />
@@ -468,6 +557,39 @@ export function GraphExplorer({
       </Panel>
     </div>
   );
+}
+
+function StageModePanel({
+  endpointDetails,
+  metadata,
+  relationshipClassFilter,
+  selectedStage,
+  view,
+}: {
+  endpointDetails: GraphEndpointDetails;
+  metadata: GraphVersionMetadata;
+  relationshipClassFilter: RelationshipClassFilter;
+  selectedStage: StageId;
+  view: GraphViewModel;
+}) {
+  const props = {
+    endpointData: endpointDetails.data as Record<string, unknown> | undefined,
+    metadata,
+    relationshipClassFilter,
+    view,
+  };
+  if (selectedStage === "L0_policy_macro") return <PolicyMacroGraphView {...props} />;
+  if (selectedStage === "L1_raw_minerals") return <MineralDependencyGraphView {...props} />;
+  if (selectedStage === "L2_materials_chemicals") return <MaterialChemicalDependencyGraphView {...props} />;
+  if (selectedStage === "L3_design_eda_ip") return <DesignIPDependencyGraphView {...props} />;
+  if (selectedStage === "L4_equipment") return <EquipmentProcessDependencyGraphView {...props} />;
+  if (selectedStage === "L5_fabrication") return <FabProcessGraphView {...props} />;
+  if (selectedStage === "L6_products") return <ProductDemandGraphView {...props} />;
+  if (selectedStage === "L7_packaging_testing") return <PackagingTestingGraphView {...props} />;
+  if (selectedStage === "L8_logistics") return <LogisticsRouteGraphView {...props} />;
+  if (selectedStage === "L9_downstream_demand") return <DownstreamDemandGraphView {...props} />;
+  if (selectedStage === "L10_risk_events") return <EventTimelineGraphView {...props} />;
+  return <ComplianceRiskGraphView {...props} />;
 }
 
 type GraphEndpointDetails = {
