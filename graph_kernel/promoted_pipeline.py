@@ -10,8 +10,14 @@ from typing import Any
 
 from graph_kernel.graph_versioning import promoted_graph_version, stable_hash
 from graph_kernel.promoted_graph_quality import node_catalog_coverage, quality_report, source_coverage
+from graph_kernel.relationship_builder import (
+    build_relationship_edge_groups,
+    normalize_relationship_edge,
+    relationship_metadata,
+)
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from graph_kernel.source_manifest import build_source_manifest
+from sra_core.geo.normalize import sanitize_graph_node
 from sra_core.ingestion.connectors.base import ConnectorConfig, PublicEvidenceConnector
 from sra_core.ingestion.connectors.bis_export_controls_lite import BisExportControlsLiteConnector
 from sra_core.ingestion.connectors.consolidated_screening_list_lite import (
@@ -84,19 +90,21 @@ class PromotedEdge:
     valid_to: datetime | None = None
 
     def model_dump(self, mode: str = "json") -> dict[str, Any]:
-        return {
-            "edge_id": self.edge_id,
-            "source_node_id": self.source_node_id,
-            "target_node_id": self.target_node_id,
-            "edge_type": self.edge_type,
-            "weight": self.weight,
-            "confidence": self.confidence,
-            "attributes": self.attributes,
-            "provenance_refs": [ref.model_dump(mode=mode) for ref in self.provenance_refs],
-            "evidence_text_summary": self.evidence_text_summary,
-            "valid_from": self.valid_from.isoformat(),
-            "valid_to": self.valid_to.isoformat() if self.valid_to else None,
-        }
+        return normalize_relationship_edge(
+            {
+                "edge_id": self.edge_id,
+                "source_node_id": self.source_node_id,
+                "target_node_id": self.target_node_id,
+                "edge_type": self.edge_type,
+                "weight": self.weight,
+                "confidence": self.confidence,
+                "attributes": self.attributes,
+                "provenance_refs": [ref.model_dump(mode=mode) for ref in self.provenance_refs],
+                "evidence_text_summary": self.evidence_text_summary,
+                "valid_from": self.valid_from.isoformat(),
+                "valid_to": self.valid_to.isoformat() if self.valid_to else None,
+            }
+        )
 
 
 @dataclass(frozen=True)
@@ -119,6 +127,7 @@ class PromotedGraphSnapshot:
     graph_mode: str = "promoted"
 
     def model_dump(self, mode: str = "json") -> dict[str, Any]:
+        edge_payloads = [edge.model_dump(mode=mode) for edge in self.edges]
         return {
             "graph_version": self.graph_version,
             "ontology_version": self.ontology_version,
@@ -132,7 +141,8 @@ class PromotedGraphSnapshot:
             "unresolved_entity_count": self.unresolved_entity_count,
             "stale_source_count": self.stale_source_count,
             "nodes": [node.model_dump(mode=mode) for node in self.nodes],
-            "edges": [edge.model_dump(mode=mode) for edge in self.edges],
+            "edges": edge_payloads,
+            "relationship_edge_groups": build_relationship_edge_groups(edge_payloads),
             "quality_report": self.quality_report,
             "data_mode": self.data_mode,
             "graph_mode": self.graph_mode,
@@ -277,6 +287,7 @@ def build_promoted_graph_snapshot(
         promoted = connector.promote(result.records)
         promoted_records.extend(promoted)
         _add_promoted_records(node_rows, edge_rows, promoted)
+    _add_relationship_seed_edges(node_rows, edge_rows)
 
     manifest = build_source_manifest(source_ids)
     quality = quality_report(list(node_rows.values()), list(edge_rows.values()))
@@ -449,6 +460,37 @@ def _add_promoted_records(
             _add_edge(edge_rows, jurisdiction, event_id, "policy_restriction_edge", record)
 
 
+def _add_relationship_seed_edges(
+    node_rows: dict[str, dict[str, Any]],
+    edge_rows: dict[str, dict[str, Any]],
+) -> None:
+    demand_record = {
+        "source_refs": ["wsts_historical_billings:wsts-demand-proxy-fixture"],
+        "confidence": 0.56,
+        "evidence_text_summary": (
+            "Fixture WSTS billings proxy marks downstream demand pressure for research testing."
+        ),
+        "demand_proxy_type": "fixture_market_billings_proxy",
+        "period": "2026-Q1",
+    }
+    _ensure_node(node_rows, "sector:AI_datacenter", "downstream_sector", "AI datacenter", demand_record)
+    _ensure_node(
+        node_rows,
+        "demand:wsts_global_billings_proxy",
+        "demand_indicator",
+        "WSTS billings proxy",
+        demand_record,
+    )
+    _add_edge(edge_rows, "sector:AI_datacenter", "product_grade:hbm", "demands", demand_record)
+    _add_edge(
+        edge_rows,
+        "demand:wsts_global_billings_proxy",
+        "product_grade:advanced_logic",
+        "demand_signal_for",
+        demand_record,
+    )
+
+
 def _ensure_node(
     node_rows: dict[str, dict[str, Any]],
     node_id: str,
@@ -456,8 +498,7 @@ def _ensure_node(
     label: str,
     record: dict[str, Any],
 ) -> None:
-    node_rows.setdefault(
-        node_id,
+    safe_node = sanitize_graph_node(
         {
             "node_id": node_id,
             "node_type": node_type,
@@ -470,6 +511,7 @@ def _ensure_node(
             "confidence": float(record.get("confidence", 0.5)),
         },
     )
+    node_rows.setdefault(safe_node["node_id"], safe_node)
 
 
 def _add_edge(
@@ -482,21 +524,27 @@ def _add_edge(
     edge_id = f"promoted:{edge_type}:{stable_hash([source_node_id, target_node_id, record['source_refs']])[:12]}"
     edge_rows.setdefault(
         edge_id,
-        {
-            "edge_id": edge_id,
-            "source_node_id": source_node_id,
-            "target_node_id": target_node_id,
-            "edge_type": edge_type,
-            "weight": float(record.get("dependency_share", 0.5)),
-            "confidence": float(record.get("confidence", 0.5)),
-            "attributes": {
-                "not_supply_chain_dependency": edge_type
-                not in {"depends_on", "supplies", "trade_dependency_edge"},
-                "data_mode": "public_evidence_promoted",
-            },
-            "provenance_refs": record.get("source_refs", []),
-            "evidence_text_summary": record.get("evidence_text_summary", ""),
-        },
+        normalize_relationship_edge(
+            {
+                "edge_id": edge_id,
+                "source_node_id": source_node_id,
+                "target_node_id": target_node_id,
+                "edge_type": edge_type,
+                "weight": float(record.get("dependency_share", 0.5)),
+                "confidence": float(record.get("confidence", 0.5)),
+                "attributes": {
+                    **relationship_metadata(
+                        edge_type,
+                        source_node_id=source_node_id,
+                        target_node_id=target_node_id,
+                        attributes=record,
+                    ),
+                    "data_mode": "public_evidence_promoted",
+                },
+                "provenance_refs": record.get("source_refs", []),
+                "evidence_text_summary": record.get("evidence_text_summary", ""),
+            }
+        ),
     )
 
 
@@ -511,7 +559,7 @@ def _node_dict_from_fixture(node: Any) -> dict[str, Any]:
         f"{ref.get('source_id')}:{ref.get('source_record_id', 'fixture')}"
         for ref in row.get("source_refs", [])
     ] or ["semirisk_fixture:graph"]
-    return row
+    return sanitize_graph_node(row)
 
 
 def _edge_dict_from_fixture(edge: Any) -> dict[str, Any]:
@@ -525,7 +573,7 @@ def _edge_dict_from_fixture(edge: Any) -> dict[str, Any]:
         f"{ref.get('source_id')}:{ref.get('source_record_id', 'fixture')}"
         for ref in row.get("provenance_refs", [])
     ] or ["semirisk_fixture:graph"]
-    return row
+    return normalize_relationship_edge(row)
 
 
 def _node_from_dict(row: dict[str, Any], as_of: datetime) -> PromotedNode:
@@ -541,6 +589,7 @@ def _node_from_dict(row: dict[str, Any], as_of: datetime) -> PromotedNode:
 
 
 def _edge_from_dict(row: dict[str, Any], as_of: datetime) -> PromotedEdge:
+    row = normalize_relationship_edge(row)
     return PromotedEdge(
         edge_id=row["edge_id"],
         source_node_id=row["source_node_id"],
@@ -555,8 +604,13 @@ def _edge_from_dict(row: dict[str, Any], as_of: datetime) -> PromotedEdge:
     )
 
 
-def _source_ref(value: str) -> PromotedSourceRef:
-    source_id, _, source_record_id = value.partition(":")
+def _source_ref(value: Any) -> PromotedSourceRef:
+    if isinstance(value, dict):
+        return PromotedSourceRef(
+            source_id=str(value.get("source_id") or "unknown"),
+            source_record_id=str(value.get("source_record_id") or "record"),
+        )
+    source_id, _, source_record_id = str(value).partition(":")
     return PromotedSourceRef(source_id=source_id, source_record_id=source_record_id or "record")
 
 

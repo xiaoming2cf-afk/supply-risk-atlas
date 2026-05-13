@@ -40,17 +40,28 @@ def register(
     @app.get("/api/v1/graph/view")
     def http_graph_view(
         mode: str = Query(default="overview"),
+        relationship_class: str | None = Query(default=None),
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
-        return route_graph_view(mode=mode, request_id=x_request_id)
+        return route_graph_view(
+            mode=mode,
+            relationship_class=relationship_class,
+            request_id=x_request_id,
+        )
 
     @app.get("/api/v1/graph/focus")
     def http_graph_focus(
         node_id: str = Query(default="company:tsmc"),
         depth: int = Query(default=1, ge=0, le=2),
+        relationship_class: str | None = Query(default=None),
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
-        return route_graph_focus(node_id=node_id, depth=depth, request_id=x_request_id)
+        return route_graph_focus(
+            node_id=node_id,
+            depth=depth,
+            relationship_class=relationship_class,
+            request_id=x_request_id,
+        )
 
     @app.get("/api/v1/graph/clusters")
     def http_graph_clusters(x_request_id: str | None = Header(default=None)) -> dict[str, Any]:

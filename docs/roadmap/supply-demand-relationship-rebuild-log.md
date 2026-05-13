@@ -105,3 +105,18 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Evidence: company, country/region, commodity, and policy crosswalk tests pass; legacy geography aliases resolve to `region:china_taiwan` with parent `country:CN` context.
 - Limitations: low-confidence entity mentions remain unresolved instead of fabricating relationships.
 - Next gate decision: proceed to relationship-aware graph construction.
+## Gate 9 - Relationship-Aware Graph Construction
+
+- Gate status: PASS
+- Changed files: `graph_kernel/relationship_builder.py`, `graph_kernel/supply_demand_builder.py`, `graph_kernel/promoted_pipeline.py`, `services/api/routes/graph.py`, `services/api/services/graph_service.py`, `data/promoted/latest/*.json`, `tests/graph_invariants/test_supply_demand_relationships.py`, `tests/graph_invariants/test_relationship_class_separation.py`, `tests/graph_invariants/test_geography_normalized_graph.py`.
+- Commands run:
+  - `python -m pytest tests/graph_invariants/test_supply_demand_relationships.py tests/graph_invariants/test_relationship_class_separation.py tests/graph_invariants/test_geography_normalized_graph.py -q` -> PASS (`10 passed`)
+  - `python -m pytest tests/graph_invariants tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`35 passed`)
+  - `python -m pytest tests/api/test_graph_view_endpoints.py tests/api/test_graph_chart_table_endpoints.py -q` -> PASS (`17 passed`)
+  - `python scripts/build_promoted_graph.py` -> PASS; regenerated sanitized promoted graph artifacts with relationship edge groups.
+  - `python -m pytest tests/api -q` -> PASS (`108 passed`)
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+- Evidence: promoted graph snapshots now expose separate `supply_edges`, `demand_edges`, `production_dependency_edges`, and `evidence_context_links`; supply edges carry supplied-item metadata, demand edges carry demand-proxy metadata, production dependencies carry criticality/substitutability metadata, and evidence-context links remain excluded from physical propagation.
+- Terminology normalization evidence: promoted graph and graph invariant tests pass with `region:china_taiwan` / `中国台湾`; generated artifacts contain no old geography country node.
+- Limitations: demand relationships remain fixture/proxy public-evidence signals, not production demand data; live connector fetch remains disabled.
+- Next gate decision: proceed to supply-demand relationship API/view expansion.

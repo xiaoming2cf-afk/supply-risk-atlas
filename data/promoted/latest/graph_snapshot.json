@@ -1,9 +1,11 @@
 {
   "as_of_time": "2026-05-12T00:00:00+00:00",
   "data_mode": "public_evidence_promoted",
-  "edge_count": 65,
+  "edge_count": 67,
   "edge_count_by_type": {
     "correlated_with": 4,
+    "demand_signal_for": 1,
+    "demands": 1,
     "depends_on": 1,
     "evidence_for": 8,
     "exports_to": 1,
@@ -26,8 +28,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "restricted_by",
         "fixture_graph": true,
-        "source_record_id": "gta-export-control-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gta-export-control-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.7,
       "edge_id": "edge:5nm:restricted_by:export_control_placeholder",
@@ -39,7 +48,14 @@
           "source_record_id": "gta-export-control-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "technology_node:5nm",
+      "source_refs": [
+        {
+          "source_id": "global_trade_alert_semiconductor_export_controls",
+          "source_record_id": "gta-export-control-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "policy_event:export_control_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -48,8 +64,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "impacted_by",
         "fixture_graph": true,
-        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.6,
       "edge_id": "edge:advanced_logic:impacted_by:china_taiwan_power_outage",
@@ -61,7 +84,14 @@
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "product_grade:advanced_logic",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -70,8 +100,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.8,
       "edge_id": "edge:advanced_logic:requires:5nm",
@@ -83,7 +120,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "product_grade:advanced_logic",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "technology_node:5nm",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -92,8 +136,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.72,
       "edge_id": "edge:advanced_logic:requires:packaging",
@@ -105,7 +156,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "product_grade:advanced_logic",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:packaging_test",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -114,8 +172,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "restricted_by",
         "fixture_graph": true,
-        "source_record_id": "gta-export-control-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gta-export-control-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.69,
       "edge_id": "edge:advanced_logic:restricted_by:export_control_placeholder",
@@ -127,7 +192,14 @@
           "source_record_id": "gta-export-control-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "product_grade:advanced_logic",
+      "source_refs": [
+        {
+          "source_id": "global_trade_alert_semiconductor_export_controls",
+          "source_record_id": "gta-export-control-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "policy_event:export_control_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -136,8 +208,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.92,
       "edge_id": "edge:applied_materials:located_in:us",
@@ -149,7 +228,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:applied_materials",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:us",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -159,7 +245,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "process_stage:wafer_fabrication"
       },
       "confidence": 0.74,
       "edge_id": "edge:applied_materials:supplies:wafer_fab",
@@ -171,7 +266,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:applied_materials",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:wafer_fabrication",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -180,8 +282,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.94,
       "edge_id": "edge:asml:located_in:nl",
@@ -193,7 +302,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:asml",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:nl",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -203,7 +319,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "equipment:euv_scanner",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "equipment:euv_scanner"
       },
       "confidence": 0.88,
       "edge_id": "edge:asml:supplies:euv_scanner",
@@ -215,7 +340,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:asml",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "equipment:euv_scanner",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -224,30 +356,51 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "impacted_by",
         "fixture_graph": true,
-        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+        "substitutability": "unknown"
       },
-      "confidence": 0.66,
-      "edge_id": "edge:region_china_taiwan:impacted_by:china_taiwan_power_outage",
+      "confidence": 0.58,
+      "edge_id": "edge:china_taiwan_us_route:impacted_by:china_taiwan_power_outage",
       "edge_type": "impacted_by",
-      "evidence_text_summary": "The fixture risk event impacts 中国台湾 for graph health testing.",
+      "evidence_text_summary": "The fixture risk event impacts the \u4e2d\u56fd\u53f0\u6e7e-US route for graph health testing.",
       "provenance_refs": [
         {
           "source_id": "gdelt_semiconductor_events",
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
-      "source_node_id": "region:china_taiwan",
+      "relationship_class": "PRODUCTION_DEPENDENCY",
+      "source_node_id": "route:china_taiwan_us_west_coast",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
-      "weight": 0.52
+      "weight": 0.36
     },
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "restricted_by",
         "fixture_graph": true,
-        "source_record_id": "gta-export-control-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gta-export-control-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.72,
       "edge_id": "edge:euv_scanner:restricted_by:export_control_placeholder",
@@ -259,7 +412,14 @@
           "source_record_id": "gta-export-control-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "equipment:euv_scanner",
+      "source_refs": [
+        {
+          "source_id": "global_trade_alert_semiconductor_export_controls",
+          "source_record_id": "gta-export-control-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "policy_event:export_control_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -268,8 +428,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "impacted_by",
         "fixture_graph": true,
-        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.64,
       "edge_id": "edge:fab18:impacted_by:china_taiwan_power_outage",
@@ -281,7 +448,14 @@
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "facility:tsmc_fab18",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -290,20 +464,34 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.8,
       "edge_id": "edge:fab18:located_in:china_taiwan",
       "edge_type": "located_in",
-      "evidence_text_summary": "TSMC Fab 18 is associated with 中国台湾 in the fixture source.",
+      "evidence_text_summary": "TSMC Fab 18 is associated with \u4e2d\u56fd\u53f0\u6e7e in the fixture source.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "facility:tsmc_fab18",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -313,7 +501,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "process_stage:lithography",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "process_stage:lithography"
       },
       "confidence": 0.8,
       "edge_id": "edge:fab18:participates_in:lithography",
@@ -325,7 +522,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "facility:tsmc_fab18",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:lithography",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -334,8 +538,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.86,
       "edge_id": "edge:fab18:requires:euv_scanner",
@@ -347,7 +558,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "facility:tsmc_fab18",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "equipment:euv_scanner",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -356,20 +574,34 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "routes_through",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.68,
       "edge_id": "edge:fab18:routes_through:china_taiwan_us",
       "edge_type": "routes_through",
-      "evidence_text_summary": "The fixture maps TSMC Fab 18 exports through a 中国台湾-US route.",
+      "evidence_text_summary": "The fixture maps TSMC Fab 18 exports through a \u4e2d\u56fd\u53f0\u6e7e-US route.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "facility:tsmc_fab18",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "route:china_taiwan_us_west_coast",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -378,8 +610,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "depends_on",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.76,
       "edge_id": "edge:gpu_accelerator:depends_on:hbm",
@@ -391,7 +630,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "component:gpu_accelerator",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "product_grade:hbm",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -400,8 +646,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.78,
       "edge_id": "edge:hbm:requires:packaging",
@@ -413,7 +666,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "product_grade:hbm",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:packaging_test",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -422,8 +682,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.93,
       "edge_id": "edge:intel:located_in:us",
@@ -435,7 +702,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:intel",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:us",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -445,7 +719,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "process_stage:wafer_fabrication"
       },
       "confidence": 0.82,
       "edge_id": "edge:intel:participates_in:wafer_fabrication",
@@ -457,7 +740,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:intel",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:wafer_fabrication",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -467,7 +757,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "product_grade:advanced_logic",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "product_grade:advanced_logic"
       },
       "confidence": 0.78,
       "edge_id": "edge:intel:produces:advanced_logic",
@@ -479,7 +778,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:intel",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "product_grade:advanced_logic",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -488,8 +794,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.76,
       "edge_id": "edge:intel_oregon:located_in:us",
@@ -501,7 +814,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "facility:intel_oregon",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:us",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -510,8 +830,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.9,
       "edge_id": "edge:lithography:requires:euv_scanner",
@@ -523,7 +850,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "process_stage:lithography",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "equipment:euv_scanner",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -532,8 +866,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.84,
       "edge_id": "edge:lithography:requires:photoresist",
@@ -545,7 +886,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "process_stage:lithography",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "chemical:photoresist",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -554,8 +902,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.78,
       "edge_id": "edge:pyeongtaek:located_in:kr",
@@ -567,7 +922,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "facility:samsung_pyeongtaek",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:kr",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -576,8 +938,49 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "impacted_by",
         "fixture_graph": true,
-        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+        "substitutability": "unknown"
+      },
+      "confidence": 0.66,
+      "edge_id": "edge:region:china_taiwan:impacted_by:china_taiwan_power_outage",
+      "edge_type": "impacted_by",
+      "evidence_text_summary": "The fixture risk event impacts \u4e2d\u56fd\u53f0\u6e7e for graph health testing.",
+      "provenance_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
+      "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
+      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null,
+      "weight": 0.52
+    },
+    {
+      "attributes": {
+        "as_of_time": "2026-05-01T00:00:00+00:00",
+        "derived_context": true,
+        "fixture_graph": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.54,
       "edge_id": "edge:risk_event:correlated_with:wsts_billings",
@@ -589,7 +992,14 @@
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "market_indicator:wsts_monthly_billings",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -598,20 +1008,34 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "routes_through",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.7,
       "edge_id": "edge:route_china_taiwan_us:routes_through:china_taiwan",
       "edge_type": "routes_through",
-      "evidence_text_summary": "The fixture route originates in 中国台湾.",
+      "evidence_text_summary": "The fixture route originates in \u4e2d\u56fd\u53f0\u6e7e.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "route:china_taiwan_us_west_coast",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -620,8 +1044,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "routes_through",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.7,
       "edge_id": "edge:route_china_taiwan_us:routes_through:us",
@@ -633,7 +1064,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "route:china_taiwan_us_west_coast",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:us",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -642,8 +1080,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.93,
       "edge_id": "edge:samsung:located_in:kr",
@@ -655,7 +1100,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:samsung",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "country:kr",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -665,7 +1117,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "process_stage:wafer_fabrication"
       },
       "confidence": 0.84,
       "edge_id": "edge:samsung:participates_in:wafer_fabrication",
@@ -677,7 +1138,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:samsung",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:wafer_fabrication",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -687,7 +1155,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "product_grade:hbm",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "product_grade:hbm"
       },
       "confidence": 0.84,
       "edge_id": "edge:samsung:produces:hbm",
@@ -699,7 +1176,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:samsung",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "product_grade:hbm",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -708,8 +1192,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "exports_to",
         "fixture_graph": true,
-        "source_record_id": "gta-export-control-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gta-export-control-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.64,
       "edge_id": "edge:trade_flow_us_kr:exports_to:kr",
@@ -721,7 +1212,14 @@
           "source_record_id": "gta-export-control-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "trade_flow:advanced_logic_us_kr",
+      "source_refs": [
+        {
+          "source_id": "global_trade_alert_semiconductor_export_controls",
+          "source_record_id": "gta-export-control-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "country:kr",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -730,8 +1228,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "imports_from",
         "fixture_graph": true,
-        "source_record_id": "gta-export-control-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gta-export-control-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.64,
       "edge_id": "edge:trade_flow_us_kr:imports_from:us",
@@ -743,7 +1248,14 @@
           "source_record_id": "gta-export-control-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "trade_flow:advanced_logic_us_kr",
+      "source_refs": [
+        {
+          "source_id": "global_trade_alert_semiconductor_export_controls",
+          "source_record_id": "gta-export-control-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "country:us",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -752,8 +1264,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "restricted_by",
         "fixture_graph": true,
-        "source_record_id": "gta-export-control-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gta-export-control-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.65,
       "edge_id": "edge:trade_flow_us_kr:restricted_by:export_control_placeholder",
@@ -765,7 +1284,14 @@
           "source_record_id": "gta-export-control-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "trade_flow:advanced_logic_us_kr",
+      "source_refs": [
+        {
+          "source_id": "global_trade_alert_semiconductor_export_controls",
+          "source_record_id": "gta-export-control-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "policy_event:export_control_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -774,20 +1300,34 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "located_in",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.95,
       "edge_id": "edge:tsmc:located_in:china_taiwan",
       "edge_type": "located_in",
-      "evidence_text_summary": "TSMC is associated with 中国台湾 in the fixture source.",
+      "evidence_text_summary": "TSMC is associated with \u4e2d\u56fd\u53f0\u6e7e in the fixture source.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:tsmc",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -797,7 +1337,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "process_stage:lithography",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "process_stage:lithography"
       },
       "confidence": 0.88,
       "edge_id": "edge:tsmc:participates_in:lithography",
@@ -809,7 +1358,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:tsmc",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:lithography",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -819,7 +1375,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "process_stage:wafer_fabrication"
       },
       "confidence": 0.9,
       "edge_id": "edge:tsmc:participates_in:wafer_fabrication",
@@ -831,7 +1396,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:tsmc",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "process_stage:wafer_fabrication",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -841,7 +1413,16 @@
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "lead_time_days": null,
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_supply",
+        "qualification_time_days": null,
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "relationship_scope": "fixture_or_promoted_evidence",
+        "service_or_capacity_item_id": "product_grade:advanced_logic",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitution_available": null,
+        "supplied_item_id": "product_grade:advanced_logic"
       },
       "confidence": 0.85,
       "edge_id": "edge:tsmc:produces:advanced_logic",
@@ -853,7 +1434,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "SUPPLY_RELATIONSHIP",
       "source_node_id": "company:tsmc",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "product_grade:advanced_logic",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -862,30 +1450,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": false,
+        "criticality": "medium",
+        "dependency_type": "impacted_by",
         "fixture_graph": true,
-        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
-      },
-      "confidence": 0.58,
-      "edge_id": "edge:china_taiwan_us_route:impacted_by:china_taiwan_power_outage",
-      "edge_type": "impacted_by",
-      "evidence_text_summary": "The fixture risk event impacts the 中国台湾-US route for graph health testing.",
-      "provenance_refs": [
-        {
-          "source_id": "gdelt_semiconductor_events",
-          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
-        }
-      ],
-      "source_node_id": "route:china_taiwan_us_west_coast",
-      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
-      "valid_from": "2026-05-12T00:00:00+00:00",
-      "valid_to": null,
-      "weight": 0.36
-    },
-    {
-      "attributes": {
-        "as_of_time": "2026-05-01T00:00:00+00:00",
-        "fixture_graph": true,
-        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+        "substitutability": "unknown"
       },
       "confidence": 0.62,
       "edge_id": "edge:wafer_fab:impacted_by:china_taiwan_power_outage",
@@ -897,7 +1470,14 @@
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "process_stage:wafer_fabrication",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+        }
+      ],
       "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -906,8 +1486,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.86,
       "edge_id": "edge:wafer_fab:requires:silicon_wafer",
@@ -919,7 +1506,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "process_stage:wafer_fabrication",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "material:silicon_wafer",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -928,8 +1522,15 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "bottleneck_flag": true,
+        "criticality": "medium",
+        "dependency_type": "requires",
         "fixture_graph": true,
-        "source_record_id": "eto-semiconductor-network-2026-05"
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_record_id": "eto-semiconductor-network-2026-05",
+        "substitutability": "unknown"
       },
       "confidence": 0.8,
       "edge_id": "edge:wafer_fab:requires:specialty_gas",
@@ -941,7 +1542,14 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "process_stage:wafer_fabrication",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
       "target_node_id": "chemical:specialty_gas",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -950,8 +1558,13 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "derived_context": true,
         "fixture_graph": true,
-        "source_record_id": "wsts-monthly-billings-2026-03"
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_record_id": "wsts-monthly-billings-2026-03",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.7,
       "edge_id": "edge:wsts_billings:correlated_with:advanced_logic",
@@ -963,7 +1576,14 @@
           "source_record_id": "wsts-monthly-billings-2026-03"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "market_indicator:wsts_monthly_billings",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-monthly-billings-2026-03"
+        }
+      ],
       "target_node_id": "product_grade:advanced_logic",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -972,8 +1592,13 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "derived_context": true,
         "fixture_graph": true,
-        "source_record_id": "wsts-monthly-billings-2026-03"
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_record_id": "wsts-monthly-billings-2026-03",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.66,
       "edge_id": "edge:wsts_billings:correlated_with:gpu_accelerator",
@@ -985,7 +1610,14 @@
           "source_record_id": "wsts-monthly-billings-2026-03"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "market_indicator:wsts_monthly_billings",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-monthly-billings-2026-03"
+        }
+      ],
       "target_node_id": "component:gpu_accelerator",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -994,8 +1626,13 @@
     {
       "attributes": {
         "as_of_time": "2026-05-01T00:00:00+00:00",
+        "derived_context": true,
         "fixture_graph": true,
-        "source_record_id": "wsts-monthly-billings-2026-03"
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_record_id": "wsts-monthly-billings-2026-03",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.69,
       "edge_id": "edge:wsts_billings:correlated_with:hbm",
@@ -1007,7 +1644,14 @@
           "source_record_id": "wsts-monthly-billings-2026-03"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "market_indicator:wsts_monthly_billings",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-monthly-billings-2026-03"
+        }
+      ],
       "target_node_id": "product_grade:hbm",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1016,7 +1660,81 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "demand_growth_proxy": null,
+        "demand_proxy_type": "fixture_market_billings_proxy",
+        "demand_value": null,
+        "not_supply_chain_dependency": false,
+        "period": "2026-Q1",
+        "propagation_mode_hint": "demand_shock_only",
+        "region": null,
+        "relationship_class": "DEMAND_RELATIONSHIP"
+      },
+      "confidence": 0.56,
+      "edge_id": "promoted:demand_signal_for:cb72d0051157",
+      "edge_type": "demand_signal_for",
+      "evidence_text_summary": "Fixture WSTS billings proxy marks downstream demand pressure for research testing.",
+      "provenance_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-demand-proxy-fixture"
+        }
+      ],
+      "relationship_class": "DEMAND_RELATIONSHIP",
+      "source_node_id": "demand:wsts_global_billings_proxy",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-demand-proxy-fixture"
+        }
+      ],
+      "target_node_id": "product_grade:advanced_logic",
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null,
+      "weight": 0.5
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "demand_growth_proxy": null,
+        "demand_proxy_type": "fixture_market_billings_proxy",
+        "demand_value": null,
+        "not_supply_chain_dependency": false,
+        "period": "2026-Q1",
+        "propagation_mode_hint": "demand_shock_only",
+        "region": null,
+        "relationship_class": "DEMAND_RELATIONSHIP"
+      },
+      "confidence": 0.56,
+      "edge_id": "promoted:demands:d08a26914c20",
+      "edge_type": "demands",
+      "evidence_text_summary": "Fixture WSTS billings proxy marks downstream demand pressure for research testing.",
+      "provenance_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-demand-proxy-fixture"
+        }
+      ],
+      "relationship_class": "DEMAND_RELATIONSHIP",
+      "source_node_id": "sector:AI_datacenter",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-demand-proxy-fixture"
+        }
+      ],
+      "target_node_id": "product_grade:hbm",
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null,
+      "weight": 0.5
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.6,
       "edge_id": "promoted:evidence_for:01ad581483b3",
@@ -1028,7 +1746,14 @@
           "source_record_id": "wits-lite-us-848620-concentration-2025"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "country:US",
+      "source_refs": [
+        {
+          "source_id": "world_bank_wits_trade_tariff_lite",
+          "source_record_id": "wits-lite-us-848620-concentration-2025"
+        }
+      ],
       "target_node_id": "trade_tariff_indicator:wits-lite-us-848620-concentration-2025",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1037,7 +1762,11 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.72,
       "edge_id": "promoted:evidence_for:0bc60c5a45e8",
@@ -1049,7 +1778,14 @@
           "source_record_id": "sec-edgar-lite-tsmc-2025-20f"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "company:tsmc",
+      "source_refs": [
+        {
+          "source_id": "sec_edgar_lite",
+          "source_record_id": "sec-edgar-lite-tsmc-2025-20f"
+        }
+      ],
       "target_node_id": "company_disclosure:sec-edgar-lite-tsmc-2025-20f",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1058,19 +1794,30 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.62,
       "edge_id": "promoted:evidence_for:2995232e3a76",
       "edge_type": "evidence_for",
-      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from Japan.",
+      "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from Japan.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-jp-370790-2025"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "un_comtrade_semiconductor_trade_lite",
+          "source_record_id": "comtrade-lite-tw-jp-370790-2025"
+        }
+      ],
       "target_node_id": "commodity:370790",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1079,7 +1826,11 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.58,
       "edge_id": "promoted:evidence_for:399f54dfacec",
@@ -1091,7 +1842,14 @@
           "source_record_id": "wits-lite-tw-370790-tariff-2025"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "world_bank_wits_trade_tariff_lite",
+          "source_record_id": "wits-lite-tw-370790-tariff-2025"
+        }
+      ],
       "target_node_id": "trade_tariff_indicator:wits-lite-tw-370790-tariff-2025",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1100,7 +1858,11 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.64,
       "edge_id": "promoted:evidence_for:5745322cbb8d",
@@ -1112,7 +1874,14 @@
           "source_record_id": "comtrade-lite-us-nl-848620-2025"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "country:US",
+      "source_refs": [
+        {
+          "source_id": "un_comtrade_semiconductor_trade_lite",
+          "source_record_id": "comtrade-lite-us-nl-848620-2025"
+        }
+      ],
       "target_node_id": "commodity:848620",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1121,7 +1890,11 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.66,
       "edge_id": "promoted:evidence_for:6db342ff5fc3",
@@ -1133,7 +1906,14 @@
           "source_record_id": "usgs-minerals-gallium-example"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "critical_mineral:gallium",
+      "source_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
       "target_node_id": "mineral_supply:usgs-minerals-gallium-example",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1142,19 +1922,30 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.62,
       "edge_id": "promoted:evidence_for:81c000dd427e",
       "edge_type": "evidence_for",
-      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from the United States.",
+      "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from the United States.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-us-370790-2025"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "un_comtrade_semiconductor_trade_lite",
+          "source_record_id": "comtrade-lite-tw-us-370790-2025"
+        }
+      ],
       "target_node_id": "commodity:370790",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1163,7 +1954,11 @@
     {
       "attributes": {
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "derived_context": true,
+        "not_supply_chain_dependency": true,
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "user_facing_label": "evidence-context link",
+        "warning": "This is not a supply-chain dependency edge."
       },
       "confidence": 0.7,
       "edge_id": "promoted:evidence_for:c6d24d764267",
@@ -1175,7 +1970,14 @@
           "source_record_id": "sec-edgar-lite-asml-2025-20f"
         }
       ],
+      "relationship_class": "EVIDENCE_CONTEXT",
       "source_node_id": "company:asml",
+      "source_refs": [
+        {
+          "source_id": "sec_edgar_lite",
+          "source_record_id": "sec-edgar-lite-asml-2025-20f"
+        }
+      ],
       "target_node_id": "company_disclosure:sec-edgar-lite-asml-2025-20f",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1183,11 +1985,17 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": true,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "hazard_exposure_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.74,
-      "edge_id": "promoted:hazard_exposure_edge:e83b6a446707",
+      "edge_id": "promoted:hazard_exposure_edge:bcdc5c14f37e",
       "edge_type": "hazard_exposure_edge",
       "evidence_text_summary": "Public USGS-style earthquake metadata near a semiconductor manufacturing region.",
       "provenance_refs": [
@@ -1196,7 +2004,14 @@
           "source_record_id": "usgs-lite-tw-2026-0001"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "hazard_event:usgs-lite-tw-2026-0001",
+      "source_refs": [
+        {
+          "source_id": "usgs_earthquake_lite",
+          "source_record_id": "usgs-lite-tw-2026-0001"
+        }
+      ],
       "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1204,8 +2019,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "impacted_by",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.57,
       "edge_id": "promoted:impacted_by:0aa06739a2e5",
@@ -1217,7 +2038,14 @@
           "source_record_id": "gdelt-lite-2026-0002"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:tsmc",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_lite",
+          "source_record_id": "gdelt-lite-2026-0002"
+        }
+      ],
       "target_node_id": "risk_event:gdelt-lite-2026-0002",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1225,8 +2053,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "impacted_by",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.61,
       "edge_id": "promoted:impacted_by:254e19ac456f",
@@ -1238,7 +2072,14 @@
           "source_record_id": "gdelt-lite-2026-0001"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "company:asml",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_lite",
+          "source_record_id": "gdelt-lite-2026-0001"
+        }
+      ],
       "target_node_id": "risk_event:gdelt-lite-2026-0001",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1246,8 +2087,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "impacted_by",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.61,
       "edge_id": "promoted:impacted_by:5a9b836540f8",
@@ -1259,7 +2106,14 @@
           "source_record_id": "gdelt-lite-2026-0001"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "product:euv_lithography",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_lite",
+          "source_record_id": "gdelt-lite-2026-0001"
+        }
+      ],
       "target_node_id": "risk_event:gdelt-lite-2026-0001",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1267,11 +2121,17 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "impacted_by",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.57,
-      "edge_id": "promoted:impacted_by:c323bc97406f",
+      "edge_id": "promoted:impacted_by:c6aaa4971108",
       "edge_type": "impacted_by",
       "evidence_text_summary": "Public event metadata summary reports earthquake monitoring near semiconductor manufacturing region.",
       "provenance_refs": [
@@ -1280,7 +2140,14 @@
           "source_record_id": "gdelt-lite-2026-0002"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "gdelt_semiconductor_lite",
+          "source_record_id": "gdelt-lite-2026-0002"
+        }
+      ],
       "target_node_id": "risk_event:gdelt-lite-2026-0002",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1288,11 +2155,17 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "logistics_route_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.66,
-      "edge_id": "promoted:logistics_route_edge:208cb1c5d73f",
+      "edge_id": "promoted:logistics_route_edge:b0e4f666008c",
       "edge_type": "logistics_route_edge",
       "evidence_text_summary": "",
       "provenance_refs": [
@@ -1301,7 +2174,14 @@
           "source_record_id": "wpi-lite-kaohsiung"
         }
       ],
-      "source_node_id": "region:china_taiwan",
+      "relationship_class": "PRODUCTION_DEPENDENCY",
+      "source_node_id": "country:CN",
+      "source_refs": [
+        {
+          "source_id": "nga_world_port_index_lite",
+          "source_record_id": "wpi-lite-kaohsiung"
+        }
+      ],
       "target_node_id": "logistics_node:wpi-lite-kaohsiung",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1309,8 +2189,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": true,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "mineral_dependency_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.66,
       "edge_id": "promoted:mineral_dependency_edge:ce604312ddf1",
@@ -1322,7 +2208,14 @@
           "source_record_id": "usgs-minerals-gallium-example"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "country:CN",
+      "source_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
       "target_node_id": "critical_mineral:gallium",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1330,8 +2223,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": true,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "policy_restriction_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.58,
       "edge_id": "promoted:policy_restriction_edge:7e32335405e0",
@@ -1343,7 +2242,14 @@
           "source_record_id": "fr-export-controls-example"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "country:US",
+      "source_refs": [
+        {
+          "source_id": "federal_register_export_controls_lite",
+          "source_record_id": "fr-export-controls-example"
+        }
+      ],
       "target_node_id": "federal_register_policy:fr-export-controls-example",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1351,8 +2257,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": true,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": true
+        "dependency_type": "policy_restriction_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.63,
       "edge_id": "promoted:policy_restriction_edge:dfaf8b8972ce",
@@ -1364,7 +2276,14 @@
           "source_record_id": "bis-lite-advanced-computing-2026"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "country:US",
+      "source_refs": [
+        {
+          "source_id": "bis_export_controls_lite",
+          "source_record_id": "bis-lite-advanced-computing-2026"
+        }
+      ],
       "target_node_id": "export_control_policy:bis-lite-advanced-computing-2026",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1372,8 +2291,14 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": false
+        "dependency_type": "trade_dependency_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.64,
       "edge_id": "promoted:trade_dependency_edge:2fae77824f24",
@@ -1385,7 +2310,14 @@
           "source_record_id": "comtrade-lite-us-nl-848620-2025"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "country:US",
+      "source_refs": [
+        {
+          "source_id": "un_comtrade_semiconductor_trade_lite",
+          "source_record_id": "comtrade-lite-us-nl-848620-2025"
+        }
+      ],
       "target_node_id": "country:NL",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1393,20 +2325,33 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": false
+        "dependency_type": "trade_dependency_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.62,
       "edge_id": "promoted:trade_dependency_edge:7581631d82a2",
       "edge_type": "trade_dependency_edge",
-      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from Japan.",
+      "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from Japan.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-jp-370790-2025"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "un_comtrade_semiconductor_trade_lite",
+          "source_record_id": "comtrade-lite-tw-jp-370790-2025"
+        }
+      ],
       "target_node_id": "country:JP",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1414,20 +2359,33 @@
     },
     {
       "attributes": {
+        "bottleneck_flag": false,
+        "criticality": "medium",
         "data_mode": "public_evidence_promoted",
-        "not_supply_chain_dependency": false
+        "dependency_type": "trade_dependency_edge",
+        "not_supply_chain_dependency": false,
+        "propagation_mode_hint": "physical_dependency",
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "substitutability": "unknown"
       },
       "confidence": 0.62,
       "edge_id": "promoted:trade_dependency_edge:dbf272f5275a",
       "edge_type": "trade_dependency_edge",
-      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from the United States.",
+      "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from the United States.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-us-370790-2025"
         }
       ],
+      "relationship_class": "PRODUCTION_DEPENDENCY",
       "source_node_id": "region:china_taiwan",
+      "source_refs": [
+        {
+          "source_id": "un_comtrade_semiconductor_trade_lite",
+          "source_record_id": "comtrade-lite-tw-us-370790-2025"
+        }
+      ],
       "target_node_id": "country:US",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1435,7 +2393,7 @@
     }
   ],
   "graph_mode": "promoted",
-  "graph_version": "promoted_public_evidence_v0_1_bbc2bbff208e4ddb",
+  "graph_version": "promoted_public_evidence_v0_1_8812f15fe206ae0b",
   "missing_provenance_count": 0,
   "node_count": 53,
   "node_count_by_type": {
@@ -1443,9 +2401,11 @@
     "commodity": 2,
     "company": 5,
     "component": 1,
-    "country": 10,
+    "country": 8,
     "critical_mineral": 1,
-    "entity_or_region": 2,
+    "demand_indicator": 1,
+    "downstream_sector": 1,
+    "entity_or_region": 1,
     "equipment": 1,
     "facility": 3,
     "hazard_event": 1,
@@ -1455,7 +2415,7 @@
     "policy_event": 3,
     "process_stage": 3,
     "product_grade": 2,
-    "region": 1,
+    "region": 2,
     "risk_event": 5,
     "route": 1,
     "sanctions_event": 2,
@@ -1650,7 +2610,7 @@
     {
       "attributes": {
         "aliases": [
-          "TSMC / 台积电"
+          "TSMC / \u53f0\u79ef\u7535"
         ],
         "country_code": "CN",
         "fixture_graph": true,
@@ -1791,24 +2751,6 @@
         "data_mode": "public_evidence_promoted",
         "graph_mode": "promoted"
       },
-      "canonical_name": "TW",
-      "confidence": 0.62,
-      "node_id": "region:china_taiwan",
-      "node_type": "country",
-      "source_refs": [
-        {
-          "source_id": "un_comtrade_semiconductor_trade_lite",
-          "source_record_id": "comtrade-lite-tw-jp-370790-2025"
-        }
-      ],
-      "valid_from": "2026-05-12T00:00:00+00:00",
-      "valid_to": null
-    },
-    {
-      "attributes": {
-        "data_mode": "public_evidence_promoted",
-        "graph_mode": "promoted"
-      },
       "canonical_name": "US",
       "confidence": 0.62,
       "node_id": "country:US",
@@ -1897,30 +2839,6 @@
     {
       "attributes": {
         "aliases": [
-          "TW"
-        ],
-        "country_code": "CN",
-        "fixture_graph": true,
-        "sector_tags": [
-          "geography"
-        ]
-      },
-      "canonical_name": "中国台湾",
-      "confidence": 0.95,
-      "node_id": "region:china_taiwan",
-      "node_type": "country",
-      "source_refs": [
-        {
-          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
-          "source_record_id": "eto-semiconductor-network-2026-05"
-        }
-      ],
-      "valid_from": "2026-05-12T00:00:00+00:00",
-      "valid_to": null
-    },
-    {
-      "attributes": {
-        "aliases": [
           "US"
         ],
         "country_code": "US",
@@ -1955,6 +2873,24 @@
         {
           "source_id": "usgs_mineral_commodity_summaries_lite",
           "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
+      "canonical_name": "WSTS billings proxy",
+      "confidence": 0.56,
+      "node_id": "demand:wsts_global_billings_proxy",
+      "node_type": "demand_indicator",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-demand-proxy-fixture"
         }
       ],
       "valid_from": "2026-05-12T00:00:00+00:00",
@@ -2098,7 +3034,7 @@
         "data_mode": "public_evidence_promoted",
         "graph_mode": "promoted"
       },
-      "canonical_name": "Near Hsinchu semiconductor manufacturing region, 中国台湾",
+      "canonical_name": "Near Hsinchu semiconductor manufacturing region, \u4e2d\u56fd\u53f0\u6e7e",
       "confidence": 0.74,
       "node_id": "hazard_event:usgs-lite-tw-2026-0001",
       "node_type": "hazard_event",
@@ -2365,6 +3301,34 @@
     {
       "attributes": {
         "aliases": [
+          "\u4e2d\u56fd\u53f0\u6e7e"
+        ],
+        "country_code": "CN",
+        "country_display": "\u4e2d\u56fd",
+        "country_id": "country:CN",
+        "display_region": "\u4e2d\u56fd\u53f0\u6e7e",
+        "fixture_graph": true,
+        "region_id": "region:china_taiwan",
+        "sector_tags": [
+          "geography"
+        ]
+      },
+      "canonical_name": "\u4e2d\u56fd\u53f0\u6e7e",
+      "confidence": 0.95,
+      "node_id": "region:china_taiwan",
+      "node_type": "region",
+      "source_refs": [
+        {
+          "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+          "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
+        "aliases": [
           "East Asia"
         ],
         "country_code": null,
@@ -2388,17 +3352,24 @@
     },
     {
       "attributes": {
-        "data_mode": "public_evidence_promoted",
-        "graph_mode": "promoted"
+        "aliases": [
+          "power outage event placeholder"
+        ],
+        "country_code": "CN",
+        "fixture_graph": true,
+        "sector_tags": [
+          "risk_event",
+          "power_outage"
+        ]
       },
-      "canonical_name": "region:china_taiwan",
-      "confidence": 0.57,
-      "node_id": "region:china_taiwan",
-      "node_type": "entity_or_region",
+      "canonical_name": "\u4e2d\u56fd\u53f0\u6e7e power outage placeholder",
+      "confidence": 0.66,
+      "node_id": "risk_event:china_taiwan_power_outage_placeholder",
+      "node_type": "risk_event",
       "source_refs": [
         {
-          "source_id": "gdelt_semiconductor_lite",
-          "source_record_id": "gdelt-lite-2026-0002"
+          "source_id": "gdelt_semiconductor_events",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
       "valid_from": "2026-05-12T00:00:00+00:00",
@@ -2443,32 +3414,7 @@
     {
       "attributes": {
         "aliases": [
-          "power outage event placeholder"
-        ],
-        "country_code": "CN",
-        "fixture_graph": true,
-        "sector_tags": [
-          "risk_event",
-          "power_outage"
-        ]
-      },
-      "canonical_name": "中国台湾 power outage placeholder",
-      "confidence": 0.66,
-      "node_id": "risk_event:china_taiwan_power_outage_placeholder",
-      "node_type": "risk_event",
-      "source_refs": [
-        {
-          "source_id": "gdelt_semiconductor_events",
-          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
-        }
-      ],
-      "valid_from": "2026-05-12T00:00:00+00:00",
-      "valid_to": null
-    },
-    {
-      "attributes": {
-        "aliases": [
-          "中国台湾-US West Coast"
+          "\u4e2d\u56fd\u53f0\u6e7e-US West Coast"
         ],
         "country_code": null,
         "fixture_graph": true,
@@ -2476,7 +3422,7 @@
           "route"
         ]
       },
-      "canonical_name": "中国台湾 to US West Coast lane",
+      "canonical_name": "\u4e2d\u56fd\u53f0\u6e7e to US West Coast lane",
       "confidence": 0.7,
       "node_id": "route:china_taiwan_us_west_coast",
       "node_type": "route",
@@ -2520,6 +3466,24 @@
         {
           "source_id": "consolidated_screening_list_lite",
           "source_record_id": "csl-lite-example-entity"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
+      "canonical_name": "AI datacenter",
+      "confidence": 0.56,
+      "node_id": "sector:AI_datacenter",
+      "node_type": "downstream_sector",
+      "source_refs": [
+        {
+          "source_id": "wsts_historical_billings",
+          "source_record_id": "wsts-demand-proxy-fixture"
         }
       ],
       "valid_from": "2026-05-12T00:00:00+00:00",
@@ -2612,9 +3576,11 @@
   ],
   "ontology_version": "semirisk_public_evidence_ontology_v0.1",
   "quality_report": {
-    "edge_count": 65,
+    "edge_count": 67,
     "edge_count_by_type": {
       "correlated_with": 4,
+      "demand_signal_for": 1,
+      "demands": 1,
       "depends_on": 1,
       "evidence_for": 8,
       "exports_to": 1,
@@ -2641,9 +3607,11 @@
       "commodity": 2,
       "company": 5,
       "component": 1,
-      "country": 10,
+      "country": 8,
       "critical_mineral": 1,
-      "entity_or_region": 2,
+      "demand_indicator": 1,
+      "downstream_sector": 1,
+      "entity_or_region": 1,
       "equipment": 1,
       "facility": 3,
       "hazard_event": 1,
@@ -2653,7 +3621,7 @@
       "policy_event": 3,
       "process_stage": 3,
       "product_grade": 2,
-      "region": 1,
+      "region": 2,
       "risk_event": 5,
       "route": 1,
       "sanctions_event": 2,
@@ -2662,6 +3630,2382 @@
     },
     "status": "pass",
     "warnings": []
+  },
+  "relationship_edge_groups": {
+    "demand_edges": [
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "demand_growth_proxy": null,
+          "demand_proxy_type": "fixture_market_billings_proxy",
+          "demand_value": null,
+          "not_supply_chain_dependency": false,
+          "period": "2026-Q1",
+          "propagation_mode_hint": "demand_shock_only",
+          "region": null,
+          "relationship_class": "DEMAND_RELATIONSHIP"
+        },
+        "confidence": 0.56,
+        "edge_id": "promoted:demand_signal_for:cb72d0051157",
+        "edge_type": "demand_signal_for",
+        "evidence_text_summary": "Fixture WSTS billings proxy marks downstream demand pressure for research testing.",
+        "provenance_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-demand-proxy-fixture"
+          }
+        ],
+        "relationship_class": "DEMAND_RELATIONSHIP",
+        "source_node_id": "demand:wsts_global_billings_proxy",
+        "source_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-demand-proxy-fixture"
+          }
+        ],
+        "target_node_id": "product_grade:advanced_logic",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "demand_growth_proxy": null,
+          "demand_proxy_type": "fixture_market_billings_proxy",
+          "demand_value": null,
+          "not_supply_chain_dependency": false,
+          "period": "2026-Q1",
+          "propagation_mode_hint": "demand_shock_only",
+          "region": null,
+          "relationship_class": "DEMAND_RELATIONSHIP"
+        },
+        "confidence": 0.56,
+        "edge_id": "promoted:demands:d08a26914c20",
+        "edge_type": "demands",
+        "evidence_text_summary": "Fixture WSTS billings proxy marks downstream demand pressure for research testing.",
+        "provenance_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-demand-proxy-fixture"
+          }
+        ],
+        "relationship_class": "DEMAND_RELATIONSHIP",
+        "source_node_id": "sector:AI_datacenter",
+        "source_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-demand-proxy-fixture"
+          }
+        ],
+        "target_node_id": "product_grade:hbm",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      }
+    ],
+    "evidence_context_links": [
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "derived_context": true,
+          "fixture_graph": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.54,
+        "edge_id": "edge:risk_event:correlated_with:wsts_billings",
+        "edge_type": "correlated_with",
+        "evidence_text_summary": "The fixture risk event is correlated with market pressure for graph health testing.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "market_indicator:wsts_monthly_billings",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.25
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "derived_context": true,
+          "fixture_graph": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "source_record_id": "wsts-monthly-billings-2026-03",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.7,
+        "edge_id": "edge:wsts_billings:correlated_with:advanced_logic",
+        "edge_type": "correlated_with",
+        "evidence_text_summary": "The fixture billings indicator is correlated with advanced logic demand pressure.",
+        "provenance_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-monthly-billings-2026-03"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "market_indicator:wsts_monthly_billings",
+        "source_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-monthly-billings-2026-03"
+          }
+        ],
+        "target_node_id": "product_grade:advanced_logic",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.58
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "derived_context": true,
+          "fixture_graph": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "source_record_id": "wsts-monthly-billings-2026-03",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.66,
+        "edge_id": "edge:wsts_billings:correlated_with:gpu_accelerator",
+        "edge_type": "correlated_with",
+        "evidence_text_summary": "The fixture billings indicator is correlated with AI accelerator demand pressure.",
+        "provenance_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-monthly-billings-2026-03"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "market_indicator:wsts_monthly_billings",
+        "source_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-monthly-billings-2026-03"
+          }
+        ],
+        "target_node_id": "component:gpu_accelerator",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "derived_context": true,
+          "fixture_graph": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "source_record_id": "wsts-monthly-billings-2026-03",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.69,
+        "edge_id": "edge:wsts_billings:correlated_with:hbm",
+        "edge_type": "correlated_with",
+        "evidence_text_summary": "The fixture billings indicator is correlated with HBM demand pressure.",
+        "provenance_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-monthly-billings-2026-03"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "market_indicator:wsts_monthly_billings",
+        "source_refs": [
+          {
+            "source_id": "wsts_historical_billings",
+            "source_record_id": "wsts-monthly-billings-2026-03"
+          }
+        ],
+        "target_node_id": "product_grade:hbm",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.55
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.6,
+        "edge_id": "promoted:evidence_for:01ad581483b3",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Public WITS-style market concentration proxy for semiconductor manufacturing machines.",
+        "provenance_refs": [
+          {
+            "source_id": "world_bank_wits_trade_tariff_lite",
+            "source_record_id": "wits-lite-us-848620-concentration-2025"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "country:US",
+        "source_refs": [
+          {
+            "source_id": "world_bank_wits_trade_tariff_lite",
+            "source_record_id": "wits-lite-us-848620-concentration-2025"
+          }
+        ],
+        "target_node_id": "trade_tariff_indicator:wits-lite-us-848620-concentration-2025",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.72,
+        "edge_id": "promoted:evidence_for:0bc60c5a45e8",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Annual filing summary notes supplier concentration, geopolitical restrictions, and manufacturing disruption exposure.",
+        "provenance_refs": [
+          {
+            "source_id": "sec_edgar_lite",
+            "source_record_id": "sec-edgar-lite-tsmc-2025-20f"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "company:tsmc",
+        "source_refs": [
+          {
+            "source_id": "sec_edgar_lite",
+            "source_record_id": "sec-edgar-lite-tsmc-2025-20f"
+          }
+        ],
+        "target_node_id": "company_disclosure:sec-edgar-lite-tsmc-2025-20f",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.62,
+        "edge_id": "promoted:evidence_for:2995232e3a76",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from Japan.",
+        "provenance_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-jp-370790-2025"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-jp-370790-2025"
+          }
+        ],
+        "target_node_id": "commodity:370790",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.7
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.58,
+        "edge_id": "promoted:evidence_for:399f54dfacec",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Public WITS-style tariff indicator summary for photoresist-related proxy category.",
+        "provenance_refs": [
+          {
+            "source_id": "world_bank_wits_trade_tariff_lite",
+            "source_record_id": "wits-lite-tw-370790-tariff-2025"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "world_bank_wits_trade_tariff_lite",
+            "source_record_id": "wits-lite-tw-370790-tariff-2025"
+          }
+        ],
+        "target_node_id": "trade_tariff_indicator:wits-lite-tw-370790-tariff-2025",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.64,
+        "edge_id": "promoted:evidence_for:5745322cbb8d",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Proxy trade-flow summary for United States imports of semiconductor manufacturing machines from the Netherlands.",
+        "provenance_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-us-nl-848620-2025"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "country:US",
+        "source_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-us-nl-848620-2025"
+          }
+        ],
+        "target_node_id": "commodity:848620",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.66,
+        "edge_id": "promoted:evidence_for:6db342ff5fc3",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Gallium mineral supply proxy summary for semiconductor upstream risk context.",
+        "provenance_refs": [
+          {
+            "source_id": "usgs_mineral_commodity_summaries_lite",
+            "source_record_id": "usgs-minerals-gallium-example"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "critical_mineral:gallium",
+        "source_refs": [
+          {
+            "source_id": "usgs_mineral_commodity_summaries_lite",
+            "source_record_id": "usgs-minerals-gallium-example"
+          }
+        ],
+        "target_node_id": "mineral_supply:usgs-minerals-gallium-example",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.62,
+        "edge_id": "promoted:evidence_for:81c000dd427e",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from the United States.",
+        "provenance_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-us-370790-2025"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-us-370790-2025"
+          }
+        ],
+        "target_node_id": "commodity:370790",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.3
+      },
+      {
+        "attributes": {
+          "data_mode": "public_evidence_promoted",
+          "derived_context": true,
+          "not_supply_chain_dependency": true,
+          "relationship_class": "EVIDENCE_CONTEXT",
+          "user_facing_label": "evidence-context link",
+          "warning": "This is not a supply-chain dependency edge."
+        },
+        "confidence": 0.7,
+        "edge_id": "promoted:evidence_for:c6d24d764267",
+        "edge_type": "evidence_for",
+        "evidence_text_summary": "[removed][removed][removed] Filing summary notes export-control compliance and supplier capacity constraints.",
+        "provenance_refs": [
+          {
+            "source_id": "sec_edgar_lite",
+            "source_record_id": "sec-edgar-lite-asml-2025-20f"
+          }
+        ],
+        "relationship_class": "EVIDENCE_CONTEXT",
+        "source_node_id": "company:asml",
+        "source_refs": [
+          {
+            "source_id": "sec_edgar_lite",
+            "source_record_id": "sec-edgar-lite-asml-2025-20f"
+          }
+        ],
+        "target_node_id": "company_disclosure:sec-edgar-lite-asml-2025-20f",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      }
+    ],
+    "production_dependency_edges": [
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "restricted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gta-export-control-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.7,
+        "edge_id": "edge:5nm:restricted_by:export_control_placeholder",
+        "edge_type": "restricted_by",
+        "evidence_text_summary": "The fixture policy event constrains 5nm-class technology as a public monitoring placeholder.",
+        "provenance_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "technology_node:5nm",
+        "source_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "policy_event:export_control_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.62
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "impacted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.6,
+        "edge_id": "edge:advanced_logic:impacted_by:china_taiwan_power_outage",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "The fixture risk event impacts advanced logic for graph health testing.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "product_grade:advanced_logic",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.42
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.8,
+        "edge_id": "edge:advanced_logic:requires:5nm",
+        "edge_type": "requires",
+        "evidence_text_summary": "Advanced logic fixture production depends on 5nm-class technology.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "product_grade:advanced_logic",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "technology_node:5nm",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.8
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.72,
+        "edge_id": "edge:advanced_logic:requires:packaging",
+        "edge_type": "requires",
+        "evidence_text_summary": "Advanced logic fixture production requires packaging and test.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "product_grade:advanced_logic",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:packaging_test",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.62
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "restricted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gta-export-control-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.69,
+        "edge_id": "edge:advanced_logic:restricted_by:export_control_placeholder",
+        "edge_type": "restricted_by",
+        "evidence_text_summary": "The fixture policy event constrains advanced logic products as a public monitoring placeholder.",
+        "provenance_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "product_grade:advanced_logic",
+        "source_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "policy_event:export_control_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.6
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.92,
+        "edge_id": "edge:applied_materials:located_in:us",
+        "edge_type": "located_in",
+        "evidence_text_summary": "Applied Materials is associated with the United States in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:applied_materials",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:us",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.94,
+        "edge_id": "edge:asml:located_in:nl",
+        "edge_type": "located_in",
+        "evidence_text_summary": "ASML is associated with the Netherlands in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:asml",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:nl",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "impacted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.58,
+        "edge_id": "edge:china_taiwan_us_route:impacted_by:china_taiwan_power_outage",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "The fixture risk event impacts the \u4e2d\u56fd\u53f0\u6e7e-US route for graph health testing.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "route:china_taiwan_us_west_coast",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.36
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "restricted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gta-export-control-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.72,
+        "edge_id": "edge:euv_scanner:restricted_by:export_control_placeholder",
+        "edge_type": "restricted_by",
+        "evidence_text_summary": "The fixture policy event constrains EUV scanner availability as a public monitoring placeholder.",
+        "provenance_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "equipment:euv_scanner",
+        "source_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "policy_event:export_control_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.7
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "impacted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.64,
+        "edge_id": "edge:fab18:impacted_by:china_taiwan_power_outage",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "The fixture risk event impacts TSMC Fab 18 for graph health testing.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "facility:tsmc_fab18",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.8,
+        "edge_id": "edge:fab18:located_in:china_taiwan",
+        "edge_type": "located_in",
+        "evidence_text_summary": "TSMC Fab 18 is associated with \u4e2d\u56fd\u53f0\u6e7e in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "facility:tsmc_fab18",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "region:china_taiwan",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.86,
+        "edge_id": "edge:fab18:requires:euv_scanner",
+        "edge_type": "requires",
+        "evidence_text_summary": "Advanced wafer fabrication requires EUV lithography equipment.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "facility:tsmc_fab18",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "equipment:euv_scanner",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.92
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "routes_through",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.68,
+        "edge_id": "edge:fab18:routes_through:china_taiwan_us",
+        "edge_type": "routes_through",
+        "evidence_text_summary": "The fixture maps TSMC Fab 18 exports through a \u4e2d\u56fd\u53f0\u6e7e-US route.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "facility:tsmc_fab18",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "route:china_taiwan_us_west_coast",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.52
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "depends_on",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.76,
+        "edge_id": "edge:gpu_accelerator:depends_on:hbm",
+        "edge_type": "depends_on",
+        "evidence_text_summary": "AI accelerator fixture packages depend on HBM availability.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "component:gpu_accelerator",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "product_grade:hbm",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.78
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.78,
+        "edge_id": "edge:hbm:requires:packaging",
+        "edge_type": "requires",
+        "evidence_text_summary": "HBM fixture production requires advanced packaging and test.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "product_grade:hbm",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:packaging_test",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.72
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.93,
+        "edge_id": "edge:intel:located_in:us",
+        "edge_type": "located_in",
+        "evidence_text_summary": "Intel is associated with the United States in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:intel",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:us",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.76,
+        "edge_id": "edge:intel_oregon:located_in:us",
+        "edge_type": "located_in",
+        "evidence_text_summary": "Intel Oregon is associated with the United States in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "facility:intel_oregon",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:us",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.9,
+        "edge_id": "edge:lithography:requires:euv_scanner",
+        "edge_type": "requires",
+        "evidence_text_summary": "The lithography process requires EUV scanners in the fixture.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "process_stage:lithography",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "equipment:euv_scanner",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.94
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.84,
+        "edge_id": "edge:lithography:requires:photoresist",
+        "edge_type": "requires",
+        "evidence_text_summary": "Lithography requires photoresist inputs.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "process_stage:lithography",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "chemical:photoresist",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.83
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.78,
+        "edge_id": "edge:pyeongtaek:located_in:kr",
+        "edge_type": "located_in",
+        "evidence_text_summary": "Samsung Pyeongtaek is associated with South Korea in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "facility:samsung_pyeongtaek",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:kr",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "impacted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.66,
+        "edge_id": "edge:region:china_taiwan:impacted_by:china_taiwan_power_outage",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "The fixture risk event impacts \u4e2d\u56fd\u53f0\u6e7e for graph health testing.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.52
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "routes_through",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.7,
+        "edge_id": "edge:route_china_taiwan_us:routes_through:china_taiwan",
+        "edge_type": "routes_through",
+        "evidence_text_summary": "The fixture route originates in \u4e2d\u56fd\u53f0\u6e7e.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "route:china_taiwan_us_west_coast",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "region:china_taiwan",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.75
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "routes_through",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.7,
+        "edge_id": "edge:route_china_taiwan_us:routes_through:us",
+        "edge_type": "routes_through",
+        "evidence_text_summary": "The fixture route terminates in the United States.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "route:china_taiwan_us_west_coast",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:us",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.75
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.93,
+        "edge_id": "edge:samsung:located_in:kr",
+        "edge_type": "located_in",
+        "evidence_text_summary": "Samsung is associated with South Korea in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:samsung",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "country:kr",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "exports_to",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gta-export-control-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.64,
+        "edge_id": "edge:trade_flow_us_kr:exports_to:kr",
+        "edge_type": "exports_to",
+        "evidence_text_summary": "The fixture trade-flow placeholder maps advanced logic exports to South Korea.",
+        "provenance_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "trade_flow:advanced_logic_us_kr",
+        "source_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "country:kr",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.48
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "imports_from",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gta-export-control-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.64,
+        "edge_id": "edge:trade_flow_us_kr:imports_from:us",
+        "edge_type": "imports_from",
+        "evidence_text_summary": "The fixture trade-flow placeholder maps advanced logic imports from the United States.",
+        "provenance_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "trade_flow:advanced_logic_us_kr",
+        "source_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "country:us",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.48
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "restricted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gta-export-control-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.65,
+        "edge_id": "edge:trade_flow_us_kr:restricted_by:export_control_placeholder",
+        "edge_type": "restricted_by",
+        "evidence_text_summary": "The fixture trade-flow placeholder is linked to the policy event for lineage.",
+        "provenance_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "trade_flow:advanced_logic_us_kr",
+        "source_refs": [
+          {
+            "source_id": "global_trade_alert_semiconductor_export_controls",
+            "source_record_id": "gta-export-control-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "policy_event:export_control_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "located_in",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.95,
+        "edge_id": "edge:tsmc:located_in:china_taiwan",
+        "edge_type": "located_in",
+        "evidence_text_summary": "TSMC is associated with \u4e2d\u56fd\u53f0\u6e7e in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:tsmc",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "region:china_taiwan",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "dependency_type": "impacted_by",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.62,
+        "edge_id": "edge:wafer_fab:impacted_by:china_taiwan_power_outage",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "The fixture risk event impacts wafer fabrication for graph health testing.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "process_stage:wafer_fabrication",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_events",
+            "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
+          }
+        ],
+        "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.44
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.86,
+        "edge_id": "edge:wafer_fab:requires:silicon_wafer",
+        "edge_type": "requires",
+        "evidence_text_summary": "Wafer fabrication requires silicon wafer inputs.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "process_stage:wafer_fabrication",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "material:silicon_wafer",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.88
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "dependency_type": "requires",
+          "fixture_graph": true,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.8,
+        "edge_id": "edge:wafer_fab:requires:specialty_gas",
+        "edge_type": "requires",
+        "evidence_text_summary": "Wafer fabrication requires specialty process gases.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "process_stage:wafer_fabrication",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "chemical:specialty_gas",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.76
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "hazard_exposure_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.74,
+        "edge_id": "promoted:hazard_exposure_edge:bcdc5c14f37e",
+        "edge_type": "hazard_exposure_edge",
+        "evidence_text_summary": "Public USGS-style earthquake metadata near a semiconductor manufacturing region.",
+        "provenance_refs": [
+          {
+            "source_id": "usgs_earthquake_lite",
+            "source_record_id": "usgs-lite-tw-2026-0001"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "hazard_event:usgs-lite-tw-2026-0001",
+        "source_refs": [
+          {
+            "source_id": "usgs_earthquake_lite",
+            "source_record_id": "usgs-lite-tw-2026-0001"
+          }
+        ],
+        "target_node_id": "region:china_taiwan",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "impacted_by",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.57,
+        "edge_id": "promoted:impacted_by:0aa06739a2e5",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "Public event metadata summary reports earthquake monitoring near semiconductor manufacturing region.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0002"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:tsmc",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0002"
+          }
+        ],
+        "target_node_id": "risk_event:gdelt-lite-2026-0002",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "impacted_by",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.61,
+        "edge_id": "promoted:impacted_by:254e19ac456f",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "Public event metadata summary reports export-control policy discussion affecting lithography equipment.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0001"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "company:asml",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0001"
+          }
+        ],
+        "target_node_id": "risk_event:gdelt-lite-2026-0001",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "impacted_by",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.61,
+        "edge_id": "promoted:impacted_by:5a9b836540f8",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "Public event metadata summary reports export-control policy discussion affecting lithography equipment.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0001"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "product:euv_lithography",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0001"
+          }
+        ],
+        "target_node_id": "risk_event:gdelt-lite-2026-0001",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "impacted_by",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.57,
+        "edge_id": "promoted:impacted_by:c6aaa4971108",
+        "edge_type": "impacted_by",
+        "evidence_text_summary": "Public event metadata summary reports earthquake monitoring near semiconductor manufacturing region.",
+        "provenance_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0002"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "gdelt_semiconductor_lite",
+            "source_record_id": "gdelt-lite-2026-0002"
+          }
+        ],
+        "target_node_id": "risk_event:gdelt-lite-2026-0002",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "logistics_route_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.66,
+        "edge_id": "promoted:logistics_route_edge:b0e4f666008c",
+        "edge_type": "logistics_route_edge",
+        "evidence_text_summary": "",
+        "provenance_refs": [
+          {
+            "source_id": "nga_world_port_index_lite",
+            "source_record_id": "wpi-lite-kaohsiung"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "country:CN",
+        "source_refs": [
+          {
+            "source_id": "nga_world_port_index_lite",
+            "source_record_id": "wpi-lite-kaohsiung"
+          }
+        ],
+        "target_node_id": "logistics_node:wpi-lite-kaohsiung",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "mineral_dependency_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.66,
+        "edge_id": "promoted:mineral_dependency_edge:ce604312ddf1",
+        "edge_type": "mineral_dependency_edge",
+        "evidence_text_summary": "Gallium mineral supply proxy summary for semiconductor upstream risk context.",
+        "provenance_refs": [
+          {
+            "source_id": "usgs_mineral_commodity_summaries_lite",
+            "source_record_id": "usgs-minerals-gallium-example"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "country:CN",
+        "source_refs": [
+          {
+            "source_id": "usgs_mineral_commodity_summaries_lite",
+            "source_record_id": "usgs-minerals-gallium-example"
+          }
+        ],
+        "target_node_id": "critical_mineral:gallium",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "policy_restriction_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.58,
+        "edge_id": "promoted:policy_restriction_edge:7e32335405e0",
+        "edge_type": "policy_restriction_edge",
+        "evidence_text_summary": "Federal Register policy metadata summary for compliance risk and resilience planning only.",
+        "provenance_refs": [
+          {
+            "source_id": "federal_register_export_controls_lite",
+            "source_record_id": "fr-export-controls-example"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "country:US",
+        "source_refs": [
+          {
+            "source_id": "federal_register_export_controls_lite",
+            "source_record_id": "fr-export-controls-example"
+          }
+        ],
+        "target_node_id": "federal_register_policy:fr-export-controls-example",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": true,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "policy_restriction_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.63,
+        "edge_id": "promoted:policy_restriction_edge:dfaf8b8972ce",
+        "edge_type": "policy_restriction_edge",
+        "evidence_text_summary": "",
+        "provenance_refs": [
+          {
+            "source_id": "bis_export_controls_lite",
+            "source_record_id": "bis-lite-advanced-computing-2026"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "country:US",
+        "source_refs": [
+          {
+            "source_id": "bis_export_controls_lite",
+            "source_record_id": "bis-lite-advanced-computing-2026"
+          }
+        ],
+        "target_node_id": "export_control_policy:bis-lite-advanced-computing-2026",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.5
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "trade_dependency_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.64,
+        "edge_id": "promoted:trade_dependency_edge:2fae77824f24",
+        "edge_type": "trade_dependency_edge",
+        "evidence_text_summary": "Proxy trade-flow summary for United States imports of semiconductor manufacturing machines from the Netherlands.",
+        "provenance_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-us-nl-848620-2025"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "country:US",
+        "source_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-us-nl-848620-2025"
+          }
+        ],
+        "target_node_id": "country:NL",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 1.0
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "trade_dependency_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.62,
+        "edge_id": "promoted:trade_dependency_edge:7581631d82a2",
+        "edge_type": "trade_dependency_edge",
+        "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from Japan.",
+        "provenance_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-jp-370790-2025"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-jp-370790-2025"
+          }
+        ],
+        "target_node_id": "country:JP",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.7
+      },
+      {
+        "attributes": {
+          "bottleneck_flag": false,
+          "criticality": "medium",
+          "data_mode": "public_evidence_promoted",
+          "dependency_type": "trade_dependency_edge",
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_dependency",
+          "relationship_class": "PRODUCTION_DEPENDENCY",
+          "substitutability": "unknown"
+        },
+        "confidence": 0.62,
+        "edge_id": "promoted:trade_dependency_edge:dbf272f5275a",
+        "edge_type": "trade_dependency_edge",
+        "evidence_text_summary": "Proxy trade-flow summary for \u4e2d\u56fd\u53f0\u6e7e imports of photoresist-related chemicals from the United States.",
+        "provenance_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-us-370790-2025"
+          }
+        ],
+        "relationship_class": "PRODUCTION_DEPENDENCY",
+        "source_node_id": "region:china_taiwan",
+        "source_refs": [
+          {
+            "source_id": "un_comtrade_semiconductor_trade_lite",
+            "source_record_id": "comtrade-lite-tw-us-370790-2025"
+          }
+        ],
+        "target_node_id": "country:US",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.3
+      }
+    ],
+    "supply_edges": [
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "process_stage:wafer_fabrication"
+        },
+        "confidence": 0.74,
+        "edge_id": "edge:applied_materials:supplies:wafer_fab",
+        "edge_type": "participates_in",
+        "evidence_text_summary": "Applied Materials participates in wafer fabrication equipment ecosystems.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:applied_materials",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:wafer_fabrication",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.65
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "equipment:euv_scanner",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "equipment:euv_scanner"
+        },
+        "confidence": 0.88,
+        "edge_id": "edge:asml:supplies:euv_scanner",
+        "edge_type": "supplies",
+        "evidence_text_summary": "ASML supplies EUV scanner equipment in the fixture.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:asml",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "equipment:euv_scanner",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.95
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "process_stage:lithography",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "process_stage:lithography"
+        },
+        "confidence": 0.8,
+        "edge_id": "edge:fab18:participates_in:lithography",
+        "edge_type": "participates_in",
+        "evidence_text_summary": "TSMC Fab 18 participates in lithography in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "facility:tsmc_fab18",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:lithography",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.88
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "process_stage:wafer_fabrication"
+        },
+        "confidence": 0.82,
+        "edge_id": "edge:intel:participates_in:wafer_fabrication",
+        "edge_type": "participates_in",
+        "evidence_text_summary": "Intel participates in wafer fabrication in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:intel",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:wafer_fabrication",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.82
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "product_grade:advanced_logic",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "product_grade:advanced_logic"
+        },
+        "confidence": 0.78,
+        "edge_id": "edge:intel:produces:advanced_logic",
+        "edge_type": "produces",
+        "evidence_text_summary": "Intel produces advanced logic in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:intel",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "product_grade:advanced_logic",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.7
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "process_stage:wafer_fabrication"
+        },
+        "confidence": 0.84,
+        "edge_id": "edge:samsung:participates_in:wafer_fabrication",
+        "edge_type": "participates_in",
+        "evidence_text_summary": "Samsung participates in wafer fabrication in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:samsung",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:wafer_fabrication",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.86
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "product_grade:hbm",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "product_grade:hbm"
+        },
+        "confidence": 0.84,
+        "edge_id": "edge:samsung:produces:hbm",
+        "edge_type": "produces",
+        "evidence_text_summary": "Samsung produces HBM in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:samsung",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "product_grade:hbm",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.85
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "process_stage:lithography",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "process_stage:lithography"
+        },
+        "confidence": 0.88,
+        "edge_id": "edge:tsmc:participates_in:lithography",
+        "edge_type": "participates_in",
+        "evidence_text_summary": "TSMC participates in lithography in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:tsmc",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:lithography",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.9
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "process_stage:wafer_fabrication",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "process_stage:wafer_fabrication"
+        },
+        "confidence": 0.9,
+        "edge_id": "edge:tsmc:participates_in:wafer_fabrication",
+        "edge_type": "participates_in",
+        "evidence_text_summary": "TSMC participates in wafer fabrication in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:tsmc",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "process_stage:wafer_fabrication",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.95
+      },
+      {
+        "attributes": {
+          "as_of_time": "2026-05-01T00:00:00+00:00",
+          "fixture_graph": true,
+          "lead_time_days": null,
+          "not_supply_chain_dependency": false,
+          "propagation_mode_hint": "physical_supply",
+          "qualification_time_days": null,
+          "relationship_class": "SUPPLY_RELATIONSHIP",
+          "relationship_scope": "fixture_or_promoted_evidence",
+          "service_or_capacity_item_id": "product_grade:advanced_logic",
+          "source_record_id": "eto-semiconductor-network-2026-05",
+          "substitution_available": null,
+          "supplied_item_id": "product_grade:advanced_logic"
+        },
+        "confidence": 0.85,
+        "edge_id": "edge:tsmc:produces:advanced_logic",
+        "edge_type": "produces",
+        "evidence_text_summary": "TSMC produces advanced logic in the fixture source.",
+        "provenance_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "relationship_class": "SUPPLY_RELATIONSHIP",
+        "source_node_id": "company:tsmc",
+        "source_refs": [
+          {
+            "source_id": "eto_cset_advanced_semiconductor_supply_chain",
+            "source_record_id": "eto-semiconductor-network-2026-05"
+          }
+        ],
+        "target_node_id": "product_grade:advanced_logic",
+        "valid_from": "2026-05-12T00:00:00+00:00",
+        "valid_to": null,
+        "weight": 0.9
+      }
+    ]
   },
   "source_manifest_id": "public_evidence_manifest_fe05bb8bf33d17e9",
   "stale_source_count": 0,

@@ -10,6 +10,14 @@ import yaml
 from graph_kernel.graph_diff import diff_edge_states
 from graph_kernel.path_index import build_path_index
 from graph_kernel.promoted_graph_quality import node_catalog_coverage, source_coverage
+from graph_kernel.relationship_builder import (
+    DEMAND_RELATIONSHIP_CLASS,
+    EVIDENCE_RELATIONSHIP_CLASS,
+    PRODUCTION_DEPENDENCY_CLASS,
+    SUPPLY_RELATIONSHIP_CLASS,
+    classify_edge,
+    normalize_relationship_edge,
+)
 from graph_kernel.semiconductor_snapshot import (
     build_semiconductor_fixture_snapshot,
     neighborhood as semiconductor_neighborhood,
@@ -162,11 +170,15 @@ def route_semiconductor_graph_neighborhood(
 
 def route_graph_view(
     mode: str = "overview",
+    relationship_class: str | None = None,
     request_id: str | None = None,
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
     selected_nodes = _overview_node_ids(snapshot)
-    selected_edges = _edges_between(snapshot, selected_nodes)[:OVERVIEW_EDGE_CAP]
+    selected_edges = _filter_edges_by_relationship_class(
+        _edges_between(snapshot, selected_nodes),
+        relationship_class,
+    )[:OVERVIEW_EDGE_CAP]
     payload = _view_payload(
         snapshot,
         mode=mode if mode in {"overview", "geo"} else "overview",
@@ -176,6 +188,8 @@ def route_graph_view(
         node_cap=OVERVIEW_NODE_CAP,
         edge_cap=OVERVIEW_EDGE_CAP,
     )
+    if relationship_class:
+        payload["relationship_class_filter"] = relationship_class
     return make_envelope(
         payload,
         metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
@@ -187,6 +201,7 @@ def route_graph_view(
 def route_graph_focus(
     node_id: str = "company:tsmc",
     depth: int = 1,
+    relationship_class: str | None = None,
     request_id: str | None = None,
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
@@ -201,7 +216,10 @@ def route_graph_focus(
             warnings=["fixture_graph:not_production_ready"],
         )
     selected_nodes = _focus_node_ids(snapshot, node_id=node_id, depth=max(0, min(depth, 2)))
-    selected_edges = _edges_between(snapshot, selected_nodes)[:FOCUS_EDGE_CAP]
+    selected_edges = _filter_edges_by_relationship_class(
+        _edges_between(snapshot, selected_nodes),
+        relationship_class,
+    )[:FOCUS_EDGE_CAP]
     payload = _view_payload(
         snapshot,
         mode="focus",
@@ -212,6 +230,8 @@ def route_graph_focus(
         edge_cap=FOCUS_EDGE_CAP,
         selected_node_id=node_id,
     )
+    if relationship_class:
+        payload["relationship_class_filter"] = relationship_class
     return make_envelope(
         payload,
         metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
@@ -689,6 +709,21 @@ def _edges_between(snapshot: Any, selected_nodes: list[str]) -> list[Any]:
     )
 
 
+def _filter_edges_by_relationship_class(edges: list[Any], relationship_class: str | None) -> list[Any]:
+    if not relationship_class:
+        return edges
+    allowed = {
+        SUPPLY_RELATIONSHIP_CLASS,
+        DEMAND_RELATIONSHIP_CLASS,
+        PRODUCTION_DEPENDENCY_CLASS,
+        EVIDENCE_RELATIONSHIP_CLASS,
+    }
+    requested = relationship_class.strip().upper()
+    if requested not in allowed:
+        return []
+    return [edge for edge in edges if classify_edge(edge.edge_type) == requested]
+
+
 def _find_directed_path(snapshot: Any, source_node_id: str, target_node_id: str) -> list[Any]:
     edges_by_source: dict[str, list[Any]] = defaultdict(list)
     edge_map = {edge.edge_id: edge for edge in snapshot.edges}
@@ -776,19 +811,41 @@ def _node_view(node: Any) -> dict[str, Any]:
 
 def _edge_view(edge: Any) -> dict[str, Any]:
     layer = _layer_for_edge(edge.edge_type)
+    relationship = normalize_relationship_edge(
+        {
+            "edge_id": edge.edge_id,
+            "source_node_id": edge.source_node_id,
+            "target_node_id": edge.target_node_id,
+            "edge_type": edge.edge_type,
+            "weight": edge.weight,
+            "confidence": edge.confidence,
+            "attributes": edge.attributes or {},
+            "provenance_refs": [
+                ref.model_dump(mode="json") if hasattr(ref, "model_dump") else ref
+                for ref in edge.provenance_refs
+            ],
+            "evidence_text_summary": edge.evidence_text_summary,
+            "valid_from": edge.valid_from.isoformat() if hasattr(edge.valid_from, "isoformat") else None,
+            "valid_to": edge.valid_to.isoformat() if getattr(edge, "valid_to", None) else None,
+        }
+    )
+    relationship_attributes = relationship["attributes"]
     return {
         "id": edge.edge_id,
         "source": edge.source_node_id,
         "target": edge.target_node_id,
         "edge_type": edge.edge_type,
+        "relationship_class": relationship_attributes["relationship_class"],
         "layer": layer,
         "weight": edge.weight,
         "confidence": edge.confidence,
         "evidence_summary": str(edge.evidence_text_summary or "")[:280],
         "evidence_refs": source_ref_ids(edge.provenance_refs),
-        "metadata": _safe_metadata(edge.attributes or {}),
-        "not_supply_chain_dependency": layer not in {"dependency", "supply"},
-        "derived_context": False,
+        "metadata": _safe_metadata({**dict(edge.attributes or {}), **relationship_attributes}),
+        "not_supply_chain_dependency": relationship_attributes.get("not_supply_chain_dependency") is True,
+        "derived_context": relationship_attributes.get("derived_context") is True,
+        "user_facing_label": relationship_attributes.get("user_facing_label", edge.edge_type),
+        "warning": relationship_attributes.get("warning"),
     }
 
 

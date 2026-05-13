@@ -5,16 +5,16 @@
     "eto_cset_advanced_semiconductor_supply_chain": 56,
     "federal_register_export_controls_lite": 2,
     "gdelt_semiconductor_events": 7,
-    "gdelt_semiconductor_lite": 8,
+    "gdelt_semiconductor_lite": 7,
     "global_trade_alert_semiconductor_export_controls": 8,
     "nga_world_port_index_lite": 2,
     "ofac_sanctions_list_lite": 1,
     "sec_edgar_lite": 4,
-    "un_comtrade_semiconductor_trade_lite": 12,
+    "un_comtrade_semiconductor_trade_lite": 11,
     "usgs_earthquake_lite": 2,
     "usgs_mineral_commodity_summaries_lite": 5,
     "world_bank_wits_trade_tariff_lite": 4,
-    "wsts_historical_billings": 4
+    "wsts_historical_billings": 8
   },
   "source_count": 15
 }
