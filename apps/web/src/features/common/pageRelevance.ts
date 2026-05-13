@@ -1,0 +1,214 @@
+import type { DashboardPageId } from "@supply-risk/shared-types";
+
+export type PageRelevancePolicy = {
+  pageId: DashboardPageId;
+  purpose: string;
+  allowedMajorSections: string[];
+  requiredSignals: string[];
+  disallowedMajorSections: string[];
+  allowsDenseGraph: boolean;
+};
+
+const sharedSignals = [
+  "data_mode",
+  "graph_mode",
+  "graph_version",
+  "source_manifest_id",
+  "not_production_ready",
+];
+
+export const pageRelevancePolicies: Record<DashboardPageId, PageRelevancePolicy> = {
+  "system-health-center": {
+    pageId: "system-health-center",
+    purpose: "Operational readiness, data transparency, source coverage, and deployment status.",
+    allowedMajorSections: [
+      "api_readiness",
+      "data_mode",
+      "graph_mode",
+      "source_registry_readiness",
+      "connector_readiness",
+      "storage_readiness",
+      "graph_readiness",
+      "model_readiness",
+      "deployment_version_readiness",
+      "source_coverage",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "source_coverage", "connector_readiness"],
+    disallowedMajorSections: ["scenario_inputs", "optimizer_actions", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "company-risk-360": {
+    pageId: "company-risk-360",
+    purpose: "Selected entity risk score, components, relevant relationship context, and evidence refs.",
+    allowedMajorSections: [
+      "selected_entity",
+      "risk_score",
+      "methodology",
+      "likelihood",
+      "impact",
+      "vulnerability",
+      "hhi",
+      "substitution",
+      "policy_exposure",
+      "supply_context",
+      "demand_context",
+      "production_dependency_context",
+      "evidence_refs",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "calibration_status", "evidence_refs"],
+    disallowedMajorSections: ["scenario_inputs", "optimizer_actions", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "graph-explorer": {
+    pageId: "graph-explorer",
+    purpose: "Decluttered graph inspection with relationship-class filters, legend, inspector, and evidence refs.",
+    allowedMajorSections: [
+      "graph_controls",
+      "relationship_filters",
+      "selected_graph_view",
+      "graph_legend",
+      "node_edge_inspector",
+      "evidence_refs",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "relationship_class", "evidence_context_safety"],
+    disallowedMajorSections: ["optimizer_actions", "report_export"],
+    allowsDenseGraph: true,
+  },
+  "shock-simulator": {
+    pageId: "shock-simulator",
+    purpose: "Forward scenario inputs, Monte Carlo output, propagation paths, and affected nodes.",
+    allowedMajorSections: [
+      "scenario_inputs",
+      "forward_monte_carlo_output",
+      "loss_distribution",
+      "propagation_paths",
+      "affected_nodes",
+      "supply_interpretation",
+      "demand_interpretation",
+      "production_dependency_interpretation",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "simulation_version", "calibration_status"],
+    disallowedMajorSections: ["optimizer_actions", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "reverse-stress-lab": {
+    pageId: "reverse-stress-lab",
+    purpose: "Failure threshold, shock candidates, ranked shock sets, affected paths, and baseline comparison.",
+    allowedMajorSections: [
+      "failure_threshold",
+      "shock_candidates",
+      "ranked_shock_sets",
+      "affected_paths",
+      "baseline_comparison",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "simulation_version", "calibration_status"],
+    disallowedMajorSections: ["optimizer_actions", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "intervention-optimizer": {
+    pageId: "intervention-optimizer",
+    purpose: "Budgeted intervention actions, before/after metrics, constraints, and compliance context.",
+    allowedMajorSections: [
+      "budget",
+      "allowed_intervention_types",
+      "context_source",
+      "recommended_actions",
+      "before_after_metrics",
+      "constraints",
+      "compliance",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "optimization_version", "calibration_status"],
+    disallowedMajorSections: ["scenario_inputs", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "investigation-report": {
+    pageId: "investigation-report",
+    purpose: "Report configuration, selected runs/entities, methodology summary, exports, and limitations.",
+    allowedMajorSections: [
+      "report_configuration",
+      "selected_runs",
+      "selected_entities",
+      "methodology_summary",
+      "json_export",
+      "markdown_export",
+      "limitations",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "report_version", "calibration_status"],
+    disallowedMajorSections: ["scenario_inputs", "optimizer_actions", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "causal-evidence-board": {
+    pageId: "causal-evidence-board",
+    purpose: "Evidence refs, source and confidence filters, freshness, and evidence-to-graph links.",
+    allowedMajorSections: [
+      "evidence_refs",
+      "source_filters",
+      "confidence_filters",
+      "source_freshness",
+      "graph_path_links",
+      "warnings",
+    ],
+    requiredSignals: [...sharedSignals, "evidence_refs", "source_freshness"],
+    disallowedMajorSections: ["scenario_inputs", "optimizer_actions", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+  "global-risk-cockpit": {
+    pageId: "global-risk-cockpit",
+    purpose: "Global risk summary and high-level portfolio context.",
+    allowedMajorSections: ["portfolio_metrics", "risk_rankings", "source_warnings"],
+    requiredSignals: sharedSignals,
+    disallowedMajorSections: ["scenario_inputs", "optimizer_actions", "report_export"],
+    allowsDenseGraph: false,
+  },
+  "prediction-center": {
+    pageId: "prediction-center",
+    purpose: "Existing prediction page retained for compatibility.",
+    allowedMajorSections: ["prediction_summary", "model_context", "warnings"],
+    requiredSignals: sharedSignals,
+    disallowedMajorSections: ["optimizer_actions", "report_export"],
+    allowsDenseGraph: false,
+  },
+  "path-analysis": {
+    pageId: "path-analysis",
+    purpose: "Graph-specific path inspection retained for compatibility.",
+    allowedMajorSections: ["graph_controls", "selected_graph_view", "transmission_paths", "evidence_refs"],
+    requiredSignals: [...sharedSignals, "evidence_context_safety"],
+    disallowedMajorSections: ["optimizer_actions", "report_export"],
+    allowsDenseGraph: true,
+  },
+  "country-lens": {
+    pageId: "country-lens",
+    purpose: "Graph-specific geographic aggregate inspection retained for compatibility.",
+    allowedMajorSections: ["graph_controls", "geo_aggregate", "source_coverage", "evidence_refs"],
+    requiredSignals: sharedSignals,
+    disallowedMajorSections: ["optimizer_actions", "report_export"],
+    allowsDenseGraph: true,
+  },
+  "path-explainer": {
+    pageId: "path-explainer",
+    purpose: "Path explanation retained for compatibility.",
+    allowedMajorSections: ["path_summary", "evidence_refs", "warnings"],
+    requiredSignals: sharedSignals,
+    disallowedMajorSections: ["optimizer_actions", "report_export"],
+    allowsDenseGraph: true,
+  },
+  "graph-version-studio": {
+    pageId: "graph-version-studio",
+    purpose: "Unavailable public workspace retained for compatibility.",
+    allowedMajorSections: ["unavailable_state"],
+    requiredSignals: [],
+    disallowedMajorSections: ["scenario_inputs", "optimizer_actions", "report_export", "dense_graph_canvas"],
+    allowsDenseGraph: false,
+  },
+};
+
+export function getPageRelevancePolicy(pageId: DashboardPageId): PageRelevancePolicy {
+  return pageRelevancePolicies[pageId];
+}

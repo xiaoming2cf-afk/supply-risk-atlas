@@ -38,6 +38,65 @@ const pages = [
   ["Causal Evidence Board", "#causal-evidence-board"],
 ];
 
+const pageRelevanceExpectations = [
+  {
+    title: "System Health Center",
+    hash: "#system-health-center",
+    policy: "system-health-center",
+    required: ["source_coverage", "connector_readiness"],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Entity Risk 360",
+    hash: "#company-risk-360",
+    policy: "company-risk-360",
+    required: ["calibration_status", "evidence_refs"],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Graph Explorer",
+    hash: "#graph-explorer",
+    policy: "graph-explorer",
+    required: ["relationship_class", "evidence_context_safety"],
+    allowsDenseGraph: true,
+  },
+  {
+    title: "Shock Simulator",
+    hash: "#shock-simulator",
+    policy: "shock-simulator",
+    required: ["simulation_version", "calibration_status"],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Reverse Stress Lab",
+    hash: "#reverse-stress-lab",
+    policy: "reverse-stress-lab",
+    required: ["simulation_version", "calibration_status"],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Intervention Optimizer",
+    hash: "#intervention-optimizer",
+    policy: "intervention-optimizer",
+    required: ["optimization_version", "calibration_status"],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Investigation Report",
+    hash: "#investigation-report",
+    policy: "investigation-report",
+    required: ["report_version", "calibration_status"],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Causal Evidence Board",
+    hash: "#causal-evidence-board",
+    policy: "causal-evidence-board",
+    required: ["evidence_refs", "source_freshness"],
+    allowsDenseGraph: false,
+  },
+];
+
 const zhGlobalRiskTitle = "\u5168\u7403\u98ce\u9669\u9a7e\u9a76\u8231";
 const zhGraphExplorerLabel = "\u56fe\u8c31\u63a2\u7d22\u5668";
 const frGlobalRiskTitle = "Poste de pilotage des risques mondiaux";
@@ -531,6 +590,36 @@ async function main() {
         passed:
           state.title === check.title &&
           (!semiriskSystemHealthReady || check.terms.every((term) => state.text.includes(term))),
+      });
+    }
+
+    for (const expected of pageRelevanceExpectations) {
+      await navigate(client, `${webUrl}${expected.hash}`);
+      const relevance = await waitFor(
+        client,
+        () => pageRelevanceState(client),
+        (state) => state.title === expected.title && state.policy === expected.policy,
+      );
+      const requiredSignals = expected.required.every((signal) => relevance.requiredSignals.includes(signal));
+      const hasSharedMetadata =
+        relevance.requiredSignals.includes("data_mode") &&
+        relevance.requiredSignals.includes("graph_mode") &&
+        relevance.requiredSignals.includes("graph_version") &&
+        relevance.requiredSignals.includes("source_manifest_id");
+      const denseGraphAllowed = relevance.allowsDenseGraph === "true";
+      checks.push({
+        page: `${expected.title} page relevance policy`,
+        policy: relevance.policy,
+        purpose: relevance.purpose,
+        requiredSignals: relevance.requiredSignals,
+        disallowedMajorSections: relevance.disallowedMajorSections,
+        flowNodeCount: relevance.flowNodeCount,
+        passed:
+          relevance.policy === expected.policy &&
+          requiredSignals &&
+          hasSharedMetadata &&
+          denseGraphAllowed === expected.allowsDenseGraph &&
+          (expected.allowsDenseGraph || relevance.flowNodeCount === 0),
       });
     }
 
@@ -1453,6 +1542,23 @@ async function pageState(client) {
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
       layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
       overflowSafe: root ? root.scrollWidth <= window.innerWidth + 1 : false
+    };
+  })()`);
+}
+
+async function pageRelevanceState(client) {
+  return evaluate(client, `(() => {
+    const policy = document.querySelector('[data-page-relevance-policy]');
+    return {
+      title: document.querySelector('h1')?.textContent?.trim() ?? '',
+      policy: policy?.dataset?.pageRelevancePolicy ?? '',
+      purpose: policy?.dataset?.pagePurpose ?? '',
+      allowedMajorSections: (policy?.dataset?.allowedMajorSections ?? '').split('|').filter(Boolean),
+      requiredSignals: (policy?.dataset?.requiredSignals ?? '').split('|').filter(Boolean),
+      disallowedMajorSections: (policy?.dataset?.disallowedMajorSections ?? '').split('|').filter(Boolean),
+      allowsDenseGraph: policy?.dataset?.allowsDenseGraph ?? '',
+      flowNodeCount: document.querySelectorAll('.react-flow__node').length,
+      text: document.body?.innerText ?? '',
     };
   })()`);
 }

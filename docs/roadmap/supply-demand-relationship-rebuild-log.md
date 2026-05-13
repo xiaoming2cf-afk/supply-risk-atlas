@@ -185,3 +185,27 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: final quality and subsystem suites passed; graph, API, chart, table, report, connector, and promoted artifact checks continue to enforce `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国`.
 - Relationship evidence: supply, demand, production dependency, and evidence context relationship classes remain distinct; evidence context links are excluded from propagation and are labeled as non-dependency inspection links.
 - Limitations: all data remains fixture/proxy/promoted-public-evidence research infrastructure; no live connector fetch was enabled; no production-readiness, financial-loss, or audited capacity claim is introduced.
+## Gate 11 - Page Relevance Cleanup
+
+- Gate status: PASS
+- Current HEAD at start: `850445a`
+- Baseline commands run before edits:
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+  - `python -m pytest tests/api -q` -> PASS
+  - `python -m pytest -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`43 checks`)
+- Changed files: `apps/web/src/features/common/pageRelevance.ts`, `apps/web/src/app/pages.tsx`, `scripts/browser-smoke.mjs`.
+- Commands run after edits:
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+  - `python -m pytest tests/api -q` -> PASS
+  - `python -m pytest tests/geo tests/contract tests/graph_invariants tests/security -q` -> PASS
+- Evidence: each major public analytical page now renders with a central `data-page-relevance-policy` wrapper that declares purpose, allowed sections, required metadata signals, disallowed sections, and dense-graph allowance. Browser smoke verifies the policy metadata, required graph/source/data-mode signals, and that React Flow dense graph canvases stay out of non-graph pages.
+- Terminology normalization evidence: quality, geo, contract, graph invariant, API, and security suites passed; canonical `region:china_taiwan` / `中国台湾` policy remains enforced.
+- Deployment status: not attempted; no Computer Use was authorized or used.
+- Limitations: relevance policy is enforced through rendered metadata and browser smoke; it does not remove compatibility pages such as Global Risk Cockpit, Path Analysis, Prediction Center, or Country Lens.
+- Next gate decision: proceed to final local acceptance.
