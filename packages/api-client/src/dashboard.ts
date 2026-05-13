@@ -113,6 +113,9 @@ interface RequestJsonOptions {
   requestTimeoutMs: number;
 }
 
+const MAX_NETWORK_ATTEMPTS = 3;
+const NETWORK_RETRY_BACKOFF_MS = 750;
+
 async function requestJson<T>(
   baseUrl: string | undefined,
   endpoint: string,
@@ -124,41 +127,57 @@ async function requestJson<T>(
     return createUnavailableResult(endpoint, "unavailable", "No dashboard API base URL configured.");
   }
 
-  const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
-  const timeoutHandle = controller
-    ? globalThis.setTimeout(() => controller.abort(), options.requestTimeoutMs)
-    : undefined;
+  let lastError: unknown = undefined;
+  for (let attempt = 1; attempt <= MAX_NETWORK_ATTEMPTS; attempt += 1) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
+    const timeoutHandle = controller
+      ? globalThis.setTimeout(() => controller.abort(), options.requestTimeoutMs)
+      : undefined;
 
-  try {
-    const headers = new Headers(init?.headers);
-    if (!headers.has("content-type")) headers.set("content-type", "application/json");
-    const response = await options.fetcher(`${baseUrl.replace(/\/$/, "")}${endpoint}`, {
-      ...init,
-      headers,
-      signal: init?.signal ?? controller?.signal,
-    });
-    const payload = await response.json().catch(() => null);
-    if (payload && typeof payload === "object" && "status" in payload && "data" in payload) {
-      options.setEffectiveMode("real");
-      return normalizeApiPayload<T>(payload, response.status, endpoint);
+    try {
+      const headers = new Headers(init?.headers);
+      if (!headers.has("content-type")) headers.set("content-type", "application/json");
+      const response = await options.fetcher(`${baseUrl.replace(/\/$/, "")}${endpoint}`, {
+        ...init,
+        headers,
+        signal: init?.signal ?? controller?.signal,
+      });
+      const payload = await response.json().catch(() => null);
+      if (payload && typeof payload === "object" && "status" in payload && "data" in payload) {
+        options.setEffectiveMode("real");
+        return normalizeApiPayload<T>(payload, response.status, endpoint);
+      }
+      if (!response.ok) {
+        throw new DashboardApiHttpError(`SupplyRiskAtlas API ${response.status} at ${endpoint}`, response.status, payload);
+      }
+      return createUnavailableResult(endpoint, "partial", "API response did not include a metadata envelope.", undefined, response.status);
+    } catch (error) {
+      lastError = error;
+      if (error instanceof DashboardApiHttpError || attempt === MAX_NETWORK_ATTEMPTS) {
+        break;
+      }
+      await sleep(NETWORK_RETRY_BACKOFF_MS * attempt);
+    } finally {
+      if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
     }
-    if (!response.ok) {
-      throw new DashboardApiHttpError(`SupplyRiskAtlas API ${response.status} at ${endpoint}`, response.status, payload);
-    }
-    return createUnavailableResult(endpoint, "partial", "API response did not include a metadata envelope.", undefined, response.status);
-  } catch (error) {
-    options.setEffectiveMode("real");
-    const sourceStatus = error instanceof DashboardApiHttpError && (error.status === 401 || error.status === 403) ? "unauthorized" : "unavailable";
-    const message =
-      typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "AbortError"
-        ? `SupplyRiskAtlas API request timed out after ${options.requestTimeoutMs} ms at ${endpoint}`
-        : error instanceof Error
-          ? error.message
-          : "Dashboard API request failed.";
-    return createUnavailableResult(endpoint, sourceStatus, message, error);
-  } finally {
-    if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
   }
+
+  options.setEffectiveMode("real");
+  const sourceStatus =
+    lastError instanceof DashboardApiHttpError && (lastError.status === 401 || lastError.status === 403)
+      ? "unauthorized"
+      : "unavailable";
+  const message =
+    typeof DOMException !== "undefined" && lastError instanceof DOMException && lastError.name === "AbortError"
+      ? `SupplyRiskAtlas API request timed out after ${options.requestTimeoutMs} ms at ${endpoint}`
+      : lastError instanceof Error
+        ? lastError.message
+        : "Dashboard API request failed.";
+  return createUnavailableResult(endpoint, sourceStatus, message, lastError);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 }
 
 class DashboardApiHttpError extends Error {
