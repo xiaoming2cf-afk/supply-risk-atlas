@@ -46,9 +46,34 @@ def test_every_source_has_graph_outputs_and_live_fetch_disabled() -> None:
 
     for source in source_map["sources"]:
         assert source["graph_outputs"], source["source_id"]
+        assert source["relationship_classes"], source["source_id"]
         assert source["live_fetch_default"] == "disabled"
         assert source["fixture_required"] is True
         assert source["priority"] in {"P0", "P1", "P2"}
+        assert source["api_visibility_policy"] == "sanitized_summary_only"
+
+
+def test_supply_demand_dependency_and_evidence_classes_have_source_candidates() -> None:
+    source_map = load_yaml(MAP_PATH)
+    coverage = source_map["relationship_class_source_candidates"]
+
+    assert set(coverage) == {
+        "SUPPLY_RELATIONSHIP",
+        "DEMAND_RELATIONSHIP",
+        "PRODUCTION_DEPENDENCY",
+        "EVIDENCE_CONTEXT",
+    }
+    for relationship_class, candidates in coverage.items():
+        assert len(candidates) >= 1, relationship_class
+
+
+def test_geographic_source_entries_require_normalization() -> None:
+    source_map = load_yaml(MAP_PATH)
+    geographic_node_types = {"country", "region", "mining_country", "refining_country", "port", "airport", "customs_region"}
+
+    for source in source_map["sources"]:
+        if geographic_node_types & set(source["node_types"]):
+            assert source["geography_normalization_required"] is True
 
 
 def test_node_source_map_uses_research_status_only() -> None:

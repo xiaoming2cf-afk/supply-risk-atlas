@@ -11,6 +11,8 @@ All mapped sources use `live_fetch_default: disabled` and `fixture_required: tru
 - Each `L0` to `L11` chain layer has at least two candidate sources.
 - Each canonical node type has at least one candidate source.
 - Each source has at least one graph output so downstream graph and audit views can remain source-bound.
+- Each supply, demand, production dependency, and evidence relationship class has at least one candidate source.
+- Sources with geography-bearing node types require normalization to `region:china_taiwan` / 中国台湾 where applicable.
 - No source is treated as production coverage by default.
 
 ## Source Notes

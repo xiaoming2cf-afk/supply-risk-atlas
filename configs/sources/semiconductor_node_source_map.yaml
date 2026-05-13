@@ -4,219 +4,919 @@ data_mode: fixture
 graph_mode: fixture
 calibration_status: fixture_proxy_not_calibrated
 warnings:
-  - Node-source mappings identify candidate public evidence sources, not production coverage.
-  - Live fetching is disabled by default; fixture mode is required for all connector-backed sources.
+- Node-source mappings identify candidate public evidence sources, not production
+  coverage.
+- Live fetching is disabled by default; fixture mode is required for all connector-backed
+  sources.
 defaults:
   live_fetch_default: disabled
   fixture_required: true
   api_visibility_policy: sanitized_summary_only
 sources:
-  - source_id: eto_cset_advanced_semiconductor_supply_chain
-    chain_layers: [L0_policy_macro, L1_raw_minerals, L2_materials_chemicals, L3_design_eda_ip, L4_equipment, L5_fabrication, L6_products, L7_packaging_testing, L10_risk_events]
-    node_types: [country, region, critical_mineral, raw_material, wafer_material, electronic_chemical, photoresist, specialty_gas, mask_reticle, substrate_material, cmp_material, eda_tool, equipment, equipment_supplier, equipment_category, equipment_component, process_stage, technology_node, wafer_process, product_grade, chip_type, packaging_stage, advanced_packaging, substrate, testing_stage, risk_event]
-    edge_types: [requires, supplies, depends_on, uses_equipment, uses_material, uses_chemical, participates_in, evidence_for]
-    raw_fields: [source_record_id, evidence_text_summary, source_url, retrieved_at]
-    silver_fields: [canonical_name, node_type, source_refs, confidence]
-    graph_outputs: [nodes, dependency_edges, evidence_for_edges]
-    chart_outputs: [node_layer_coverage, graph_quality_table]
-    table_outputs: [node_catalog, graph_nodes, graph_edges, evidence_refs]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: oecd_semiconductor_value_chain_reports
-    chain_layers: [L0_policy_macro, L1_raw_minerals, L2_materials_chemicals, L3_design_eda_ip, L4_equipment, L5_fabrication, L6_products, L7_packaging_testing, L8_logistics, L9_downstream_demand, L10_risk_events, L11_compliance]
-    node_types: [country, region, policy_regime, macro_indicator, industrial_policy, export_control_regime, critical_mineral, raw_material, mining_country, refining_country, design_company, eda_tool, architecture, equipment_category, foundry, process_stage, capacity_node, product_grade, downstream_product, osat_company, logistics_route, customs_region, downstream_sector, customer_industry, demand_indicator, risk_event, policy_event, compliance_risk]
-    edge_types: [participates_in, depends_on, serves_downstream_sector, evidence_for]
-    raw_fields: [source_record_id, report_section, evidence_text_summary, source_url]
-    silver_fields: [value_chain_stage, source_refs, confidence]
-    graph_outputs: [nodes, methodology_edges, evidence_for_edges]
-    chart_outputs: [node_layer_coverage, source_coverage]
-    table_outputs: [source_catalog, node_source_map, evidence_refs]
-    license_status: terms_review_required
-    connector_status: disabled_review_required
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: wsts_historical_billings
-    chain_layers: [L0_policy_macro, L6_products, L9_downstream_demand, L10_risk_events]
-    node_types: [macro_indicator, product_grade, chip_type, downstream_sector, demand_indicator, market_event]
-    edge_types: [evidence_for, impacted_by, serves_downstream_sector]
-    raw_fields: [region, product_category, period, billings_index]
-    silver_fields: [indicator_id, period, value, unit, source_refs]
-    graph_outputs: [market_indicator_nodes, demand_edges]
-    chart_outputs: [risk_score_ranking, source_freshness, market_pressure]
-    table_outputs: [risk_rankings, validation_artifacts]
-    license_status: fixture_summary_only
-    connector_status: fixture_connector
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: sec_edgar_lite
-    chain_layers: [L3_design_eda_ip, L4_equipment, L5_fabrication, L6_products, L7_packaging_testing, L9_downstream_demand, L10_risk_events]
-    node_types: [design_company, fabless_company, idm, equipment_supplier, foundry, fab, technology_node, capacity_node, product_grade, chip_type, downstream_product, osat_company, customer_industry, risk_event, factory_event, cyber_event]
-    edge_types: [depends_on, supplies, designed_by, manufactured_by, packaged_by, serves_downstream_sector, evidence_for]
-    raw_fields: [company_identifier, filing_date, filing_type, risk_factor_summary, source_url]
-    silver_fields: [event_id, disclosure_type, affected_entities, source_refs, confidence]
-    graph_outputs: [company_nodes, disclosure_events, evidence_for_edges]
-    chart_outputs: [evidence_count, risk_component_breakdown]
-    table_outputs: [evidence_refs, graph_nodes, risk_rankings]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: gdelt_semiconductor_lite
-    chain_layers: [L0_policy_macro, L5_fabrication, L8_logistics, L9_downstream_demand, L10_risk_events, L11_compliance]
-    node_types: [country, region, fab, port, airport, logistics_route, shipping_lane, downstream_sector, demand_indicator, risk_event, hazard_event, market_event, factory_event, cyber_event, labor_event, policy_event, compliance_risk]
-    edge_types: [impacted_by, exposed_to_hazard, routes_through, evidence_for, evidence_context_link]
-    raw_fields: [event_time, event_type, location, evidence_url, source_name, summary]
-    silver_fields: [event_id, affected_entities, location, source_refs, confidence]
-    graph_outputs: [risk_event_nodes, impacted_by_edges, evidence_for_edges]
-    chart_outputs: [policy_event_timeline, hazard_exposure_timeline]
-    table_outputs: [evidence_refs, policy_events, hazard_events]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: un_comtrade_semiconductor_trade_lite
-    chain_layers: [L0_policy_macro, L1_raw_minerals, L2_materials_chemicals, L4_equipment, L6_products, L8_logistics, L9_downstream_demand]
-    node_types: [country, region, critical_mineral, raw_material, wafer_material, electronic_chemical, photoresist, specialty_gas, substrate_material, equipment, equipment_category, product_grade, chip_type, customs_region, downstream_sector]
-    edge_types: [exports_to, imports_from, trade_dependency, evidence_for]
-    raw_fields: [reporter, partner, commodity_code, period, trade_value, quantity]
-    silver_fields: [trade_flow_id, reporter, partner, commodity_code, value, source_refs]
-    graph_outputs: [trade_flow_nodes, trade_dependency_edges]
-    chart_outputs: [trade_flow_sankey, country_dependency_heatmap, trade_partner_concentration]
-    table_outputs: [trade_flows, graph_edges]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: wits_trade_tariff_lite
-    chain_layers: [L0_policy_macro, L1_raw_minerals, L2_materials_chemicals, L6_products, L9_downstream_demand]
-    node_types: [country, region, macro_indicator, critical_mineral, raw_material, electronic_chemical, product_grade, chip_type, downstream_sector, demand_indicator]
-    edge_types: [trade_dependency, evidence_for]
-    raw_fields: [country, partner, commodity_group, tariff_indicator, trade_indicator]
-    silver_fields: [indicator_id, country, value, unit, source_refs]
-    graph_outputs: [market_indicator_nodes, trade_dependency_edges]
-    chart_outputs: [hhi_concentration_bar, country_dependency_heatmap]
-    table_outputs: [trade_flows, source_status]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P1
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: usgs_mineral_commodity_summaries_lite
-    chain_layers: [L1_raw_minerals, L2_materials_chemicals, L10_risk_events]
-    node_types: [critical_mineral, raw_material, mining_country, refining_country, wafer_material, specialty_gas, risk_event]
-    edge_types: [depends_on, trade_dependency, evidence_for]
-    raw_fields: [mineral, country, period, production_summary, import_reliance_proxy]
-    silver_fields: [indicator_id, mineral, country, value, source_refs]
-    graph_outputs: [mineral_nodes, mineral_dependency_edges]
-    chart_outputs: [hhi_concentration_bar, source_coverage]
-    table_outputs: [source_catalog, evidence_refs]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P1
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: usgs_earthquake_lite
-    chain_layers: [L0_policy_macro, L5_fabrication, L8_logistics, L10_risk_events]
-    node_types: [country, region, fab, port, airport, hazard_event, risk_event]
-    edge_types: [exposed_to_hazard, impacted_by, evidence_for]
-    raw_fields: [event_time, latitude, longitude, magnitude, place, source_url]
-    silver_fields: [hazard_event_id, hazard_type, affected_region, source_refs, confidence]
-    graph_outputs: [hazard_event_nodes, hazard_exposure_edges]
-    chart_outputs: [hazard_exposure_timeline]
-    table_outputs: [hazard_events, evidence_refs]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P1
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: nga_world_port_index_lite
-    chain_layers: [L0_policy_macro, L8_logistics, L10_risk_events]
-    node_types: [country, region, port, logistics_route, shipping_lane, customs_region, risk_event]
-    edge_types: [located_in, routes_through, evidence_for]
-    raw_fields: [port_name, country, latitude, longitude, facilities_summary]
-    silver_fields: [logistics_node_id, name, country_code, source_refs, confidence]
-    graph_outputs: [logistics_nodes, logistics_route_edges]
-    chart_outputs: [graph_quality_table]
-    table_outputs: [logistics_facilities, graph_nodes]
-    license_status: terms_review_required
-    connector_status: fixture_connector
-    priority: P1
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: ofac_sanctions_list_lite
-    chain_layers: [L0_policy_macro, L11_compliance]
-    node_types: [country, policy_regime, sanction_event, restricted_entity, compliance_risk]
-    edge_types: [restricted_by, evidence_for]
-    raw_fields: [entity_name, list_type, program, country, source_url]
-    silver_fields: [sanctions_screening_event_id, entity_name, program, source_refs, confidence]
-    graph_outputs: [compliance_nodes, compliance_risk_edges]
-    chart_outputs: [source_freshness_table]
-    table_outputs: [policy_events, evidence_refs]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P1
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: bis_export_controls_lite
-    chain_layers: [L0_policy_macro, L3_design_eda_ip, L4_equipment, L5_fabrication, L6_products, L11_compliance]
-    node_types: [country, policy_regime, export_control_regime, eda_tool, ip_core, equipment, equipment_category, equipment_component, process_stage, technology_node, product_grade, chip_type, policy_event, restricted_item, restricted_entity, compliance_risk]
-    edge_types: [restricted_by, evidence_for]
-    raw_fields: [policy_title, publication_date, affected_item, jurisdiction, compliance_summary]
-    silver_fields: [policy_event_id, policy_type, affected_items, source_refs, confidence]
-    graph_outputs: [policy_event_nodes, policy_restriction_edges]
-    chart_outputs: [policy_event_timeline]
-    table_outputs: [policy_events, evidence_refs]
-    license_status: api_visible_summary_allowed
-    connector_status: fixture_connector
-    priority: P0
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: federal_register_export_controls_lite
-    chain_layers: [L0_policy_macro, L4_equipment, L11_compliance]
-    node_types: [country, policy_regime, export_control_regime, industrial_policy, equipment, equipment_category, equipment_component, policy_event, restricted_item, restricted_entity, compliance_risk]
-    edge_types: [restricted_by, evidence_for]
-    raw_fields: [document_number, publication_date, affected_item, summary, source_url]
-    silver_fields: [policy_event_id, affected_items, source_refs, confidence]
-    graph_outputs: [policy_event_nodes, policy_restriction_edges]
-    chart_outputs: [policy_event_timeline]
-    table_outputs: [policy_events, evidence_refs]
-    license_status: terms_review_required
-    connector_status: disabled_review_required
-    priority: P2
-    live_fetch_default: disabled
-    fixture_required: true
-  - source_id: company_annual_report_manual_upload
-    chain_layers: [L3_design_eda_ip, L4_equipment, L5_fabrication, L6_products, L7_packaging_testing, L9_downstream_demand, L10_risk_events]
-    node_types: [design_company, fabless_company, idm, equipment_supplier, foundry, fab, capacity_node, product_grade, chip_type, downstream_product, osat_company, advanced_packaging, customer_industry, risk_event, factory_event]
-    edge_types: [depends_on, supplies, manufactured_by, packaged_by, serves_downstream_sector, evidence_for]
-    raw_fields: [company_identifier, report_year, section, sanitized_summary]
-    silver_fields: [event_id, canonical_name, source_refs, confidence]
-    graph_outputs: [company_nodes, disclosure_events, evidence_for_edges]
-    chart_outputs: [risk_component_breakdown]
-    table_outputs: [evidence_refs, risk_rankings]
-    license_status: manual_review_required
-    connector_status: disabled_review_required
-    priority: P2
-    live_fetch_default: disabled
-    fixture_required: true
+- source_id: eto_cset_advanced_semiconductor_supply_chain
+  chain_layers:
+  - L0_policy_macro
+  - L1_raw_minerals
+  - L2_materials_chemicals
+  - L3_design_eda_ip
+  - L4_equipment
+  - L5_fabrication
+  - L6_products
+  - L7_packaging_testing
+  - L10_risk_events
+  node_types:
+  - country
+  - region
+  - critical_mineral
+  - raw_material
+  - wafer_material
+  - electronic_chemical
+  - photoresist
+  - specialty_gas
+  - mask_reticle
+  - substrate_material
+  - cmp_material
+  - eda_tool
+  - equipment
+  - equipment_supplier
+  - equipment_category
+  - equipment_component
+  - process_stage
+  - technology_node
+  - wafer_process
+  - product_grade
+  - chip_type
+  - packaging_stage
+  - advanced_packaging
+  - substrate
+  - testing_stage
+  - risk_event
+  edge_types:
+  - requires
+  - supplies
+  - depends_on
+  - uses_equipment
+  - uses_material
+  - uses_chemical
+  - participates_in
+  - evidence_for
+  raw_fields:
+  - source_record_id
+  - evidence_text_summary
+  - source_url
+  - retrieved_at
+  silver_fields:
+  - canonical_name
+  - node_type
+  - source_refs
+  - confidence
+  graph_outputs:
+  - nodes
+  - dependency_edges
+  - evidence_for_edges
+  chart_outputs:
+  - node_layer_coverage
+  - graph_quality_table
+  table_outputs:
+  - node_catalog
+  - graph_nodes
+  - graph_edges
+  - evidence_refs
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: oecd_semiconductor_value_chain_reports
+  chain_layers:
+  - L0_policy_macro
+  - L1_raw_minerals
+  - L2_materials_chemicals
+  - L3_design_eda_ip
+  - L4_equipment
+  - L5_fabrication
+  - L6_products
+  - L7_packaging_testing
+  - L8_logistics
+  - L9_downstream_demand
+  - L10_risk_events
+  - L11_compliance
+  node_types:
+  - country
+  - region
+  - policy_regime
+  - macro_indicator
+  - industrial_policy
+  - export_control_regime
+  - critical_mineral
+  - raw_material
+  - mining_country
+  - refining_country
+  - design_company
+  - eda_tool
+  - architecture
+  - equipment_category
+  - foundry
+  - process_stage
+  - capacity_node
+  - product_grade
+  - downstream_product
+  - osat_company
+  - logistics_route
+  - customs_region
+  - downstream_sector
+  - customer_industry
+  - demand_indicator
+  - risk_event
+  - policy_event
+  - compliance_risk
+  edge_types:
+  - participates_in
+  - depends_on
+  - serves_downstream_sector
+  - evidence_for
+  raw_fields:
+  - source_record_id
+  - report_section
+  - evidence_text_summary
+  - source_url
+  silver_fields:
+  - value_chain_stage
+  - source_refs
+  - confidence
+  graph_outputs:
+  - nodes
+  - methodology_edges
+  - evidence_for_edges
+  chart_outputs:
+  - node_layer_coverage
+  - source_coverage
+  table_outputs:
+  - source_catalog
+  - node_source_map
+  - evidence_refs
+  license_status: terms_review_required
+  connector_status: disabled_review_required
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - DEMAND_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: wsts_historical_billings
+  chain_layers:
+  - L0_policy_macro
+  - L6_products
+  - L9_downstream_demand
+  - L10_risk_events
+  node_types:
+  - macro_indicator
+  - product_grade
+  - chip_type
+  - downstream_sector
+  - demand_indicator
+  - market_event
+  edge_types:
+  - evidence_for
+  - impacted_by
+  - serves_downstream_sector
+  raw_fields:
+  - region
+  - product_category
+  - period
+  - billings_index
+  silver_fields:
+  - indicator_id
+  - period
+  - value
+  - unit
+  - source_refs
+  graph_outputs:
+  - market_indicator_nodes
+  - demand_edges
+  chart_outputs:
+  - risk_score_ranking
+  - source_freshness
+  - market_pressure
+  table_outputs:
+  - risk_rankings
+  - validation_artifacts
+  license_status: fixture_summary_only
+  connector_status: fixture_connector
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - DEMAND_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: false
+  api_visibility_policy: sanitized_summary_only
+- source_id: sec_edgar_lite
+  chain_layers:
+  - L3_design_eda_ip
+  - L4_equipment
+  - L5_fabrication
+  - L6_products
+  - L7_packaging_testing
+  - L9_downstream_demand
+  - L10_risk_events
+  node_types:
+  - design_company
+  - fabless_company
+  - idm
+  - equipment_supplier
+  - foundry
+  - fab
+  - technology_node
+  - capacity_node
+  - product_grade
+  - chip_type
+  - downstream_product
+  - osat_company
+  - customer_industry
+  - risk_event
+  - factory_event
+  - cyber_event
+  edge_types:
+  - depends_on
+  - supplies
+  - designed_by
+  - manufactured_by
+  - packaged_by
+  - serves_downstream_sector
+  - evidence_for
+  raw_fields:
+  - company_identifier
+  - filing_date
+  - filing_type
+  - risk_factor_summary
+  - source_url
+  silver_fields:
+  - event_id
+  - disclosure_type
+  - affected_entities
+  - source_refs
+  - confidence
+  graph_outputs:
+  - company_nodes
+  - disclosure_events
+  - evidence_for_edges
+  chart_outputs:
+  - evidence_count
+  - risk_component_breakdown
+  table_outputs:
+  - evidence_refs
+  - graph_nodes
+  - risk_rankings
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - SUPPLY_RELATIONSHIP
+  - DEMAND_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: false
+  api_visibility_policy: sanitized_summary_only
+- source_id: gdelt_semiconductor_lite
+  chain_layers:
+  - L0_policy_macro
+  - L5_fabrication
+  - L8_logistics
+  - L9_downstream_demand
+  - L10_risk_events
+  - L11_compliance
+  node_types:
+  - country
+  - region
+  - fab
+  - port
+  - airport
+  - logistics_route
+  - shipping_lane
+  - downstream_sector
+  - demand_indicator
+  - risk_event
+  - hazard_event
+  - market_event
+  - factory_event
+  - cyber_event
+  - labor_event
+  - policy_event
+  - compliance_risk
+  edge_types:
+  - impacted_by
+  - exposed_to_hazard
+  - routes_through
+  - evidence_for
+  - evidence_context_link
+  raw_fields:
+  - event_time
+  - event_type
+  - location
+  - evidence_url
+  - source_name
+  - summary
+  silver_fields:
+  - event_id
+  - affected_entities
+  - location
+  - source_refs
+  - confidence
+  graph_outputs:
+  - risk_event_nodes
+  - impacted_by_edges
+  - evidence_for_edges
+  chart_outputs:
+  - policy_event_timeline
+  - hazard_exposure_timeline
+  table_outputs:
+  - evidence_refs
+  - policy_events
+  - hazard_events
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: un_comtrade_semiconductor_trade_lite
+  chain_layers:
+  - L0_policy_macro
+  - L1_raw_minerals
+  - L2_materials_chemicals
+  - L4_equipment
+  - L6_products
+  - L8_logistics
+  - L9_downstream_demand
+  node_types:
+  - country
+  - region
+  - critical_mineral
+  - raw_material
+  - wafer_material
+  - electronic_chemical
+  - photoresist
+  - specialty_gas
+  - substrate_material
+  - equipment
+  - equipment_category
+  - product_grade
+  - chip_type
+  - customs_region
+  - downstream_sector
+  edge_types:
+  - exports_to
+  - imports_from
+  - trade_dependency
+  - evidence_for
+  raw_fields:
+  - reporter
+  - partner
+  - commodity_code
+  - period
+  - trade_value
+  - quantity
+  silver_fields:
+  - trade_flow_id
+  - reporter
+  - partner
+  - commodity_code
+  - value
+  - source_refs
+  graph_outputs:
+  - trade_flow_nodes
+  - trade_dependency_edges
+  chart_outputs:
+  - trade_flow_sankey
+  - country_dependency_heatmap
+  - trade_partner_concentration
+  table_outputs:
+  - trade_flows
+  - graph_edges
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: wits_trade_tariff_lite
+  chain_layers:
+  - L0_policy_macro
+  - L1_raw_minerals
+  - L2_materials_chemicals
+  - L6_products
+  - L9_downstream_demand
+  node_types:
+  - country
+  - region
+  - macro_indicator
+  - critical_mineral
+  - raw_material
+  - electronic_chemical
+  - product_grade
+  - chip_type
+  - downstream_sector
+  - demand_indicator
+  edge_types:
+  - trade_dependency
+  - evidence_for
+  raw_fields:
+  - country
+  - partner
+  - commodity_group
+  - tariff_indicator
+  - trade_indicator
+  silver_fields:
+  - indicator_id
+  - country
+  - value
+  - unit
+  - source_refs
+  graph_outputs:
+  - market_indicator_nodes
+  - trade_dependency_edges
+  chart_outputs:
+  - hhi_concentration_bar
+  - country_dependency_heatmap
+  table_outputs:
+  - trade_flows
+  - source_status
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P1
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - DEMAND_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: usgs_mineral_commodity_summaries_lite
+  chain_layers:
+  - L1_raw_minerals
+  - L2_materials_chemicals
+  - L10_risk_events
+  node_types:
+  - critical_mineral
+  - raw_material
+  - mining_country
+  - refining_country
+  - wafer_material
+  - specialty_gas
+  - risk_event
+  edge_types:
+  - depends_on
+  - trade_dependency
+  - evidence_for
+  raw_fields:
+  - mineral
+  - country
+  - period
+  - production_summary
+  - import_reliance_proxy
+  silver_fields:
+  - indicator_id
+  - mineral
+  - country
+  - value
+  - source_refs
+  graph_outputs:
+  - mineral_nodes
+  - mineral_dependency_edges
+  chart_outputs:
+  - hhi_concentration_bar
+  - source_coverage
+  table_outputs:
+  - source_catalog
+  - evidence_refs
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P1
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: usgs_earthquake_lite
+  chain_layers:
+  - L0_policy_macro
+  - L5_fabrication
+  - L8_logistics
+  - L10_risk_events
+  node_types:
+  - country
+  - region
+  - fab
+  - port
+  - airport
+  - hazard_event
+  - risk_event
+  edge_types:
+  - exposed_to_hazard
+  - impacted_by
+  - evidence_for
+  raw_fields:
+  - event_time
+  - latitude
+  - longitude
+  - magnitude
+  - place
+  - source_url
+  silver_fields:
+  - hazard_event_id
+  - hazard_type
+  - affected_region
+  - source_refs
+  - confidence
+  graph_outputs:
+  - hazard_event_nodes
+  - hazard_exposure_edges
+  chart_outputs:
+  - hazard_exposure_timeline
+  table_outputs:
+  - hazard_events
+  - evidence_refs
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P1
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: nga_world_port_index_lite
+  chain_layers:
+  - L0_policy_macro
+  - L8_logistics
+  - L10_risk_events
+  node_types:
+  - country
+  - region
+  - port
+  - logistics_route
+  - shipping_lane
+  - customs_region
+  - risk_event
+  edge_types:
+  - located_in
+  - routes_through
+  - evidence_for
+  raw_fields:
+  - port_name
+  - country
+  - latitude
+  - longitude
+  - facilities_summary
+  silver_fields:
+  - logistics_node_id
+  - name
+  - country_code
+  - source_refs
+  - confidence
+  graph_outputs:
+  - logistics_nodes
+  - logistics_route_edges
+  chart_outputs:
+  - graph_quality_table
+  table_outputs:
+  - logistics_facilities
+  - graph_nodes
+  license_status: terms_review_required
+  connector_status: fixture_connector
+  priority: P1
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: ofac_sanctions_list_lite
+  chain_layers:
+  - L0_policy_macro
+  - L11_compliance
+  node_types:
+  - country
+  - policy_regime
+  - sanction_event
+  - restricted_entity
+  - compliance_risk
+  edge_types:
+  - restricted_by
+  - evidence_for
+  raw_fields:
+  - entity_name
+  - list_type
+  - program
+  - country
+  - source_url
+  silver_fields:
+  - sanctions_screening_event_id
+  - entity_name
+  - program
+  - source_refs
+  - confidence
+  graph_outputs:
+  - compliance_nodes
+  - compliance_risk_edges
+  chart_outputs:
+  - source_freshness_table
+  table_outputs:
+  - policy_events
+  - evidence_refs
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P1
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: bis_export_controls_lite
+  chain_layers:
+  - L0_policy_macro
+  - L3_design_eda_ip
+  - L4_equipment
+  - L5_fabrication
+  - L6_products
+  - L11_compliance
+  node_types:
+  - country
+  - policy_regime
+  - export_control_regime
+  - eda_tool
+  - ip_core
+  - equipment
+  - equipment_category
+  - equipment_component
+  - process_stage
+  - technology_node
+  - product_grade
+  - chip_type
+  - policy_event
+  - restricted_item
+  - restricted_entity
+  - compliance_risk
+  edge_types:
+  - restricted_by
+  - evidence_for
+  raw_fields:
+  - policy_title
+  - publication_date
+  - affected_item
+  - jurisdiction
+  - compliance_summary
+  silver_fields:
+  - policy_event_id
+  - policy_type
+  - affected_items
+  - source_refs
+  - confidence
+  graph_outputs:
+  - policy_event_nodes
+  - policy_restriction_edges
+  chart_outputs:
+  - policy_event_timeline
+  table_outputs:
+  - policy_events
+  - evidence_refs
+  license_status: api_visible_summary_allowed
+  connector_status: fixture_connector
+  priority: P0
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: federal_register_export_controls_lite
+  chain_layers:
+  - L0_policy_macro
+  - L4_equipment
+  - L11_compliance
+  node_types:
+  - country
+  - policy_regime
+  - export_control_regime
+  - industrial_policy
+  - equipment
+  - equipment_category
+  - equipment_component
+  - policy_event
+  - restricted_item
+  - restricted_entity
+  - compliance_risk
+  edge_types:
+  - restricted_by
+  - evidence_for
+  raw_fields:
+  - document_number
+  - publication_date
+  - affected_item
+  - summary
+  - source_url
+  silver_fields:
+  - policy_event_id
+  - affected_items
+  - source_refs
+  - confidence
+  graph_outputs:
+  - policy_event_nodes
+  - policy_restriction_edges
+  chart_outputs:
+  - policy_event_timeline
+  table_outputs:
+  - policy_events
+  - evidence_refs
+  license_status: terms_review_required
+  connector_status: disabled_review_required
+  priority: P2
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: true
+  api_visibility_policy: sanitized_summary_only
+- source_id: company_annual_report_manual_upload
+  chain_layers:
+  - L3_design_eda_ip
+  - L4_equipment
+  - L5_fabrication
+  - L6_products
+  - L7_packaging_testing
+  - L9_downstream_demand
+  - L10_risk_events
+  node_types:
+  - design_company
+  - fabless_company
+  - idm
+  - equipment_supplier
+  - foundry
+  - fab
+  - capacity_node
+  - product_grade
+  - chip_type
+  - downstream_product
+  - osat_company
+  - advanced_packaging
+  - customer_industry
+  - risk_event
+  - factory_event
+  edge_types:
+  - depends_on
+  - supplies
+  - manufactured_by
+  - packaged_by
+  - serves_downstream_sector
+  - evidence_for
+  raw_fields:
+  - company_identifier
+  - report_year
+  - section
+  - sanitized_summary
+  silver_fields:
+  - event_id
+  - canonical_name
+  - source_refs
+  - confidence
+  graph_outputs:
+  - company_nodes
+  - disclosure_events
+  - evidence_for_edges
+  chart_outputs:
+  - risk_component_breakdown
+  table_outputs:
+  - evidence_refs
+  - risk_rankings
+  license_status: manual_review_required
+  connector_status: disabled_review_required
+  priority: P2
+  live_fetch_default: disabled
+  fixture_required: true
+  relationship_classes:
+  - SUPPLY_RELATIONSHIP
+  - DEMAND_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  geography_normalization_required: false
+  api_visibility_policy: sanitized_summary_only
 layer_source_candidates:
-  L0_policy_macro: [eto_cset_advanced_semiconductor_supply_chain, oecd_semiconductor_value_chain_reports, un_comtrade_semiconductor_trade_lite, bis_export_controls_lite]
-  L1_raw_minerals: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite, un_comtrade_semiconductor_trade_lite]
-  L2_materials_chemicals: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite, usgs_mineral_commodity_summaries_lite]
-  L3_design_eda_ip: [eto_cset_advanced_semiconductor_supply_chain, sec_edgar_lite, company_annual_report_manual_upload]
-  L4_equipment: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite, federal_register_export_controls_lite]
-  L5_fabrication: [eto_cset_advanced_semiconductor_supply_chain, sec_edgar_lite, gdelt_semiconductor_lite]
-  L6_products: [wsts_historical_billings, sec_edgar_lite, un_comtrade_semiconductor_trade_lite]
-  L7_packaging_testing: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
-  L8_logistics: [nga_world_port_index_lite, gdelt_semiconductor_lite, un_comtrade_semiconductor_trade_lite]
-  L9_downstream_demand: [wsts_historical_billings, sec_edgar_lite, gdelt_semiconductor_lite]
-  L10_risk_events: [gdelt_semiconductor_lite, usgs_earthquake_lite, sec_edgar_lite]
-  L11_compliance: [bis_export_controls_lite, federal_register_export_controls_lite, ofac_sanctions_list_lite]
+  L0_policy_macro:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - oecd_semiconductor_value_chain_reports
+  - un_comtrade_semiconductor_trade_lite
+  - bis_export_controls_lite
+  L1_raw_minerals:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  - un_comtrade_semiconductor_trade_lite
+  L2_materials_chemicals:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  - usgs_mineral_commodity_summaries_lite
+  L3_design_eda_ip:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  L4_equipment:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  L5_fabrication:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  L6_products:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  - un_comtrade_semiconductor_trade_lite
+  L7_packaging_testing:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - company_annual_report_manual_upload
+  L8_logistics:
+  - nga_world_port_index_lite
+  - gdelt_semiconductor_lite
+  - un_comtrade_semiconductor_trade_lite
+  L9_downstream_demand:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  L10_risk_events:
+  - gdelt_semiconductor_lite
+  - usgs_earthquake_lite
+  - sec_edgar_lite
+  L11_compliance:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  - ofac_sanctions_list_lite
+relationship_class_source_candidates:
+  SUPPLY_RELATIONSHIP:
+  - company_annual_report_manual_upload
+  - eto_cset_advanced_semiconductor_supply_chain
+  - sec_edgar_lite
+  DEMAND_RELATIONSHIP:
+  - company_annual_report_manual_upload
+  - oecd_semiconductor_value_chain_reports
+  - sec_edgar_lite
+  - wits_trade_tariff_lite
+  - wsts_historical_billings
+  PRODUCTION_DEPENDENCY:
+  - bis_export_controls_lite
+  - company_annual_report_manual_upload
+  - eto_cset_advanced_semiconductor_supply_chain
+  - federal_register_export_controls_lite
+  - gdelt_semiconductor_lite
+  - nga_world_port_index_lite
+  - oecd_semiconductor_value_chain_reports
+  - ofac_sanctions_list_lite
+  - sec_edgar_lite
+  - un_comtrade_semiconductor_trade_lite
+  - usgs_earthquake_lite
+  - usgs_mineral_commodity_summaries_lite
+  - wits_trade_tariff_lite
+  - wsts_historical_billings
+  EVIDENCE_CONTEXT:
+  - bis_export_controls_lite
+  - company_annual_report_manual_upload
+  - eto_cset_advanced_semiconductor_supply_chain
+  - federal_register_export_controls_lite
+  - gdelt_semiconductor_lite
+  - nga_world_port_index_lite
+  - oecd_semiconductor_value_chain_reports
+  - ofac_sanctions_list_lite
+  - sec_edgar_lite
+  - un_comtrade_semiconductor_trade_lite
+  - usgs_earthquake_lite
+  - usgs_mineral_commodity_summaries_lite
+  - wits_trade_tariff_lite
+  - wsts_historical_billings

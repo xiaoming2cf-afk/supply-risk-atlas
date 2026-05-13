@@ -58,3 +58,13 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: `region:china_taiwan` is the canonical region node with display `中国台湾` and parent `country:CN` / `中国`.
 - Limitations: node catalog remains a canonical seed catalog, not complete operational source coverage.
 - Next gate decision: proceed to node-source map and data requirements.
+## Gate 4 - Node-Source Map And Data Requirements
+
+- Gate status: PASS
+- Changed files: `configs/sources/semiconductor_node_source_map.yaml`, `docs/data/semiconductor-node-source-map.md`, `tests/sources/test_node_source_map.py`.
+- Commands run:
+  - `python -m pytest tests/sources/test_node_source_map.py tests/contract/test_semiconductor_node_source_map.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`14 passed`)
+- Evidence: every L0-L11 layer has at least two candidate sources, every node type has a source candidate, and supply/demand/production-dependency/evidence classes each have source coverage.
+- Terminology normalization evidence: geography-bearing source entries require normalization and the quality guard passed.
+- Limitations: mapping identifies candidate evidence coverage only; it does not authorize live fetch or assert complete coverage.
+- Next gate decision: proceed to expanded public source registry checks.
