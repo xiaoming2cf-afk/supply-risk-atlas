@@ -139,3 +139,38 @@
   - The platform remains fixture/proxy/promoted-public-evidence research infrastructure and is not production-ready.
   - Web build commit is not directly exposed in static HTML; deployed version verification therefore relies on API `/version`, Render deploy status, and deployed smoke behavior.
   - A new commit is required for the timeout patch and then Render must rebuild Web/API again from latest `main`.
+
+## Final Deployment Evidence
+
+- Gate status: PARTIAL DEPLOYMENT ACCEPTANCE
+- Latest pushed commit: `fdd28bce874a1324939de8c1390017a7bdbbe3c1`
+- GitHub Actions evidence:
+  - `ci #42` -> PASS, `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25816874343`
+  - `Quality Gates #42` -> PASS, `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25816867393`
+- Render deployment evidence:
+  - API service `supply-risk-atlas-api`, deploy `dep-d82bmv8js32c73dsv8s0`, commit `fdd28bce874a1324939de8c1390017a7bdbbe3c1`, status `live`.
+  - Web service `supply-risk-atlas-web`, deploy `dep-d82bn58js32c73dsvelg`, commit `fdd28bce874a1324939de8c1390017a7bdbbe3c1`, status `live`.
+  - API `/api/v1/version` reports `git_commit=fdd28bce874a1324939de8c1390017a7bdbbe3c1`, `environment=render`, `storage_mode=sqlite`, `not_production_ready=true`.
+  - Web commit is not visible in static HTML; Render deploy detail is the source of Web commit evidence.
+- Local final validation after deployment-stability patches:
+  - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
+  - `python -m pytest tests/quality tests/api tests/security -q` -> PASS
+  - `python -m pytest tests/api tests/simulation tests/optimization tests/reports -q` -> PASS
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/model -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+- Deployed smoke:
+  - `npm.cmd run smoke:web -- --mode=deployed` -> INCOMPLETE best-effort run, exit status `0`.
+  - Observed final blocker: deployed smoke reached Reverse Stress Lab but timed out while the page remained in `Running` state.
+  - Earlier deployed retries intermittently hit Render/browser fetch resets and a Web proxy `502`; API spot checks for the same endpoints returned successful public envelopes.
+  - Current assessment: API and Web are deployed and live at the latest commit, but deployed browser smoke remains flaky/incomplete on Render free instances.
+- Computer Use actions:
+  - Used only the authorized Chrome extension browser for project-scoped Render dashboard verification and deploy actions.
+  - Triggered manual latest-commit deploys for `supply-risk-atlas-api` and `supply-risk-atlas-web`; Web cache-clear deploy was used earlier during stale UI recovery.
+  - No unrelated tabs, unrelated apps, credentials, cookies, tokens, screenshots with secrets, or private diagnostics were accessed or recorded.
+- Deployment status:
+  - Local acceptance: PASS.
+  - GitHub CI/Quality Gates: PASS.
+  - Render API/Web: LIVE at latest commit.
+  - Deployed smoke: INCOMPLETE best-effort due Render/browser timing.
