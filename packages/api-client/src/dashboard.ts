@@ -47,6 +47,7 @@ import type {
 
 export interface SupplyRiskApiClientOptions {
   baseUrl?: string;
+  writeBaseUrl?: string;
   fetcher?: typeof fetch;
   requestTimeoutMs?: number;
 }
@@ -293,6 +294,7 @@ function queryString(params: Record<string, string | number | undefined>): strin
 
 export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = {}): SupplyRiskApiClient {
   const baseUrl = options.baseUrl?.trim();
+  const writeBaseUrl = options.writeBaseUrl?.trim() || baseUrl;
   let effectiveMode: ApiMode = "real";
   const setEffectiveMode = (mode: ApiMode) => {
     effectiveMode = mode;
@@ -329,7 +331,7 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
     getPathExplainer: () => requestJson(baseUrl, "/dashboard/path-explainer", undefined, clientOptions),
     runShockSimulation: (input) =>
       requestJson(
-        baseUrl,
+        writeBaseUrl,
         "/dashboard/shock-simulator",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
@@ -454,28 +456,28 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       ),
     runForwardScenario: (input) =>
       requestJson(
-        baseUrl,
+        writeBaseUrl,
         "/scenarios/forward",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
     runReverseStress: (input) =>
       requestJson(
-        baseUrl,
+        writeBaseUrl,
         "/scenarios/reverse",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
     optimizeInterventions: (input) =>
       requestJson(
-        baseUrl,
+        writeBaseUrl,
         "/optimization/interventions",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
     generateInvestigationReport: (input) =>
       requestJson(
-        baseUrl,
+        writeBaseUrl,
         "/reports/investigation",
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,

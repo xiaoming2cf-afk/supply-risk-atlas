@@ -76,6 +76,17 @@ function resolveApiBaseUrl(hostname: string | null) {
   return "/api/v1";
 }
 
+function resolveApiWriteBaseUrl(hostname: string | null) {
+  const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_WRITE_URL?.trim();
+  if (configured) {
+    return configured;
+  }
+  if (hostname === "supply-risk-atlas-web.onrender.com") {
+    return "https://supply-risk-atlas-api.onrender.com/api/v1";
+  }
+  return resolveApiBaseUrl(hostname);
+}
+
 function getHashPage(): DashboardPageId {
   if (typeof window === "undefined") {
     return "system-health-center";
@@ -129,12 +140,14 @@ export function App() {
   const activePage = translateDashboardPage(activePageDefinition, language);
   const hasResolvedRuntimeHostname = runtimeHostname !== null;
   const configuredApiBaseUrl = hasResolvedRuntimeHostname ? resolveApiBaseUrl(runtimeHostname) : undefined;
+  const configuredApiWriteBaseUrl = hasResolvedRuntimeHostname ? resolveApiWriteBaseUrl(runtimeHostname) : undefined;
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
-        baseUrl: configuredApiBaseUrl
+        baseUrl: configuredApiBaseUrl,
+        writeBaseUrl: configuredApiWriteBaseUrl
       }),
-    [configuredApiBaseUrl]
+    [configuredApiBaseUrl, configuredApiWriteBaseUrl]
   );
   const t = (value: string) => translateText(value, language);
   const activeResultKey: DashboardPageId =
