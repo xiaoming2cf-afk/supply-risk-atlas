@@ -35,13 +35,13 @@ def test_un_comtrade_lite_promotion_computes_hhi_and_dependency_share() -> None:
     result = connector.fetch()
 
     promoted = connector.promote(result.records)
-    taiwan_rows = [row for row in promoted if row["reporter"] == "TW"]
+    china_taiwan_rows = [row for row in promoted if row["reporter"] == "TW"]
 
     assert {row["record_type"] for row in promoted} == {"trade_flow"}
     assert {row["commodity_code"] for row in promoted} >= {"370790", "848620"}
-    assert taiwan_rows[0]["country_product_hhi"] == 0.58
-    assert sorted(row["dependency_share"] for row in taiwan_rows) == [0.3, 0.7]
-    assert any(row["significant_dependency"] for row in taiwan_rows)
+    assert china_taiwan_rows[0]["country_product_hhi"] == 0.58
+    assert sorted(row["dependency_share"] for row in china_taiwan_rows) == [0.3, 0.7]
+    assert any(row["significant_dependency"] for row in china_taiwan_rows)
     assert all("hs_code_mapping_is_proxy" in row["warnings"][0] for row in promoted)
     assert "raw_payload" not in str(promoted)
 

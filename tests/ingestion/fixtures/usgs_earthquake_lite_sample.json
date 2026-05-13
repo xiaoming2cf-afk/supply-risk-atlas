@@ -10,7 +10,7 @@
       "longitude": 121.0,
       "magnitude": 5.4,
       "depth_km": 18.0,
-      "place": "Near Hsinchu semiconductor manufacturing region, Taiwan",
+      "place": "Near Hsinchu semiconductor manufacturing region, 中国台湾",
       "summary": "Public USGS-style earthquake metadata near a semiconductor manufacturing region.",
       "provenance_url": "https://earthquake.usgs.gov/example/tw-0001",
       "license_or_terms_ref": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",

@@ -52,7 +52,7 @@
         "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
       },
       "confidence": 0.6,
-      "edge_id": "edge:advanced_logic:impacted_by:taiwan_power_outage",
+      "edge_id": "edge:advanced_logic:impacted_by:china_taiwan_power_outage",
       "edge_type": "impacted_by",
       "evidence_text_summary": "The fixture risk event impacts advanced logic for graph health testing.",
       "provenance_refs": [
@@ -62,7 +62,7 @@
         }
       ],
       "source_node_id": "product_grade:advanced_logic",
-      "target_node_id": "risk_event:taiwan_power_outage_placeholder",
+      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.42
@@ -228,17 +228,17 @@
         "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
       },
       "confidence": 0.66,
-      "edge_id": "edge:country_tw:impacted_by:taiwan_power_outage",
+      "edge_id": "edge:region_china_taiwan:impacted_by:china_taiwan_power_outage",
       "edge_type": "impacted_by",
-      "evidence_text_summary": "The fixture risk event impacts Taiwan for graph health testing.",
+      "evidence_text_summary": "The fixture risk event impacts 中国台湾 for graph health testing.",
       "provenance_refs": [
         {
           "source_id": "gdelt_semiconductor_events",
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
-      "source_node_id": "country:tw",
-      "target_node_id": "risk_event:taiwan_power_outage_placeholder",
+      "source_node_id": "region:china_taiwan",
+      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.52
@@ -272,7 +272,7 @@
         "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
       },
       "confidence": 0.64,
-      "edge_id": "edge:fab18:impacted_by:taiwan_power_outage",
+      "edge_id": "edge:fab18:impacted_by:china_taiwan_power_outage",
       "edge_type": "impacted_by",
       "evidence_text_summary": "The fixture risk event impacts TSMC Fab 18 for graph health testing.",
       "provenance_refs": [
@@ -282,7 +282,7 @@
         }
       ],
       "source_node_id": "facility:tsmc_fab18",
-      "target_node_id": "risk_event:taiwan_power_outage_placeholder",
+      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.5
@@ -294,9 +294,9 @@
         "source_record_id": "eto-semiconductor-network-2026-05"
       },
       "confidence": 0.8,
-      "edge_id": "edge:fab18:located_in:tw",
+      "edge_id": "edge:fab18:located_in:china_taiwan",
       "edge_type": "located_in",
-      "evidence_text_summary": "TSMC Fab 18 is associated with Taiwan in the fixture source.",
+      "evidence_text_summary": "TSMC Fab 18 is associated with 中国台湾 in the fixture source.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
@@ -304,7 +304,7 @@
         }
       ],
       "source_node_id": "facility:tsmc_fab18",
-      "target_node_id": "country:tw",
+      "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 1.0
@@ -360,9 +360,9 @@
         "source_record_id": "eto-semiconductor-network-2026-05"
       },
       "confidence": 0.68,
-      "edge_id": "edge:fab18:routes_through:tw_us",
+      "edge_id": "edge:fab18:routes_through:china_taiwan_us",
       "edge_type": "routes_through",
-      "evidence_text_summary": "The fixture maps TSMC Fab 18 exports through a Taiwan-US route.",
+      "evidence_text_summary": "The fixture maps TSMC Fab 18 exports through a 中国台湾-US route.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
@@ -370,7 +370,7 @@
         }
       ],
       "source_node_id": "facility:tsmc_fab18",
-      "target_node_id": "route:tw_us_west_coast",
+      "target_node_id": "route:china_taiwan_us_west_coast",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.52
@@ -589,7 +589,7 @@
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
-      "source_node_id": "risk_event:taiwan_power_outage_placeholder",
+      "source_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "target_node_id": "market_indicator:wsts_monthly_billings",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -602,17 +602,17 @@
         "source_record_id": "eto-semiconductor-network-2026-05"
       },
       "confidence": 0.7,
-      "edge_id": "edge:route_tw_us:routes_through:tw",
+      "edge_id": "edge:route_china_taiwan_us:routes_through:china_taiwan",
       "edge_type": "routes_through",
-      "evidence_text_summary": "The fixture route originates in Taiwan.",
+      "evidence_text_summary": "The fixture route originates in 中国台湾.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
-      "source_node_id": "route:tw_us_west_coast",
-      "target_node_id": "country:tw",
+      "source_node_id": "route:china_taiwan_us_west_coast",
+      "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.75
@@ -624,7 +624,7 @@
         "source_record_id": "eto-semiconductor-network-2026-05"
       },
       "confidence": 0.7,
-      "edge_id": "edge:route_tw_us:routes_through:us",
+      "edge_id": "edge:route_china_taiwan_us:routes_through:us",
       "edge_type": "routes_through",
       "evidence_text_summary": "The fixture route terminates in the United States.",
       "provenance_refs": [
@@ -633,7 +633,7 @@
           "source_record_id": "eto-semiconductor-network-2026-05"
         }
       ],
-      "source_node_id": "route:tw_us_west_coast",
+      "source_node_id": "route:china_taiwan_us_west_coast",
       "target_node_id": "country:us",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -778,9 +778,9 @@
         "source_record_id": "eto-semiconductor-network-2026-05"
       },
       "confidence": 0.95,
-      "edge_id": "edge:tsmc:located_in:tw",
+      "edge_id": "edge:tsmc:located_in:china_taiwan",
       "edge_type": "located_in",
-      "evidence_text_summary": "TSMC is associated with Taiwan in the fixture source.",
+      "evidence_text_summary": "TSMC is associated with 中国台湾 in the fixture source.",
       "provenance_refs": [
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
@@ -788,7 +788,7 @@
         }
       ],
       "source_node_id": "company:tsmc",
-      "target_node_id": "country:tw",
+      "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 1.0
@@ -866,17 +866,17 @@
         "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
       },
       "confidence": 0.58,
-      "edge_id": "edge:tw_us_route:impacted_by:taiwan_power_outage",
+      "edge_id": "edge:china_taiwan_us_route:impacted_by:china_taiwan_power_outage",
       "edge_type": "impacted_by",
-      "evidence_text_summary": "The fixture risk event impacts the Taiwan-US route for graph health testing.",
+      "evidence_text_summary": "The fixture risk event impacts the 中国台湾-US route for graph health testing.",
       "provenance_refs": [
         {
           "source_id": "gdelt_semiconductor_events",
           "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
         }
       ],
-      "source_node_id": "route:tw_us_west_coast",
-      "target_node_id": "risk_event:taiwan_power_outage_placeholder",
+      "source_node_id": "route:china_taiwan_us_west_coast",
+      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.36
@@ -888,7 +888,7 @@
         "source_record_id": "gdelt-semiconductor-risk-placeholder-2026-04"
       },
       "confidence": 0.62,
-      "edge_id": "edge:wafer_fab:impacted_by:taiwan_power_outage",
+      "edge_id": "edge:wafer_fab:impacted_by:china_taiwan_power_outage",
       "edge_type": "impacted_by",
       "evidence_text_summary": "The fixture risk event impacts wafer fabrication for graph health testing.",
       "provenance_refs": [
@@ -898,7 +898,7 @@
         }
       ],
       "source_node_id": "process_stage:wafer_fabrication",
-      "target_node_id": "risk_event:taiwan_power_outage_placeholder",
+      "target_node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.44
@@ -1063,14 +1063,14 @@
       "confidence": 0.62,
       "edge_id": "promoted:evidence_for:2995232e3a76",
       "edge_type": "evidence_for",
-      "evidence_text_summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from Japan.",
+      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from Japan.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-jp-370790-2025"
         }
       ],
-      "source_node_id": "country:TW",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "commodity:370790",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1091,7 +1091,7 @@
           "source_record_id": "wits-lite-tw-370790-tariff-2025"
         }
       ],
-      "source_node_id": "country:TW",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "trade_tariff_indicator:wits-lite-tw-370790-tariff-2025",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1147,14 +1147,14 @@
       "confidence": 0.62,
       "edge_id": "promoted:evidence_for:81c000dd427e",
       "edge_type": "evidence_for",
-      "evidence_text_summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from the United States.",
+      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from the United States.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-us-370790-2025"
         }
       ],
-      "source_node_id": "country:TW",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "commodity:370790",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1197,7 +1197,7 @@
         }
       ],
       "source_node_id": "hazard_event:usgs-lite-tw-2026-0001",
-      "target_node_id": "country:TW",
+      "target_node_id": "region:china_taiwan",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
       "weight": 0.5
@@ -1280,7 +1280,7 @@
           "source_record_id": "gdelt-lite-2026-0002"
         }
       ],
-      "source_node_id": "region:taiwan",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "risk_event:gdelt-lite-2026-0002",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1301,7 +1301,7 @@
           "source_record_id": "wpi-lite-kaohsiung"
         }
       ],
-      "source_node_id": "country:TW",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "logistics_node:wpi-lite-kaohsiung",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1399,14 +1399,14 @@
       "confidence": 0.62,
       "edge_id": "promoted:trade_dependency_edge:7581631d82a2",
       "edge_type": "trade_dependency_edge",
-      "evidence_text_summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from Japan.",
+      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from Japan.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-jp-370790-2025"
         }
       ],
-      "source_node_id": "country:TW",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "country:JP",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1420,14 +1420,14 @@
       "confidence": 0.62,
       "edge_id": "promoted:trade_dependency_edge:dbf272f5275a",
       "edge_type": "trade_dependency_edge",
-      "evidence_text_summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from the United States.",
+      "evidence_text_summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from the United States.",
       "provenance_refs": [
         {
           "source_id": "un_comtrade_semiconductor_trade_lite",
           "source_record_id": "comtrade-lite-tw-us-370790-2025"
         }
       ],
-      "source_node_id": "country:TW",
+      "source_node_id": "region:china_taiwan",
       "target_node_id": "country:US",
       "valid_from": "2026-05-12T00:00:00+00:00",
       "valid_to": null,
@@ -1650,9 +1650,9 @@
     {
       "attributes": {
         "aliases": [
-          "Taiwan Semiconductor Manufacturing Company"
+          "TSMC / 台积电"
         ],
-        "country_code": "TW",
+        "country_code": "CN",
         "fixture_graph": true,
         "sector_tags": [
           "foundry",
@@ -1793,7 +1793,7 @@
       },
       "canonical_name": "TW",
       "confidence": 0.62,
-      "node_id": "country:TW",
+      "node_id": "region:china_taiwan",
       "node_type": "country",
       "source_refs": [
         {
@@ -1899,15 +1899,15 @@
         "aliases": [
           "TW"
         ],
-        "country_code": "TW",
+        "country_code": "CN",
         "fixture_graph": true,
         "sector_tags": [
           "geography"
         ]
       },
-      "canonical_name": "Taiwan",
+      "canonical_name": "中国台湾",
       "confidence": 0.95,
-      "node_id": "country:tw",
+      "node_id": "region:china_taiwan",
       "node_type": "country",
       "source_refs": [
         {
@@ -2056,7 +2056,7 @@
         "aliases": [
           "Fab 18"
         ],
-        "country_code": "TW",
+        "country_code": "CN",
         "fixture_graph": true,
         "sector_tags": [
           "wafer_fabrication"
@@ -2098,7 +2098,7 @@
         "data_mode": "public_evidence_promoted",
         "graph_mode": "promoted"
       },
-      "canonical_name": "Near Hsinchu semiconductor manufacturing region, Taiwan",
+      "canonical_name": "Near Hsinchu semiconductor manufacturing region, 中国台湾",
       "confidence": 0.74,
       "node_id": "hazard_event:usgs-lite-tw-2026-0001",
       "node_type": "hazard_event",
@@ -2391,9 +2391,9 @@
         "data_mode": "public_evidence_promoted",
         "graph_mode": "promoted"
       },
-      "canonical_name": "region:taiwan",
+      "canonical_name": "region:china_taiwan",
       "confidence": 0.57,
-      "node_id": "region:taiwan",
+      "node_id": "region:china_taiwan",
       "node_type": "entity_or_region",
       "source_refs": [
         {
@@ -2445,16 +2445,16 @@
         "aliases": [
           "power outage event placeholder"
         ],
-        "country_code": "TW",
+        "country_code": "CN",
         "fixture_graph": true,
         "sector_tags": [
           "risk_event",
           "power_outage"
         ]
       },
-      "canonical_name": "Taiwan power outage placeholder",
+      "canonical_name": "中国台湾 power outage placeholder",
       "confidence": 0.66,
-      "node_id": "risk_event:taiwan_power_outage_placeholder",
+      "node_id": "risk_event:china_taiwan_power_outage_placeholder",
       "node_type": "risk_event",
       "source_refs": [
         {
@@ -2468,7 +2468,7 @@
     {
       "attributes": {
         "aliases": [
-          "TW-US West Coast"
+          "中国台湾-US West Coast"
         ],
         "country_code": null,
         "fixture_graph": true,
@@ -2476,9 +2476,9 @@
           "route"
         ]
       },
-      "canonical_name": "Taiwan to US West Coast lane",
+      "canonical_name": "中国台湾 to US West Coast lane",
       "confidence": 0.7,
-      "node_id": "route:tw_us_west_coast",
+      "node_id": "route:china_taiwan_us_west_coast",
       "node_type": "route",
       "source_refs": [
         {

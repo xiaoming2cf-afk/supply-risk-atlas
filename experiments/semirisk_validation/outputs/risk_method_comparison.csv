@@ -8,7 +8,7 @@ Samsung Electronics,semirisk_risk_score_heuristic_v0.1,guarded,46.85,semirisk_ri
 TSMC,semirisk_risk_score_heuristic_v0.1,elevated,58.33,semirisk_risk_score_likelihood_impact_v0.1,critical,96.61,company:tsmc,company,38.28
 South Korea,semirisk_risk_score_heuristic_v0.1,guarded,36.42,semirisk_risk_score_likelihood_impact_v0.1,critical,85.49,country:kr,country,49.07
 Netherlands,semirisk_risk_score_heuristic_v0.1,guarded,38.15,semirisk_risk_score_likelihood_impact_v0.1,elevated,52.9,country:nl,country,14.75
-Taiwan,semirisk_risk_score_heuristic_v0.1,guarded,44.26,semirisk_risk_score_likelihood_impact_v0.1,critical,98.32,country:tw,country,54.06
+中国台湾,semirisk_risk_score_heuristic_v0.1,guarded,44.26,semirisk_risk_score_likelihood_impact_v0.1,critical,98.32,region:china_taiwan,country,54.06
 United States,semirisk_risk_score_heuristic_v0.1,guarded,45.71,semirisk_risk_score_likelihood_impact_v0.1,critical,99.0,country:us,country,53.29
 EUV scanner,semirisk_risk_score_heuristic_v0.1,elevated,59.13,semirisk_risk_score_likelihood_impact_v0.1,critical,95.59,equipment:euv_scanner,equipment,36.46
 Silicon wafer,semirisk_risk_score_heuristic_v0.1,guarded,40.56,semirisk_risk_score_likelihood_impact_v0.1,critical,87.46,material:silicon_wafer,material,46.9

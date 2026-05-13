@@ -5,6 +5,7 @@ import {
   Filter,
   Grid3X3,
   Map as MapIcon,
+  ListTree,
   Pin,
   RotateCcw,
   Route,
@@ -27,6 +28,8 @@ const graphModeOptions: Array<{ id: GraphViewMode; label: string; icon: LucideIc
   { id: "matrix", label: "Matrix", icon: Grid3X3 },
   { id: "scenario", label: "Scenario overlay", icon: Workflow },
   { id: "evidence", label: "Evidence", icon: FileSearch },
+  { id: "source-coverage", label: "Source Coverage", icon: ListTree },
+  { id: "node-catalog", label: "Node Catalog", icon: ListTree },
 ];
 
 export function GraphControls({

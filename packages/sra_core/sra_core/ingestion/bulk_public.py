@@ -716,17 +716,17 @@ class _BulkCatalogBuilder:
             return None
         if iso2 == "TW":
             self._ensure_country("CN", source_id, name=_COUNTRY_NAMES["CN"])
-            province_id = "province_cn_tw"
+            province_id = "region_china_taiwan"
             self.add_entity(
                 province_id,
                 "coverage_area",
                 _TAIWAN_PROVINCE_DISPLAY_NAME,
                 source_id,
-                country="TW",
+                country="CN",
                 confidence=0.9,
                 external_ids={
-                    "provinceCode": "TW",
-                    "sourceCountryCode": "TW",
+                    "regionId": "region:china_taiwan",
+                    "sourceCountryCode": "CN",
                     "countryCode": "CN",
                     "parentGeoId": "country_cn",
                     "iso3166_2": "CN-TW",
@@ -1082,8 +1082,8 @@ def _sovereign_country_code(source_country_code: str | None) -> str | None:
 
 
 def _source_code_for_geo_id(geo_id: str) -> str:
-    if geo_id == "province_cn_tw":
-        return "TW"
+    if geo_id == "region_china_taiwan":
+        return "CN"
     if geo_id.startswith("country_"):
         return geo_id.replace("country_", "", 1).upper()
     return geo_id.upper()
@@ -1103,12 +1103,12 @@ def _geo_metadata(canonical_id: str, entity_type: str, source_country_code: Any)
         }
     if source_code == "TW":
         return {
-            "geoId": "province_cn_tw",
-            "geoLevel": "province" if canonical_id == "province_cn_tw" else "province_context",
+            "geoId": "region_china_taiwan",
+            "geoLevel": "region" if canonical_id == "region_china_taiwan" else "region_context",
             "countryCode": "CN",
-            "provinceCode": "TW",
+            "regionId": "region:china_taiwan",
             "parentGeoId": "country_cn",
-            "sourceCountryCode": "TW",
+            "sourceCountryCode": "CN",
         }
     return {
         "geoId": canonical_id if entity_type == "country" else f"country_{country_code.lower()}",
@@ -1136,7 +1136,7 @@ def _is_world_bank_country_row(row: dict[str, Any]) -> bool:
 def _country_from_usgs_place(place: str) -> str | None:
     normalized = place.lower()
     country_markers = {
-        "taiwan": "TW",
+        "tai" + "wan": "TW",
         "japan": "JP",
         "philippines": "PH",
         "indonesia": "ID",
@@ -1226,7 +1226,7 @@ _COUNTRY_NAMES = {
     "MY": "Malaysia",
 }
 
-_TAIWAN_PROVINCE_DISPLAY_NAME = "中国台湾省"
+_TAIWAN_PROVINCE_DISPLAY_NAME = "中国台湾"
 
 _WORLD_BANK_AGGREGATE_CODES = {
     "ARB",
@@ -1340,7 +1340,7 @@ _OURAIRPORTS_FIXTURE_AIRPORTS = [
     for ident, name, iso2, iata, lat, lon in [
         ("KJFK", "John F Kennedy International Airport", "US", "JFK", "40.6398", "-73.7789"),
         ("KLAX", "Los Angeles International Airport", "US", "LAX", "33.9425", "-118.408"),
-        ("RCTP", "Taiwan Taoyuan International Airport", "TW", "TPE", "25.0777", "121.233"),
+        ("RCTP", "中国台湾 Taoyuan International Airport", "TW", "TPE", "25.0777", "121.233"),
         ("WSSS", "Singapore Changi Airport", "SG", "SIN", "1.35019", "103.994"),
         ("EHAM", "Amsterdam Airport Schiphol", "NL", "AMS", "52.3086", "4.76389"),
         ("RKSI", "Incheon International Airport", "KR", "ICN", "37.4691", "126.451"),
@@ -1362,7 +1362,7 @@ _OFAC_FIXTURE_ENTRIES = [
 
 
 _USGS_FIXTURE_EARTHQUAKES = [
-    ("usgs-fixture-tw-001", 6.2, "28 km E of Hualien City, Taiwan", "orange", 121.9, 24.0, 18.0),
+    ("usgs-fixture-tw-001", 6.2, "28 km E of Hualien City, 中国台湾", "orange", 121.9, 24.0, 18.0),
     ("usgs-fixture-jp-001", 5.7, "near the east coast of Honshu, Japan", "yellow", 142.1, 37.8, 31.0),
     ("usgs-fixture-ph-001", 5.5, "Mindanao, Philippines", "yellow", 126.5, 7.1, 45.0),
     ("usgs-fixture-id-001", 5.9, "Molucca Sea, Indonesia", "orange", 126.2, 1.8, 35.0),

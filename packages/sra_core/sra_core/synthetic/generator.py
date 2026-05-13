@@ -31,7 +31,7 @@ def generate_synthetic_dataset(seed: int = 42) -> SyntheticDataset:
     countries = [
         ("country_us", "United States", "US"),
         ("country_jp", "Japan", "JP"),
-        ("country_tw", "Taiwan", "TW"),
+        ("region_china_taiwan", "中国台湾", "TW"),
         ("country_de", "Germany", "DE"),
     ]
     firms = [
@@ -103,7 +103,7 @@ def generate_synthetic_dataset(seed: int = 42) -> SyntheticDataset:
             CanonicalEntity(
                 canonical_id="risk_event_typhoon",
                 entity_type="risk_event",
-                display_name="Typhoon disruption near Taiwan Strait",
+                display_name="Typhoon disruption near 中国台湾海峡",
                 country="TW",
                 confidence=0.92,
             ),
@@ -163,7 +163,7 @@ def generate_synthetic_dataset(seed: int = 42) -> SyntheticDataset:
             severity=0.72,
             source_id="synthetic_weather",
             raw_id=None,
-            attributes={"affected_region": "Taiwan Strait"},
+            attributes={"affected_region": "中国台湾海峡"},
             confidence=0.91,
         ),
         EventFact(

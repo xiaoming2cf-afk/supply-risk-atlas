@@ -21,7 +21,7 @@
       "event_time": "2026-05-03T12:30:00+00:00",
       "event_type": "natural_hazard",
       "location": { "country": "TW", "region": "Hsinchu" },
-      "affected_entities": ["company:tsmc", "region:taiwan"],
+      "affected_entities": ["company:tsmc", "region:china_taiwan"],
       "summary": "Public event metadata summary reports earthquake monitoring near semiconductor manufacturing region.",
       "source_name": "GDELT",
       "tone_or_severity_proxy": 0.42,

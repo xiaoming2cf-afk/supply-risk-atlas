@@ -4,7 +4,7 @@
   "top_n": 10,
   "risk_node_types": ["company", "country", "equipment", "material", "chemical", "product_grade", "process_stage"],
   "hhi": {
-    "node_ids": ["company:tsmc", "equipment:euv_scanner", "chemical:photoresist", "product_grade:hbm", "country:tw"],
+    "node_ids": ["company:tsmc", "equipment:euv_scanner", "chemical:photoresist", "product_grade:hbm", "region:china_taiwan"],
     "global_reference_hhi_values": [0.15, 0.20, 0.25, 0.30],
     "threshold_pairs": [
       {"low_cutoff": 0.18, "high_cutoff": 0.38},
@@ -43,9 +43,9 @@
       "duration_days": 35
     },
     {
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": ["country:tw"],
+      "targets": ["region:china_taiwan"],
       "severity": 0.66,
       "duration_days": 21
     },

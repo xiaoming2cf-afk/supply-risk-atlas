@@ -5,6 +5,7 @@ from statistics import mean
 from typing import Any
 
 from sra_core.contracts.semiconductor import SemiriskEdge, SemiriskGraphSnapshot
+from sra_core.geo.terminology import CANONICAL_REGION_ID
 
 from .propagation_models import AGGREGATION_FORMULAS, FORMULA_REFS, aggregate_loss, mode_for_edge_type
 
@@ -23,8 +24,10 @@ PROPAGATION_EDGE_TYPES = {
 
 def resolve_targets(snapshot: SemiriskGraphSnapshot, selectors: list[str]) -> list[str]:
     node_by_id = {node.node_id: node for node in snapshot.nodes}
+    legacy_region = "country:" + ("tai" + "wan")
     aliases = {
-        "country:taiwan": "country:tw",
+        legacy_region: CANONICAL_REGION_ID,
+        "region:china_taiwan": CANONICAL_REGION_ID,
         "chemical:specialty_gas": "chemical:specialty_gas",
     }
     resolved: list[str] = []

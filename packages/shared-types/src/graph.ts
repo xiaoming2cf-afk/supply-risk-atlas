@@ -428,6 +428,20 @@ export interface GraphScenarioOverlayData extends GraphViewMetadata {
   status: string;
 }
 
+export interface GraphNodeCatalogData extends GraphViewMetadata {
+  node_catalog: Array<Record<string, unknown>>;
+  limit: number;
+  layout_hints: Record<string, unknown>;
+  evidence_refs: string[];
+}
+
+export interface GraphSourceCoverageData extends GraphViewMetadata {
+  source_coverage: Record<string, unknown>;
+  limit: number;
+  layout_hints: Record<string, unknown>;
+  evidence_refs: string[];
+}
+
 export interface AnalyticsChartsData extends GraphViewMetadata {
   charts: Record<string, Array<Record<string, unknown>>>;
   limit: number;

@@ -10,7 +10,7 @@
     {
       "explanation": "The likelihood-impact-vulnerability proxy emphasizes evidence-backed event/policy exposure, concentration, substitution, and propagation context, while the heuristic baseline uses fixed manual component weights.",
       "left_rank": 10,
-      "node_id": "country:tw",
+      "node_id": "region:china_taiwan",
       "rank_delta": -8,
       "right_rank": 2
     },
@@ -221,14 +221,14 @@
       "score_delta": 14.75
     },
     {
-      "canonical_name": "Taiwan",
+      "canonical_name": "中国台湾",
       "heuristic_feature_version": "semirisk_risk_score_heuristic_v0.1",
       "heuristic_level": "guarded",
       "heuristic_score": 44.26,
       "literature_feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
       "literature_level": "critical",
       "literature_score": 98.32,
-      "node_id": "country:tw",
+      "node_id": "region:china_taiwan",
       "node_type": "country",
       "score_delta": 54.06
     },
@@ -386,7 +386,7 @@
     },
     {
       "left_score": 44.26,
-      "node_id": "country:tw",
+      "node_id": "region:china_taiwan",
       "right_score": 98.32,
       "score_delta": 54.06
     },
@@ -570,14 +570,14 @@
       "score_delta": 53.29
     },
     {
-      "canonical_name": "Taiwan",
+      "canonical_name": "中国台湾",
       "heuristic_feature_version": "semirisk_risk_score_heuristic_v0.1",
       "heuristic_level": "guarded",
       "heuristic_score": 44.26,
       "literature_feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
       "literature_level": "critical",
       "literature_score": 98.32,
-      "node_id": "country:tw",
+      "node_id": "region:china_taiwan",
       "node_type": "country",
       "rank": 10,
       "score": 44.26,
@@ -600,14 +600,14 @@
       "score_delta": 53.29
     },
     {
-      "canonical_name": "Taiwan",
+      "canonical_name": "中国台湾",
       "heuristic_feature_version": "semirisk_risk_score_heuristic_v0.1",
       "heuristic_level": "guarded",
       "heuristic_score": 44.26,
       "literature_feature_version": "semirisk_risk_score_likelihood_impact_v0.1",
       "literature_level": "critical",
       "literature_score": 98.32,
-      "node_id": "country:tw",
+      "node_id": "region:china_taiwan",
       "node_type": "country",
       "rank": 2,
       "score": 98.32,

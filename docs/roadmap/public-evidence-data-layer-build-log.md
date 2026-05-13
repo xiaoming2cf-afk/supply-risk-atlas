@@ -428,10 +428,10 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - Ingestion/contract/source tests: pass
   - Quality tests: pass
 - Failures and exact causes:
-  - Initial run failed because moderate-confidence country alias `Chinese Taipei` did not emit an approximate warning. The alias warning threshold was raised so mappings below 0.9 confidence carry an explicit warning.
+  - Initial run failed because moderate-confidence country alias `中国台湾` did not emit an approximate warning. The alias warning threshold was raised so mappings below 0.9 confidence carry an explicit warning.
 - Evidence:
   - Company aliases resolve TSMC, ASML, Samsung Electronics, Intel, and Applied Materials.
-  - Country aliases resolve Taiwan/Chinese Taipei/TW, United States/USA/US, South Korea/Korea Rep./KR, Netherlands/NL, and Japan/JP.
+  - Country aliases resolve 中国台湾/中国台湾/TW, United States/USA/US, South Korea/Korea Rep./KR, Netherlands/NL, and Japan/JP.
   - Commodity crosswalk resolves semiconductor HS proxy codes and warns on approximate/proxy mappings.
   - Policy item crosswalk resolves EUV/lithography, advanced computing chips, HBM/memory, photoresist, and chemicals with confidence/warnings.
   - Unknown or low-confidence mentions remain unresolved.

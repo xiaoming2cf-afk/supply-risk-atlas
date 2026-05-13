@@ -10,7 +10,7 @@ def test_resolve_targets_supports_fixture_aliases() -> None:
     snapshot = build_semiconductor_fixture_snapshot()
 
     assert resolve_targets(snapshot, ["company:tsmc"]) == ["company:tsmc"]
-    assert resolve_targets(snapshot, ["country:taiwan"]) == ["country:tw"]
+    assert resolve_targets(snapshot, ["region:china_taiwan"]) == ["region:china_taiwan"]
     assert "company:asml" in resolve_targets(snapshot, ["node_type:company"])
 
 

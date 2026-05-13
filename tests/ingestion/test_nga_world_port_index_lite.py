@@ -24,7 +24,7 @@ def test_nga_world_port_index_lite_promotes_logistics_facility() -> None:
     assert result.status == "ok"
     assert promoted[0]["record_type"] == "logistics_facility"
     assert promoted[0]["name"] == "Kaohsiung"
-    assert promoted[0]["country_code"] == "TW"
+    assert promoted[0]["country_code"] == "CN"
     assert promoted[0]["payload_hash"]
     assert "navigational_decision_support" in promoted[0]["warnings"][0]
 
@@ -32,8 +32,7 @@ def test_nga_world_port_index_lite_promotes_logistics_facility() -> None:
 def test_nga_world_port_index_lite_live_mode_is_disabled() -> None:
     connector = NgaWorldPortIndexLiteConnector(config=ConnectorConfig(mode="live"))
 
-    result = connector.fetch({"country": "TW"})
+    result = connector.fetch({"country": "CN"})
 
     assert result.status == "unavailable"
     assert "nga_world_port_index_lite_live_fetch_not_implemented" in result.warnings
-

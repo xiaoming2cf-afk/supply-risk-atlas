@@ -14,7 +14,7 @@
       "trade_value": 70.0,
       "quantity": 12.5,
       "unit": "tonnes",
-      "summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from Japan.",
+      "summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from Japan.",
       "provenance_url": "https://comtradeplus.un.org/example/tw-jp-370790",
       "license_or_terms_ref": "https://comtradeplus.un.org/TermsOfUse",
       "confidence": 0.62
@@ -30,7 +30,7 @@
       "trade_value": 30.0,
       "quantity": 5.5,
       "unit": "tonnes",
-      "summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from the United States.",
+      "summary": "Proxy trade-flow summary for 中国台湾 imports of photoresist-related chemicals from the United States.",
       "provenance_url": "https://comtradeplus.un.org/example/tw-us-370790",
       "license_or_terms_ref": "https://comtradeplus.un.org/TermsOfUse",
       "confidence": 0.62

@@ -6,9 +6,11 @@ import type {
   GraphExplorerData,
   GraphGeoData,
   GraphMatrixData,
+  GraphNodeCatalogData,
   GraphNode,
   GraphNodeKind,
   GraphScenarioOverlayData,
+  GraphSourceCoverageData,
   GraphTimelineData,
 } from "@supply-risk/shared-types";
 import { Panel } from "../../app/components";
@@ -24,9 +26,11 @@ import { GraphInspector } from "./GraphInspector";
 import { GraphLayers } from "./GraphLayers";
 import { GraphLegend } from "./GraphLegend";
 import { GraphMatrixView } from "./GraphMatrixView";
+import { GraphNodeCatalogView } from "./GraphNodeCatalogView";
 import { GraphOverviewView } from "./GraphOverviewView";
 import { GraphPathView } from "./GraphPathView";
 import { GraphScenarioOverlay } from "./GraphScenarioOverlay";
+import { GraphSourceCoverageView } from "./GraphSourceCoverageView";
 import { GraphTimelineView } from "./GraphTimelineView";
 import { defaultGraphLayerSet, findFirstGraphSearchMatch, type GraphLayerCategory } from "./graphFilters";
 import {
@@ -390,6 +394,10 @@ export function GraphExplorer({
             <GraphMatrixView graph={graph} view={view} endpointData={endpointDetails.data} />
           ) : mode === "evidence" ? (
             <GraphEvidenceView view={view} endpointData={endpointDetails.data} />
+          ) : mode === "source-coverage" ? (
+            <GraphSourceCoverageView view={view} endpointData={endpointDetails.data} />
+          ) : mode === "node-catalog" ? (
+            <GraphNodeCatalogView view={view} endpointData={endpointDetails.data} />
           ) : view.visibleNodes.length > 0 ? (
             <GraphCanvas
               activePathEdgeIds={view.activePathEdgeIds}
@@ -449,7 +457,15 @@ export function GraphExplorer({
 }
 
 type GraphEndpointDetails = {
-  data?: GraphTimelineData | GraphGeoData | GraphMatrixData | GraphEvidenceData | GraphScenarioOverlayData | Record<string, unknown>;
+  data?:
+    | GraphTimelineData
+    | GraphGeoData
+    | GraphMatrixData
+    | GraphEvidenceData
+    | GraphScenarioOverlayData
+    | GraphSourceCoverageData
+    | GraphNodeCatalogData
+    | Record<string, unknown>;
   message: string;
   source: "backend" | "fallback";
   status: "active" | "fallback" | "loading";
@@ -485,6 +501,10 @@ async function fetchGraphEndpointDetails(
     result = await apiClient.getGraphMatrix({ limit: 30 });
   } else if (options.mode === "evidence") {
     result = await apiClient.getGraphEvidence({ limit: 50 });
+  } else if (options.mode === "source-coverage") {
+    result = await apiClient.getGraphSourceCoverage({ limit: 50 });
+  } else if (options.mode === "node-catalog") {
+    result = await apiClient.getGraphNodeCatalog({ limit: 50 });
   } else {
     result = await apiClient.getGraphScenarioOverlay({ runId: null });
   }
@@ -530,6 +550,8 @@ function GraphModeDetailPanel({
   if (mode === "timeline") return <GraphTimelineView graph={graph} endpointData={endpointDetails.data} view={view} />;
   if (mode === "geo") return <GraphGeoView endpointData={endpointDetails.data} graph={graph} view={view} />;
   if (mode === "scenario") return <GraphScenarioOverlay endpointData={endpointDetails.data} view={view} />;
+  if (mode === "source-coverage") return <GraphSourceCoverageView endpointData={endpointDetails.data} view={view} />;
+  if (mode === "node-catalog") return <GraphNodeCatalogView endpointData={endpointDetails.data} view={view} />;
   if (mode === "path") return <GraphPathView view={view} />;
   if (mode === "focus") return <GraphFocusView view={view} />;
   return null;

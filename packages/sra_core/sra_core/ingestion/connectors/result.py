@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from sra_core.geo.normalize import sanitize_api_visible_text
+
 
 PROMPT_INJECTION_PATTERNS = (
     re.compile(r"</?\s*script\s*>?", re.IGNORECASE),
@@ -30,6 +32,7 @@ def sanitize_external_text(value: Any, *, max_length: int = 512) -> str:
     for pattern in PROMPT_INJECTION_PATTERNS:
         text = pattern.sub("[removed]", text)
     text = text.replace("<", "").replace(">", "")
+    text = sanitize_api_visible_text(text)
     text = " ".join(text.split())
     if len(text) > max_length:
         return f"{text[: max_length - 3]}..."

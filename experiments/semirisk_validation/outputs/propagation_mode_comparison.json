@@ -365,13 +365,13 @@
       "multi_source_accumulation_changes_results": false,
       "propagation_mode": "max",
       "run_id": "fwd_09fa5abafbc0a36f",
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": "country:tw",
+      "targets": "region:china_taiwan",
       "top_transmission_path_ids": [
-        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
-        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
-        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:region:china_taiwan:route:china_taiwan_us_west_coast",
+        "path:edge:region_china_taiwan:impacted_by:china_taiwan_power_outage:region:china_taiwan:risk_event:china_taiwan_power_outage_placeholder",
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:route:china_taiwan_us_west_coast:region:china_taiwan"
       ],
       "warnings": [
         "fixture_graph:not_production_ready",
@@ -394,13 +394,13 @@
       "multi_source_accumulation_changes_results": true,
       "propagation_mode": "additive_cap",
       "run_id": "fwd_7388b0bc7b8a0d26",
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": "country:tw",
+      "targets": "region:china_taiwan",
       "top_transmission_path_ids": [
-        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
-        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
-        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:region:china_taiwan:route:china_taiwan_us_west_coast",
+        "path:edge:region_china_taiwan:impacted_by:china_taiwan_power_outage:region:china_taiwan:risk_event:china_taiwan_power_outage_placeholder",
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:route:china_taiwan_us_west_coast:region:china_taiwan"
       ],
       "warnings": [
         "fixture_graph:not_production_ready",
@@ -423,13 +423,13 @@
       "multi_source_accumulation_changes_results": true,
       "propagation_mode": "noisy_or",
       "run_id": "fwd_3a3a6cec35d59f4c",
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": "country:tw",
+      "targets": "region:china_taiwan",
       "top_transmission_path_ids": [
-        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
-        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
-        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:region:china_taiwan:route:china_taiwan_us_west_coast",
+        "path:edge:region_china_taiwan:impacted_by:china_taiwan_power_outage:region:china_taiwan:risk_event:china_taiwan_power_outage_placeholder",
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:route:china_taiwan_us_west_coast:region:china_taiwan"
       ],
       "warnings": [
         "fixture_graph:not_production_ready",
@@ -452,13 +452,13 @@
       "multi_source_accumulation_changes_results": false,
       "propagation_mode": "leontief_bottleneck",
       "run_id": "fwd_f8286cca7376379d",
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": "country:tw",
+      "targets": "region:china_taiwan",
       "top_transmission_path_ids": [
-        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
-        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
-        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:region:china_taiwan:route:china_taiwan_us_west_coast",
+        "path:edge:region_china_taiwan:impacted_by:china_taiwan_power_outage:region:china_taiwan:risk_event:china_taiwan_power_outage_placeholder",
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:route:china_taiwan_us_west_coast:region:china_taiwan"
       ],
       "warnings": [
         "fixture_graph:not_production_ready",
@@ -481,13 +481,13 @@
       "multi_source_accumulation_changes_results": true,
       "propagation_mode": "psi_recursive",
       "run_id": "fwd_cf5f2d57e29b6292",
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": "country:tw",
+      "targets": "region:china_taiwan",
       "top_transmission_path_ids": [
-        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
-        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
-        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:region:china_taiwan:route:china_taiwan_us_west_coast",
+        "path:edge:region_china_taiwan:impacted_by:china_taiwan_power_outage:region:china_taiwan:risk_event:china_taiwan_power_outage_placeholder",
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:route:china_taiwan_us_west_coast:region:china_taiwan"
       ],
       "warnings": [
         "fixture_graph:not_production_ready",
@@ -510,13 +510,13 @@
       "multi_source_accumulation_changes_results": true,
       "propagation_mode": "auto_semiconductor",
       "run_id": "fwd_d8b55f377daf316f",
-      "scenario_id": "earthquake_taiwan",
+      "scenario_id": "earthquake_china_taiwan",
       "scenario_type": "earthquake",
-      "targets": "country:tw",
+      "targets": "region:china_taiwan",
       "top_transmission_path_ids": [
-        "path:edge:route_tw_us:routes_through:tw:country:tw:route:tw_us_west_coast",
-        "path:edge:country_tw:impacted_by:taiwan_power_outage:country:tw:risk_event:taiwan_power_outage_placeholder",
-        "path:edge:route_tw_us:routes_through:tw:route:tw_us_west_coast:country:tw"
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:region:china_taiwan:route:china_taiwan_us_west_coast",
+        "path:edge:region_china_taiwan:impacted_by:china_taiwan_power_outage:region:china_taiwan:risk_event:china_taiwan_power_outage_placeholder",
+        "path:edge:route_china_taiwan_us:routes_through:china_taiwan:route:china_taiwan_us_west_coast:region:china_taiwan"
       ],
       "warnings": [
         "fixture_graph:not_production_ready",

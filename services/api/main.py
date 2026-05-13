@@ -101,8 +101,8 @@ from sra_core.real_pipeline import real_metadata, run_public_real_pipeline
 
 
 DEPLOYMENT_TARGET = "supply-risk-atlas-web.onrender.com"
-TAIWAN_PROVINCE_DISPLAY = "中国台湾省"
-TAIWAN_RAW_CODES = {"TW", "TWN"}
+CHINA_TAIWAN_DISPLAY = "中国台湾"
+CHINA_TAIWAN_RAW_CODES = {"TW", "TWN"}
 DASHBOARD_PAYLOAD_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 DASHBOARD_PAYLOAD_CACHE_LOCK = Lock()
 PATH_DIRECTIONS = {"upstream", "downstream", "both"}
@@ -597,7 +597,7 @@ def _dashboard_query(**values: Any) -> dict[str, Any]:
     geo_id = str(values.get("geo_id") or "").strip() or None
     if raw_country == "TW":
         province_code = "TW"
-        geo_id = geo_id or "province_cn_tw"
+        geo_id = geo_id or "region_china_taiwan"
     query = {
         "selected_node_id": str(values.get("selected_node_id") or "").strip() or None,
         "path_direction": direction,
@@ -1183,7 +1183,7 @@ def _country_code(value: Any) -> str | None:
     return raw
 
 
-def _has_taiwan_source_code(entity: Any | None) -> bool:
+def _has_china_taiwan_source_code(entity: Any | None) -> bool:
     if entity is None:
         return False
     external_ids = getattr(entity, "external_ids", {}) or {}
@@ -1194,29 +1194,29 @@ def _has_taiwan_source_code(entity: Any | None) -> bool:
         str(external_ids.get("provinceCode") or "").upper(),
         str(external_ids.get("subdivisionCode") or "").upper(),
     }
-    return "TW" in raw_values or str(getattr(entity, "canonical_id", "")).lower() in {"country_tw", "province_cn_tw"}
+    return "TW" in raw_values or str(getattr(entity, "canonical_id", "")).lower() in {"region_china_taiwan", "region_china_taiwan"}
 
 
-def _is_taiwan_geo(entity: Any | None) -> bool:
+def _is_china_taiwan_geo(entity: Any | None) -> bool:
     if entity is None:
         return False
     entity_type = str(getattr(entity, "entity_type", "")).lower()
     return (
-        _has_taiwan_source_code(entity)
+        _has_china_taiwan_source_code(entity)
         and entity_type in {"country", "province", "region", "coverage_area"}
     )
 
 
 def _geo_context_from_entity(entity: Any | None) -> dict[str, Any]:
-    if _has_taiwan_source_code(entity):
+    if _has_china_taiwan_source_code(entity):
         return {
-            "geoId": "province_cn_tw",
-            "geoLevel": "province" if _is_taiwan_geo(entity) else "unknown",
+            "geoId": "region_china_taiwan",
+            "geoLevel": "region" if _is_china_taiwan_geo(entity) else "unknown",
             "countryCode": "CN",
-            "provinceCode": "TW",
+            "regionId": "region:china_taiwan",
             "parentGeoId": "country_cn",
-            "sourceCountryCode": "TW",
-            "displayName": TAIWAN_PROVINCE_DISPLAY if _is_taiwan_geo(entity) else entity.display_name,
+            "sourceCountryCode": "CN",
+            "displayName": CHINA_TAIWAN_DISPLAY if _is_china_taiwan_geo(entity) else entity.display_name,
         }
     if entity is None:
         return {
@@ -1268,7 +1268,7 @@ def _country_name(code: str, entity_by_id: dict[str, Any]) -> str:
 def _entity_display_name(entity: Any | None) -> str:
     if entity is None:
         return "Unknown"
-    return TAIWAN_PROVINCE_DISPLAY if _is_taiwan_geo(entity) else entity.display_name
+    return CHINA_TAIWAN_DISPLAY if _is_china_taiwan_geo(entity) else entity.display_name
 
 
 def _entity_payload(entity: Any) -> dict[str, Any]:
@@ -1811,7 +1811,7 @@ def _country_lens_payload(
                 "subdivisions": [
                     {
                         "geoId": geo_id,
-                        "label": TAIWAN_PROVINCE_DISPLAY if geo_id == "province_cn_tw" else geo_id,
+                        "label": CHINA_TAIWAN_DISPLAY if geo_id in {"region_china_taiwan", "region_china_taiwan"} else geo_id,
                         "provinceCode": str(subdivision_nodes[0].get("provinceCode") or subdivision_nodes[0].get("metadata", {}).get("provinceCode") or ""),
                         "entityCount": len(subdivision_nodes),
                         "riskScore": round(max(float(node.get("riskScore", node.get("score", 0))) for node in subdivision_nodes), 4),
@@ -2168,7 +2168,7 @@ def _select_graph_node_ids(
         "data_source_usgs_earthquakes",
         "dataset_usgs_m45_earthquakes_month",
         "indicator_high_tech_exports",
-        "risk_event_usgs_taiwan_m62",
+        "risk_event_usgs_china_taiwan_m62",
         "risk_event_usgs_japan_m57",
     ]
     for node_id in priority_data_node_ids:

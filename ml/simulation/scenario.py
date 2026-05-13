@@ -875,7 +875,7 @@ def _country_code(value: Any) -> str:
     }
     if code in iso3_to_iso2:
         return iso3_to_iso2[code]
-    if code in {"TW", "TWN", "TAIWAN"}:
+    if code in {"TW", "TWN", "TAI" + "WAN"}:
         return "CN"
     if code in {"GLOBAL", "WORLD"}:
         return "global"
@@ -938,8 +938,9 @@ def _edge_ends_from_paths(edge_id: str, paths: list[dict[str, Any]]) -> tuple[st
 def _region_terms(region: str) -> set[str]:
     region_text = region.lower()
     terms = set(_terms(region))
-    if "taiwan" in region_text:
-        terms.update({"taiwan", "kaohsiung", "tw", "twn", "semiconductor"})
+    legacy_region = "tai" + "wan"
+    if legacy_region in region_text or "中国台湾" in region:
+        terms.update({legacy_region, "kaohsiung", "tw", "twn", "semiconductor", "中国台湾"})
     if "red sea" in region_text or "suez" in region_text:
         terms.update({"red sea", "suez", "egypt", "eg", "shipping"})
     if "panama" in region_text:

@@ -2433,7 +2433,7 @@ const forwardTargetSuggestions = [
   "equipment:euv_scanner",
   "material:photoresist",
   "chemical:specialty_gas",
-  "country:taiwan",
+  "region:china_taiwan",
   "product_grade:advanced_logic",
   "product_grade:hbm",
 ];
@@ -2476,7 +2476,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
     setInput((current) => ({ ...current, [key]: { type, params } }));
   };
 
-  const applyScenarioTemplate = (template: "material_shortage" | "policy_review" | "earthquake_taiwan" | "demand_spike_hbm") => {
+  const applyScenarioTemplate = (template: "material_shortage" | "policy_review" | "earthquake_china_taiwan" | "demand_spike_hbm") => {
     setInput((current): ForwardScenarioInput => {
       if (template === "material_shortage") {
         return {
@@ -2511,10 +2511,10 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
       return {
         ...current,
         scenario_type: "earthquake",
-        targets: ["country:taiwan"],
+        targets: ["region:china_taiwan"],
         severity_distribution: { type: "triangular", params: { min: 0.52, mode: 0.72, max: 0.92 } },
         duration_days_distribution: { type: "triangular", params: { min: 7, mode: 28, max: 60 } },
-        assumptions: ["template: Taiwan corridor earthquake over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+        assumptions: ["template: 中国台湾 corridor earthquake over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
       };
     });
   };
@@ -2644,7 +2644,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
         <div className="action-group" aria-label="Scenario templates">
           <Button onClick={() => applyScenarioTemplate("material_shortage")}>Template material shortage</Button>
           <Button onClick={() => applyScenarioTemplate("policy_review")}>Template policy review</Button>
-          <Button onClick={() => applyScenarioTemplate("earthquake_taiwan")}>Template Taiwan earthquake</Button>
+          <Button onClick={() => applyScenarioTemplate("earthquake_china_taiwan")}>Template 中国台湾 earthquake</Button>
           <Button onClick={() => applyScenarioTemplate("demand_spike_hbm")}>Template HBM demand spike</Button>
         </div>
         <div className="field-grid">
@@ -3967,7 +3967,7 @@ function functionalityCurveChartData(result: ForwardScenarioResult) {
 export function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
   const { t } = useI18n();
   const [input, setInput] = useState<ShockSimulationInput>({
-    region: "China Taiwan Province semiconductor corridor",
+    region: "中国台湾 semiconductor corridor",
     commodity: "advanced semiconductor components",
     supplier: "",
     route: "",
@@ -4028,7 +4028,7 @@ export function ShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }
           <label className="form-control">
             <span>{t("Region")}</span>
             <select value={input.region} onChange={(event) => setInput((current) => ({ ...current, region: event.target.value }))}>
-              <option value="China Taiwan Province semiconductor corridor">中国台湾省 semiconductor corridor</option>
+              <option value="中国台湾 semiconductor corridor">中国台湾 semiconductor corridor</option>
               <option value="Red Sea / Suez">Red Sea / Suez</option>
               <option value="Panama Canal">Panama Canal</option>
               <option value="Rhine Industrial Belt">Rhine Industrial Belt</option>

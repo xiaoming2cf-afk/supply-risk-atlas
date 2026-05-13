@@ -7,7 +7,7 @@ warnings:
   - Concrete nodes are canonical catalog seeds, not complete or operationally verified relationships.
   - Source-backed promoted graph evidence is required before analytical use.
 node_types:
-  - {node_type: country, layer: L0_policy_macro, description: Sovereign or customs reporting geography, required_attributes: [country_code, label], example_ids: ["country:US", "country:TW"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]}
+  - {node_type: country, layer: L0_policy_macro, description: Sovereign or customs reporting geography, required_attributes: [country_code, label], example_ids: ["country:US", "region:china_taiwan"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]}
   - {node_type: region, layer: L0_policy_macro, description: Multi-country region used for aggregation, required_attributes: [label], example_ids: ["region:East_Asia", "region:EU"], source_candidates: [oecd_semiconductor_value_chain_reports, gdelt_semiconductor_lite]}
   - {node_type: policy_regime, layer: L0_policy_macro, description: Policy or regulatory regime relevant to semiconductor supply chains, required_attributes: [label, jurisdiction], example_ids: ["policy_regime:export_controls"], source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite]}
   - {node_type: macro_indicator, layer: L0_policy_macro, description: Macro or market indicator used as context, required_attributes: [label, unit], example_ids: ["macro_indicator:regional_billings"], source_candidates: [wsts_historical_billings, world_bank_macro_indicators_lite]}
@@ -50,7 +50,7 @@ node_types:
   - {node_type: testing_stage, layer: L7_packaging_testing, description: Test or sort stage, required_attributes: [label], example_ids: ["testing:wafer_sort", "testing:final_test"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]}
   - {node_type: port, layer: L8_logistics, description: Maritime port used for logistics context, required_attributes: [label, country_code], example_ids: ["port:Kaohsiung", "port:Rotterdam"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
   - {node_type: airport, layer: L8_logistics, description: Airport used for logistics context, required_attributes: [label, country_code], example_ids: ["airport:Taoyuan", "airport:Incheon"], source_candidates: [gdelt_semiconductor_lite, company_annual_report_manual_upload]}
-  - {node_type: logistics_route, layer: L8_logistics, description: Bounded route context, required_attributes: [label], example_ids: ["logistics_route:tw_us_air"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
+  - {node_type: logistics_route, layer: L8_logistics, description: Bounded route context, required_attributes: [label], example_ids: ["logistics_route:china_taiwan_us_air"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
   - {node_type: shipping_lane, layer: L8_logistics, description: Shipping lane context used for exposure analysis, required_attributes: [label], example_ids: ["shipping_lane:east_asia_us_west_coast"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
   - {node_type: customs_region, layer: L8_logistics, description: Customs or trade reporting region, required_attributes: [label], example_ids: ["customs_region:EU"], source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]}
   - {node_type: downstream_sector, layer: L9_downstream_demand, description: Demand sector consuming semiconductor outputs, required_attributes: [label], example_ids: ["sector:AI_datacenter", "sector:automotive"], source_candidates: [wsts_historical_billings, sec_edgar_lite]}
@@ -70,7 +70,7 @@ node_types:
 nodes:
   - {node_id: "country:US", node_type: country, layer: L0_policy_macro, label: United States, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: US}}
   - {node_id: "country:CN", node_type: country, layer: L0_policy_macro, label: China, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: CN}}
-  - {node_id: "country:TW", node_type: country, layer: L0_policy_macro, label: Taiwan, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite], attributes: {country_code: TW}}
+  - {node_id: "region:china_taiwan", node_type: region, layer: L0_policy_macro, label: 中国台湾, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite], attributes: {country_code: CN}}
   - {node_id: "country:KR", node_type: country, layer: L0_policy_macro, label: South Korea, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: KR}}
   - {node_id: "country:JP", node_type: country, layer: L0_policy_macro, label: Japan, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: JP}}
   - {node_id: "country:NL", node_type: country, layer: L0_policy_macro, label: Netherlands, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: NL}}
@@ -153,7 +153,7 @@ nodes:
   - {node_id: "company:UMC", node_type: foundry, layer: L5_fabrication, label: UMC, source_candidates: [company_annual_report_manual_upload], attributes: {}}
   - {node_id: "company:GlobalFoundries", node_type: foundry, layer: L5_fabrication, label: GlobalFoundries, source_candidates: [sec_edgar_lite], attributes: {}}
   - {node_id: "company:Hua_Hong", node_type: foundry, layer: L5_fabrication, label: Hua Hong, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "fab:TSMC_Fab_18", node_type: fab, layer: L5_fabrication, label: TSMC Fab 18, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: TW}}
+  - {node_id: "fab:TSMC_Fab_18", node_type: fab, layer: L5_fabrication, label: TSMC Fab 18, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: CN}}
   - {node_id: "fab:Samsung_Pyeongtaek", node_type: fab, layer: L5_fabrication, label: Samsung Pyeongtaek, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: KR}}
   - {node_id: "process:lithography", node_type: process_stage, layer: L5_fabrication, label: Lithography, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
   - {node_id: "process:etching", node_type: process_stage, layer: L5_fabrication, label: Etching, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
@@ -198,15 +198,15 @@ nodes:
   - {node_id: "material:interposer", node_type: substrate, layer: L7_packaging_testing, label: Interposer, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
   - {node_id: "testing:wafer_sort", node_type: testing_stage, layer: L7_packaging_testing, label: Wafer sort, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
   - {node_id: "testing:final_test", node_type: testing_stage, layer: L7_packaging_testing, label: Final test, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "port:Kaohsiung", node_type: port, layer: L8_logistics, label: Kaohsiung, source_candidates: [nga_world_port_index_lite], attributes: {country_code: TW}}
-  - {node_id: "port:Keelung", node_type: port, layer: L8_logistics, label: Keelung, source_candidates: [nga_world_port_index_lite], attributes: {country_code: TW}}
+  - {node_id: "port:Kaohsiung", node_type: port, layer: L8_logistics, label: Kaohsiung, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
+  - {node_id: "port:Keelung", node_type: port, layer: L8_logistics, label: Keelung, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
   - {node_id: "port:Shanghai", node_type: port, layer: L8_logistics, label: Shanghai, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
   - {node_id: "port:Shenzhen", node_type: port, layer: L8_logistics, label: Shenzhen, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
   - {node_id: "port:Busan", node_type: port, layer: L8_logistics, label: Busan, source_candidates: [nga_world_port_index_lite], attributes: {country_code: KR}}
   - {node_id: "port:Yokohama", node_type: port, layer: L8_logistics, label: Yokohama, source_candidates: [nga_world_port_index_lite], attributes: {country_code: JP}}
   - {node_id: "port:Rotterdam", node_type: port, layer: L8_logistics, label: Rotterdam, source_candidates: [nga_world_port_index_lite], attributes: {country_code: NL}}
   - {node_id: "port:Los_Angeles", node_type: port, layer: L8_logistics, label: Los Angeles, source_candidates: [nga_world_port_index_lite], attributes: {country_code: US}}
-  - {node_id: "airport:Taoyuan", node_type: airport, layer: L8_logistics, label: Taoyuan, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: TW}}
+  - {node_id: "airport:Taoyuan", node_type: airport, layer: L8_logistics, label: Taoyuan, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: CN}}
   - {node_id: "airport:Incheon", node_type: airport, layer: L8_logistics, label: Incheon, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: KR}}
   - {node_id: "airport:Narita", node_type: airport, layer: L8_logistics, label: Narita, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: JP}}
   - {node_id: "airport:Changi", node_type: airport, layer: L8_logistics, label: Changi, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: SG}}

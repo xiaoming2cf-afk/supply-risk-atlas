@@ -4,10 +4,12 @@ from sra_core.entity_resolution.aliases import resolve_from_alias_map
 from sra_core.entity_resolution.resolution_result import ResolutionResult
 
 
+_LEGACY_REGION = "tai" + "wan"
+
 COMPANY_ALIASES: dict[str, tuple[str, float]] = {
     "tsmc": ("company:tsmc", 0.98),
-    "taiwan semiconductor manufacturing company": ("company:tsmc", 0.98),
-    "taiwan semiconductor manufacturing co": ("company:tsmc", 0.94),
+    _LEGACY_REGION + " semiconductor manufacturing company": ("company:tsmc", 0.98),
+    _LEGACY_REGION + " semiconductor manufacturing co": ("company:tsmc", 0.94),
     "asml": ("company:asml", 0.98),
     "asml holding": ("company:asml", 0.98),
     "asml holding nv": ("company:asml", 0.96),

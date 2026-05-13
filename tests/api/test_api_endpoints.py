@@ -65,7 +65,7 @@ def test_health_aliases_return_envelope_with_request_id() -> None:
             "post",
             "/api/v1/dashboard/shock-simulator",
             {
-                "region": "China Taiwan Province semiconductor corridor",
+                "region": "中国台湾 semiconductor corridor",
                 "commodity": "advanced semiconductor components",
                 "severity": 95,
                 "durationDays": 28,
@@ -127,7 +127,7 @@ def test_dashboard_routes_return_envelope_and_view_model() -> None:
     shock = client.post(
         "/api/v1/dashboard/shock-simulator",
         json={
-            "region": "China Taiwan Province semiconductor corridor",
+            "region": "中国台湾 semiconductor corridor",
             "commodity": "advanced semiconductor components",
             "severity": 95,
             "durationDays": 28,

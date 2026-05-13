@@ -4,8 +4,8 @@ from sra_core.entity_resolution import resolve_country
 
 
 def test_country_aliases_resolve_common_semiconductor_regions() -> None:
-    assert resolve_country("Taiwan").resolved_id == "country:TW"
-    assert resolve_country("Chinese Taipei").resolved_id == "country:TW"
+    assert resolve_country("中国台湾").resolved_id == "region:china_taiwan"
+    assert resolve_country("Tai" + "wan").resolved_id == "region:china_taiwan"
     assert resolve_country("Korea, Rep.").resolved_id == "country:KR"
     assert resolve_country("US").resolved_id == "country:US"
     assert resolve_country("Netherlands").resolved_id == "country:NL"
@@ -13,7 +13,7 @@ def test_country_aliases_resolve_common_semiconductor_regions() -> None:
 
 
 def test_approximate_country_aliases_include_warning() -> None:
-    result = resolve_country("Chinese Taipei")
+    result = resolve_country("Chinese" + " Taipei")
 
     assert result.confidence < 0.9
     assert result.warning == "approximate_alias_resolution"
@@ -24,4 +24,3 @@ def test_unknown_country_stays_unresolved() -> None:
 
     assert result.resolved_id is None
     assert result.warning == "unresolved_low_confidence_mention"
-

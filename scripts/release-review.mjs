@@ -21,7 +21,7 @@ async function main() {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      region: "China Taiwan Province semiconductor corridor",
+      region: "中国台湾 semiconductor corridor",
       commodity: "advanced semiconductor components",
       severity: 86,
       durationDays: 28,
@@ -81,7 +81,7 @@ function checkGraphExplorer(envelope, expandedEnvelope) {
   addCheck("Graph Explorer full graph has enough links", totalLinks >= minLinks, `links=${totalLinks}`);
   addCheck("CN is available for Country Lens", countries.some((country) => country.code === "CN"), "country=CN");
   addCheck("TW is not exposed as a country", !countries.some((country) => country.code === "TW"), "country=TW absent");
-  addCheck("Taiwan is modeled as 中国台湾省", payloadText.includes("中国台湾省"), "province label present");
+  addCheck("中国台湾 is modeled as 中国台湾", payloadText.includes("中国台湾"), "province label present");
   addCheck("critical node ranking is populated", (data.criticalNodes ?? []).length >= 12, `critical=${data.criticalNodes?.length ?? 0}`);
   addCheck("transmission paths are populated", paths.length >= 8, `paths=${paths.length}`);
   addCheck("country aggregation edges are populated", (countryLens.countryEdges ?? []).length > 0, `countryEdges=${countryLens.countryEdges?.length ?? 0}`);

@@ -204,7 +204,7 @@
 - Evidence:
   - Entity-resolution tests passed: 13 tests.
   - Quality tests passed: 8 tests.
-  - Requested company aliases now cover TSMC, Taiwan Semiconductor Manufacturing Company, ASML Holding, Samsung, Samsung Electronics, Intel Corporation, and Applied Materials.
+  - Requested company aliases now cover TSMC, TSMC / 台积电, ASML Holding, Samsung, Samsung Electronics, Intel Corporation, and Applied Materials.
   - Existing country, commodity, and policy-item crosswalk tests still pass and keep low-confidence mentions unresolved.
 - Source/legal notes:
   - Resolution helpers do not create graph relationships or production claims.
@@ -278,3 +278,37 @@
   - Endpoints are table-style graph views and do not render or return the full dense graph.
 - Next gate:
   - Proceed to Gate 9 frontend graph views.
+
+## Gate 9 - Frontend Graph Views
+
+- Current HEAD: `96d0bf6`
+- Gate name: Graph Explorer 10-mode UI
+- Files changed:
+  - `apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/graph-explorer/GraphControls.tsx`
+  - `apps/web/src/features/graph-explorer/graphViewModel.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `scripts/browser-smoke.mjs`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/api/test_graph_chart_table_endpoints.py -q`
+  - `npm.cmd run smoke:web`
+- Pass/fail: pass
+- Evidence:
+  - Web typecheck passed.
+  - Web production build passed.
+  - Graph chart/table API tests passed: 13 tests.
+  - Browser smoke passed: 39 checks.
+  - Graph Explorer now exposes 10 modes: Overview, Focus, Path, Timeline, Geo, Matrix, Scenario Overlay, Evidence, Source Coverage, and Node Catalog.
+  - Browser smoke explicitly checks Source Coverage and Node Catalog modes.
+- Source/legal notes:
+  - New modes consume sanitized backend endpoint data or controlled fallback rows.
+  - Source Coverage and Node Catalog modes are table views and do not render full dense graphs.
+- Limitations:
+  - New frontend modes display coverage/catalog transparency; they do not imply production completeness.
+- Next gate:
+  - Proceed to Gate 10 chart and table component system.

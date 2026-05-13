@@ -4,6 +4,7 @@ from typing import Any
 from uuid import uuid4
 
 from sra_core.contracts.domain import ApiEnvelope, ApiError, ApiSourceMetadata, VersionMetadata
+from sra_core.geo.normalize import sanitize_chart_table_payload
 
 
 def _source_metadata(metadata: VersionMetadata) -> ApiSourceMetadata:
@@ -36,13 +37,13 @@ def make_envelope(
     envelope = ApiEnvelope(
         request_id=request_id or f"req_{uuid4().hex[:12]}",
         status="success",
-        data=data,
+        data=sanitize_chart_table_payload(data),
         metadata=metadata,
-        warnings=warnings or [],
+        warnings=sanitize_chart_table_payload(warnings or []),
         errors=[],
         mode=metadata.data_mode,
         source_status=metadata.freshness_status,
-        source=_source_metadata(metadata),
+        source=sanitize_chart_table_payload(_source_metadata(metadata).model_dump(mode="json")),
     )
     return envelope.model_dump(mode="json")
 
@@ -61,10 +62,16 @@ def make_error_envelope(
         status="error",
         data=None,
         metadata=metadata,
-        warnings=warnings or [],
-        errors=[ApiError(code=code, message=message, field=field)],
+        warnings=sanitize_chart_table_payload(warnings or []),
+        errors=[
+            ApiError(
+                code=code,
+                message=str(sanitize_chart_table_payload(message)),
+                field=field,
+            )
+        ],
         mode=metadata.data_mode,
         source_status=metadata.freshness_status,
-        source=_source_metadata(metadata),
+        source=sanitize_chart_table_payload(_source_metadata(metadata).model_dump(mode="json")),
     )
     return envelope.model_dump(mode="json")

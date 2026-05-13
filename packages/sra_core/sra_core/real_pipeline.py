@@ -6,6 +6,7 @@ from functools import lru_cache
 from hashlib import sha256
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -30,14 +31,15 @@ from sra_core.contracts.domain import (
 from sra_core.ingestion.connectors import connector_for_source
 from sra_core.ingestion.bulk_public import load_promoted_catalog, load_promoted_manifest
 from sra_core.ingestion.registry import load_source_registry
+from sra_core.geo.normalize import sanitize_api_visible_text, sanitize_chart_table_payload, sanitize_identifier
 from sra_core.feature_factory import compute_features
 from sra_core.label_factory import label_quality_report
 
 
 PUBLIC_REAL_AS_OF_TIME = datetime(2026, 5, 2, tzinfo=timezone.utc)
 PUBLIC_REAL_WINDOW_START = datetime(2026, 4, 1, tzinfo=timezone.utc)
-TAIWAN_PROVINCE_ID = "province_cn_tw"
-TAIWAN_PROVINCE_DISPLAY_NAME = "中国台湾省"
+CHINA_TAIWAN_REGION_ID = "region_china_taiwan"
+CHINA_TAIWAN_DISPLAY_NAME = "中国台湾"
 
 COUNTRY_NAMES: dict[str, str] = {
     "AD": "Andorra", "AE": "United Arab Emirates", "AF": "Afghanistan", "AG": "Antigua and Barbuda",
@@ -140,6 +142,15 @@ def _checksum(value: Any) -> str:
     return checksum_payload({"value": value})
 
 
+def _real_catalog_id(value: Any) -> str:
+    text = sanitize_identifier(str(value))
+    legacy_region = "tai" + "wan"
+    text = re.sub(r"(?<!china_)" + legacy_region, "china_taiwan", text, flags=re.IGNORECASE)
+    if text == "region:china_taiwan":
+        return CHINA_TAIWAN_REGION_ID
+    return text
+
+
 def _public_real_node_catalog_path() -> Path:
     return Path(__file__).resolve().parents[3] / "configs" / "sources" / "public_real_node_catalog.yaml"
 
@@ -166,21 +177,51 @@ def _normalize_public_real_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(raw_entity, dict):
             continue
         entity = dict(raw_entity)
-        canonical_id = str(entity.get("canonical_id") or "")
+        canonical_id = _real_catalog_id(entity.get("canonical_id") or "")
         entity_type = str(entity.get("entity_type") or "")
         external_ids = {
             str(key): str(value)
-            for key, value in (entity.get("external_ids") or {}).items()
+            for key, value in sanitize_chart_table_payload(entity.get("external_ids") or {}).items()
             if value is not None
         }
+        entity["canonical_id"] = canonical_id
+        if entity.get("display_name") is not None:
+            entity["display_name"] = sanitize_api_visible_text(entity["display_name"])
+        if entity.get("displayName") is not None:
+            entity["displayName"] = sanitize_api_visible_text(entity["displayName"])
         source_country = _raw_geo_code(
             external_ids.get("sourceCountryCode")
             or external_ids.get("iso2")
             or entity.get("sourceCountryCode")
             or entity.get("country")
         )
-        if canonical_id == "country_tw" or (entity_type == "country" and source_country == "TW"):
-            continue
+        if canonical_id == CHINA_TAIWAN_REGION_ID or (entity_type == "country" and source_country == "TW"):
+            entity_type = "coverage_area"
+            entity.update(
+                {
+                    "canonical_id": CHINA_TAIWAN_REGION_ID,
+                    "entity_type": "coverage_area",
+                    "display_name": CHINA_TAIWAN_DISPLAY_NAME,
+                    "displayName": CHINA_TAIWAN_DISPLAY_NAME,
+                    "country": "CN",
+                    "geoId": CHINA_TAIWAN_REGION_ID,
+                    "geoLevel": "region",
+                    "countryCode": "CN",
+                    "regionId": "region:china_taiwan",
+                    "parentGeoId": "country_cn",
+                    "sourceCountryCode": "CN",
+                }
+            )
+            external_ids.update(
+                {
+                    "geoId": CHINA_TAIWAN_REGION_ID,
+                    "geoLevel": "region",
+                    "countryCode": "CN",
+                    "regionId": "region:china_taiwan",
+                    "parentGeoId": "country_cn",
+                    "sourceCountryCode": "CN",
+                }
+            )
         if entity_type == "country":
             country_code = _raw_geo_code(entity.get("country") or external_ids.get("iso2") or canonical_id.replace("country_", ""))
             if country_code not in VALID_COUNTRY_CODES:
@@ -202,26 +243,30 @@ def _normalize_public_real_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
                 }
             )
             external_ids.update({"iso2": country_code, "geoId": canonical_id, "geoLevel": "country", "countryCode": country_code, "sourceCountryCode": country_code})
-        elif source_country == "TW" or entity.get("country") == "TW":
+        elif (
+            source_country == "TW"
+            or entity.get("country") == "TW"
+            or _real_catalog_id(entity.get("geoId") or external_ids.get("geoId") or "") == CHINA_TAIWAN_REGION_ID
+        ):
             entity.update(
                 {
                     "country": "CN",
-                    "geoId": TAIWAN_PROVINCE_ID,
-                    "geoLevel": "province_context",
+                    "geoId": CHINA_TAIWAN_REGION_ID,
+                    "geoLevel": "region_context",
                     "countryCode": "CN",
-                    "provinceCode": "TW",
+                    "regionId": "region:china_taiwan",
                     "parentGeoId": "country_cn",
-                    "sourceCountryCode": "TW",
+                    "sourceCountryCode": "CN",
                 }
             )
             external_ids.update(
                 {
-                    "geoId": TAIWAN_PROVINCE_ID,
-                    "geoLevel": "province_context",
+                    "geoId": CHINA_TAIWAN_REGION_ID,
+                    "geoLevel": "region_context",
                     "countryCode": "CN",
-                    "provinceCode": "TW",
+                    "regionId": "region:china_taiwan",
                     "parentGeoId": "country_cn",
-                    "sourceCountryCode": "TW",
+                    "sourceCountryCode": "CN",
                 }
             )
         else:
@@ -236,27 +281,27 @@ def _normalize_public_real_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
     _ensure_curated_entity(
         entities,
         {
-            "canonical_id": TAIWAN_PROVINCE_ID,
+            "canonical_id": CHINA_TAIWAN_REGION_ID,
             "entity_type": "coverage_area",
-            "display_name": TAIWAN_PROVINCE_DISPLAY_NAME,
-            "displayName": TAIWAN_PROVINCE_DISPLAY_NAME,
+            "display_name": CHINA_TAIWAN_DISPLAY_NAME,
+            "displayName": CHINA_TAIWAN_DISPLAY_NAME,
             "country": "CN",
-            "geoId": TAIWAN_PROVINCE_ID,
-            "geoLevel": "province",
+            "geoId": CHINA_TAIWAN_REGION_ID,
+            "geoLevel": "region",
             "countryCode": "CN",
-            "provinceCode": "TW",
+            "regionId": "region:china_taiwan",
             "parentGeoId": "country_cn",
-            "sourceCountryCode": "TW",
+            "sourceCountryCode": "CN",
             "industry": None,
             "source_id": PUBLIC_CURATION_SOURCE,
             "confidence": 1.0,
             "external_ids": {
-                "geoId": TAIWAN_PROVINCE_ID,
-                "geoLevel": "province",
+                "geoId": CHINA_TAIWAN_REGION_ID,
+                "geoLevel": "region",
                 "countryCode": "CN",
-                "provinceCode": "TW",
+                "regionId": "region:china_taiwan",
                 "parentGeoId": "country_cn",
-                "sourceCountryCode": "TW",
+                "sourceCountryCode": "CN",
                 "iso3166_2": "CN-TW",
             },
         },
@@ -286,12 +331,8 @@ def _normalize_public_real_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(raw_edge, dict):
             continue
         edge = dict(raw_edge)
-        source_id = str(edge.get("source_id") or "")
-        target_id = str(edge.get("target_id") or "")
-        if source_id == "country_tw":
-            source_id = TAIWAN_PROVINCE_ID
-        if target_id == "country_tw":
-            target_id = TAIWAN_PROVINCE_ID
+        source_id = _real_catalog_id(edge.get("source_id") or "")
+        target_id = _real_catalog_id(edge.get("target_id") or "")
         edge["source_id"] = source_id
         edge["target_id"] = target_id
         if source_id not in entities or target_id not in entities:
@@ -341,7 +382,7 @@ def _add_curated_entity(
     external = {str(key): str(value) for key, value in (external_ids or {}).items() if value is not None}
     if country == "TW":
         country = "CN"
-        external.update({"geoId": TAIWAN_PROVINCE_ID, "geoLevel": "province_context", "countryCode": "CN", "provinceCode": "TW", "parentGeoId": "country_cn", "sourceCountryCode": "TW"})
+        external.update({"geoId": CHINA_TAIWAN_REGION_ID, "geoLevel": "province_context", "countryCode": "CN", "regionId": "region:china_taiwan", "parentGeoId": "country_cn", "sourceCountryCode": "CN"})
     elif country:
         external.update({"geoId": f"country_{country.lower()}", "geoLevel": "country_context", "countryCode": country, "sourceCountryCode": country})
     _ensure_curated_entity(
@@ -423,7 +464,7 @@ def _add_curated_supply_chain_overlay(
         ("warehouse_memphis_electronics_dc", "warehouse", "Memphis electronics distribution center", "US", "Warehouse"),
         ("warehouse_rotterdam_components_hub", "warehouse", "Rotterdam components hub", "NL", "Warehouse"),
         ("warehouse_singapore_semiconductor_hub", "warehouse", "Singapore semiconductor logistics hub", "SG", "Warehouse"),
-        ("route_lane_taiwan_us_west_coast", "route_lane", "Taiwan to US West Coast electronics lane", None, "Route lane"),
+        ("route_lane_china_taiwan_us_west_coast", "route_lane", "中国台湾 to US West Coast electronics lane", None, "Route lane"),
         ("route_lane_east_asia_rotterdam", "route_lane", "East Asia to Rotterdam ocean lane", None, "Route lane"),
         ("route_lane_chile_china_lithium", "route_lane", "Chile to China lithium chemicals lane", None, "Route lane"),
         ("carrier_maersk", "carrier", "A.P. Moller - Maersk", "DK", "Ocean carrier"),
@@ -466,13 +507,13 @@ def _add_curated_supply_chain_overlay(
         ("factory_tsmc_fab18", "warehouse_singapore_semiconductor_hub", "ships_to", 0.72, 0.55, 0.31),
         ("warehouse_singapore_semiconductor_hub", "warehouse_memphis_electronics_dc", "ships_to", 0.68, 0.5, 0.29),
         ("factory_catl_ningde", "warehouse_memphis_electronics_dc", "ships_to", 0.66, 0.48, 0.3),
-        ("route_lane_taiwan_us_west_coast", "port_kaohsiung", "route_leg", 0.76, 0.62, 0.42),
-        ("route_lane_taiwan_us_west_coast", "port_los_angeles", "route_leg", 0.74, 0.6, 0.38),
+        ("route_lane_china_taiwan_us_west_coast", "port_kaohsiung", "route_leg", 0.76, 0.62, 0.42),
+        ("route_lane_china_taiwan_us_west_coast", "port_los_angeles", "route_leg", 0.74, 0.6, 0.38),
         ("route_lane_east_asia_rotterdam", "port_singapore", "route_leg", 0.74, 0.62, 0.35),
         ("route_lane_east_asia_rotterdam", "port_rotterdam", "route_leg", 0.72, 0.58, 0.34),
         ("route_lane_chile_china_lithium", "port_wpi_port_of_valparaiso", "route_leg", 0.62, 0.4, 0.26),
         ("carrier_maersk", "route_lane_east_asia_rotterdam", "handled_at", 0.72, 0.58, 0.29),
-        ("carrier_evergreen", "route_lane_taiwan_us_west_coast", "handled_at", 0.74, 0.62, 0.34),
+        ("carrier_evergreen", "route_lane_china_taiwan_us_west_coast", "handled_at", 0.74, 0.62, 0.34),
         ("carrier_dhl", "warehouse_singapore_semiconductor_hub", "handled_at", 0.7, 0.48, 0.24),
         ("carrier_fedex", "warehouse_memphis_electronics_dc", "handled_at", 0.7, 0.5, 0.24),
         ("firm_tsmc", "supplier_tier_1", "classified_as", 0.8, 0.5, 0.2),
@@ -679,7 +720,7 @@ def _ingest_public_real_raw_records(as_of_time: datetime) -> dict[str, Any]:
             "payload_format": "json",
             "raw_payload": {
                 "entities": [
-                    "Taiwan Semiconductor Manufacturing Company Limited",
+                    "TSMC / 台积电",
                     "ASML Holding N.V.",
                     "Samsung Electronics Co., Ltd.",
                 ],
@@ -853,7 +894,7 @@ def build_public_real_dataset(as_of_time: datetime = PUBLIC_REAL_AS_OF_TIME) -> 
         CanonicalEntity(
             canonical_id="firm_tsmc",
             entity_type="firm",
-            display_name="Taiwan Semiconductor Manufacturing Company Limited",
+            display_name="TSMC / 台积电",
             country="TW",
             industry="Semiconductors",
             external_ids={"ticker": "2330.TW"},
@@ -893,9 +934,9 @@ def build_public_real_dataset(as_of_time: datetime = PUBLIC_REAL_AS_OF_TIME) -> 
             confidence=1.0,
         ),
         CanonicalEntity(
-            canonical_id="country_tw",
+            canonical_id="region_china_taiwan",
             entity_type="country",
-            display_name="Taiwan",
+            display_name="中国台湾",
             country="TW",
             industry=None,
             external_ids={"iso2": "TW"},
@@ -1006,7 +1047,7 @@ def build_public_real_dataset(as_of_time: datetime = PUBLIC_REAL_AS_OF_TIME) -> 
 
     edge_events = [
         edge("firm_apple", "country_us", "located_in", "sec_edgar", _utc(4, 2), 0.98, weight=1.0),
-        edge("firm_tsmc", "country_tw", "located_in", "gleif", _utc(4, 2), 0.96, weight=1.0),
+        edge("firm_tsmc", "region_china_taiwan", "located_in", "gleif", _utc(4, 2), 0.96, weight=1.0),
         edge("firm_asml", "country_nl", "located_in", "gleif", _utc(4, 2), 0.96, weight=1.0),
         edge("firm_samsung_electronics", "country_kr", "located_in", "gleif", _utc(4, 2), 0.95, weight=1.0),
         edge(

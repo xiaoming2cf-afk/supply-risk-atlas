@@ -8,7 +8,7 @@ CHAIN_PATH = ROOT / "configs" / "ontology" / "semiconductor_chain_layers.yaml"
 NODE_PATH = ROOT / "configs" / "ontology" / "semiconductor_node_catalog.yaml"
 
 REQUIRED_NODE_IDS = {
-    "country:US", "country:CN", "country:TW", "country:KR", "country:JP", "country:NL",
+    "country:US", "country:CN", "region:china_taiwan", "country:KR", "country:JP", "country:NL",
     "country:DE", "country:SG", "country:MY", "country:VN", "region:East_Asia", "region:EU",
     "region:North_America", "critical_mineral:silicon", "critical_mineral:gallium",
     "critical_mineral:germanium", "critical_mineral:rare_earths", "critical_mineral:tungsten",

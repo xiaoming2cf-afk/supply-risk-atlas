@@ -16,7 +16,17 @@ import {
 } from "./graphFilters";
 import { graphScore, riskLevelRank } from "./graphLayout";
 
-export type GraphViewMode = "overview" | "focus" | "path" | "timeline" | "geo" | "matrix" | "scenario" | "evidence";
+export type GraphViewMode =
+  | "overview"
+  | "focus"
+  | "path"
+  | "timeline"
+  | "geo"
+  | "matrix"
+  | "scenario"
+  | "evidence"
+  | "source-coverage"
+  | "node-catalog";
 
 export type LegacyGraphExplorerMode =
   | GraphViewMode
@@ -108,6 +118,8 @@ export function graphModeLabel(mode: GraphViewMode) {
     matrix: "Matrix",
     scenario: "Scenario overlay",
     evidence: "Evidence",
+    "source-coverage": "Source Coverage",
+    "node-catalog": "Node Catalog",
   }[mode];
 }
 
@@ -252,7 +264,7 @@ export function buildGraphViewModel(input: GraphViewModelInput): GraphViewModel 
     addNeighborContext(selectedOrDefaultNodeId, "both", 1);
   } else if (input.mode === "matrix") {
     for (const node of criticalGraphNodes({ ...input.graph, nodes: baseNodes }).slice(0, overviewNodeLimit)) addNode(node.id);
-  } else if (input.mode === "evidence") {
+  } else if (input.mode === "evidence" || input.mode === "source-coverage" || input.mode === "node-catalog") {
     filteredLinks
       .filter((link) => Boolean(link.sourceId || link.metadata?.source || link.metadata?.source_label))
       .slice(0, focusEdgeLimit)
@@ -400,7 +412,9 @@ export function criticalGraphNodes(graph: GraphExplorerData): GraphNode[] {
 function renderLimitsForMode(mode: GraphViewMode) {
   if (mode === "overview" || mode === "geo" || mode === "matrix") return { nodeLimit: overviewNodeLimit, edgeLimit: overviewEdgeLimit };
   if (mode === "focus" || mode === "scenario") return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
-  if (mode === "evidence") return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
+  if (mode === "evidence" || mode === "source-coverage" || mode === "node-catalog") {
+    return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
+  }
   return { nodeLimit: pathNodeLimit, edgeLimit: pathEdgeLimit };
 }
 

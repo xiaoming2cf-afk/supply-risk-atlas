@@ -21,7 +21,7 @@ Low-confidence or unknown mentions remain unresolved with
 Company aliases include TSMC, ASML, Samsung Electronics, Intel, and Applied
 Materials.
 
-Country aliases include Taiwan/Chinese Taipei/TW, United States/USA/US, South
+Country aliases include 中国台湾/中国台湾/TW, United States/USA/US, South
 Korea/Korea Rep./KR, Netherlands/NL, and Japan/JP.
 
 Commodity mappings cover semiconductor-related HS proxy codes including

@@ -50,7 +50,7 @@
     "country:CN",
     "country:JP",
     "country:NL",
-    "country:TW",
+    "region:china_taiwan",
     "country:US",
     "critical_mineral:gallium",
     "technology_node:5nm"

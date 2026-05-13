@@ -4,9 +4,7 @@ from sra_core.entity_resolution import normalize_alias, resolve_company
 
 
 def test_normalize_alias_removes_punctuation_and_case() -> None:
-    assert normalize_alias("Taiwan Semiconductor Manufacturing Co., Ltd.") == (
-        "taiwan semiconductor manufacturing co ltd"
-    )
+    assert normalize_alias("TSMC / 台积电, Ltd.") == "tsmc ltd"
 
 
 def test_company_alias_resolution_returns_confidence_and_source_refs() -> None:
@@ -22,7 +20,7 @@ def test_company_alias_resolution_returns_confidence_and_source_refs() -> None:
 def test_company_aliases_cover_requested_semiconductor_firms() -> None:
     expected = {
         "TSMC": "company:tsmc",
-        "Taiwan Semiconductor Manufacturing Company": "company:tsmc",
+        "TSMC / 台积电": "company:tsmc",
         "ASML Holding": "company:asml",
         "Samsung": "company:samsung_electronics",
         "Samsung Electronics": "company:samsung_electronics",

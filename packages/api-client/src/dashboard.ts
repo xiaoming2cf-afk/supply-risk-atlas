@@ -18,7 +18,9 @@ import type {
   GraphGeoData,
   GraphLayersData,
   GraphMatrixData,
+  GraphNodeCatalogData,
   GraphScenarioOverlayData,
+  GraphSourceCoverageData,
   GraphTimelineData,
   GraphExplorerQuery,
   GraphVersionStudioData,
@@ -71,6 +73,8 @@ export interface SupplyRiskApiClient {
   getGraphLayers(): Promise<ApiResult<GraphLayersData>>;
   getGraphEvidence(options?: { sourceId?: string | null; limit?: number }): Promise<ApiResult<GraphEvidenceData>>;
   getGraphScenarioOverlay(options?: { runId?: string | null }): Promise<ApiResult<GraphScenarioOverlayData>>;
+  getGraphNodeCatalog(options?: { limit?: number }): Promise<ApiResult<GraphNodeCatalogData>>;
+  getGraphSourceCoverage(options?: { limit?: number }): Promise<ApiResult<GraphSourceCoverageData>>;
   getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
   getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
   getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
@@ -350,6 +354,10 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         undefined,
         clientOptions,
       ),
+    getGraphNodeCatalog: (options) =>
+      requestJson(baseUrl, `/graph/node-catalog${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphSourceCoverage: (options) =>
+      requestJson(baseUrl, `/graph/source-coverage${queryString({ limit: options?.limit })}`, undefined, clientOptions),
     getAnalyticsCharts: (options) =>
       requestJson(
         baseUrl,

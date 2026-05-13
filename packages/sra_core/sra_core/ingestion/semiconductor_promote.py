@@ -24,6 +24,14 @@ from sra_core.ingestion.connectors.gdelt_semiconductor_events import (
 )
 from sra_core.ingestion.connectors.gta_export_controls import GtaExportControlsConnector
 from sra_core.ingestion.connectors.wsts_billings import WstsBillingsConnector
+from sra_core.geo.normalize import (
+    normalize_geo_id,
+    normalize_geo_label,
+    sanitize_api_visible_text,
+    sanitize_chart_table_payload,
+    sanitize_identifier,
+)
+from sra_core.geo.terminology import CANONICAL_REGION_ID
 
 
 SEMICONDUCTOR_SOURCE_IDS: tuple[SemiconductorSourceId, ...] = (
@@ -139,18 +147,31 @@ def _promote_record(
     valid_from = record.source_published_at or record.as_of_time
     payload = record.payload
     for row in payload.get("entities", []):
+        normalized_entity_id = normalize_geo_id(row["node_id"])
+        normalized_attributes = dict(sanitize_chart_table_payload(row.get("attributes") or {}))
+        normalized_entity_type = row["node_type"]
+        if normalized_entity_id == CANONICAL_REGION_ID:
+            normalized_entity_type = "region"
+            normalized_attributes.update(
+                {
+                    "country_id": "country:CN",
+                    "country_display": "中国",
+                    "region_id": CANONICAL_REGION_ID,
+                    "display_region": "中国台湾",
+                }
+            )
         entity = SemiconductorEntity(
-            entity_id=row["node_id"],
-            entity_type=row["node_type"],
-            canonical_name=row["canonical_name"],
-            aliases=list(row.get("aliases") or []),
-            country_code=row.get("country_code"),
+            entity_id=normalized_entity_id,
+            entity_type=normalized_entity_type,
+            canonical_name=normalize_geo_label(row["canonical_name"]),
+            aliases=_normalized_aliases(list(row.get("aliases") or [])),
+            country_code=_normalized_country_code(row.get("country_code"), normalized_entity_id),
             sector_tags=list(row.get("sector_tags") or []),
             source_refs=[ref],
             confidence=float(row.get("confidence", 0.0)),
             valid_from=valid_from,
             valid_to=row.get("valid_to"),
-            attributes=dict(row.get("attributes") or {}),
+            attributes=normalized_attributes,
         )
         existing = entity_by_id.get(entity.entity_id)
         if existing is None:
@@ -161,18 +182,20 @@ def _promote_record(
 
     for row in payload.get("events", []):
         event = SemiconductorEvent(
-            event_id=row["event_id"],
+            event_id=sanitize_identifier(row["event_id"]),
             event_type=row["event_type"],
-            canonical_name=row["canonical_name"],
+            canonical_name=sanitize_api_visible_text(row["canonical_name"]),
             event_time=parse_semirisk_time(row["event_time"]),
-            summary=row["summary"],
-            affected_entity_ids=list(row.get("affected_entity_ids") or []),
+            summary=sanitize_api_visible_text(row["summary"]),
+            affected_entity_ids=[
+                normalize_geo_id(item) for item in list(row.get("affected_entity_ids") or [])
+            ],
             source_refs=[ref],
             confidence=float(row.get("confidence", 0.0)),
             valid_from=parse_semirisk_time(row["event_time"]),
             valid_to=row.get("valid_to"),
             attributes={
-                **dict(row.get("attributes") or {}),
+                **dict(sanitize_chart_table_payload(row.get("attributes") or {})),
                 "source_record_id": record.source_record_id,
             },
         )
@@ -180,10 +203,10 @@ def _promote_record(
 
     for row in payload.get("market_indicators", []):
         indicator = SemiconductorMarketIndicator(
-            indicator_id=row["indicator_id"],
+            indicator_id=sanitize_identifier(row["indicator_id"]),
             indicator_type=row["indicator_type"],
-            canonical_name=row["canonical_name"],
-            region=row["region"],
+            canonical_name=sanitize_api_visible_text(row["canonical_name"]),
+            region=normalize_geo_label(row["region"]),
             period=row["period"],
             value=float(row["value"]),
             unit=row["unit"],
@@ -197,18 +220,18 @@ def _promote_record(
 
     for row in payload.get("edges", []):
         edge = SemiriskEdge(
-            edge_id=row["edge_id"],
-            source_node_id=row["source_node_id"],
-            target_node_id=row["target_node_id"],
+            edge_id=sanitize_identifier(row["edge_id"]),
+            source_node_id=normalize_geo_id(row["source_node_id"]),
+            target_node_id=normalize_geo_id(row["target_node_id"]),
             edge_type=row["edge_type"],
             weight=float(row.get("weight", 1.0)),
             confidence=float(row.get("confidence", 0.0)),
             valid_from=valid_from,
             valid_to=row.get("valid_to"),
             provenance_refs=[ref],
-            evidence_text_summary=row["evidence_text_summary"],
+            evidence_text_summary=sanitize_api_visible_text(row["evidence_text_summary"]),
             attributes={
-                **dict(row.get("attributes") or {}),
+                **dict(sanitize_chart_table_payload(row.get("attributes") or {})),
                 "fixture_graph": True,
                 "source_record_id": record.source_record_id,
                 "as_of_time": as_of_time.isoformat(),
@@ -228,7 +251,7 @@ def _node_from_entity(entity: SemiconductorEntity) -> SemiriskNode:
         node_type=entity.entity_type,
         canonical_name=entity.canonical_name,
         attributes={
-            **entity.attributes,
+            **dict(sanitize_chart_table_payload(entity.attributes)),
             "aliases": entity.aliases,
             "country_code": entity.country_code,
             "sector_tags": entity.sector_tags,
@@ -293,6 +316,26 @@ def _unique_refs(refs):
         for ref in refs
     }
     return [by_key[key] for key in sorted(by_key)]
+
+
+def _normalized_aliases(aliases: list[str]) -> list[str]:
+    normalized: list[str] = []
+    for alias in aliases:
+        value = normalize_geo_label(alias)
+        if value not in normalized:
+            normalized.append(value)
+    return normalized
+
+
+def _normalized_country_code(value: Any, entity_id: str) -> str | None:
+    if entity_id == CANONICAL_REGION_ID:
+        return "CN"
+    if value is None:
+        return None
+    text = str(value).strip().upper()
+    if text in {"TW", "TWN"}:
+        return "CN"
+    return text
 
 
 def promotion_digest(promotion: SemiconductorPromotionResult) -> str:

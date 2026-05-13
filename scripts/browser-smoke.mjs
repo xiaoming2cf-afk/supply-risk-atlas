@@ -1,4 +1,4 @@
-﻿import { spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import net from "node:net";
@@ -341,6 +341,38 @@ async function main() {
       page: "Graph Explorer v3 evidence-context safety",
       hasEvidenceContextSafety: graphV3Evidence.hasEvidenceContextSafety,
       passed: graphV3Evidence.text.includes("Evidence mode") && graphV3Evidence.hasEvidenceContextSafety,
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Source Coverage'))?.click();
+    })()`);
+    const graphV3SourceCoverage = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Source Coverage mode") && state.text.includes("does not render the full graph"),
+    );
+    checks.push({
+      page: "Graph Explorer v3 source coverage mode",
+      passed:
+        graphV3SourceCoverage.text.includes("Source Coverage mode") &&
+        graphV3SourceCoverage.text.includes("does not render the full graph"),
+    });
+
+    await evaluate(client, `(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent?.trim().startsWith('Node Catalog'))?.click();
+    })()`);
+    const graphV3NodeCatalog = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.text.includes("Node Catalog mode") && state.text.includes("canonical catalog rows"),
+    );
+    checks.push({
+      page: "Graph Explorer v3 node catalog mode",
+      passed:
+        graphV3NodeCatalog.text.includes("Node Catalog mode") &&
+        graphV3NodeCatalog.text.includes("canonical catalog rows"),
     });
 
     await navigate(client, `${webUrl}#system-health-center`);
@@ -800,7 +832,7 @@ async function main() {
       const shockDiagnostic = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/shock-simulator', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ region: 'China Taiwan Province semiconductor corridor', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
+          body: JSON.stringify({ region: '中国台湾 semiconductor corridor', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
         })
         .then(async (response) => ({ ok: response.ok, status: response.status, bodyPrefix: (await response.text()).slice(0, 80) }))
         .catch((error) => ({ error: String(error) }))`);
@@ -953,7 +985,7 @@ async function main() {
       const shockPayloadText = await evaluate(client, `fetch(${apiUrlLiteral} + '/dashboard/shock-simulator', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ region: 'China Taiwan Province semiconductor corridor', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
+          body: JSON.stringify({ region: '中国台湾 semiconductor corridor', commodity: 'advanced semiconductor components', severity: 95, durationDays: 28, scope: 'regional' })
         })
         .then((response) => response.text())
         .catch((error) => String(error))`);
@@ -1102,7 +1134,7 @@ async function main() {
       (state) =>
         state.title === "Country Lens" &&
         state.text.includes("Available countries") &&
-        state.text.includes("中国台湾省"),
+        state.text.includes("中国台湾"),
     );
     checks.push({
       page: "Country Lens available countries and selected lens",
@@ -1111,7 +1143,7 @@ async function main() {
       passed:
         countryLensState.title === "Country Lens" &&
         countryLensState.text.includes("Available countries") &&
-        countryLensState.text.includes("中国台湾省") &&
+        countryLensState.text.includes("中国台湾") &&
         countryLensApi.status === "success" &&
         countryLensApi.data?.availableCountries?.length > 0 &&
         countryLensApi.data?.countryLens?.countryCode === "CN" &&
@@ -1145,7 +1177,7 @@ async function main() {
         state.language === "fr" &&
         state.title === frGraphExplorerLabel &&
         state.bodyText.includes("Advanced Micro Devices") &&
-        state.bodyText.includes("中国台湾省") &&
+        state.bodyText.includes("中国台湾") &&
         state.bodyText.includes("Hon Hai Precision Industry"),
     );
     await navigate(client, `${webUrl}#causal-evidence-board`);
@@ -1172,7 +1204,7 @@ async function main() {
       afterLanguage: languageAfter.language,
       preservedEntities:
         translatedGraphState.bodyText.includes("Advanced Micro Devices") &&
-        translatedGraphState.bodyText.includes("中国台湾省") &&
+        translatedGraphState.bodyText.includes("中国台湾") &&
         translatedGraphState.bodyText.includes("Hon Hai Precision Industry"),
       preservedSource:
         translatedEvidenceState.bodyText.includes("SEC EDGAR") ||
@@ -1185,7 +1217,7 @@ async function main() {
         frState.title === frGlobalRiskTitle &&
         languageAfter.language === "en" &&
         translatedGraphState.bodyText.includes("Advanced Micro Devices") &&
-        translatedGraphState.bodyText.includes("中国台湾省") &&
+        translatedGraphState.bodyText.includes("中国台湾") &&
         translatedGraphState.bodyText.includes("Hon Hai Precision Industry") &&
         (
           translatedEvidenceState.bodyText.includes("SEC EDGAR") ||
@@ -1411,7 +1443,7 @@ async function graphV2State(client) {
       flowNodeCount: document.querySelectorAll('.react-flow__node').length,
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
       hasV2Title: text.includes('Graph Explorer v2'),
-      hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence'),
+      hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence') && text.includes('Source Coverage') && text.includes('Node Catalog'),
       hasLegend: text.includes('Legend'),
       hasLayerControls: text.includes('Layer controls'),
       hasFixtureWarning: text.includes('fixture_graph:not_production_ready'),

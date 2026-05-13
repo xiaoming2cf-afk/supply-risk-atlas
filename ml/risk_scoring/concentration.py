@@ -152,7 +152,10 @@ def _dependency_edges(snapshot: SemiriskGraphSnapshot, node_id: str) -> list[Sem
 def _country_by_node(snapshot: SemiriskGraphSnapshot) -> dict[str, str]:
     mapping: dict[str, str] = {}
     for edge in snapshot.edges:
-        if edge.edge_type == "located_in" and edge.target_node_id.startswith("country:"):
+        if edge.edge_type == "located_in" and (
+            edge.target_node_id.startswith("country:")
+            or edge.target_node_id == "region:china_taiwan"
+        ):
             mapping[edge.source_node_id] = edge.target_node_id
     return mapping
 

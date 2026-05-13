@@ -58,10 +58,10 @@ def test_public_real_node_catalog_expands_graph_volume() -> None:
         "indicator_high_tech_exports",
         "industry_semiconductors",
         "product_ev_batteries",
-        "risk_event_taiwan_strait_tension",
+        "risk_event_china_taiwan_strait_tension",
         "data_source_usgs_earthquakes",
         "dataset_usgs_m45_earthquakes_month",
-        "risk_event_usgs_taiwan_m62",
+        "risk_event_usgs_china_taiwan_m62",
     } <= entity_ids
     assert {
         "located_in",
@@ -101,33 +101,33 @@ def test_public_real_pipeline_supports_path_analysis_and_country_lens_views(monk
     assert country_payload["data"]["countryLens"]
 
 
-def test_public_real_catalog_models_taiwan_as_china_province(monkeypatch) -> None:
+def test_public_real_catalog_models_china_taiwan_as_china_region(monkeypatch) -> None:
     monkeypatch.setenv("SUPPLY_RISK_REAL_CATALOG_PATH", str(default_catalog_path()))
     result = run_public_real_pipeline()
     entity_by_id = {entity.canonical_id: entity for entity in result.real.entities}
 
-    assert "country_tw" not in entity_by_id
+    assert "region_china_taiwan" in entity_by_id
     assert not any(entity.entity_type == "country" and entity.country == "TW" for entity in result.real.entities)
 
-    province = entity_by_id["province_cn_tw"]
-    assert province.entity_type == "coverage_area"
-    assert province.display_name == "中国台湾省"
-    assert province.country == "CN"
-    assert province.external_ids["countryCode"] == "CN"
-    assert province.external_ids["provinceCode"] == "TW"
-    assert province.external_ids["sourceCountryCode"] == "TW"
-    assert province.external_ids["parentGeoId"] == "country_cn"
+    region = entity_by_id["region_china_taiwan"]
+    assert region.entity_type == "coverage_area"
+    assert region.display_name == "中国台湾"
+    assert region.country == "CN"
+    assert region.external_ids["countryCode"] == "CN"
+    assert region.external_ids["regionId"] == "region:china_taiwan"
+    assert region.external_ids["sourceCountryCode"] == "CN"
+    assert region.external_ids["parentGeoId"] == "country_cn"
 
-    taiwan_sourced = entity_by_id["firm_tsmc"]
-    assert taiwan_sourced.country == "CN"
-    assert taiwan_sourced.external_ids["provinceCode"] == "TW"
+    china_taiwan_sourced = entity_by_id["firm_tsmc"]
+    assert china_taiwan_sourced.country == "CN"
+    assert china_taiwan_sourced.external_ids["regionId"] == "region:china_taiwan"
     assert any(
-        edge.source_id == "firm_tsmc" and edge.target_id == "province_cn_tw" and edge.edge_type == "located_in"
+        edge.source_id == "firm_tsmc" and edge.target_id == "region_china_taiwan" and edge.edge_type == "located_in"
         for edge in result.real.edge_events
     )
 
 
-def test_bulk_fixture_filters_world_bank_aggregates_and_taiwan_country_node(tmp_path) -> None:
+def test_bulk_fixture_filters_world_bank_aggregates_and_china_taiwan_region_node(tmp_path) -> None:
     catalog, _manifest = build_bulk_catalog(
         mode="fixture",
         cache_dir=tmp_path / "cache",
@@ -135,26 +135,26 @@ def test_bulk_fixture_filters_world_bank_aggregates_and_taiwan_country_node(tmp_
     )
     entity_by_id = {entity["canonical_id"]: entity for entity in catalog["entities"]}
 
-    assert "country_tw" not in entity_by_id
+    assert "region_china_taiwan" in entity_by_id
     assert "country_wld" not in entity_by_id
     assert "country_1w" not in entity_by_id
     assert "country_eu" not in entity_by_id
 
-    province = entity_by_id["province_cn_tw"]
-    assert province["entity_type"] == "coverage_area"
-    assert province["display_name"] == "中国台湾省"
-    assert province["country"] == "CN"
-    assert province["countryCode"] == "CN"
-    assert province["provinceCode"] == "TW"
-    assert province["parentGeoId"] == "country_cn"
-    assert province["sourceCountryCode"] == "TW"
+    region = entity_by_id["region_china_taiwan"]
+    assert region["entity_type"] == "coverage_area"
+    assert region["display_name"] == "中国台湾"
+    assert region["country"] == "CN"
+    assert region["countryCode"] == "CN"
+    assert region["regionId"] == "region:china_taiwan"
+    assert region["parentGeoId"] == "country_cn"
+    assert region["sourceCountryCode"] == "CN"
     assert "country_be" in entity_by_id
     assert "country_my" in entity_by_id
     assert "country_vn" in entity_by_id
     assert "country_it" in entity_by_id
 
     assert any(
-        edge["source_id"] == "province_cn_tw" and edge["target_id"] == "country_cn" and edge["edge_type"] == "part_of"
+        edge["source_id"] == "region_china_taiwan" and edge["target_id"] == "country_cn" and edge["edge_type"] == "part_of"
         for edge in catalog["edges"]
     )
 

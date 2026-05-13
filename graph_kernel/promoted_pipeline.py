@@ -431,7 +431,7 @@ def _add_promoted_records(
         elif record_type == "natural_hazard_event":
             event_id = record["hazard_event_id"]
             _ensure_node(node_rows, event_id, "hazard_event", record["affected_region"], record)
-            _add_edge(edge_rows, event_id, "country:TW", "hazard_exposure_edge", record)
+            _add_edge(edge_rows, event_id, "region:china_taiwan", "hazard_exposure_edge", record)
         elif record_type == "logistics_facility":
             node_id = record["logistics_node_id"]
             country = f"country:{record['country_code']}"

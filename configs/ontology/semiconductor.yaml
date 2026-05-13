@@ -12,7 +12,7 @@ node_types:
     description: Legal entity, supplier, customer, foundry, OSAT, equipment vendor, or materials supplier.
     required_fields: *node_required_fields
     allowed_edge_directions: { outgoing: [participates_in, located_in, requires, produces, supplies, depends_on, substitutable_with, restricted_by, impacted_by, exports_to, imports_from, routes_through, correlated_with, evidence_for], incoming: [supplies, depends_on, substitutable_with, impacted_by, evidence_for] }
-    example: { node_id: "company:tsmc", node_type: company, canonical_name: "Taiwan Semiconductor Manufacturing Company" }
+    example: { node_id: "company:tsmc", node_type: company, canonical_name: "TSMC / 台积电" }
     version: v0.1
   country:
     description: ISO country jurisdiction for geography, policy, market, and trade-flow context.
@@ -102,7 +102,7 @@ node_types:
     description: Logistics corridor, port pair, air lane, customs route, or critical transport segment.
     required_fields: *node_required_fields
     allowed_edge_directions: { outgoing: [routes_through, depends_on, impacted_by, substitutable_with, evidence_for], incoming: [routes_through, depends_on, impacted_by, substitutable_with, evidence_for] }
-    example: { node_id: "route:taiwan_us_west_coast", node_type: route, canonical_name: "Taiwan to US West Coast lane" }
+    example: { node_id: "route:china_taiwan_us_west_coast", node_type: route, canonical_name: "中国台湾 to US West Coast lane" }
     version: v0.1
 
 edge_types:

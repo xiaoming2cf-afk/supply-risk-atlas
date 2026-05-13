@@ -61,7 +61,7 @@ def test_prediction_center_route_exposes_mechanisms_and_paths() -> None:
 def test_dashboard_shock_uses_deterministic_mitigation_offset_engine() -> None:
     payload = main.route_shock_simulator(
         {
-            "region": "China Taiwan Province semiconductor corridor",
+            "region": "中国台湾 semiconductor corridor",
             "commodity": "advanced semiconductor components",
             "severity": 95,
             "durationDays": 28,

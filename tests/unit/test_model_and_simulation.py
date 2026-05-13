@@ -36,7 +36,7 @@ def test_scenario_engine_returns_deterministic_offset_without_mutating_base_grap
         edge_states=result.edge_states,
         entities=result.real.entities if hasattr(result, "real") else result.synthetic.entities,
         predictions=result.predictions,
-        shock=ScenarioShock(region="China Taiwan Province semiconductor corridor", commodity="semiconductor", severity=90),
+        shock=ScenarioShock(region="中国台湾 semiconductor corridor", commodity="semiconductor", severity=90),
     )
 
     assert [edge.risk_score for edge in result.edge_states] == base_risks
