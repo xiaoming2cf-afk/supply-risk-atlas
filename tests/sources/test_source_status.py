@@ -24,7 +24,13 @@ def test_tier_zero_fixture_sources_are_enabled_fixture_sources() -> None:
 def test_disabled_connector_candidates_require_review() -> None:
     registry = load_semiconductor_source_registry()
 
-    for source_id in ["sec_edgar_lite", "gdelt_semiconductor_lite"]:
+    for source_id in [
+        "sec_edgar_lite",
+        "gdelt_semiconductor_lite",
+        "wits_trade_tariff_lite",
+        "usgs_mineral_commodity_summaries_lite",
+        "consolidated_screening_list_lite",
+    ]:
         source = registry.get(source_id)
         assert connector_status_for_source(source) == "disabled_review_required"
         assert source_status_for_source(source) == "disabled_review_required"

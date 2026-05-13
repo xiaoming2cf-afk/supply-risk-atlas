@@ -19,9 +19,12 @@ These remain fixture-only in the current platform state.
 - `gdelt_semiconductor_lite`
 - `un_comtrade_semiconductor_trade_lite`
 - `world_bank_wits_trade_tariff_lite`
+- `wits_trade_tariff_lite` (canonical alias for WITS tariff/trade indicators)
+- `usgs_mineral_commodity_summaries_lite`
 - `usgs_earthquake_lite`
 - `nga_world_port_index_lite`
 - `ofac_sanctions_list_lite`
+- `consolidated_screening_list_lite`
 - `bis_export_controls_lite`
 
 These are source-registered for future bounded, explicit connector work. Live
@@ -29,6 +32,7 @@ fetch remains disabled by default.
 
 ## Review-Required Sources
 
+- `oecd_semiconductor_value_chain_reports`
 - `federal_register_export_controls_lite`
 - `world_bank_macro_indicators_lite`
 - `ourairports_lite`
@@ -41,6 +45,7 @@ These require connector, terms, or manual-upload review before ingestion.
 ## Deferred Sources
 
 - `paid_semi_market_data`
+- `paid_semiconductor_market_data`
 - `proprietary_factset_supply_chain`
 - `bloomberg_supply_chain`
 - `wind_or_choice_private_data`

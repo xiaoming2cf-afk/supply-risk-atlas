@@ -26,6 +26,7 @@ def test_paid_and_proprietary_sources_are_registry_only() -> None:
     registry = load_semiconductor_source_registry()
     for source_id in [
         "paid_semi_market_data",
+        "paid_semiconductor_market_data",
         "proprietary_factset_supply_chain",
         "bloomberg_supply_chain",
         "wind_or_choice_private_data",
@@ -36,4 +37,3 @@ def test_paid_and_proprietary_sources_are_registry_only() -> None:
         assert policy["raw_payload_storage_allowed"] is False
         assert policy["redistribution_allowed"] is False
         assert "registry-only" in policy["manual_review_note"]
-

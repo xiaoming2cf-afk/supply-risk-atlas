@@ -1,5 +1,5 @@
-registry_version: semiconductor-source-registry-v0.2
-generated_at: "2026-05-12T00:00:00Z"
+registry_version: semiconductor-source-registry-v0.3
+generated_at: "2026-05-13T00:00:00Z"
 
 defaults: &common_source_defaults
   requires_api_key: false
@@ -30,6 +30,24 @@ sources:
     review_status: approved_for_fixture
     source_tier: tier_0
     data_category: supply_chain_structure
+
+  - <<: *common_source_defaults
+    source_id: oecd_semiconductor_value_chain_reports
+    publisher: OECD
+    source_url: https://www.oecd.org/sti/
+    terms_url: https://www.oecd.org/termsandconditions/
+    license_or_terms_summary: Public reports may support methodology summaries with attribution; source-specific terms require review before live ingestion.
+    allowed_use: [research, methodology_context, internal_review]
+    redistribution_limits: Do not redistribute raw report text; expose only citations, summaries, and lineage.
+    attribution: OECD semiconductor value-chain reports
+    update_frequency: irregular
+    freshness_sla_hours: 8760
+    connector: disabled:review_required
+    raw_contract: data_contracts/raw_schema/oecd_semiconductor_value_chain_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_entity.schema.json
+    review_status: terms_review_required
+    source_tier: tier_2
+    data_category: literature_methodology
 
   - <<: *common_source_defaults
     source_id: wsts_historical_billings
@@ -160,6 +178,42 @@ sources:
     data_category: trade_flow
 
   - <<: *common_source_defaults
+    source_id: wits_trade_tariff_lite
+    publisher: World Bank WITS
+    source_url: https://wits.worldbank.org/
+    terms_url: https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets
+    license_or_terms_summary: Public WITS indicators may support attributed derived research summaries. This canonical ID aliases the older world_bank_wits_trade_tariff_lite entry.
+    allowed_use: [research, tariff_indicator_analysis, internal_review]
+    redistribution_limits: Do not expose bulk raw tables; expose bounded indicators and lineage only.
+    attribution: World Bank WITS
+    update_frequency: monthly
+    freshness_sla_hours: 2160
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/wits_trade_tariff_raw.schema.json
+    silver_contract: data_contracts/silver_schema/trade_tariff_indicator.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: trade_flow
+
+  - <<: *common_source_defaults
+    source_id: usgs_mineral_commodity_summaries_lite
+    publisher: U.S. Geological Survey
+    source_url: https://www.usgs.gov/centers/national-minerals-information-center
+    terms_url: https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+    license_or_terms_summary: Public mineral summaries may support attributed mineral-supply indicators and import-reliance proxies.
+    allowed_use: [research, mineral_supply_context, internal_review]
+    redistribution_limits: Expose bounded summaries and lineage only; do not expose raw bulk tables.
+    attribution: U.S. Geological Survey Mineral Commodity Summaries
+    update_frequency: annual
+    freshness_sla_hours: 8760
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/usgs_minerals_raw.schema.json
+    silver_contract: data_contracts/silver_schema/mineral_supply_indicator.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: market_indicator
+
+  - <<: *common_source_defaults
     source_id: usgs_earthquake_lite
     publisher: U.S. Geological Survey
     source_url: https://earthquake.usgs.gov/earthquakes/feed/
@@ -208,6 +262,24 @@ sources:
     freshness_sla_hours: 24
     connector: disabled:v0.2_fixture_pending
     raw_contract: data_contracts/raw_schema/ofac_sanctions_list_raw.schema.json
+    silver_contract: data_contracts/silver_schema/sanctions_screening_event.schema.json
+    review_status: disabled_pending_connector
+    source_tier: tier_1
+    data_category: sanctions_compliance
+
+  - <<: *common_source_defaults
+    source_id: consolidated_screening_list_lite
+    publisher: International Trade Administration
+    source_url: https://www.trade.gov/consolidated-screening-list
+    terms_url: https://www.trade.gov/privacy-and-security
+    license_or_terms_summary: Public consolidated screening list metadata may be summarized for compliance risk awareness only.
+    allowed_use: [research, sanctions_compliance, internal_review]
+    redistribution_limits: Do not provide bypass, evasion, or circumvention guidance; expose compliance warnings and lineage only.
+    attribution: International Trade Administration Consolidated Screening List
+    update_frequency: daily
+    freshness_sla_hours: 24
+    connector: disabled:v0.2_fixture_pending
+    raw_contract: data_contracts/raw_schema/consolidated_screening_list_raw.schema.json
     silver_contract: data_contracts/silver_schema/sanctions_screening_event.schema.json
     review_status: disabled_pending_connector
     source_tier: tier_1
@@ -345,6 +417,25 @@ sources:
     source_id: paid_semi_market_data
     publisher: Paid semiconductor market data vendors
     source_url: https://example.invalid/paid-semi-market-data
+    terms_url: https://example.invalid/terms-review-required
+    license_or_terms_summary: Deferred paid/proprietary source; not allowed for fetch or runtime use in this platform phase.
+    allowed_use: [deferred]
+    redistribution_limits: Paid/proprietary raw or derived data must not be ingested or redistributed by this project.
+    attribution: deferred
+    requires_api_key: true
+    update_frequency: irregular
+    connector: deferred:not_allowed
+    raw_contract: data_contracts/raw_schema/deferred_paid_source_raw.schema.json
+    silver_contract: data_contracts/silver_schema/semiconductor_market_indicator.schema.json
+    review_status: deferred_paid_or_proprietary
+    source_tier: tier_3
+    data_category: market_indicator
+    api_visibility_policy: registry_only
+
+  - <<: *common_source_defaults
+    source_id: paid_semiconductor_market_data
+    publisher: Paid semiconductor market data vendors
+    source_url: https://example.invalid/paid-semiconductor-market-data
     terms_url: https://example.invalid/terms-review-required
     license_or_terms_summary: Deferred paid/proprietary source; not allowed for fetch or runtime use in this platform phase.
     allowed_use: [deferred]

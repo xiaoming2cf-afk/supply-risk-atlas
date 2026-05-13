@@ -89,3 +89,34 @@
   - Source coverage is candidate coverage, not actual completeness.
 - Next gate:
   - Proceed to Gate 3 expanded source registry and public source catalog.
+
+## Gate 3 - Expanded Source Registry And Public Source Catalog
+
+- Current HEAD: `b109619`
+- Gate name: expanded source registry runtime catalog
+- Files changed:
+  - `configs/sources/semiconductor.yaml`
+  - `docs/data/public-source-catalog.md`
+  - `tests/sources/test_source_registry_runtime.py`
+  - `tests/sources/test_source_license_policy.py`
+  - `tests/sources/test_source_status.py`
+- Commands run:
+  - `python -m pytest tests/sources -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail: pass
+- Evidence:
+  - Source registry tests passed: 13 tests.
+  - Quality tests passed: 8 tests.
+  - Registry version advanced to `semiconductor-source-registry-v0.3`.
+  - Required new source IDs were added: `oecd_semiconductor_value_chain_reports`, `wits_trade_tariff_lite`, `usgs_mineral_commodity_summaries_lite`, `consolidated_screening_list_lite`, and `paid_semiconductor_market_data`.
+  - Existing source IDs remain compatible, including `world_bank_wits_trade_tariff_lite` and `paid_semi_market_data`.
+  - Live fetch defaults remain disabled for all sources.
+- Source/legal notes:
+  - OECD and terms-review sources remain review-required before live ingestion.
+  - Paid/proprietary sources remain deferred registry-only sources.
+  - Sanctions and export-control sources remain compliance-risk summaries only, with no evasion or bypass guidance.
+- Limitations:
+  - Source registry lists source policy and readiness; it does not fetch or validate live records.
+  - Canonical WITS alias coexists with the older WITS ID for compatibility.
+- Next gate:
+  - Proceed to Gate 4 data contracts for all new sources.
