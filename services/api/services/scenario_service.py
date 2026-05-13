@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from ml.simulation.monte_carlo import run_forward_monte_carlo
 from ml.simulation.scenario_schema import FORWARD_SIMULATION_VERSION, ScenarioValidationError
 from sra_core.api.envelope import make_envelope, make_error_envelope
@@ -10,6 +9,7 @@ from services.api.runtime.errors import ControlledApiError
 from services.api.security.validation import validate_forward_payload
 from services.api.services.common import semiconductor_metadata
 from services.api.services.run_service import RUN_CACHE
+from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 
 
 def route_forward_scenario(
@@ -18,7 +18,7 @@ def route_forward_scenario(
 ) -> dict[str, Any]:
     try:
         payload = validate_forward_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = fixture_snapshot_for_services()
         result = run_forward_monte_carlo(payload, snapshot=snapshot)
     except ControlledApiError as exc:
         return make_error_envelope(
@@ -57,4 +57,3 @@ def route_forward_scenario(
     )
     RUN_CACHE.put_summary("forward_scenario", response)
     return response
-

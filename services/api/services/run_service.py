@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.api.envelope import make_envelope
 from services.api.runtime.run_store import RUN_STORE_VERSION, RunStore
 from services.api.services.common import semiconductor_metadata
+from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 from services.api.storage.run_store_sqlite import SQLiteRunStore
 from services.api.storage.sqlite_store import SQLiteStore, configured_storage_mode
 
@@ -30,7 +30,7 @@ RUN_CACHE = RUN_STORE
 
 
 def route_runs(request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = fixture_snapshot_for_services()
     runs = RUN_STORE.list_summaries()
     payload = {
         "run_store_version": RUN_STORE_VERSION,
@@ -54,7 +54,7 @@ def route_runs(request_id: str | None = None) -> dict[str, Any]:
 
 
 def route_run_detail(run_id: str, request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = fixture_snapshot_for_services()
     run = RUN_STORE.get(run_id)
     if run is None:
         raise LookupError(f"Run not found: {run_id}")

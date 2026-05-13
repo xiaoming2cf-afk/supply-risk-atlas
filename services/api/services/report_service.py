@@ -5,7 +5,6 @@ from copy import deepcopy
 import os
 from typing import Any
 
-from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from sra_core.reports.investigation import REPORT_VERSION, generate_investigation_report
 from services.api.runtime.run_store import sanitized_run_copy
@@ -13,6 +12,7 @@ from services.api.runtime.errors import ControlledApiError
 from services.api.security.validation import sanitized_payload, validate_report_payload
 from services.api.services.common import semiconductor_metadata
 from services.api.services.run_service import RUN_CACHE
+from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 from services.api.storage.report_store import ReportStore
 from services.api.storage.sqlite_store import SQLiteStore, configured_storage_mode
 from sra_core.contracts.semiconductor import payload_hash
@@ -75,7 +75,7 @@ def route_investigation_report(
 ) -> dict[str, Any]:
     try:
         payload = validate_report_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = fixture_snapshot_for_services()
         result = sanitized_payload(generate_investigation_report(payload))
     except ControlledApiError as exc:
         return make_error_envelope(
@@ -109,7 +109,7 @@ def route_investigation_report(
 
 
 def route_report_detail(report_id: str, request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = fixture_snapshot_for_services()
     report = REPORT_STORE.get_report(report_id)
     if report is None:
         raise LookupError(f"Report not found: {report_id}")

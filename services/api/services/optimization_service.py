@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from ml.optimization.interventions import OPTIMIZATION_VERSION, run_intervention_optimization
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from services.api.runtime.errors import ControlledApiError
 from services.api.security.validation import validate_optimization_payload
 from services.api.services.common import semiconductor_metadata
 from services.api.services.run_service import RUN_CACHE
+from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 
 
 def route_intervention_optimization(
@@ -17,7 +17,7 @@ def route_intervention_optimization(
 ) -> dict[str, Any]:
     try:
         payload = validate_optimization_payload(payload)
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = fixture_snapshot_for_services()
         result = run_intervention_optimization(payload, snapshot=snapshot)
     except ControlledApiError as exc:
         return make_error_envelope(
@@ -55,4 +55,3 @@ def route_intervention_optimization(
     )
     RUN_CACHE.put_summary("intervention_optimization", response)
     return response
-

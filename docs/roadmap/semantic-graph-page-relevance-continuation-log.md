@@ -124,7 +124,7 @@
   - Root cause observed from live API/Web checks: API was healthy, but deployed browser smoke is sensitive to Render cold start and dashboard API request timing.
 - Follow-up patch:
   - Increased the frontend dashboard API client default request timeout from `12000` ms to `60000` ms to tolerate Render cold-start latency and slow free-instance risk endpoints without changing API routes, source contracts, graph semantics, or security posture.
-  - Added an in-process `lru_cache(maxsize=1)` around the deterministic SemiRisk fixture snapshot used by Risk Score v0 endpoints, avoiding repeated snapshot rebuilds for `/risk/entities/{entity_id}` and `/risk/portfolio`.
+  - Added a shared in-process `lru_cache(maxsize=1)` around the deterministic SemiRisk fixture snapshot used by API service endpoints, avoiding repeated snapshot rebuilds for risk, forward scenario, reverse stress, optimizer, report, and run-history routes.
 - Validation for follow-up patch:
   - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
   - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py -q` -> PASS (`14 passed`)
