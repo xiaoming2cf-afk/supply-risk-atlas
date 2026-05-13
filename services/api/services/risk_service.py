@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
@@ -14,12 +15,17 @@ from sra_core.api.envelope import make_envelope, make_error_envelope
 from services.api.services.common import semiconductor_metadata
 
 
+@lru_cache(maxsize=1)
+def _fixture_snapshot_for_risk() -> Any:
+    return build_semiconductor_fixture_snapshot()
+
+
 def route_semirisk_entity_risk(
     entity_id: str = "company:tsmc",
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = _fixture_snapshot_for_risk()
     except Exception as exc:
         return make_error_envelope(
             "semirisk_risk_graph_unavailable",
@@ -56,7 +62,7 @@ def route_semirisk_risk_portfolio(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = _fixture_snapshot_for_risk()
         payload = rank_risk_portfolio(snapshot=snapshot, node_type=node_type, limit=limit)
     except Exception as exc:
         return make_error_envelope(
@@ -75,4 +81,3 @@ def route_semirisk_risk_portfolio(
         request_id=request_id,
         warnings=payload.get("warnings", [RISK_SCORE_WARNING_FIXTURE_GRAPH]),
     )
-
