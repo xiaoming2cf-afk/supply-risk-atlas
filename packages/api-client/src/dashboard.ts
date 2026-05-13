@@ -137,7 +137,9 @@ async function requestJson<T>(
 
     try {
       const headers = new Headers(init?.headers);
-      if (!headers.has("content-type")) headers.set("content-type", "application/json");
+      const method = init?.method?.toUpperCase() ?? "GET";
+      const sendsJsonBody = init?.body !== undefined && method !== "GET" && method !== "HEAD";
+      if (sendsJsonBody && !headers.has("content-type")) headers.set("content-type", "application/json");
       const response = await options.fetcher(`${baseUrl.replace(/\/$/, "")}${endpoint}`, {
         ...init,
         headers,

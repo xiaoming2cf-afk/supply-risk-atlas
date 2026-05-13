@@ -189,9 +189,33 @@
 
 ## Computer Use And Deployment Status
 
-- Computer Use has not yet been used in this continuation.
-- Deployment verification is pending final local acceptance and commit/push.
+- Computer Use was used only for project-scoped Render verification/redeploy.
+- GitHub Actions for commit `b2980ed1b2454cb457a68cbd4a340cfd78b6437e` completed successfully for `ci` and `Quality Gates`.
+- Render API service `supply-risk-atlas-api` was redeployed from commit `b2980ed1b2454cb457a68cbd4a340cfd78b6437e`; deploy evidence observed as live.
+- Render Web service `supply-risk-atlas-web` was redeployed from commit `b2980ed1b2454cb457a68cbd4a340cfd78b6437e`; deploy evidence observed as live.
+- Deployed API `/api/v1/version` reported git commit `b2980ed1b2454cb457a68cbd4a340cfd78b6437e`.
+- Deployed smoke was run in best-effort mode and exposed an intermittent browser-side `Failed to fetch` on Entity Risk 360 despite direct deployed API and CORS checks returning success. The API client was updated to avoid unnecessary CORS preflight on GET/HEAD requests.
 - No secrets, cookies, tokens, account details, or private diagnostics were recorded.
+
+## Post-Deployment Transport Fix
+
+### Files Changed
+
+- Updated `packages/api-client/src/dashboard.ts`
+
+### Result
+
+- GET/HEAD dashboard API requests no longer add `content-type: application/json`.
+- POST requests with JSON bodies still send `content-type: application/json`.
+- This reduces deployed-browser CORS preflight surface for read-only dashboard and risk endpoint calls without changing API payload semantics.
+
+### Commands Run
+
+- `npm.cmd --workspace apps/web run typecheck` - pass
+- `python -m pytest tests/quality -q` - pass
+- `npm.cmd --workspace apps/web run build` - pass
+- `python -m pytest tests/api -q` - first run hit command timeout, rerun with longer timeout passed
+- `npm.cmd run smoke:web` - pass, 57 checks
 
 ## Final Local Acceptance Evidence
 
