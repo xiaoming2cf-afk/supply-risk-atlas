@@ -133,8 +133,8 @@ export function App() {
     [language]
   );
   const activePage = translateDashboardPage(activePageDefinition, language);
-  const configuredApiBaseUrl = resolveApiBaseUrl(runtimeHostname);
   const hasResolvedRuntimeHostname = runtimeHostname !== null;
+  const configuredApiBaseUrl = hasResolvedRuntimeHostname ? resolveApiBaseUrl(runtimeHostname) : undefined;
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
@@ -155,7 +155,9 @@ export function App() {
   const activeResult = dashboardResults[activeResultKey];
   const runtimeModeLabel = configuredApiBaseUrl ? t("Public data") : t("Data unavailable");
   const dataStatus = getDataStatus(activeResult, Boolean(configuredApiBaseUrl), error);
-  const canRenderBusinessData = canRenderPageData(activePage.id, data, activeResult, Boolean(configuredApiBaseUrl));
+  const canRenderBusinessData =
+    hasResolvedRuntimeHostname &&
+    canRenderPageData(activePage.id, data, activeResult, Boolean(configuredApiBaseUrl));
 
   const setLanguage = (nextLanguage: PageLanguage) => {
     setLanguageState(nextLanguage);

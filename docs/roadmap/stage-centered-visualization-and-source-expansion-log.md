@@ -195,6 +195,7 @@
 - Render Web service `supply-risk-atlas-web` was redeployed from commit `b2980ed1b2454cb457a68cbd4a340cfd78b6437e`; deploy evidence observed as live.
 - Deployed API `/api/v1/version` reported git commit `b2980ed1b2454cb457a68cbd4a340cfd78b6437e`.
 - Deployed smoke was run in best-effort mode and exposed an intermittent browser-side `Failed to fetch` on Entity Risk 360 despite direct deployed API and CORS checks returning success. The API client was updated to avoid unnecessary CORS preflight on GET/HEAD requests.
+- A second deployed smoke run showed the same failure pattern on API-driven page requests. The deployed bundle confirmed pages could mount once with the initial `/api/v1` proxy client before runtime hostname resolution selected the direct API. The app shell was updated to hold API-driven pages until the runtime hostname is resolved.
 - No secrets, cookies, tokens, account details, or private diagnostics were recorded.
 
 ## Post-Deployment Transport Fix
@@ -202,12 +203,14 @@
 ### Files Changed
 
 - Updated `packages/api-client/src/dashboard.ts`
+- Updated `apps/web/src/app/App.tsx`
 
 ### Result
 
 - GET/HEAD dashboard API requests no longer add `content-type: application/json`.
 - POST requests with JSON bodies still send `content-type: application/json`.
 - This reduces deployed-browser CORS preflight surface for read-only dashboard and risk endpoint calls without changing API payload semantics.
+- API-driven page components no longer mount with the initial unresolved same-origin proxy base URL on deployed web.
 
 ### Commands Run
 
