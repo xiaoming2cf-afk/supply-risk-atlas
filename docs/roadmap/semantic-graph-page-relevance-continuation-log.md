@@ -125,6 +125,7 @@
 - Follow-up patch:
   - Increased the frontend dashboard API client default request timeout from `12000` ms to `60000` ms to tolerate Render cold-start latency and slow free-instance risk endpoints without changing API routes, source contracts, graph semantics, or security posture.
   - Added a shared in-process `lru_cache(maxsize=1)` around the deterministic SemiRisk fixture snapshot used by API service endpoints, avoiding repeated snapshot rebuilds for risk, forward scenario, reverse stress, optimizer, report, and run-history routes.
+  - Restored deployed Web default API access to the same-origin `/api/v1` Next proxy, avoiding intermittent browser cross-origin POST fetch failures while preserving the existing public API routes.
 - Validation for follow-up patch:
   - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
   - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py -q` -> PASS (`14 passed`)
