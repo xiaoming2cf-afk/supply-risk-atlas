@@ -1,4 +1,5 @@
 services:
+  # Deployment trigger: semantic graph/page relevance verification 2026-05-13.
   - type: web
     name: supply-risk-atlas-api
     runtime: python

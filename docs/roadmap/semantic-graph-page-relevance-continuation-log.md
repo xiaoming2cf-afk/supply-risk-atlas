@@ -93,3 +93,11 @@
   - Verification used public GitHub API, public deployed API/Web endpoints, and local shell commands only.
 - Sensitive data handling: no secrets, tokens, cookies, private diagnostics, or account details were printed or recorded.
 - Required next step: manually redeploy `supply-risk-atlas-api` and `supply-risk-atlas-web` on Render from latest `main`, clear Web build cache if stale UI remains, then rerun deployed version check and deployed smoke.
+
+## Render Auto-Deploy Trigger Commit
+
+- Gate status: IN PROGRESS
+- Reason: Render UI sign-in required GitHub credentials, so no credential entry was performed.
+- Action: touch `render.yaml` with a comment-only deployment trigger so both Render services match their configured build filters.
+- Expected effect: Render auto-deploy should rebuild `supply-risk-atlas-api` and `supply-risk-atlas-web` from latest `main` without changing runtime config.
+- Sensitive data handling: no credentials, tokens, cookies, or private account details were entered or recorded.
