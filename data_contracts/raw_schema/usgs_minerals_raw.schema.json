@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "usgs_minerals_raw",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {"enum": ["usgs_mineral_commodity_summaries_lite"]},
+    "source_record_id": {"type": "string", "minLength": 1},
+    "retrieved_at": {"type": "string", "format": "date-time"},
+    "as_of_time": {"type": "string", "format": "date-time"},
+    "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "provenance_url": {"type": "string", "minLength": 1},
+    "raw_payload_summary": {"type": "string", "minLength": 1},
+    "license_or_terms_ref": {"type": "string", "minLength": 1},
+    "mineral": {"type": "string"},
+    "country": {"type": ["string", "null"]},
+    "period": {"type": "string"},
+    "production_summary": {"type": "string"},
+    "import_reliance_proxy": {"type": ["number", "null"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+  },
+  "required": [
+    "source_id",
+    "source_record_id",
+    "retrieved_at",
+    "as_of_time",
+    "payload_hash",
+    "provenance_url",
+    "raw_payload_summary",
+    "license_or_terms_ref"
+  ]
+}

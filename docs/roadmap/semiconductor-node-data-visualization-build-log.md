@@ -120,3 +120,33 @@
   - Canonical WITS alias coexists with the older WITS ID for compatibility.
 - Next gate:
   - Proceed to Gate 4 data contracts for all new sources.
+
+## Gate 4 - Data Contracts For Expanded Sources
+
+- Current HEAD: `0e6e537`
+- Gate name: expanded raw, silver, and graph contracts
+- Files changed:
+  - `data_contracts/raw_schema/usgs_minerals_raw.schema.json`
+  - `data_contracts/raw_schema/consolidated_screening_list_raw.schema.json`
+  - `data_contracts/raw_schema/oecd_semiconductor_value_chain_raw.schema.json`
+  - `data_contracts/silver_schema/mineral_supply_indicator.schema.json`
+  - `data_contracts/graph_schema/mineral_dependency_edge.schema.json`
+  - `data_contracts/graph_schema/downstream_demand_edge.schema.json`
+  - `tests/contract/test_expanded_source_contracts.py`
+  - `tests/contract/test_semiconductor_node_source_map.py`
+- Commands run:
+  - `python -m pytest tests/contract/test_expanded_source_contracts.py tests/contract/test_graph_evidence_context_contract.py tests/contract/test_semiconductor_node_source_map.py -q`
+  - `python -m pytest tests/sources -q`
+- Pass/fail: pass
+- Evidence:
+  - Expanded contract tests passed: 9 tests.
+  - Source registry tests passed: 13 tests.
+  - Registry contract references now resolve for the added OECD, USGS minerals, and consolidated screening list sources.
+  - New graph contracts require `provenance_refs`, `evidence_text_summary`, bounded confidence, and explicit user-facing labels.
+- Source/legal notes:
+  - Raw schemas require `payload_hash`, `raw_payload_summary`, provenance URL, and license/terms reference.
+  - No schema requires raw filing bodies, article bodies, bulk trade data, sanctions payloads, or raw source payload exposure.
+- Limitations:
+  - Schemas define contracts only; connector fixture implementations are handled in the next gate.
+- Next gate:
+  - Proceed to Gate 5 connector framework and fixture connectors.

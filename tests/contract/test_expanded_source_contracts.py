@@ -17,10 +17,13 @@ REQUIRED_RAW_SCHEMAS = [
     "gdelt_semiconductor_lite_raw.schema.json",
     "un_comtrade_semiconductor_trade_raw.schema.json",
     "wits_trade_tariff_raw.schema.json",
+    "usgs_minerals_raw.schema.json",
     "usgs_earthquake_raw.schema.json",
     "nga_world_port_index_raw.schema.json",
     "ofac_sanctions_list_raw.schema.json",
+    "consolidated_screening_list_raw.schema.json",
     "bis_export_controls_raw.schema.json",
+    "federal_register_export_controls_raw.schema.json",
 ]
 
 REQUIRED_SILVER_SCHEMAS = [
@@ -28,6 +31,7 @@ REQUIRED_SILVER_SCHEMAS = [
     "semiconductor_risk_event.schema.json",
     "semiconductor_trade_flow.schema.json",
     "trade_tariff_indicator.schema.json",
+    "mineral_supply_indicator.schema.json",
     "natural_hazard_event.schema.json",
     "logistics_facility.schema.json",
     "sanctions_screening_event.schema.json",
@@ -40,6 +44,8 @@ REQUIRED_GRAPH_SCHEMAS = [
     "logistics_route_edge.schema.json",
     "policy_restriction_edge.schema.json",
     "hazard_exposure_edge.schema.json",
+    "mineral_dependency_edge.schema.json",
+    "downstream_demand_edge.schema.json",
 ]
 
 RAW_REQUIRED_FIELDS = {
@@ -109,4 +115,3 @@ def test_source_registry_contract_references_exist() -> None:
         for field in ("raw_contract", "silver_contract", "graph_contract"):
             path = ROOT / source[field]
             assert path.exists(), f"{source['source_id']} missing {field}: {path}"
-
