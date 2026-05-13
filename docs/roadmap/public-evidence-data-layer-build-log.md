@@ -900,3 +900,44 @@ This log records the Public Evidence Data Layer and Persistent Platform Foundati
   - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance are exposed by final acceptance tests.
 - Next gate decision:
   - Stop after final acceptance; remote Render repair remains an operational follow-up requiring redeploy access/evidence.
+
+## Gate C Completion - Physical Graph Explorer View Modules
+
+- Current HEAD before Gate C completion: `4c81217`
+- Gate name: required physical Graph Explorer v3 view files
+- Files changed:
+  - `apps/web/src/features/graph-explorer/GraphEvidenceView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/graph-explorer/GraphFocusView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphGeoView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphMatrixView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphOverviewView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphPathView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphScenarioOverlay.tsx`
+  - `apps/web/src/features/graph-explorer/GraphTimelineView.tsx`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/graph_invariants tests/ingestion tests/sources tests/storage tests/security -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - mandatory artifact existence check for connectors, storage schema, promoted graph pipeline, build log, chart/table files, and the eight Graph Explorer view files
+- Pass/fail status: pass
+- Failures and exact causes:
+  - No Gate C completion command failed.
+- Evidence:
+  - All eight required physical Graph Explorer view files now exist.
+  - `GraphExplorer.tsx` imports those view components instead of keeping the mode detail panels inline.
+  - Matrix and evidence modes render through `GraphMatrixView` and `GraphEvidenceView`.
+  - Overview, focus, path, timeline, geo, and scenario detail panels render through their dedicated modules.
+  - Browser smoke passed 37 checks after the extraction.
+  - Mandatory artifact existence check reported: `All mandatory artifact files present.`
+- Limitations:
+  - This gate preserves existing behavior and does not add new live data.
+  - Render deployment has not been updated or accepted from this environment.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance were added.
+- Next gate decision:
+  - Commit Gate C completion, then rerun final local acceptance.

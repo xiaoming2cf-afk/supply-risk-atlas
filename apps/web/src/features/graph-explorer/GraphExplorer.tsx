@@ -5,7 +5,6 @@ import type {
   GraphEvidenceData,
   GraphExplorerData,
   GraphGeoData,
-  GraphLink,
   GraphMatrixData,
   GraphNode,
   GraphNodeKind,
@@ -18,9 +17,17 @@ import { GraphBreadcrumbs } from "./GraphBreadcrumbs";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphControls } from "./GraphControls";
 import { GraphEmptyState } from "./GraphEmptyState";
+import { GraphEvidenceView } from "./GraphEvidenceView";
+import { GraphFocusView } from "./GraphFocusView";
+import { GraphGeoView } from "./GraphGeoView";
 import { GraphInspector } from "./GraphInspector";
 import { GraphLayers } from "./GraphLayers";
 import { GraphLegend } from "./GraphLegend";
+import { GraphMatrixView } from "./GraphMatrixView";
+import { GraphOverviewView } from "./GraphOverviewView";
+import { GraphPathView } from "./GraphPathView";
+import { GraphScenarioOverlay } from "./GraphScenarioOverlay";
+import { GraphTimelineView } from "./GraphTimelineView";
 import { defaultGraphLayerSet, findFirstGraphSearchMatch, type GraphLayerCategory } from "./graphFilters";
 import {
   buildGraphViewModel,
@@ -380,9 +387,9 @@ export function GraphExplorer({
         <EndpointStatusPanel details={endpointDetails} />
         <div className="graph-canvas">
           {mode === "matrix" ? (
-            <GraphMatrixPanel graph={graph} view={view} endpointDetails={endpointDetails} />
+            <GraphMatrixView graph={graph} view={view} endpointData={endpointDetails.data} />
           ) : mode === "evidence" ? (
-            <GraphEvidencePanel view={view} endpointDetails={endpointDetails} />
+            <GraphEvidenceView view={view} endpointData={endpointDetails.data} />
           ) : view.visibleNodes.length > 0 ? (
             <GraphCanvas
               activePathEdgeIds={view.activePathEdgeIds}
@@ -519,258 +526,13 @@ function GraphModeDetailPanel({
   mode: GraphViewMode;
   view: GraphViewModel;
 }) {
-  if (mode === "overview") return <GraphOverviewPanel graph={graph} metadata={metadata} view={view} />;
-  if (mode === "timeline") return <GraphTimelinePanel graph={graph} endpointDetails={endpointDetails} view={view} />;
-  if (mode === "geo") return <GraphGeoPanel endpointDetails={endpointDetails} graph={graph} view={view} />;
-  if (mode === "scenario") return <GraphScenarioPanel endpointDetails={endpointDetails} view={view} />;
-  if (mode === "path") return <GraphPathEvidencePanel view={view} />;
-  if (mode === "focus") return <GraphFocusPanel view={view} />;
+  if (mode === "overview") return <GraphOverviewView graph={graph} metadata={metadata} view={view} />;
+  if (mode === "timeline") return <GraphTimelineView graph={graph} endpointData={endpointDetails.data} view={view} />;
+  if (mode === "geo") return <GraphGeoView endpointData={endpointDetails.data} graph={graph} view={view} />;
+  if (mode === "scenario") return <GraphScenarioOverlay endpointData={endpointDetails.data} view={view} />;
+  if (mode === "path") return <GraphPathView view={view} />;
+  if (mode === "focus") return <GraphFocusView view={view} />;
   return null;
-}
-
-function GraphOverviewPanel({
-  graph,
-  metadata,
-  view,
-}: {
-  graph: GraphExplorerData;
-  metadata: GraphVersionMetadata;
-  view: GraphViewModel;
-}) {
-  const sourceRows = graph.graphStats?.bySource ?? [];
-  return (
-    <div className="graph-v3-panel graph-v3-overview-panel">
-      <div className="section-kicker">Overview mode source coverage summary</div>
-      <div className="inspector-grid">
-        <span>Visible nodes: {view.visibleNodes.length} / 20</span>
-        <span>Visible links: {view.visibleLinks.length} / 35</span>
-        <span>graph_version: {metadata.graphVersion}</span>
-        <span>source_manifest_id: {metadata.sourceManifestId}</span>
-      </div>
-      <ul className="evidence-list compact">
-        {sourceRows.slice(0, 6).map((row) => (
-          <li key={row.source ?? row.kind ?? "source"}>
-            {row.source ?? row.kind ?? "source"}: {row.count}
-          </li>
-        ))}
-        {sourceRows.length === 0 ? <li>Source coverage is provided by the fixture/proxy dashboard graph.</li> : null}
-      </ul>
-    </div>
-  );
-}
-
-function GraphFocusPanel({ view }: { view: GraphViewModel }) {
-  return (
-    <div className="graph-v3-panel graph-v3-focus-panel">
-      <div className="section-kicker">Focus mode</div>
-      <p className="inspector-note">
-        Focus keeps one selected node visually dominant, with explicit upstream, downstream, two-hop, pin, and low-confidence controls.
-      </p>
-      <ul className="evidence-list compact">
-        {view.visibleNodes.slice(0, 5).map((node) => (
-          <li key={node.id}>{node.label} / {node.kind} / {node.countryCode ?? "global"}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function GraphPathEvidencePanel({ view }: { view: GraphViewModel }) {
-  return (
-    <div className="graph-v3-panel graph-v3-path-panel">
-      <div className="section-kicker">Path mode evidence trail</div>
-      <ol className="graph-step-table">
-        {(view.activePath?.steps ?? []).map((step, index) => (
-          <li key={step.id}>
-            <strong>{index + 1}. {step.label}</strong>
-            <span>{step.edgeType ?? "source"} / {step.evidence}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-function GraphTimelinePanel({
-  endpointDetails,
-  graph,
-  view,
-}: {
-  endpointDetails: GraphEndpointDetails;
-  graph: GraphExplorerData;
-  view: GraphViewModel;
-}) {
-  const endpointEvents = Array.isArray((endpointDetails.data as GraphTimelineData | undefined)?.events)
-    ? ((endpointDetails.data as GraphTimelineData).events ?? [])
-    : [];
-  const pathSteps = view.activePath?.steps ?? graph.transmissionPaths?.[0]?.steps ?? [];
-  return (
-    <div className="graph-v3-panel graph-v3-timeline-panel">
-      <div className="section-kicker">Timeline mode</div>
-      <p className="inspector-note">Event timeline shows event nodes and affected graph nodes over hop order; it does not render the full graph.</p>
-      <ul className="timeline-list compact">
-        {endpointEvents.slice(0, 6).map((event, index) => (
-          <li key={String(event.id ?? index)}>{String(event.label ?? event.event_type ?? event.id ?? "event")} / hop {String(event.hop_order ?? index)}</li>
-        ))}
-        {endpointEvents.length === 0
-          ? pathSteps.slice(0, 6).map((step, index) => (
-              <li key={step.id}>{step.label} / hop {index} / {step.evidence}</li>
-            ))
-          : null}
-      </ul>
-    </div>
-  );
-}
-
-function GraphGeoPanel({
-  endpointDetails,
-  graph,
-  view,
-}: {
-  endpointDetails: GraphEndpointDetails;
-  graph: GraphExplorerData;
-  view: GraphViewModel;
-}) {
-  const countries = Array.isArray((endpointDetails.data as GraphGeoData | undefined)?.countries)
-    ? ((endpointDetails.data as GraphGeoData).countries ?? [])
-    : graph.availableCountries ?? graph.countryLens?.countries ?? [];
-  return (
-    <div className="graph-v3-panel graph-v3-geo-panel">
-      <div className="section-kicker">Geo mode</div>
-      <p className="inspector-note">Geo aggregates countries, regions, trade/dependency links, logistics context, and hazard exposure overlays.</p>
-      <div className="inspector-grid">
-        <span>Rendered geo nodes: {view.visibleNodes.length}</span>
-        <span>Rendered geo links: {view.visibleLinks.length}</span>
-      </div>
-      <ul className="evidence-list compact">
-        {countries.slice(0, 6).map((country, index) => (
-          <li key={String((country as Record<string, unknown>).code ?? (country as Record<string, unknown>).id ?? index)}>
-            {String((country as Record<string, unknown>).label ?? (country as Record<string, unknown>).countryName ?? (country as Record<string, unknown>).code ?? "country")}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function GraphScenarioPanel({
-  endpointDetails,
-  view,
-}: {
-  endpointDetails: GraphEndpointDetails;
-  view: GraphViewModel;
-}) {
-  const overlay = endpointDetails.data as GraphScenarioOverlayData | undefined;
-  const affectedNodes = Array.isArray(overlay?.affected_nodes) ? overlay.affected_nodes : [];
-  return (
-    <div className="graph-v3-panel graph-v3-scenario-panel">
-      <div className="section-kicker">Scenario overlay mode</div>
-      <p className="inspector-note">Scenario overlay renders only a selected run. It never displays all runs by default.</p>
-      <div className="inspector-grid">
-        <span>run_id: {overlay?.run_id ?? "none_selected"}</span>
-        <span>affected nodes: {affectedNodes.length || view.visibleNodes.length}</span>
-      </div>
-    </div>
-  );
-}
-
-function GraphMatrixPanel({
-  endpointDetails,
-  graph,
-  view,
-}: {
-  endpointDetails: GraphEndpointDetails;
-  graph: GraphExplorerData;
-  view: GraphViewModel;
-}) {
-  const matrixRows = Array.isArray((endpointDetails.data as GraphMatrixData | undefined)?.dependency_matrix)
-    ? ((endpointDetails.data as GraphMatrixData).dependency_matrix ?? [])
-    : view.visibleLinks.slice(0, 12).map((link) => ({
-        source: graph.nodes.find((node) => node.id === link.source)?.label ?? link.source,
-        target: graph.nodes.find((node) => node.id === link.target)?.label ?? link.target,
-        value: link.transmissionWeight ?? link.weight,
-        edge_type: link.edgeType ?? "dependency",
-      }));
-  return (
-    <div className="graph-v3-panel graph-v3-matrix-panel">
-      <div className="section-kicker">Matrix mode</div>
-      <p className="inspector-note">Matrix mode uses bounded tables and heatmap-style cells instead of a dense node cloud.</p>
-      <table className="graph-matrix-table">
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>Target</th>
-            <th>Type</th>
-            <th>Weight</th>
-          </tr>
-        </thead>
-        <tbody>
-          {matrixRows.slice(0, 12).map((row, index) => (
-            <tr key={String((row as Record<string, unknown>).id ?? index)}>
-              <td>{String((row as Record<string, unknown>).source ?? "")}</td>
-              <td>{String((row as Record<string, unknown>).target ?? "")}</td>
-              <td>{String((row as Record<string, unknown>).edge_type ?? (row as Record<string, unknown>).layer ?? "")}</td>
-              <td>
-                <span className="matrix-weight-cell">
-                  {Number((row as Record<string, unknown>).value ?? (row as Record<string, unknown>).weight ?? 0).toFixed(2)}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function GraphEvidencePanel({
-  endpointDetails,
-  view,
-}: {
-  endpointDetails: GraphEndpointDetails;
-  view: GraphViewModel;
-}) {
-  const evidenceRows = Array.isArray((endpointDetails.data as GraphEvidenceData | undefined)?.evidence_refs)
-    ? ((endpointDetails.data as GraphEvidenceData).evidence_refs ?? [])
-    : evidenceRowsFromLinks(view.visibleLinks);
-  return (
-    <div className="graph-v3-panel graph-v3-evidence-panel">
-      <div className="section-kicker">Evidence mode</div>
-      <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
-      <p className="inspector-note">Evidence-context link rows are separated from real graph edges and scenario traces.</p>
-      <table className="graph-evidence-table">
-        <thead>
-          <tr>
-            <th>Evidence ref</th>
-            <th>Edge semantics</th>
-            <th>Confidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {evidenceRows.slice(0, 12).map((row, index) => (
-            <tr key={String((row as Record<string, unknown>).edge_id ?? (row as Record<string, unknown>).id ?? index)}>
-              <td>{String((row as Record<string, unknown>).source_id ?? (row as Record<string, unknown>).edge_id ?? "evidence_ref")}</td>
-              <td>
-                {String((row as Record<string, unknown>).edge_type ?? "evidence-context link")}
-                {Boolean((row as Record<string, unknown>).not_supply_chain_dependency) ? " / not supply-chain dependency" : ""}
-              </td>
-              <td>{Number((row as Record<string, unknown>).confidence ?? 0).toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function evidenceRowsFromLinks(links: GraphLink[]) {
-  return links.map((link) => ({
-    edge_id: link.id,
-    edge_type: link.edgeType ?? link.edgeRole ?? "graph_edge",
-    source_id: link.sourceId ?? String(link.metadata?.source ?? "source_ref"),
-    confidence: link.confidence ?? 0,
-    not_supply_chain_dependency: link.metadata?.not_supply_chain_dependency === true,
-  }));
 }
 
 function graphSourceOptions(graph: GraphExplorerData) {
