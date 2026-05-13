@@ -150,3 +150,42 @@
   - Schemas define contracts only; connector fixture implementations are handled in the next gate.
 - Next gate:
   - Proceed to Gate 5 connector framework and fixture connectors.
+
+## Gate 5 - Connector Framework And Fixture Connectors
+
+- Current HEAD: `2ae03b6`
+- Gate name: missing fixture-first public connectors
+- Files changed:
+  - `packages/sra_core/sra_core/ingestion/connectors/usgs_minerals_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/consolidated_screening_list_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/federal_register_export_controls_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `tests/ingestion/fixtures/usgs_minerals_lite_sample.json`
+  - `tests/ingestion/fixtures/consolidated_screening_list_lite_sample.json`
+  - `tests/ingestion/fixtures/federal_register_export_controls_lite_sample.json`
+  - `tests/ingestion/test_usgs_minerals_lite.py`
+  - `tests/ingestion/test_consolidated_screening_list_lite.py`
+  - `tests/ingestion/test_federal_register_export_controls_lite.py`
+  - `tests/ingestion/test_semiconductor_source_registry.py`
+  - `data_contracts/ingestion_schema/semiconductor_source_registry.schema.json`
+  - connector docs under `docs/data/`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_usgs_minerals_lite.py tests/ingestion/test_consolidated_screening_list_lite.py tests/ingestion/test_federal_register_export_controls_lite.py tests/ingestion/test_no_startup_network.py -q`
+  - `python -m pytest tests/ingestion -q`
+  - `python -m pytest tests/contract/test_expanded_source_contracts.py tests/sources -q`
+- Pass/fail: pass
+- Evidence:
+  - New connector/no-startup-network targeted tests passed: 8 tests.
+  - Full ingestion tests passed: 55 tests.
+  - Expanded contract/source tests passed: 17 tests.
+  - New connectors return raw record indexes with payload hashes, summaries, provenance URLs, license/terms refs, and `payload_stored: false`.
+  - New connectors promote to sanitized silver records and return controlled unavailable responses in live mode.
+- Source/legal notes:
+  - No live fetch was performed.
+  - New compliance connectors output summary-only compliance-risk context.
+  - No raw mineral, screening-list, Federal Register, or policy payloads were stored or exposed.
+- Limitations:
+  - Live ingestion paths remain intentionally unimplemented and disabled by default.
+  - Mineral and policy outputs are fixture/public-evidence proxy summaries, not operational coverage.
+- Next gate:
+  - Proceed to Gate 6 entity resolution and crosswalks.

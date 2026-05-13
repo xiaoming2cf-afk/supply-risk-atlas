@@ -1,0 +1,19 @@
+{
+  "source_id": "consolidated_screening_list_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "csl-lite-example-entity",
+      "entity_name": "Example Screened Entity",
+      "list_type": "Consolidated Screening List",
+      "program": "EXAMPLE",
+      "country": "ZZ",
+      "match_confidence": 0.79,
+      "summary": "Public screening list metadata summary for compliance-risk awareness only.",
+      "provenance_url": "https://www.trade.gov/consolidated-screening-list/example",
+      "license_or_terms_ref": "https://www.trade.gov/privacy-and-security",
+      "confidence": 0.62
+    }
+  ]
+}

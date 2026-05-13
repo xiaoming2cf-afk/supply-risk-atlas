@@ -1,0 +1,19 @@
+{
+  "source_id": "usgs_mineral_commodity_summaries_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "usgs-minerals-gallium-example",
+      "mineral": "gallium",
+      "country": "CN",
+      "period": "2024",
+      "production_summary": "Public mineral commodity summary proxy for gallium production concentration.",
+      "import_reliance_proxy": 0.74,
+      "summary": "Gallium mineral supply proxy summary for semiconductor upstream risk context.",
+      "provenance_url": "https://www.usgs.gov/centers/national-minerals-information-center/example",
+      "license_or_terms_ref": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "confidence": 0.66
+    }
+  ]
+}

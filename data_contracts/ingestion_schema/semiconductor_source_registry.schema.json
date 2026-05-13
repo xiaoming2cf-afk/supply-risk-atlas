@@ -16,6 +16,7 @@
             "type": "string",
             "enum": [
               "eto_cset_advanced_semiconductor_supply_chain",
+              "oecd_semiconductor_value_chain_reports",
               "wsts_historical_billings",
               "global_trade_alert_semiconductor_export_controls",
               "gdelt_semiconductor_events",
@@ -23,9 +24,12 @@
               "gdelt_semiconductor_lite",
               "un_comtrade_semiconductor_trade_lite",
               "world_bank_wits_trade_tariff_lite",
+              "wits_trade_tariff_lite",
+              "usgs_mineral_commodity_summaries_lite",
               "usgs_earthquake_lite",
               "nga_world_port_index_lite",
               "ofac_sanctions_list_lite",
+              "consolidated_screening_list_lite",
               "bis_export_controls_lite",
               "federal_register_export_controls_lite",
               "world_bank_macro_indicators_lite",
@@ -34,6 +38,7 @@
               "company_annual_report_manual_upload",
               "customs_trade_manual_upload",
               "paid_semi_market_data",
+              "paid_semiconductor_market_data",
               "proprietary_factset_supply_chain",
               "bloomberg_supply_chain",
               "wind_or_choice_private_data",
@@ -52,7 +57,7 @@
           "live_fetch_default": { "type": "boolean" },
           "update_frequency": {
             "type": "string",
-            "enum": ["15_minutes", "hourly", "daily", "weekly", "monthly", "irregular"]
+            "enum": ["15_minutes", "hourly", "daily", "weekly", "monthly", "annual", "irregular"]
           },
           "freshness_sla_hours": { "type": "integer", "minimum": 1 },
           "connector": { "type": "string", "minLength": 1 },

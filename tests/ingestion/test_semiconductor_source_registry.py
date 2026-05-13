@@ -12,6 +12,7 @@ SCHEMA_PATH = ROOT / "data_contracts" / "ingestion_schema" / "semiconductor_sour
 
 EXPECTED_SOURCE_IDS = [
     "eto_cset_advanced_semiconductor_supply_chain",
+    "oecd_semiconductor_value_chain_reports",
     "wsts_historical_billings",
     "global_trade_alert_semiconductor_export_controls",
     "gdelt_semiconductor_events",
@@ -19,9 +20,12 @@ EXPECTED_SOURCE_IDS = [
     "gdelt_semiconductor_lite",
     "un_comtrade_semiconductor_trade_lite",
     "world_bank_wits_trade_tariff_lite",
+    "wits_trade_tariff_lite",
+    "usgs_mineral_commodity_summaries_lite",
     "usgs_earthquake_lite",
     "nga_world_port_index_lite",
     "ofac_sanctions_list_lite",
+    "consolidated_screening_list_lite",
     "bis_export_controls_lite",
     "federal_register_export_controls_lite",
     "world_bank_macro_indicators_lite",
@@ -30,12 +34,18 @@ EXPECTED_SOURCE_IDS = [
     "company_annual_report_manual_upload",
     "customs_trade_manual_upload",
     "paid_semi_market_data",
+    "paid_semiconductor_market_data",
     "proprietary_factset_supply_chain",
     "bloomberg_supply_chain",
     "wind_or_choice_private_data",
     "company_private_order_data",
 ]
-DISABLED_BY_DEFAULT = set(EXPECTED_SOURCE_IDS[4:])
+ENABLED_BY_DEFAULT = {
+    "eto_cset_advanced_semiconductor_supply_chain",
+    "wsts_historical_billings",
+    "global_trade_alert_semiconductor_export_controls",
+    "gdelt_semiconductor_events",
+}
 REQUIRED_SOURCE_FIELDS = {
     "source_id",
     "publisher",
@@ -103,7 +113,7 @@ def test_registry_entries_have_required_governance_fields() -> None:
 
 def test_registry_default_enablement_is_explicit() -> None:
     for source in _load_registry()["sources"]:
-        expected = source["source_id"] not in DISABLED_BY_DEFAULT
+        expected = source["source_id"] in ENABLED_BY_DEFAULT
         assert source["enabled_by_default"] is expected
 
 

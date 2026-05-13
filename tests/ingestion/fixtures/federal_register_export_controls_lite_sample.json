@@ -1,0 +1,19 @@
+{
+  "source_id": "federal_register_export_controls_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "fr-export-controls-example",
+      "jurisdiction": "US",
+      "policy_type": "export_control",
+      "policy_title": "Example semiconductor manufacturing equipment rule summary",
+      "publication_date": "2025-01-15",
+      "affected_items": ["semiconductor manufacturing equipment"],
+      "summary": "Federal Register policy metadata summary for compliance risk and resilience planning only.",
+      "provenance_url": "https://www.federalregister.gov/documents/example",
+      "license_or_terms_ref": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site/legal-status",
+      "confidence": 0.58
+    }
+  ]
+}

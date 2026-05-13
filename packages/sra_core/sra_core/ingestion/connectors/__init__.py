@@ -12,6 +12,9 @@ from sra_core.ingestion.registry import load_source_registry
 from sra_core.ingestion.connectors.base import ConnectorConfig, ConnectorMode, PublicEvidenceConnector
 from sra_core.ingestion.connectors.cache import ConnectorCache, ConnectorCachePolicy
 from sra_core.ingestion.connectors.bis_export_controls_lite import BisExportControlsLiteConnector
+from sra_core.ingestion.connectors.consolidated_screening_list_lite import (
+    ConsolidatedScreeningListLiteConnector,
+)
 from sra_core.ingestion.connectors.errors import (
     ConnectorError,
     ConnectorPayloadError,
@@ -30,6 +33,10 @@ from sra_core.ingestion.connectors.un_comtrade_semiconductor_trade_lite import (
 )
 from sra_core.ingestion.connectors.wits_trade_tariff_lite import WitsTradeTariffLiteConnector
 from sra_core.ingestion.connectors.usgs_earthquake_lite import UsgsEarthquakeLiteConnector
+from sra_core.ingestion.connectors.usgs_minerals_lite import UsgsMineralsLiteConnector
+from sra_core.ingestion.connectors.federal_register_export_controls_lite import (
+    FederalRegisterExportControlsLiteConnector,
+)
 
 ConnectorOutput: TypeAlias = tuple[list[RawRecord], SourceManifest]
 
@@ -153,6 +160,8 @@ __all__ = [
     "ConnectorRateLimitError",
     "ConnectorRecord",
     "ConnectorUnavailableError",
+    "ConsolidatedScreeningListLiteConnector",
+    "FederalRegisterExportControlsLiteConnector",
     "GdeltConnector",
     "GdeltSemiconductorLiteConnector",
     "GleifConnector",
@@ -170,6 +179,7 @@ __all__ = [
     "UnComtradeSemiconductorTradeLiteConnector",
     "UsgsEarthquakesConnector",
     "UsgsEarthquakeLiteConnector",
+    "UsgsMineralsLiteConnector",
     "WitsTradeTariffLiteConnector",
     "BisExportControlsLiteConnector",
     "WorldBankConnector",
