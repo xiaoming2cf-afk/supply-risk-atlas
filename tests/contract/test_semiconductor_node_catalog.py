@@ -85,12 +85,41 @@ def test_concrete_semiconductor_nodes_are_present_and_typed() -> None:
     valid_layers = {layer["layer_id"]: set(layer["node_types"]) for layer in chain["layers"]}
     nodes = {entry["node_id"]: entry for entry in catalog["nodes"]}
 
+    assert len(nodes) >= 120
     assert REQUIRED_NODE_IDS <= set(nodes)
     for node_id in REQUIRED_NODE_IDS:
         node = nodes[node_id]
         assert node["label"]
         assert node["source_candidates"]
         assert node["node_type"] in valid_layers[node["layer"]]
+        assert node["canonical_name"]
+        assert node["display_name"]
+        assert node["chain_layer"] == node["layer"]
+        assert node["description"]
+        assert node["example_source_ids"]
+        assert node["allowed_relationship_classes"]
+        assert "production" not in str(node.get("production_status", "")).lower()
+
+
+def test_node_type_catalog_has_concept_model_fields() -> None:
+    catalog = load_yaml(NODE_PATH)
+
+    for entry in catalog["node_types"]:
+        assert "optional_attributes" in entry
+        assert entry["allowed_outgoing_edges"]
+        assert entry["allowed_incoming_edges"]
+        assert entry["geography_terminology_policy"]
+
+
+def test_china_taiwan_region_uses_canonical_parent_country_context() -> None:
+    catalog = load_yaml(NODE_PATH)
+    node = {entry["node_id"]: entry for entry in catalog["nodes"]}["region:china_taiwan"]
+
+    assert node["node_type"] == "region"
+    assert node["display_name"] == "中国台湾"
+    assert node["attributes"]["country_id"] == "country:CN"
+    assert node["attributes"]["country_display"] == "中国"
+    assert node["geography_policy_passed"] is True
 
 
 def test_node_catalog_keeps_fixture_status_and_no_production_claim() -> None:

@@ -4,232 +4,4313 @@ data_mode: fixture
 graph_mode: fixture
 calibration_status: fixture_proxy_not_calibrated
 warnings:
-  - Concrete nodes are canonical catalog seeds, not complete or operationally verified relationships.
-  - Source-backed promoted graph evidence is required before analytical use.
+- Concrete nodes are canonical catalog seeds, not complete or operationally verified
+  relationships.
+- Source-backed promoted graph evidence is required before analytical use.
 node_types:
-  - {node_type: country, layer: L0_policy_macro, description: Sovereign or customs reporting geography, required_attributes: [country_code, label], example_ids: ["country:US", "region:china_taiwan"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]}
-  - {node_type: region, layer: L0_policy_macro, description: Multi-country region used for aggregation, required_attributes: [label], example_ids: ["region:East_Asia", "region:EU"], source_candidates: [oecd_semiconductor_value_chain_reports, gdelt_semiconductor_lite]}
-  - {node_type: policy_regime, layer: L0_policy_macro, description: Policy or regulatory regime relevant to semiconductor supply chains, required_attributes: [label, jurisdiction], example_ids: ["policy_regime:export_controls"], source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite]}
-  - {node_type: macro_indicator, layer: L0_policy_macro, description: Macro or market indicator used as context, required_attributes: [label, unit], example_ids: ["macro_indicator:regional_billings"], source_candidates: [wsts_historical_billings, world_bank_macro_indicators_lite]}
-  - {node_type: industrial_policy, layer: L0_policy_macro, description: Industrial-policy program or policy context, required_attributes: [label, jurisdiction], example_ids: ["industrial_policy:chips_act"], source_candidates: [oecd_semiconductor_value_chain_reports, federal_register_export_controls_lite]}
-  - {node_type: export_control_regime, layer: L0_policy_macro, description: Export-control regime or control framework, required_attributes: [label, jurisdiction], example_ids: ["export_control_regime:us_advanced_computing"], source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite]}
-  - {node_type: critical_mineral, layer: L1_raw_minerals, description: Mineral input with potential supply risk relevance, required_attributes: [label], example_ids: ["critical_mineral:silicon", "critical_mineral:gallium"], source_candidates: [usgs_mineral_commodity_summaries_lite, un_comtrade_semiconductor_trade_lite]}
-  - {node_type: raw_material, layer: L1_raw_minerals, description: Raw material used upstream of semiconductor materials or chemicals, required_attributes: [label], example_ids: ["raw_material:quartz", "raw_material:helium"], source_candidates: [usgs_mineral_commodity_summaries_lite, eto_cset_advanced_semiconductor_supply_chain]}
-  - {node_type: mining_country, layer: L1_raw_minerals, description: Country associated with mineral production, required_attributes: [country_code, mineral], example_ids: ["mining_country:CN:gallium"], source_candidates: [usgs_mineral_commodity_summaries_lite, un_comtrade_semiconductor_trade_lite]}
-  - {node_type: refining_country, layer: L1_raw_minerals, description: Country associated with mineral or material refining, required_attributes: [country_code, material], example_ids: ["refining_country:JP:photoresist"], source_candidates: [usgs_mineral_commodity_summaries_lite, eto_cset_advanced_semiconductor_supply_chain]}
-  - {node_type: wafer_material, layer: L2_materials_chemicals, description: Wafer material input, required_attributes: [label], example_ids: ["material:silicon_wafer_300mm", "material:soi_wafer"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite]}
-  - {node_type: electronic_chemical, layer: L2_materials_chemicals, description: Electronic-grade chemical input, required_attributes: [label], example_ids: ["chemical:hydrogen_peroxide", "chemical:hydrofluoric_acid"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]}
-  - {node_type: photoresist, layer: L2_materials_chemicals, description: Photoresist material category, required_attributes: [label], example_ids: ["chemical:photoresist_ArF", "chemical:photoresist_EUV"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]}
-  - {node_type: specialty_gas, layer: L2_materials_chemicals, description: Specialty gas input for semiconductor processes, required_attributes: [label], example_ids: ["gas:neon", "gas:nitrogen_trifluoride"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite]}
-  - {node_type: mask_reticle, layer: L2_materials_chemicals, description: Photomask or reticle input, required_attributes: [label], example_ids: ["material:photomask", "material:reticle"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, sec_edgar_lite]}
-  - {node_type: substrate_material, layer: L2_materials_chemicals, description: Substrate material used in advanced packaging or assembly, required_attributes: [label], example_ids: ["material:abf_substrate"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]}
-  - {node_type: cmp_material, layer: L2_materials_chemicals, description: CMP slurry or related material, required_attributes: [label], example_ids: ["material:cmp_slurry"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain]}
-  - {node_type: design_company, layer: L3_design_eda_ip, description: Company providing design or EDA capabilities, required_attributes: [label], example_ids: ["company:Cadence", "company:Synopsys"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: eda_tool, layer: L3_design_eda_ip, description: EDA tool or design workflow category, required_attributes: [label], example_ids: ["eda:logic_synthesis", "eda:verification"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, oecd_semiconductor_value_chain_reports]}
-  - {node_type: ip_core, layer: L3_design_eda_ip, description: Semiconductor IP block or core, required_attributes: [label], example_ids: ["ip:ARM_core", "ip:SerDes"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: fabless_company, layer: L3_design_eda_ip, description: Fabless semiconductor design firm, required_attributes: [label], example_ids: ["company:NVIDIA", "company:Qualcomm"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: idm, layer: L3_design_eda_ip, description: Integrated device manufacturer, required_attributes: [label], example_ids: ["company:Intel"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: architecture, layer: L3_design_eda_ip, description: Computing or processor architecture, required_attributes: [label], example_ids: ["architecture:x86", "architecture:ARM"], source_candidates: [openalex_crossref_literature_lite, company_annual_report_manual_upload]}
-  - {node_type: equipment, layer: L4_equipment, description: Manufacturing or test equipment class, required_attributes: [label], example_ids: ["equipment:EUV_scanner", "equipment:etch_tool"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite]}
-  - {node_type: equipment_supplier, layer: L4_equipment, description: Supplier of semiconductor manufacturing or test equipment, required_attributes: [label], example_ids: ["company:ASML", "company:Applied_Materials"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: equipment_category, layer: L4_equipment, description: Equipment family or category, required_attributes: [label], example_ids: ["equipment_category:lithography"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite]}
-  - {node_type: equipment_component, layer: L4_equipment, description: Component within a manufacturing equipment supply chain, required_attributes: [label], example_ids: ["equipment_component:laser_source"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]}
-  - {node_type: foundry, layer: L5_fabrication, description: Foundry or fabrication service provider, required_attributes: [label], example_ids: ["company:TSMC", "company:Samsung_Foundry"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: fab, layer: L5_fabrication, description: Fabrication facility or fab complex, required_attributes: [label, country_code], example_ids: ["fab:TSMC_Fab_18", "fab:Samsung_Pyeongtaek"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]}
-  - {node_type: process_stage, layer: L5_fabrication, description: Semiconductor manufacturing process stage, required_attributes: [label], example_ids: ["process:lithography", "process:etching"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, oecd_semiconductor_value_chain_reports]}
-  - {node_type: technology_node, layer: L5_fabrication, description: Semiconductor process node label, required_attributes: [label], example_ids: ["technology_node:3nm", "technology_node:28nm"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]}
-  - {node_type: capacity_node, layer: L5_fabrication, description: Capacity or utilization node for a fab, region, or process class, required_attributes: [label, basis], example_ids: ["capacity_node:advanced_logic_TW"], source_candidates: [wsts_historical_billings, company_annual_report_manual_upload]}
-  - {node_type: wafer_process, layer: L5_fabrication, description: Wafer-level process family, required_attributes: [label], example_ids: ["wafer_process:front_end"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain]}
-  - {node_type: product_grade, layer: L6_products, description: Semiconductor product grade or market class, required_attributes: [label], example_ids: ["product:advanced_logic", "product:automotive_chip"], source_candidates: [wsts_historical_billings, company_annual_report_manual_upload]}
-  - {node_type: chip_type, layer: L6_products, description: Specific chip family or type, required_attributes: [label], example_ids: ["product:GPU", "product:HBM"], source_candidates: [wsts_historical_billings, sec_edgar_lite]}
-  - {node_type: downstream_product, layer: L6_products, description: Product category consuming semiconductors, required_attributes: [label], example_ids: ["downstream_product:ai_server"], source_candidates: [sec_edgar_lite, gdelt_semiconductor_lite]}
-  - {node_type: osat_company, layer: L7_packaging_testing, description: Outsourced semiconductor assembly and test company, required_attributes: [label], example_ids: ["company:ASE", "company:Amkor"], source_candidates: [company_annual_report_manual_upload, gdelt_semiconductor_lite]}
-  - {node_type: packaging_stage, layer: L7_packaging_testing, description: Packaging process or package class, required_attributes: [label], example_ids: ["packaging:wire_bonding", "packaging:flip_chip"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]}
-  - {node_type: advanced_packaging, layer: L7_packaging_testing, description: Advanced packaging architecture or capability, required_attributes: [label], example_ids: ["packaging:CoWoS", "packaging:chiplet"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: substrate, layer: L7_packaging_testing, description: Packaging substrate or interposer input, required_attributes: [label], example_ids: ["material:ABF_substrate", "material:interposer"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]}
-  - {node_type: testing_stage, layer: L7_packaging_testing, description: Test or sort stage, required_attributes: [label], example_ids: ["testing:wafer_sort", "testing:final_test"], source_candidates: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]}
-  - {node_type: port, layer: L8_logistics, description: Maritime port used for logistics context, required_attributes: [label, country_code], example_ids: ["port:Kaohsiung", "port:Rotterdam"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
-  - {node_type: airport, layer: L8_logistics, description: Airport used for logistics context, required_attributes: [label, country_code], example_ids: ["airport:Taoyuan", "airport:Incheon"], source_candidates: [gdelt_semiconductor_lite, company_annual_report_manual_upload]}
-  - {node_type: logistics_route, layer: L8_logistics, description: Bounded route context, required_attributes: [label], example_ids: ["logistics_route:china_taiwan_us_air"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
-  - {node_type: shipping_lane, layer: L8_logistics, description: Shipping lane context used for exposure analysis, required_attributes: [label], example_ids: ["shipping_lane:east_asia_us_west_coast"], source_candidates: [nga_world_port_index_lite, gdelt_semiconductor_lite]}
-  - {node_type: customs_region, layer: L8_logistics, description: Customs or trade reporting region, required_attributes: [label], example_ids: ["customs_region:EU"], source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]}
-  - {node_type: downstream_sector, layer: L9_downstream_demand, description: Demand sector consuming semiconductor outputs, required_attributes: [label], example_ids: ["sector:AI_datacenter", "sector:automotive"], source_candidates: [wsts_historical_billings, sec_edgar_lite]}
-  - {node_type: customer_industry, layer: L9_downstream_demand, description: Customer industry category, required_attributes: [label], example_ids: ["customer_industry:cloud"], source_candidates: [sec_edgar_lite, company_annual_report_manual_upload]}
-  - {node_type: demand_indicator, layer: L9_downstream_demand, description: Demand proxy or market pressure indicator, required_attributes: [label, unit], example_ids: ["demand_indicator:wsts_billings"], source_candidates: [wsts_historical_billings, gdelt_semiconductor_lite]}
-  - {node_type: risk_event, layer: L10_risk_events, description: General risk event or disruption report, required_attributes: [label, event_time], example_ids: ["event:port_disruption", "event:price_spike"], source_candidates: [gdelt_semiconductor_lite, sec_edgar_lite]}
-  - {node_type: hazard_event, layer: L10_risk_events, description: Natural hazard or physical disruption event, required_attributes: [label, event_time], example_ids: ["event:earthquake", "event:water_shortage"], source_candidates: [usgs_earthquake_lite, gdelt_semiconductor_lite]}
-  - {node_type: market_event, layer: L10_risk_events, description: Market pressure or demand event, required_attributes: [label, event_time], example_ids: ["event:demand_spike", "event:price_spike"], source_candidates: [wsts_historical_billings, gdelt_semiconductor_lite]}
-  - {node_type: factory_event, layer: L10_risk_events, description: Factory or facility disruption event, required_attributes: [label, event_time], example_ids: ["event:factory_fire", "event:power_outage"], source_candidates: [gdelt_semiconductor_lite, company_annual_report_manual_upload]}
-  - {node_type: cyber_event, layer: L10_risk_events, description: Cyber incident event affecting semiconductor supply context, required_attributes: [label, event_time], example_ids: ["event:cyber_attack"], source_candidates: [gdelt_semiconductor_lite, sec_edgar_lite]}
-  - {node_type: labor_event, layer: L10_risk_events, description: Labor disruption or workforce event, required_attributes: [label, event_time], example_ids: ["event:labor_disruption"], source_candidates: [gdelt_semiconductor_lite, company_annual_report_manual_upload]}
-  - {node_type: policy_event, layer: L11_compliance, description: Policy event or rulemaking relevant to semiconductors, required_attributes: [label, jurisdiction], example_ids: ["policy:US_advanced_computing_controls", "policy:entity_list_update"], source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite]}
-  - {node_type: sanction_event, layer: L11_compliance, description: Sanctions list event or compliance signal, required_attributes: [label, jurisdiction], example_ids: ["list:OFAC_SDN"], source_candidates: [ofac_sanctions_list_lite, consolidated_screening_list_lite]}
-  - {node_type: restricted_item, layer: L11_compliance, description: Item category subject to controls or restrictions, required_attributes: [label], example_ids: ["policy:semiconductor_manufacturing_equipment_controls"], source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite]}
-  - {node_type: restricted_entity, layer: L11_compliance, description: Restricted entity list or screening list entry, required_attributes: [label], example_ids: ["list:Consolidated_Screening_List"], source_candidates: [ofac_sanctions_list_lite, consolidated_screening_list_lite]}
-  - {node_type: compliance_risk, layer: L11_compliance, description: Compliance risk context for resilience planning, required_attributes: [label], example_ids: ["compliance_risk:export_control_exposure"], source_candidates: [bis_export_controls_lite, ofac_sanctions_list_lite]}
+- node_type: country
+  layer: L0_policy_macro
+  description: Sovereign or customs reporting geography
+  required_attributes:
+  - country_code
+  - label
+  example_ids:
+  - country:US
+  - region:china_taiwan
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - located_in
+  - exports_to
+  - imports_from
+  - trade_dependency
+  - evidence_for
+  allowed_incoming_edges:
+  - located_in
+  - exports_to
+  - imports_from
+  - trade_dependency
+  - part_of
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: region
+  layer: L0_policy_macro
+  description: Multi-country region used for aggregation
+  required_attributes:
+  - label
+  example_ids:
+  - region:East_Asia
+  - region:EU
+  source_candidates:
+  - oecd_semiconductor_value_chain_reports
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - located_in
+  - exports_to
+  - imports_from
+  - trade_dependency
+  - evidence_for
+  allowed_incoming_edges:
+  - located_in
+  - exports_to
+  - imports_from
+  - trade_dependency
+  - part_of
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: policy_regime
+  layer: L0_policy_macro
+  description: Policy or regulatory regime relevant to semiconductor supply chains
+  required_attributes:
+  - label
+  - jurisdiction
+  example_ids:
+  - policy_regime:export_controls
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: macro_indicator
+  layer: L0_policy_macro
+  description: Macro or market indicator used as context
+  required_attributes:
+  - label
+  - unit
+  example_ids:
+  - macro_indicator:regional_billings
+  source_candidates:
+  - wsts_historical_billings
+  - world_bank_macro_indicators_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: industrial_policy
+  layer: L0_policy_macro
+  description: Industrial-policy program or policy context
+  required_attributes:
+  - label
+  - jurisdiction
+  example_ids:
+  - industrial_policy:chips_act
+  source_candidates:
+  - oecd_semiconductor_value_chain_reports
+  - federal_register_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: export_control_regime
+  layer: L0_policy_macro
+  description: Export-control regime or control framework
+  required_attributes:
+  - label
+  - jurisdiction
+  example_ids:
+  - export_control_regime:us_advanced_computing
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: critical_mineral
+  layer: L1_raw_minerals
+  description: Mineral input with potential supply risk relevance
+  required_attributes:
+  - label
+  example_ids:
+  - critical_mineral:silicon
+  - critical_mineral:gallium
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  - un_comtrade_semiconductor_trade_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: raw_material
+  layer: L1_raw_minerals
+  description: Raw material used upstream of semiconductor materials or chemicals
+  required_attributes:
+  - label
+  example_ids:
+  - raw_material:quartz
+  - raw_material:helium
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  - eto_cset_advanced_semiconductor_supply_chain
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: mining_country
+  layer: L1_raw_minerals
+  description: Country associated with mineral production
+  required_attributes:
+  - country_code
+  - mineral
+  example_ids:
+  - mining_country:CN:gallium
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  - un_comtrade_semiconductor_trade_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: refining_country
+  layer: L1_raw_minerals
+  description: Country associated with mineral or material refining
+  required_attributes:
+  - country_code
+  - material
+  example_ids:
+  - refining_country:JP:photoresist
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  - eto_cset_advanced_semiconductor_supply_chain
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: wafer_material
+  layer: L2_materials_chemicals
+  description: Wafer material input
+  required_attributes:
+  - label
+  example_ids:
+  - material:silicon_wafer_300mm
+  - material:soi_wafer
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: electronic_chemical
+  layer: L2_materials_chemicals
+  description: Electronic-grade chemical input
+  required_attributes:
+  - label
+  example_ids:
+  - chemical:hydrogen_peroxide
+  - chemical:hydrofluoric_acid
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - uses_chemical
+  - supplies_item
+  geography_terminology_policy: not_geographic
+- node_type: photoresist
+  layer: L2_materials_chemicals
+  description: Photoresist material category
+  required_attributes:
+  - label
+  example_ids:
+  - chemical:photoresist_ArF
+  - chemical:photoresist_EUV
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - uses_chemical
+  - supplies_item
+  geography_terminology_policy: not_geographic
+- node_type: specialty_gas
+  layer: L2_materials_chemicals
+  description: Specialty gas input for semiconductor processes
+  required_attributes:
+  - label
+  example_ids:
+  - gas:neon
+  - gas:nitrogen_trifluoride
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: mask_reticle
+  layer: L2_materials_chemicals
+  description: Photomask or reticle input
+  required_attributes:
+  - label
+  example_ids:
+  - material:photomask
+  - material:reticle
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - sec_edgar_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: substrate_material
+  layer: L2_materials_chemicals
+  description: Substrate material used in advanced packaging or assembly
+  required_attributes:
+  - label
+  example_ids:
+  - material:abf_substrate
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: cmp_material
+  layer: L2_materials_chemicals
+  description: CMP slurry or related material
+  required_attributes:
+  - label
+  example_ids:
+  - material:cmp_slurry
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: design_company
+  layer: L3_design_eda_ip
+  description: Company providing design or EDA capabilities
+  required_attributes:
+  - label
+  example_ids:
+  - company:Cadence
+  - company:Synopsys
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: eda_tool
+  layer: L3_design_eda_ip
+  description: EDA tool or design workflow category
+  required_attributes:
+  - label
+  example_ids:
+  - eda:logic_synthesis
+  - eda:verification
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - oecd_semiconductor_value_chain_reports
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: ip_core
+  layer: L3_design_eda_ip
+  description: Semiconductor IP block or core
+  required_attributes:
+  - label
+  example_ids:
+  - ip:ARM_core
+  - ip:SerDes
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: fabless_company
+  layer: L3_design_eda_ip
+  description: Fabless semiconductor design firm
+  required_attributes:
+  - label
+  example_ids:
+  - company:NVIDIA
+  - company:Qualcomm
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: idm
+  layer: L3_design_eda_ip
+  description: Integrated device manufacturer
+  required_attributes:
+  - label
+  example_ids:
+  - company:Intel
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: architecture
+  layer: L3_design_eda_ip
+  description: Computing or processor architecture
+  required_attributes:
+  - label
+  example_ids:
+  - architecture:x86
+  - architecture:ARM
+  source_candidates:
+  - openalex_crossref_literature_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: equipment
+  layer: L4_equipment
+  description: Manufacturing or test equipment class
+  required_attributes:
+  - label
+  example_ids:
+  - equipment:EUV_scanner
+  - equipment:etch_tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - uses_equipment
+  - supplies_item
+  - restricted_by
+  geography_terminology_policy: not_geographic
+- node_type: equipment_supplier
+  layer: L4_equipment
+  description: Supplier of semiconductor manufacturing or test equipment
+  required_attributes:
+  - label
+  example_ids:
+  - company:ASML
+  - company:Applied_Materials
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - supplies
+  - supplies_item
+  - provides_equipment
+  - evidence_for
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: equipment_category
+  layer: L4_equipment
+  description: Equipment family or category
+  required_attributes:
+  - label
+  example_ids:
+  - equipment_category:lithography
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: equipment_component
+  layer: L4_equipment
+  description: Component within a manufacturing equipment supply chain
+  required_attributes:
+  - label
+  example_ids:
+  - equipment_component:laser_source
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: foundry
+  layer: L5_fabrication
+  description: Foundry or fabrication service provider
+  required_attributes:
+  - label
+  example_ids:
+  - company:TSMC
+  - company:Samsung_Foundry
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - produces
+  - manufactured_by
+  - evidence_for
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: fab
+  layer: L5_fabrication
+  description: Fabrication facility or fab complex
+  required_attributes:
+  - label
+  - country_code
+  example_ids:
+  - fab:TSMC_Fab_18
+  - fab:Samsung_Pyeongtaek
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - located_in
+  - requires
+  - uses_equipment
+  - uses_material
+  - uses_chemical
+  - routes_through
+  - exposed_to_hazard
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: process_stage
+  layer: L5_fabrication
+  description: Semiconductor manufacturing process stage
+  required_attributes:
+  - label
+  example_ids:
+  - process:lithography
+  - process:etching
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - oecd_semiconductor_value_chain_reports
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: technology_node
+  layer: L5_fabrication
+  description: Semiconductor process node label
+  required_attributes:
+  - label
+  example_ids:
+  - technology_node:3nm
+  - technology_node:28nm
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: capacity_node
+  layer: L5_fabrication
+  description: Capacity or utilization node for a fab
+  region: null
+  or process class: null
+  required_attributes:
+  - label
+  - basis
+  example_ids:
+  - capacity_node:advanced_logic_TW
+  source_candidates:
+  - wsts_historical_billings
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: wafer_process
+  layer: L5_fabrication
+  description: Wafer-level process family
+  required_attributes:
+  - label
+  example_ids:
+  - wafer_process:front_end
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: product_grade
+  layer: L6_products
+  description: Semiconductor product grade or market class
+  required_attributes:
+  - label
+  example_ids:
+  - product:advanced_logic
+  - product:automotive_chip
+  source_candidates:
+  - wsts_historical_billings
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - demands
+  - demand_signal_for
+  - produces
+  - requires
+  geography_terminology_policy: not_geographic
+- node_type: chip_type
+  layer: L6_products
+  description: Specific chip family or type
+  required_attributes:
+  - label
+  example_ids:
+  - product:GPU
+  - product:HBM
+  source_candidates:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: downstream_product
+  layer: L6_products
+  description: Product category consuming semiconductors
+  required_attributes:
+  - label
+  example_ids:
+  - downstream_product:ai_server
+  source_candidates:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: osat_company
+  layer: L7_packaging_testing
+  description: Outsourced semiconductor assembly and test company
+  required_attributes:
+  - label
+  example_ids:
+  - company:ASE
+  - company:Amkor
+  source_candidates:
+  - company_annual_report_manual_upload
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: packaging_stage
+  layer: L7_packaging_testing
+  description: Packaging process or package class
+  required_attributes:
+  - label
+  example_ids:
+  - packaging:wire_bonding
+  - packaging:flip_chip
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: advanced_packaging
+  layer: L7_packaging_testing
+  description: Advanced packaging architecture or capability
+  required_attributes:
+  - label
+  example_ids:
+  - packaging:CoWoS
+  - packaging:chiplet
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: substrate
+  layer: L7_packaging_testing
+  description: Packaging substrate or interposer input
+  required_attributes:
+  - label
+  example_ids:
+  - material:ABF_substrate
+  - material:interposer
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: testing_stage
+  layer: L7_packaging_testing
+  description: Test or sort stage
+  required_attributes:
+  - label
+  example_ids:
+  - testing:wafer_sort
+  - testing:final_test
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: port
+  layer: L8_logistics
+  description: Maritime port used for logistics context
+  required_attributes:
+  - label
+  - country_code
+  example_ids:
+  - port:Kaohsiung
+  - port:Rotterdam
+  source_candidates:
+  - nga_world_port_index_lite
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - routes_through
+  - exposed_to_hazard
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: airport
+  layer: L8_logistics
+  description: Airport used for logistics context
+  required_attributes:
+  - label
+  - country_code
+  example_ids:
+  - airport:Taoyuan
+  - airport:Incheon
+  source_candidates:
+  - gdelt_semiconductor_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - routes_through
+  - exposed_to_hazard
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: logistics_route
+  layer: L8_logistics
+  description: Bounded route context
+  required_attributes:
+  - label
+  example_ids:
+  - logistics_route:china_taiwan_us_air
+  source_candidates:
+  - nga_world_port_index_lite
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: shipping_lane
+  layer: L8_logistics
+  description: Shipping lane context used for exposure analysis
+  required_attributes:
+  - label
+  example_ids:
+  - shipping_lane:east_asia_us_west_coast
+  source_candidates:
+  - nga_world_port_index_lite
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: customs_region
+  layer: L8_logistics
+  description: Customs or trade reporting region
+  required_attributes:
+  - label
+  example_ids:
+  - customs_region:EU
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: normalize_geography_labels_before_api_visibility
+- node_type: downstream_sector
+  layer: L9_downstream_demand
+  description: Demand sector consuming semiconductor outputs
+  required_attributes:
+  - label
+  example_ids:
+  - sector:AI_datacenter
+  - sector:automotive
+  source_candidates:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - demands
+  - serves_downstream_sector
+  - evidence_for
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: customer_industry
+  layer: L9_downstream_demand
+  description: Customer industry category
+  required_attributes:
+  - label
+  example_ids:
+  - customer_industry:cloud
+  source_candidates:
+  - sec_edgar_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: demand_indicator
+  layer: L9_downstream_demand
+  description: Demand proxy or market pressure indicator
+  required_attributes:
+  - label
+  - unit
+  example_ids:
+  - demand_indicator:wsts_billings
+  source_candidates:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - demand_signal_for
+  - evidence_for
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: risk_event
+  layer: L10_risk_events
+  description: General risk event or disruption report
+  required_attributes:
+  - label
+  - event_time
+  example_ids:
+  - event:port_disruption
+  - event:price_spike
+  source_candidates:
+  - gdelt_semiconductor_lite
+  - sec_edgar_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: hazard_event
+  layer: L10_risk_events
+  description: Natural hazard or physical disruption event
+  required_attributes:
+  - label
+  - event_time
+  example_ids:
+  - event:earthquake
+  - event:water_shortage
+  source_candidates:
+  - usgs_earthquake_lite
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: market_event
+  layer: L10_risk_events
+  description: Market pressure or demand event
+  required_attributes:
+  - label
+  - event_time
+  example_ids:
+  - event:demand_spike
+  - event:price_spike
+  source_candidates:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: factory_event
+  layer: L10_risk_events
+  description: Factory or facility disruption event
+  required_attributes:
+  - label
+  - event_time
+  example_ids:
+  - event:factory_fire
+  - event:power_outage
+  source_candidates:
+  - gdelt_semiconductor_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: cyber_event
+  layer: L10_risk_events
+  description: Cyber incident event affecting semiconductor supply context
+  required_attributes:
+  - label
+  - event_time
+  example_ids:
+  - event:cyber_attack
+  source_candidates:
+  - gdelt_semiconductor_lite
+  - sec_edgar_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: labor_event
+  layer: L10_risk_events
+  description: Labor disruption or workforce event
+  required_attributes:
+  - label
+  - event_time
+  example_ids:
+  - event:labor_disruption
+  source_candidates:
+  - gdelt_semiconductor_lite
+  - company_annual_report_manual_upload
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: policy_event
+  layer: L11_compliance
+  description: Policy event or rulemaking relevant to semiconductors
+  required_attributes:
+  - label
+  - jurisdiction
+  example_ids:
+  - policy:US_advanced_computing_controls
+  - policy:entity_list_update
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: sanction_event
+  layer: L11_compliance
+  description: Sanctions list event or compliance signal
+  required_attributes:
+  - label
+  - jurisdiction
+  example_ids:
+  - list:OFAC_SDN
+  source_candidates:
+  - ofac_sanctions_list_lite
+  - consolidated_screening_list_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: restricted_item
+  layer: L11_compliance
+  description: Item category subject to controls or restrictions
+  required_attributes:
+  - label
+  example_ids:
+  - policy:semiconductor_manufacturing_equipment_controls
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: restricted_entity
+  layer: L11_compliance
+  description: Restricted entity list or screening list entry
+  required_attributes:
+  - label
+  example_ids:
+  - list:Consolidated_Screening_List
+  source_candidates:
+  - ofac_sanctions_list_lite
+  - consolidated_screening_list_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
+- node_type: compliance_risk
+  layer: L11_compliance
+  description: Compliance risk context for resilience planning
+  required_attributes:
+  - label
+  example_ids:
+  - compliance_risk:export_control_exposure
+  source_candidates:
+  - bis_export_controls_lite
+  - ofac_sanctions_list_lite
+  optional_attributes: []
+  allowed_outgoing_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  allowed_incoming_edges:
+  - requires
+  - depends_on
+  - evidence_for
+  - evidence_context_link
+  geography_terminology_policy: not_geographic
 nodes:
-  - {node_id: "country:US", node_type: country, layer: L0_policy_macro, label: United States, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: US}}
-  - {node_id: "country:CN", node_type: country, layer: L0_policy_macro, label: China, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: CN}}
-  - {node_id: "region:china_taiwan", node_type: region, layer: L0_policy_macro, label: 中国台湾, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite], attributes: {country_code: CN}}
-  - {node_id: "country:KR", node_type: country, layer: L0_policy_macro, label: South Korea, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: KR}}
-  - {node_id: "country:JP", node_type: country, layer: L0_policy_macro, label: Japan, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: JP}}
-  - {node_id: "country:NL", node_type: country, layer: L0_policy_macro, label: Netherlands, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: NL}}
-  - {node_id: "country:DE", node_type: country, layer: L0_policy_macro, label: Germany, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: DE}}
-  - {node_id: "country:SG", node_type: country, layer: L0_policy_macro, label: Singapore, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: SG}}
-  - {node_id: "country:MY", node_type: country, layer: L0_policy_macro, label: Malaysia, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: MY}}
-  - {node_id: "country:VN", node_type: country, layer: L0_policy_macro, label: Vietnam, source_candidates: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite], attributes: {country_code: VN}}
-  - {node_id: "region:East_Asia", node_type: region, layer: L0_policy_macro, label: East Asia, source_candidates: [oecd_semiconductor_value_chain_reports, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "region:EU", node_type: region, layer: L0_policy_macro, label: European Union, source_candidates: [oecd_semiconductor_value_chain_reports, federal_register_export_controls_lite], attributes: {}}
-  - {node_id: "region:North_America", node_type: region, layer: L0_policy_macro, label: North America, source_candidates: [oecd_semiconductor_value_chain_reports, un_comtrade_semiconductor_trade_lite], attributes: {}}
-  - {node_id: "critical_mineral:silicon", node_type: critical_mineral, layer: L1_raw_minerals, label: Silicon, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "critical_mineral:gallium", node_type: critical_mineral, layer: L1_raw_minerals, label: Gallium, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "critical_mineral:germanium", node_type: critical_mineral, layer: L1_raw_minerals, label: Germanium, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "critical_mineral:rare_earths", node_type: critical_mineral, layer: L1_raw_minerals, label: Rare earths, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "critical_mineral:tungsten", node_type: critical_mineral, layer: L1_raw_minerals, label: Tungsten, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "critical_mineral:tantalum", node_type: critical_mineral, layer: L1_raw_minerals, label: Tantalum, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "raw_material:quartz", node_type: raw_material, layer: L1_raw_minerals, label: Quartz, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "raw_material:graphite", node_type: raw_material, layer: L1_raw_minerals, label: Graphite, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "raw_material:fluorspar", node_type: raw_material, layer: L1_raw_minerals, label: Fluorspar, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "raw_material:helium", node_type: raw_material, layer: L1_raw_minerals, label: Helium, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "raw_material:neon", node_type: raw_material, layer: L1_raw_minerals, label: Neon, source_candidates: [usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "material:silicon_wafer_300mm", node_type: wafer_material, layer: L2_materials_chemicals, label: 300mm silicon wafer, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "material:soi_wafer", node_type: wafer_material, layer: L2_materials_chemicals, label: SOI wafer, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "material:photomask", node_type: mask_reticle, layer: L2_materials_chemicals, label: Photomask, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "material:reticle", node_type: mask_reticle, layer: L2_materials_chemicals, label: Reticle, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "chemical:photoresist_ArF", node_type: photoresist, layer: L2_materials_chemicals, label: ArF photoresist, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "chemical:photoresist_EUV", node_type: photoresist, layer: L2_materials_chemicals, label: EUV photoresist, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "chemical:hydrogen_peroxide", node_type: electronic_chemical, layer: L2_materials_chemicals, label: Hydrogen peroxide, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "chemical:sulfuric_acid", node_type: electronic_chemical, layer: L2_materials_chemicals, label: Sulfuric acid, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "chemical:hydrofluoric_acid", node_type: electronic_chemical, layer: L2_materials_chemicals, label: Hydrofluoric acid, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "gas:neon", node_type: specialty_gas, layer: L2_materials_chemicals, label: Neon gas, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "gas:argon", node_type: specialty_gas, layer: L2_materials_chemicals, label: Argon gas, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "gas:helium", node_type: specialty_gas, layer: L2_materials_chemicals, label: Helium gas, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite], attributes: {}}
-  - {node_id: "gas:nitrogen_trifluoride", node_type: specialty_gas, layer: L2_materials_chemicals, label: Nitrogen trifluoride, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "material:cmp_slurry", node_type: cmp_material, layer: L2_materials_chemicals, label: CMP slurry, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "material:abf_substrate", node_type: substrate_material, layer: L2_materials_chemicals, label: ABF substrate material, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "company:NVIDIA", node_type: fabless_company, layer: L3_design_eda_ip, label: NVIDIA, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:AMD", node_type: fabless_company, layer: L3_design_eda_ip, label: AMD, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Qualcomm", node_type: fabless_company, layer: L3_design_eda_ip, label: Qualcomm, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Broadcom", node_type: fabless_company, layer: L3_design_eda_ip, label: Broadcom, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Apple", node_type: fabless_company, layer: L3_design_eda_ip, label: Apple, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:MediaTek", node_type: fabless_company, layer: L3_design_eda_ip, label: MediaTek, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Cadence", node_type: design_company, layer: L3_design_eda_ip, label: Cadence, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Synopsys", node_type: design_company, layer: L3_design_eda_ip, label: Synopsys, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Siemens_EDA", node_type: design_company, layer: L3_design_eda_ip, label: Siemens EDA, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "eda:logic_synthesis", node_type: eda_tool, layer: L3_design_eda_ip, label: Logic synthesis, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "eda:place_and_route", node_type: eda_tool, layer: L3_design_eda_ip, label: Place and route, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "eda:verification", node_type: eda_tool, layer: L3_design_eda_ip, label: Verification, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "ip:ARM_core", node_type: ip_core, layer: L3_design_eda_ip, label: ARM core, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "ip:SerDes", node_type: ip_core, layer: L3_design_eda_ip, label: SerDes, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "ip:DDR_controller", node_type: ip_core, layer: L3_design_eda_ip, label: DDR controller, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "architecture:x86", node_type: architecture, layer: L3_design_eda_ip, label: x86, source_candidates: [openalex_crossref_literature_lite], attributes: {}}
-  - {node_id: "architecture:ARM", node_type: architecture, layer: L3_design_eda_ip, label: ARM, source_candidates: [openalex_crossref_literature_lite], attributes: {}}
-  - {node_id: "architecture:RISC-V", node_type: architecture, layer: L3_design_eda_ip, label: RISC-V, source_candidates: [openalex_crossref_literature_lite], attributes: {}}
-  - {node_id: "equipment:EUV_scanner", node_type: equipment, layer: L4_equipment, label: EUV scanner, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite], attributes: {}}
-  - {node_id: "equipment:DUV_scanner", node_type: equipment, layer: L4_equipment, label: DUV scanner, source_candidates: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite], attributes: {}}
-  - {node_id: "equipment:etch_tool", node_type: equipment, layer: L4_equipment, label: Etch tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:deposition_CVD", node_type: equipment, layer: L4_equipment, label: CVD deposition tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:deposition_PVD", node_type: equipment, layer: L4_equipment, label: PVD deposition tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:deposition_ALD", node_type: equipment, layer: L4_equipment, label: ALD deposition tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:ion_implanter", node_type: equipment, layer: L4_equipment, label: Ion implanter, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:CMP_tool", node_type: equipment, layer: L4_equipment, label: CMP tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:metrology_tool", node_type: equipment, layer: L4_equipment, label: Metrology tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:inspection_tool", node_type: equipment, layer: L4_equipment, label: Inspection tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:wafer_cleaning_tool", node_type: equipment, layer: L4_equipment, label: Wafer cleaning tool, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "equipment:test_equipment", node_type: equipment, layer: L4_equipment, label: Test equipment, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "company:ASML", node_type: equipment_supplier, layer: L4_equipment, label: ASML, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Applied_Materials", node_type: equipment_supplier, layer: L4_equipment, label: Applied Materials, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Lam_Research", node_type: equipment_supplier, layer: L4_equipment, label: Lam Research, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Tokyo_Electron", node_type: equipment_supplier, layer: L4_equipment, label: Tokyo Electron, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:KLA", node_type: equipment_supplier, layer: L4_equipment, label: KLA, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Nikon", node_type: equipment_supplier, layer: L4_equipment, label: Nikon, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Canon", node_type: equipment_supplier, layer: L4_equipment, label: Canon, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Advantest", node_type: equipment_supplier, layer: L4_equipment, label: Advantest, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Teradyne", node_type: equipment_supplier, layer: L4_equipment, label: Teradyne, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:TSMC", node_type: foundry, layer: L5_fabrication, label: TSMC, source_candidates: [company_annual_report_manual_upload, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "company:Samsung_Foundry", node_type: foundry, layer: L5_fabrication, label: Samsung Foundry, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Intel_Foundry", node_type: foundry, layer: L5_fabrication, label: Intel Foundry, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:SMIC", node_type: foundry, layer: L5_fabrication, label: SMIC, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:UMC", node_type: foundry, layer: L5_fabrication, label: UMC, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:GlobalFoundries", node_type: foundry, layer: L5_fabrication, label: GlobalFoundries, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:Hua_Hong", node_type: foundry, layer: L5_fabrication, label: Hua Hong, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "fab:TSMC_Fab_18", node_type: fab, layer: L5_fabrication, label: TSMC Fab 18, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: CN}}
-  - {node_id: "fab:Samsung_Pyeongtaek", node_type: fab, layer: L5_fabrication, label: Samsung Pyeongtaek, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: KR}}
-  - {node_id: "process:lithography", node_type: process_stage, layer: L5_fabrication, label: Lithography, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "process:etching", node_type: process_stage, layer: L5_fabrication, label: Etching, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "process:deposition", node_type: process_stage, layer: L5_fabrication, label: Deposition, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "process:ion_implantation", node_type: process_stage, layer: L5_fabrication, label: Ion implantation, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "process:cleaning", node_type: process_stage, layer: L5_fabrication, label: Cleaning, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "process:CMP", node_type: process_stage, layer: L5_fabrication, label: CMP, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "process:metrology", node_type: process_stage, layer: L5_fabrication, label: Metrology, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "technology_node:3nm", node_type: technology_node, layer: L5_fabrication, label: 3nm, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "technology_node:5nm", node_type: technology_node, layer: L5_fabrication, label: 5nm, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "technology_node:7nm", node_type: technology_node, layer: L5_fabrication, label: 7nm, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "technology_node:14nm", node_type: technology_node, layer: L5_fabrication, label: 14nm, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "technology_node:28nm", node_type: technology_node, layer: L5_fabrication, label: 28nm, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "technology_node:55nm", node_type: technology_node, layer: L5_fabrication, label: 55nm, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "product:advanced_logic", node_type: product_grade, layer: L6_products, label: Advanced logic, source_candidates: [wsts_historical_billings, company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "product:mature_logic", node_type: product_grade, layer: L6_products, label: Mature logic, source_candidates: [wsts_historical_billings, company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "product:DRAM", node_type: chip_type, layer: L6_products, label: DRAM, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:NAND", node_type: chip_type, layer: L6_products, label: NAND, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:HBM", node_type: chip_type, layer: L6_products, label: HBM, source_candidates: [wsts_historical_billings, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "product:GPU", node_type: chip_type, layer: L6_products, label: GPU, source_candidates: [sec_edgar_lite, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "product:AI_accelerator", node_type: chip_type, layer: L6_products, label: AI accelerator, source_candidates: [sec_edgar_lite, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "product:MCU", node_type: chip_type, layer: L6_products, label: MCU, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:power_semiconductor", node_type: chip_type, layer: L6_products, label: Power semiconductor, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:analog_chip", node_type: chip_type, layer: L6_products, label: Analog chip, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:RF_chip", node_type: chip_type, layer: L6_products, label: RF chip, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:CIS", node_type: chip_type, layer: L6_products, label: CMOS image sensor, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "product:automotive_chip", node_type: product_grade, layer: L6_products, label: Automotive chip, source_candidates: [wsts_historical_billings, sec_edgar_lite], attributes: {}}
-  - {node_id: "product:server_cpu", node_type: chip_type, layer: L6_products, label: Server CPU, source_candidates: [sec_edgar_lite, wsts_historical_billings], attributes: {}}
-  - {node_id: "company:ASE", node_type: osat_company, layer: L7_packaging_testing, label: ASE, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Amkor", node_type: osat_company, layer: L7_packaging_testing, label: Amkor, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "company:JCET", node_type: osat_company, layer: L7_packaging_testing, label: JCET, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:Powertech", node_type: osat_company, layer: L7_packaging_testing, label: Powertech, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "company:SPIL", node_type: osat_company, layer: L7_packaging_testing, label: SPIL, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "packaging:wire_bonding", node_type: packaging_stage, layer: L7_packaging_testing, label: Wire bonding, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "packaging:flip_chip", node_type: packaging_stage, layer: L7_packaging_testing, label: Flip chip, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "packaging:fan_out", node_type: advanced_packaging, layer: L7_packaging_testing, label: Fan-out packaging, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "packaging:2_5D", node_type: advanced_packaging, layer: L7_packaging_testing, label: 2.5D packaging, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "packaging:3D", node_type: advanced_packaging, layer: L7_packaging_testing, label: 3D packaging, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "packaging:CoWoS", node_type: advanced_packaging, layer: L7_packaging_testing, label: CoWoS, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "packaging:chiplet", node_type: advanced_packaging, layer: L7_packaging_testing, label: Chiplet packaging, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "material:ABF_substrate", node_type: substrate, layer: L7_packaging_testing, label: ABF substrate, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "material:interposer", node_type: substrate, layer: L7_packaging_testing, label: Interposer, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "testing:wafer_sort", node_type: testing_stage, layer: L7_packaging_testing, label: Wafer sort, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "testing:final_test", node_type: testing_stage, layer: L7_packaging_testing, label: Final test, source_candidates: [eto_cset_advanced_semiconductor_supply_chain], attributes: {}}
-  - {node_id: "port:Kaohsiung", node_type: port, layer: L8_logistics, label: Kaohsiung, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
-  - {node_id: "port:Keelung", node_type: port, layer: L8_logistics, label: Keelung, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
-  - {node_id: "port:Shanghai", node_type: port, layer: L8_logistics, label: Shanghai, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
-  - {node_id: "port:Shenzhen", node_type: port, layer: L8_logistics, label: Shenzhen, source_candidates: [nga_world_port_index_lite], attributes: {country_code: CN}}
-  - {node_id: "port:Busan", node_type: port, layer: L8_logistics, label: Busan, source_candidates: [nga_world_port_index_lite], attributes: {country_code: KR}}
-  - {node_id: "port:Yokohama", node_type: port, layer: L8_logistics, label: Yokohama, source_candidates: [nga_world_port_index_lite], attributes: {country_code: JP}}
-  - {node_id: "port:Rotterdam", node_type: port, layer: L8_logistics, label: Rotterdam, source_candidates: [nga_world_port_index_lite], attributes: {country_code: NL}}
-  - {node_id: "port:Los_Angeles", node_type: port, layer: L8_logistics, label: Los Angeles, source_candidates: [nga_world_port_index_lite], attributes: {country_code: US}}
-  - {node_id: "airport:Taoyuan", node_type: airport, layer: L8_logistics, label: Taoyuan, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: CN}}
-  - {node_id: "airport:Incheon", node_type: airport, layer: L8_logistics, label: Incheon, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: KR}}
-  - {node_id: "airport:Narita", node_type: airport, layer: L8_logistics, label: Narita, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: JP}}
-  - {node_id: "airport:Changi", node_type: airport, layer: L8_logistics, label: Changi, source_candidates: [gdelt_semiconductor_lite], attributes: {country_code: SG}}
-  - {node_id: "sector:AI_datacenter", node_type: downstream_sector, layer: L9_downstream_demand, label: AI datacenter, source_candidates: [sec_edgar_lite, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "sector:cloud_computing", node_type: downstream_sector, layer: L9_downstream_demand, label: Cloud computing, source_candidates: [sec_edgar_lite], attributes: {}}
-  - {node_id: "sector:consumer_electronics", node_type: downstream_sector, layer: L9_downstream_demand, label: Consumer electronics, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "sector:automotive", node_type: downstream_sector, layer: L9_downstream_demand, label: Automotive, source_candidates: [wsts_historical_billings, sec_edgar_lite], attributes: {}}
-  - {node_id: "sector:industrial_control", node_type: downstream_sector, layer: L9_downstream_demand, label: Industrial control, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "sector:telecom", node_type: downstream_sector, layer: L9_downstream_demand, label: Telecom, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "sector:defense", node_type: downstream_sector, layer: L9_downstream_demand, label: Defense, source_candidates: [company_annual_report_manual_upload], attributes: {}}
-  - {node_id: "sector:medical_devices", node_type: downstream_sector, layer: L9_downstream_demand, label: Medical devices, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "sector:robotics", node_type: downstream_sector, layer: L9_downstream_demand, label: Robotics, source_candidates: [gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "sector:renewable_energy", node_type: downstream_sector, layer: L9_downstream_demand, label: Renewable energy, source_candidates: [wsts_historical_billings], attributes: {}}
-  - {node_id: "event:earthquake", node_type: hazard_event, layer: L10_risk_events, label: Earthquake, source_candidates: [usgs_earthquake_lite, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "event:power_outage", node_type: factory_event, layer: L10_risk_events, label: Power outage, source_candidates: [gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "event:water_shortage", node_type: hazard_event, layer: L10_risk_events, label: Water shortage, source_candidates: [gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "event:factory_fire", node_type: factory_event, layer: L10_risk_events, label: Factory fire, source_candidates: [gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "event:port_disruption", node_type: risk_event, layer: L10_risk_events, label: Port disruption, source_candidates: [gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "event:cyber_attack", node_type: cyber_event, layer: L10_risk_events, label: Cyber attack, source_candidates: [gdelt_semiconductor_lite, sec_edgar_lite], attributes: {}}
-  - {node_id: "event:demand_spike", node_type: market_event, layer: L10_risk_events, label: Demand spike, source_candidates: [wsts_historical_billings, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "event:price_spike", node_type: market_event, layer: L10_risk_events, label: Price spike, source_candidates: [wsts_historical_billings, gdelt_semiconductor_lite], attributes: {}}
-  - {node_id: "policy:US_advanced_computing_controls", node_type: policy_event, layer: L11_compliance, label: US advanced computing controls, source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite], attributes: {jurisdiction: US}}
-  - {node_id: "policy:semiconductor_manufacturing_equipment_controls", node_type: restricted_item, layer: L11_compliance, label: Semiconductor manufacturing equipment controls, source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite], attributes: {}}
-  - {node_id: "policy:entity_list_update", node_type: policy_event, layer: L11_compliance, label: Entity list update, source_candidates: [bis_export_controls_lite, federal_register_export_controls_lite], attributes: {}}
-  - {node_id: "list:OFAC_SDN", node_type: sanction_event, layer: L11_compliance, label: OFAC SDN list, source_candidates: [ofac_sanctions_list_lite], attributes: {}}
-  - {node_id: "list:Consolidated_Screening_List", node_type: restricted_entity, layer: L11_compliance, label: Consolidated Screening List, source_candidates: [consolidated_screening_list_lite], attributes: {}}
+- node_id: country:US
+  node_type: country
+  layer: L0_policy_macro
+  label: United States
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: US
+  chain_layer: L0_policy_macro
+  canonical_name: United States
+  display_name: United States
+  description: Canonical country seed for United States.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: &id001
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:CN
+  node_type: country
+  layer: L0_policy_macro
+  label: China
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: CN
+  chain_layer: L0_policy_macro
+  canonical_name: China
+  display_name: China
+  description: Canonical country seed for China.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: region:china_taiwan
+  node_type: region
+  layer: L0_policy_macro
+  label: 中国台湾
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  attributes:
+    country_code: CN
+    country_id: country:CN
+    country_display: 中国
+    region_id: region:china_taiwan
+    display_region: 中国台湾
+  chain_layer: L0_policy_macro
+  canonical_name: 中国台湾
+  display_name: 中国台湾
+  description: Canonical region seed for 中国台湾.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - un_comtrade_semiconductor_trade_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:KR
+  node_type: country
+  layer: L0_policy_macro
+  label: South Korea
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: KR
+  chain_layer: L0_policy_macro
+  canonical_name: South Korea
+  display_name: South Korea
+  description: Canonical country seed for South Korea.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:JP
+  node_type: country
+  layer: L0_policy_macro
+  label: Japan
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: JP
+  chain_layer: L0_policy_macro
+  canonical_name: Japan
+  display_name: Japan
+  description: Canonical country seed for Japan.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:NL
+  node_type: country
+  layer: L0_policy_macro
+  label: Netherlands
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: NL
+  chain_layer: L0_policy_macro
+  canonical_name: Netherlands
+  display_name: Netherlands
+  description: Canonical country seed for Netherlands.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:DE
+  node_type: country
+  layer: L0_policy_macro
+  label: Germany
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: DE
+  chain_layer: L0_policy_macro
+  canonical_name: Germany
+  display_name: Germany
+  description: Canonical country seed for Germany.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:SG
+  node_type: country
+  layer: L0_policy_macro
+  label: Singapore
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: SG
+  chain_layer: L0_policy_macro
+  canonical_name: Singapore
+  display_name: Singapore
+  description: Canonical country seed for Singapore.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:MY
+  node_type: country
+  layer: L0_policy_macro
+  label: Malaysia
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: MY
+  chain_layer: L0_policy_macro
+  canonical_name: Malaysia
+  display_name: Malaysia
+  description: Canonical country seed for Malaysia.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: country:VN
+  node_type: country
+  layer: L0_policy_macro
+  label: Vietnam
+  source_candidates:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  attributes:
+    country_code: VN
+  chain_layer: L0_policy_macro
+  canonical_name: Vietnam
+  display_name: Vietnam
+  description: Canonical country seed for Vietnam.
+  example_source_ids:
+  - un_comtrade_semiconductor_trade_lite
+  - wits_trade_tariff_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: region:East_Asia
+  node_type: region
+  layer: L0_policy_macro
+  label: East Asia
+  source_candidates:
+  - oecd_semiconductor_value_chain_reports
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L0_policy_macro
+  canonical_name: East Asia
+  display_name: East Asia
+  description: Canonical region seed for East Asia.
+  example_source_ids:
+  - oecd_semiconductor_value_chain_reports
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: region:EU
+  node_type: region
+  layer: L0_policy_macro
+  label: European Union
+  source_candidates:
+  - oecd_semiconductor_value_chain_reports
+  - federal_register_export_controls_lite
+  attributes: {}
+  chain_layer: L0_policy_macro
+  canonical_name: European Union
+  display_name: European Union
+  description: Canonical region seed for European Union.
+  example_source_ids:
+  - oecd_semiconductor_value_chain_reports
+  - federal_register_export_controls_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: region:North_America
+  node_type: region
+  layer: L0_policy_macro
+  label: North America
+  source_candidates:
+  - oecd_semiconductor_value_chain_reports
+  - un_comtrade_semiconductor_trade_lite
+  attributes: {}
+  chain_layer: L0_policy_macro
+  canonical_name: North America
+  display_name: North America
+  description: Canonical region seed for North America.
+  example_source_ids:
+  - oecd_semiconductor_value_chain_reports
+  - un_comtrade_semiconductor_trade_lite
+  allowed_relationship_classes: *id001
+  display_group: L0_policy_macro
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: critical_mineral:silicon
+  node_type: critical_mineral
+  layer: L1_raw_minerals
+  label: Silicon
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Silicon
+  display_name: Silicon
+  description: Canonical critical_mineral seed for Silicon.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: &id002
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: critical_mineral:gallium
+  node_type: critical_mineral
+  layer: L1_raw_minerals
+  label: Gallium
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Gallium
+  display_name: Gallium
+  description: Canonical critical_mineral seed for Gallium.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: critical_mineral:germanium
+  node_type: critical_mineral
+  layer: L1_raw_minerals
+  label: Germanium
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Germanium
+  display_name: Germanium
+  description: Canonical critical_mineral seed for Germanium.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: critical_mineral:rare_earths
+  node_type: critical_mineral
+  layer: L1_raw_minerals
+  label: Rare earths
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Rare earths
+  display_name: Rare earths
+  description: Canonical critical_mineral seed for Rare earths.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: critical_mineral:tungsten
+  node_type: critical_mineral
+  layer: L1_raw_minerals
+  label: Tungsten
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Tungsten
+  display_name: Tungsten
+  description: Canonical critical_mineral seed for Tungsten.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: critical_mineral:tantalum
+  node_type: critical_mineral
+  layer: L1_raw_minerals
+  label: Tantalum
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Tantalum
+  display_name: Tantalum
+  description: Canonical critical_mineral seed for Tantalum.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: raw_material:quartz
+  node_type: raw_material
+  layer: L1_raw_minerals
+  label: Quartz
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Quartz
+  display_name: Quartz
+  description: Canonical raw_material seed for Quartz.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: raw_material:graphite
+  node_type: raw_material
+  layer: L1_raw_minerals
+  label: Graphite
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Graphite
+  display_name: Graphite
+  description: Canonical raw_material seed for Graphite.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: raw_material:fluorspar
+  node_type: raw_material
+  layer: L1_raw_minerals
+  label: Fluorspar
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Fluorspar
+  display_name: Fluorspar
+  description: Canonical raw_material seed for Fluorspar.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: raw_material:helium
+  node_type: raw_material
+  layer: L1_raw_minerals
+  label: Helium
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Helium
+  display_name: Helium
+  description: Canonical raw_material seed for Helium.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: raw_material:neon
+  node_type: raw_material
+  layer: L1_raw_minerals
+  label: Neon
+  source_candidates:
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L1_raw_minerals
+  canonical_name: Neon
+  display_name: Neon
+  description: Canonical raw_material seed for Neon.
+  example_source_ids:
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id002
+  display_group: L1_raw_minerals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:silicon_wafer_300mm
+  node_type: wafer_material
+  layer: L2_materials_chemicals
+  label: 300mm silicon wafer
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: 300mm silicon wafer
+  display_name: 300mm silicon wafer
+  description: Canonical wafer_material seed for 300mm silicon wafer.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: &id003
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:soi_wafer
+  node_type: wafer_material
+  layer: L2_materials_chemicals
+  label: SOI wafer
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: SOI wafer
+  display_name: SOI wafer
+  description: Canonical wafer_material seed for SOI wafer.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:photomask
+  node_type: mask_reticle
+  layer: L2_materials_chemicals
+  label: Photomask
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Photomask
+  display_name: Photomask
+  description: Canonical mask_reticle seed for Photomask.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:reticle
+  node_type: mask_reticle
+  layer: L2_materials_chemicals
+  label: Reticle
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Reticle
+  display_name: Reticle
+  description: Canonical mask_reticle seed for Reticle.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: chemical:photoresist_ArF
+  node_type: photoresist
+  layer: L2_materials_chemicals
+  label: ArF photoresist
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: ArF photoresist
+  display_name: ArF photoresist
+  description: Canonical photoresist seed for ArF photoresist.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: chemical:photoresist_EUV
+  node_type: photoresist
+  layer: L2_materials_chemicals
+  label: EUV photoresist
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: EUV photoresist
+  display_name: EUV photoresist
+  description: Canonical photoresist seed for EUV photoresist.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: chemical:hydrogen_peroxide
+  node_type: electronic_chemical
+  layer: L2_materials_chemicals
+  label: Hydrogen peroxide
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Hydrogen peroxide
+  display_name: Hydrogen peroxide
+  description: Canonical electronic_chemical seed for Hydrogen peroxide.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: chemical:sulfuric_acid
+  node_type: electronic_chemical
+  layer: L2_materials_chemicals
+  label: Sulfuric acid
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Sulfuric acid
+  display_name: Sulfuric acid
+  description: Canonical electronic_chemical seed for Sulfuric acid.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: chemical:hydrofluoric_acid
+  node_type: electronic_chemical
+  layer: L2_materials_chemicals
+  label: Hydrofluoric acid
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Hydrofluoric acid
+  display_name: Hydrofluoric acid
+  description: Canonical electronic_chemical seed for Hydrofluoric acid.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: gas:neon
+  node_type: specialty_gas
+  layer: L2_materials_chemicals
+  label: Neon gas
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Neon gas
+  display_name: Neon gas
+  description: Canonical specialty_gas seed for Neon gas.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: gas:argon
+  node_type: specialty_gas
+  layer: L2_materials_chemicals
+  label: Argon gas
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Argon gas
+  display_name: Argon gas
+  description: Canonical specialty_gas seed for Argon gas.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: gas:helium
+  node_type: specialty_gas
+  layer: L2_materials_chemicals
+  label: Helium gas
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Helium gas
+  display_name: Helium gas
+  description: Canonical specialty_gas seed for Helium gas.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - usgs_mineral_commodity_summaries_lite
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: gas:nitrogen_trifluoride
+  node_type: specialty_gas
+  layer: L2_materials_chemicals
+  label: Nitrogen trifluoride
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: Nitrogen trifluoride
+  display_name: Nitrogen trifluoride
+  description: Canonical specialty_gas seed for Nitrogen trifluoride.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:cmp_slurry
+  node_type: cmp_material
+  layer: L2_materials_chemicals
+  label: CMP slurry
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: CMP slurry
+  display_name: CMP slurry
+  description: Canonical cmp_material seed for CMP slurry.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:abf_substrate
+  node_type: substrate_material
+  layer: L2_materials_chemicals
+  label: ABF substrate material
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L2_materials_chemicals
+  canonical_name: ABF substrate material
+  display_name: ABF substrate material
+  description: Canonical substrate_material seed for ABF substrate material.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id003
+  display_group: L2_materials_chemicals
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:NVIDIA
+  node_type: fabless_company
+  layer: L3_design_eda_ip
+  label: NVIDIA
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: NVIDIA
+  display_name: NVIDIA
+  description: Canonical fabless_company seed for NVIDIA.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: &id004
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:AMD
+  node_type: fabless_company
+  layer: L3_design_eda_ip
+  label: AMD
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: AMD
+  display_name: AMD
+  description: Canonical fabless_company seed for AMD.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Qualcomm
+  node_type: fabless_company
+  layer: L3_design_eda_ip
+  label: Qualcomm
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Qualcomm
+  display_name: Qualcomm
+  description: Canonical fabless_company seed for Qualcomm.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Broadcom
+  node_type: fabless_company
+  layer: L3_design_eda_ip
+  label: Broadcom
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Broadcom
+  display_name: Broadcom
+  description: Canonical fabless_company seed for Broadcom.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Apple
+  node_type: fabless_company
+  layer: L3_design_eda_ip
+  label: Apple
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Apple
+  display_name: Apple
+  description: Canonical fabless_company seed for Apple.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:MediaTek
+  node_type: fabless_company
+  layer: L3_design_eda_ip
+  label: MediaTek
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: MediaTek
+  display_name: MediaTek
+  description: Canonical fabless_company seed for MediaTek.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Cadence
+  node_type: design_company
+  layer: L3_design_eda_ip
+  label: Cadence
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Cadence
+  display_name: Cadence
+  description: Canonical design_company seed for Cadence.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Synopsys
+  node_type: design_company
+  layer: L3_design_eda_ip
+  label: Synopsys
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Synopsys
+  display_name: Synopsys
+  description: Canonical design_company seed for Synopsys.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Siemens_EDA
+  node_type: design_company
+  layer: L3_design_eda_ip
+  label: Siemens EDA
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Siemens EDA
+  display_name: Siemens EDA
+  description: Canonical design_company seed for Siemens EDA.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: eda:logic_synthesis
+  node_type: eda_tool
+  layer: L3_design_eda_ip
+  label: Logic synthesis
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Logic synthesis
+  display_name: Logic synthesis
+  description: Canonical eda_tool seed for Logic synthesis.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: eda:place_and_route
+  node_type: eda_tool
+  layer: L3_design_eda_ip
+  label: Place and route
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Place and route
+  display_name: Place and route
+  description: Canonical eda_tool seed for Place and route.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: eda:verification
+  node_type: eda_tool
+  layer: L3_design_eda_ip
+  label: Verification
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: Verification
+  display_name: Verification
+  description: Canonical eda_tool seed for Verification.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: ip:ARM_core
+  node_type: ip_core
+  layer: L3_design_eda_ip
+  label: ARM core
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: ARM core
+  display_name: ARM core
+  description: Canonical ip_core seed for ARM core.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: ip:SerDes
+  node_type: ip_core
+  layer: L3_design_eda_ip
+  label: SerDes
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: SerDes
+  display_name: SerDes
+  description: Canonical ip_core seed for SerDes.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: ip:DDR_controller
+  node_type: ip_core
+  layer: L3_design_eda_ip
+  label: DDR controller
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: DDR controller
+  display_name: DDR controller
+  description: Canonical ip_core seed for DDR controller.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: architecture:x86
+  node_type: architecture
+  layer: L3_design_eda_ip
+  label: x86
+  source_candidates:
+  - openalex_crossref_literature_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: x86
+  display_name: x86
+  description: Canonical architecture seed for x86.
+  example_source_ids:
+  - openalex_crossref_literature_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: architecture:ARM
+  node_type: architecture
+  layer: L3_design_eda_ip
+  label: ARM
+  source_candidates:
+  - openalex_crossref_literature_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: ARM
+  display_name: ARM
+  description: Canonical architecture seed for ARM.
+  example_source_ids:
+  - openalex_crossref_literature_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: architecture:RISC-V
+  node_type: architecture
+  layer: L3_design_eda_ip
+  label: RISC-V
+  source_candidates:
+  - openalex_crossref_literature_lite
+  attributes: {}
+  chain_layer: L3_design_eda_ip
+  canonical_name: RISC-V
+  display_name: RISC-V
+  description: Canonical architecture seed for RISC-V.
+  example_source_ids:
+  - openalex_crossref_literature_lite
+  allowed_relationship_classes: *id004
+  display_group: L3_design_eda_ip
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:EUV_scanner
+  node_type: equipment
+  layer: L4_equipment
+  label: EUV scanner
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: EUV scanner
+  display_name: EUV scanner
+  description: Canonical equipment seed for EUV scanner.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  allowed_relationship_classes: &id005
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:DUV_scanner
+  node_type: equipment
+  layer: L4_equipment
+  label: DUV scanner
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: DUV scanner
+  display_name: DUV scanner
+  description: Canonical equipment seed for DUV scanner.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  - bis_export_controls_lite
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:etch_tool
+  node_type: equipment
+  layer: L4_equipment
+  label: Etch tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Etch tool
+  display_name: Etch tool
+  description: Canonical equipment seed for Etch tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:deposition_CVD
+  node_type: equipment
+  layer: L4_equipment
+  label: CVD deposition tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: CVD deposition tool
+  display_name: CVD deposition tool
+  description: Canonical equipment seed for CVD deposition tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:deposition_PVD
+  node_type: equipment
+  layer: L4_equipment
+  label: PVD deposition tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: PVD deposition tool
+  display_name: PVD deposition tool
+  description: Canonical equipment seed for PVD deposition tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:deposition_ALD
+  node_type: equipment
+  layer: L4_equipment
+  label: ALD deposition tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: ALD deposition tool
+  display_name: ALD deposition tool
+  description: Canonical equipment seed for ALD deposition tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:ion_implanter
+  node_type: equipment
+  layer: L4_equipment
+  label: Ion implanter
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Ion implanter
+  display_name: Ion implanter
+  description: Canonical equipment seed for Ion implanter.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:CMP_tool
+  node_type: equipment
+  layer: L4_equipment
+  label: CMP tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: CMP tool
+  display_name: CMP tool
+  description: Canonical equipment seed for CMP tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:metrology_tool
+  node_type: equipment
+  layer: L4_equipment
+  label: Metrology tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Metrology tool
+  display_name: Metrology tool
+  description: Canonical equipment seed for Metrology tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:inspection_tool
+  node_type: equipment
+  layer: L4_equipment
+  label: Inspection tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Inspection tool
+  display_name: Inspection tool
+  description: Canonical equipment seed for Inspection tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:wafer_cleaning_tool
+  node_type: equipment
+  layer: L4_equipment
+  label: Wafer cleaning tool
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Wafer cleaning tool
+  display_name: Wafer cleaning tool
+  description: Canonical equipment seed for Wafer cleaning tool.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: equipment:test_equipment
+  node_type: equipment
+  layer: L4_equipment
+  label: Test equipment
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Test equipment
+  display_name: Test equipment
+  description: Canonical equipment seed for Test equipment.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:ASML
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: ASML
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: ASML
+  display_name: ASML
+  description: Canonical equipment_supplier seed for ASML.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Applied_Materials
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Applied Materials
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Applied Materials
+  display_name: Applied Materials
+  description: Canonical equipment_supplier seed for Applied Materials.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Lam_Research
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Lam Research
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Lam Research
+  display_name: Lam Research
+  description: Canonical equipment_supplier seed for Lam Research.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Tokyo_Electron
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Tokyo Electron
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Tokyo Electron
+  display_name: Tokyo Electron
+  description: Canonical equipment_supplier seed for Tokyo Electron.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:KLA
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: KLA
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: KLA
+  display_name: KLA
+  description: Canonical equipment_supplier seed for KLA.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Nikon
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Nikon
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Nikon
+  display_name: Nikon
+  description: Canonical equipment_supplier seed for Nikon.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Canon
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Canon
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Canon
+  display_name: Canon
+  description: Canonical equipment_supplier seed for Canon.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Advantest
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Advantest
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Advantest
+  display_name: Advantest
+  description: Canonical equipment_supplier seed for Advantest.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Teradyne
+  node_type: equipment_supplier
+  layer: L4_equipment
+  label: Teradyne
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L4_equipment
+  canonical_name: Teradyne
+  display_name: Teradyne
+  description: Canonical equipment_supplier seed for Teradyne.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id005
+  display_group: L4_equipment
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:TSMC
+  node_type: foundry
+  layer: L5_fabrication
+  label: TSMC
+  source_candidates:
+  - company_annual_report_manual_upload
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: TSMC
+  display_name: TSMC
+  description: Canonical foundry seed for TSMC.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: &id006
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Samsung_Foundry
+  node_type: foundry
+  layer: L5_fabrication
+  label: Samsung Foundry
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Samsung Foundry
+  display_name: Samsung Foundry
+  description: Canonical foundry seed for Samsung Foundry.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Intel_Foundry
+  node_type: foundry
+  layer: L5_fabrication
+  label: Intel Foundry
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Intel Foundry
+  display_name: Intel Foundry
+  description: Canonical foundry seed for Intel Foundry.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:SMIC
+  node_type: foundry
+  layer: L5_fabrication
+  label: SMIC
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: SMIC
+  display_name: SMIC
+  description: Canonical foundry seed for SMIC.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:UMC
+  node_type: foundry
+  layer: L5_fabrication
+  label: UMC
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: UMC
+  display_name: UMC
+  description: Canonical foundry seed for UMC.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:GlobalFoundries
+  node_type: foundry
+  layer: L5_fabrication
+  label: GlobalFoundries
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: GlobalFoundries
+  display_name: GlobalFoundries
+  description: Canonical foundry seed for GlobalFoundries.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Hua_Hong
+  node_type: foundry
+  layer: L5_fabrication
+  label: Hua Hong
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Hua Hong
+  display_name: Hua Hong
+  description: Canonical foundry seed for Hua Hong.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: fab:TSMC_Fab_18
+  node_type: fab
+  layer: L5_fabrication
+  label: TSMC Fab 18
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes:
+    country_code: CN
+  chain_layer: L5_fabrication
+  canonical_name: TSMC Fab 18
+  display_name: TSMC Fab 18
+  description: Canonical fab seed for TSMC Fab 18.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: fab:Samsung_Pyeongtaek
+  node_type: fab
+  layer: L5_fabrication
+  label: Samsung Pyeongtaek
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes:
+    country_code: KR
+  chain_layer: L5_fabrication
+  canonical_name: Samsung Pyeongtaek
+  display_name: Samsung Pyeongtaek
+  description: Canonical fab seed for Samsung Pyeongtaek.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:lithography
+  node_type: process_stage
+  layer: L5_fabrication
+  label: Lithography
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Lithography
+  display_name: Lithography
+  description: Canonical process_stage seed for Lithography.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:etching
+  node_type: process_stage
+  layer: L5_fabrication
+  label: Etching
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Etching
+  display_name: Etching
+  description: Canonical process_stage seed for Etching.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:deposition
+  node_type: process_stage
+  layer: L5_fabrication
+  label: Deposition
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Deposition
+  display_name: Deposition
+  description: Canonical process_stage seed for Deposition.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:ion_implantation
+  node_type: process_stage
+  layer: L5_fabrication
+  label: Ion implantation
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Ion implantation
+  display_name: Ion implantation
+  description: Canonical process_stage seed for Ion implantation.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:cleaning
+  node_type: process_stage
+  layer: L5_fabrication
+  label: Cleaning
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Cleaning
+  display_name: Cleaning
+  description: Canonical process_stage seed for Cleaning.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:CMP
+  node_type: process_stage
+  layer: L5_fabrication
+  label: CMP
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: CMP
+  display_name: CMP
+  description: Canonical process_stage seed for CMP.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: process:metrology
+  node_type: process_stage
+  layer: L5_fabrication
+  label: Metrology
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: Metrology
+  display_name: Metrology
+  description: Canonical process_stage seed for Metrology.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: technology_node:3nm
+  node_type: technology_node
+  layer: L5_fabrication
+  label: 3nm
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: 3nm
+  display_name: 3nm
+  description: Canonical technology_node seed for 3nm.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: technology_node:5nm
+  node_type: technology_node
+  layer: L5_fabrication
+  label: 5nm
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: 5nm
+  display_name: 5nm
+  description: Canonical technology_node seed for 5nm.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: technology_node:7nm
+  node_type: technology_node
+  layer: L5_fabrication
+  label: 7nm
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: 7nm
+  display_name: 7nm
+  description: Canonical technology_node seed for 7nm.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: technology_node:14nm
+  node_type: technology_node
+  layer: L5_fabrication
+  label: 14nm
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: 14nm
+  display_name: 14nm
+  description: Canonical technology_node seed for 14nm.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: technology_node:28nm
+  node_type: technology_node
+  layer: L5_fabrication
+  label: 28nm
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: 28nm
+  display_name: 28nm
+  description: Canonical technology_node seed for 28nm.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: technology_node:55nm
+  node_type: technology_node
+  layer: L5_fabrication
+  label: 55nm
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L5_fabrication
+  canonical_name: 55nm
+  display_name: 55nm
+  description: Canonical technology_node seed for 55nm.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id006
+  display_group: L5_fabrication
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:advanced_logic
+  node_type: product_grade
+  layer: L6_products
+  label: Advanced logic
+  source_candidates:
+  - wsts_historical_billings
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: Advanced logic
+  display_name: Advanced logic
+  description: Canonical product_grade seed for Advanced logic.
+  example_source_ids:
+  - wsts_historical_billings
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: &id007
+  - DEMAND_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:mature_logic
+  node_type: product_grade
+  layer: L6_products
+  label: Mature logic
+  source_candidates:
+  - wsts_historical_billings
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: Mature logic
+  display_name: Mature logic
+  description: Canonical product_grade seed for Mature logic.
+  example_source_ids:
+  - wsts_historical_billings
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:DRAM
+  node_type: chip_type
+  layer: L6_products
+  label: DRAM
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: DRAM
+  display_name: DRAM
+  description: Canonical chip_type seed for DRAM.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:NAND
+  node_type: chip_type
+  layer: L6_products
+  label: NAND
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: NAND
+  display_name: NAND
+  description: Canonical chip_type seed for NAND.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:HBM
+  node_type: chip_type
+  layer: L6_products
+  label: HBM
+  source_candidates:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: HBM
+  display_name: HBM
+  description: Canonical chip_type seed for HBM.
+  example_source_ids:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:GPU
+  node_type: chip_type
+  layer: L6_products
+  label: GPU
+  source_candidates:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: GPU
+  display_name: GPU
+  description: Canonical chip_type seed for GPU.
+  example_source_ids:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:AI_accelerator
+  node_type: chip_type
+  layer: L6_products
+  label: AI accelerator
+  source_candidates:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: AI accelerator
+  display_name: AI accelerator
+  description: Canonical chip_type seed for AI accelerator.
+  example_source_ids:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:MCU
+  node_type: chip_type
+  layer: L6_products
+  label: MCU
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: MCU
+  display_name: MCU
+  description: Canonical chip_type seed for MCU.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:power_semiconductor
+  node_type: chip_type
+  layer: L6_products
+  label: Power semiconductor
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: Power semiconductor
+  display_name: Power semiconductor
+  description: Canonical chip_type seed for Power semiconductor.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:analog_chip
+  node_type: chip_type
+  layer: L6_products
+  label: Analog chip
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: Analog chip
+  display_name: Analog chip
+  description: Canonical chip_type seed for Analog chip.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:RF_chip
+  node_type: chip_type
+  layer: L6_products
+  label: RF chip
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: RF chip
+  display_name: RF chip
+  description: Canonical chip_type seed for RF chip.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:CIS
+  node_type: chip_type
+  layer: L6_products
+  label: CMOS image sensor
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: CMOS image sensor
+  display_name: CMOS image sensor
+  description: Canonical chip_type seed for CMOS image sensor.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:automotive_chip
+  node_type: product_grade
+  layer: L6_products
+  label: Automotive chip
+  source_candidates:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: Automotive chip
+  display_name: Automotive chip
+  description: Canonical product_grade seed for Automotive chip.
+  example_source_ids:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: product:server_cpu
+  node_type: chip_type
+  layer: L6_products
+  label: Server CPU
+  source_candidates:
+  - sec_edgar_lite
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L6_products
+  canonical_name: Server CPU
+  display_name: Server CPU
+  description: Canonical chip_type seed for Server CPU.
+  example_source_ids:
+  - sec_edgar_lite
+  - wsts_historical_billings
+  allowed_relationship_classes: *id007
+  display_group: L6_products
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:ASE
+  node_type: osat_company
+  layer: L7_packaging_testing
+  label: ASE
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: ASE
+  display_name: ASE
+  description: Canonical osat_company seed for ASE.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: &id008
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Amkor
+  node_type: osat_company
+  layer: L7_packaging_testing
+  label: Amkor
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Amkor
+  display_name: Amkor
+  description: Canonical osat_company seed for Amkor.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:JCET
+  node_type: osat_company
+  layer: L7_packaging_testing
+  label: JCET
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: JCET
+  display_name: JCET
+  description: Canonical osat_company seed for JCET.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:Powertech
+  node_type: osat_company
+  layer: L7_packaging_testing
+  label: Powertech
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Powertech
+  display_name: Powertech
+  description: Canonical osat_company seed for Powertech.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: company:SPIL
+  node_type: osat_company
+  layer: L7_packaging_testing
+  label: SPIL
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: SPIL
+  display_name: SPIL
+  description: Canonical osat_company seed for SPIL.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:wire_bonding
+  node_type: packaging_stage
+  layer: L7_packaging_testing
+  label: Wire bonding
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Wire bonding
+  display_name: Wire bonding
+  description: Canonical packaging_stage seed for Wire bonding.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:flip_chip
+  node_type: packaging_stage
+  layer: L7_packaging_testing
+  label: Flip chip
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Flip chip
+  display_name: Flip chip
+  description: Canonical packaging_stage seed for Flip chip.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:fan_out
+  node_type: advanced_packaging
+  layer: L7_packaging_testing
+  label: Fan-out packaging
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Fan-out packaging
+  display_name: Fan-out packaging
+  description: Canonical advanced_packaging seed for Fan-out packaging.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:2_5D
+  node_type: advanced_packaging
+  layer: L7_packaging_testing
+  label: 2.5D packaging
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: 2.5D packaging
+  display_name: 2.5D packaging
+  description: Canonical advanced_packaging seed for 2.5D packaging.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:3D
+  node_type: advanced_packaging
+  layer: L7_packaging_testing
+  label: 3D packaging
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: 3D packaging
+  display_name: 3D packaging
+  description: Canonical advanced_packaging seed for 3D packaging.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:CoWoS
+  node_type: advanced_packaging
+  layer: L7_packaging_testing
+  label: CoWoS
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: CoWoS
+  display_name: CoWoS
+  description: Canonical advanced_packaging seed for CoWoS.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: packaging:chiplet
+  node_type: advanced_packaging
+  layer: L7_packaging_testing
+  label: Chiplet packaging
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Chiplet packaging
+  display_name: Chiplet packaging
+  description: Canonical advanced_packaging seed for Chiplet packaging.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:ABF_substrate
+  node_type: substrate
+  layer: L7_packaging_testing
+  label: ABF substrate
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: ABF substrate
+  display_name: ABF substrate
+  description: Canonical substrate seed for ABF substrate.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: material:interposer
+  node_type: substrate
+  layer: L7_packaging_testing
+  label: Interposer
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Interposer
+  display_name: Interposer
+  description: Canonical substrate seed for Interposer.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: testing:wafer_sort
+  node_type: testing_stage
+  layer: L7_packaging_testing
+  label: Wafer sort
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Wafer sort
+  display_name: Wafer sort
+  description: Canonical testing_stage seed for Wafer sort.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: testing:final_test
+  node_type: testing_stage
+  layer: L7_packaging_testing
+  label: Final test
+  source_candidates:
+  - eto_cset_advanced_semiconductor_supply_chain
+  attributes: {}
+  chain_layer: L7_packaging_testing
+  canonical_name: Final test
+  display_name: Final test
+  description: Canonical testing_stage seed for Final test.
+  example_source_ids:
+  - eto_cset_advanced_semiconductor_supply_chain
+  allowed_relationship_classes: *id008
+  display_group: L7_packaging_testing
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: port:Kaohsiung
+  node_type: port
+  layer: L8_logistics
+  label: Kaohsiung
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: CN
+  chain_layer: L8_logistics
+  canonical_name: Kaohsiung
+  display_name: Kaohsiung
+  description: Canonical port seed for Kaohsiung.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: &id009
+  - SUPPLY_RELATIONSHIP
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Keelung
+  node_type: port
+  layer: L8_logistics
+  label: Keelung
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: CN
+  chain_layer: L8_logistics
+  canonical_name: Keelung
+  display_name: Keelung
+  description: Canonical port seed for Keelung.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Shanghai
+  node_type: port
+  layer: L8_logistics
+  label: Shanghai
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: CN
+  chain_layer: L8_logistics
+  canonical_name: Shanghai
+  display_name: Shanghai
+  description: Canonical port seed for Shanghai.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Shenzhen
+  node_type: port
+  layer: L8_logistics
+  label: Shenzhen
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: CN
+  chain_layer: L8_logistics
+  canonical_name: Shenzhen
+  display_name: Shenzhen
+  description: Canonical port seed for Shenzhen.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Busan
+  node_type: port
+  layer: L8_logistics
+  label: Busan
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: KR
+  chain_layer: L8_logistics
+  canonical_name: Busan
+  display_name: Busan
+  description: Canonical port seed for Busan.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Yokohama
+  node_type: port
+  layer: L8_logistics
+  label: Yokohama
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: JP
+  chain_layer: L8_logistics
+  canonical_name: Yokohama
+  display_name: Yokohama
+  description: Canonical port seed for Yokohama.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Rotterdam
+  node_type: port
+  layer: L8_logistics
+  label: Rotterdam
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: NL
+  chain_layer: L8_logistics
+  canonical_name: Rotterdam
+  display_name: Rotterdam
+  description: Canonical port seed for Rotterdam.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: port:Los_Angeles
+  node_type: port
+  layer: L8_logistics
+  label: Los Angeles
+  source_candidates:
+  - nga_world_port_index_lite
+  attributes:
+    country_code: US
+  chain_layer: L8_logistics
+  canonical_name: Los Angeles
+  display_name: Los Angeles
+  description: Canonical port seed for Los Angeles.
+  example_source_ids:
+  - nga_world_port_index_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: airport:Taoyuan
+  node_type: airport
+  layer: L8_logistics
+  label: Taoyuan
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes:
+    country_code: CN
+  chain_layer: L8_logistics
+  canonical_name: Taoyuan
+  display_name: Taoyuan
+  description: Canonical airport seed for Taoyuan.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: airport:Incheon
+  node_type: airport
+  layer: L8_logistics
+  label: Incheon
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes:
+    country_code: KR
+  chain_layer: L8_logistics
+  canonical_name: Incheon
+  display_name: Incheon
+  description: Canonical airport seed for Incheon.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: airport:Narita
+  node_type: airport
+  layer: L8_logistics
+  label: Narita
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes:
+    country_code: JP
+  chain_layer: L8_logistics
+  canonical_name: Narita
+  display_name: Narita
+  description: Canonical airport seed for Narita.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: airport:Changi
+  node_type: airport
+  layer: L8_logistics
+  label: Changi
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes:
+    country_code: SG
+  chain_layer: L8_logistics
+  canonical_name: Changi
+  display_name: Changi
+  description: Canonical airport seed for Changi.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id009
+  display_group: L8_logistics
+  fixture_only: true
+  geography_policy_passed: true
+- node_id: sector:AI_datacenter
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: AI datacenter
+  source_candidates:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: AI datacenter
+  display_name: AI datacenter
+  description: Canonical downstream_sector seed for AI datacenter.
+  example_source_ids:
+  - sec_edgar_lite
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: &id010
+  - DEMAND_RELATIONSHIP
+  - EVIDENCE_CONTEXT
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:cloud_computing
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Cloud computing
+  source_candidates:
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Cloud computing
+  display_name: Cloud computing
+  description: Canonical downstream_sector seed for Cloud computing.
+  example_source_ids:
+  - sec_edgar_lite
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:consumer_electronics
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Consumer electronics
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Consumer electronics
+  display_name: Consumer electronics
+  description: Canonical downstream_sector seed for Consumer electronics.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:automotive
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Automotive
+  source_candidates:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Automotive
+  display_name: Automotive
+  description: Canonical downstream_sector seed for Automotive.
+  example_source_ids:
+  - wsts_historical_billings
+  - sec_edgar_lite
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:industrial_control
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Industrial control
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Industrial control
+  display_name: Industrial control
+  description: Canonical downstream_sector seed for Industrial control.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:telecom
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Telecom
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Telecom
+  display_name: Telecom
+  description: Canonical downstream_sector seed for Telecom.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:defense
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Defense
+  source_candidates:
+  - company_annual_report_manual_upload
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Defense
+  display_name: Defense
+  description: Canonical downstream_sector seed for Defense.
+  example_source_ids:
+  - company_annual_report_manual_upload
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:medical_devices
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Medical devices
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Medical devices
+  display_name: Medical devices
+  description: Canonical downstream_sector seed for Medical devices.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:robotics
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Robotics
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Robotics
+  display_name: Robotics
+  description: Canonical downstream_sector seed for Robotics.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: sector:renewable_energy
+  node_type: downstream_sector
+  layer: L9_downstream_demand
+  label: Renewable energy
+  source_candidates:
+  - wsts_historical_billings
+  attributes: {}
+  chain_layer: L9_downstream_demand
+  canonical_name: Renewable energy
+  display_name: Renewable energy
+  description: Canonical downstream_sector seed for Renewable energy.
+  example_source_ids:
+  - wsts_historical_billings
+  allowed_relationship_classes: *id010
+  display_group: L9_downstream_demand
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:earthquake
+  node_type: hazard_event
+  layer: L10_risk_events
+  label: Earthquake
+  source_candidates:
+  - usgs_earthquake_lite
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Earthquake
+  display_name: Earthquake
+  description: Canonical hazard_event seed for Earthquake.
+  example_source_ids:
+  - usgs_earthquake_lite
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: &id011
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:power_outage
+  node_type: factory_event
+  layer: L10_risk_events
+  label: Power outage
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Power outage
+  display_name: Power outage
+  description: Canonical factory_event seed for Power outage.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:water_shortage
+  node_type: hazard_event
+  layer: L10_risk_events
+  label: Water shortage
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Water shortage
+  display_name: Water shortage
+  description: Canonical hazard_event seed for Water shortage.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:factory_fire
+  node_type: factory_event
+  layer: L10_risk_events
+  label: Factory fire
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Factory fire
+  display_name: Factory fire
+  description: Canonical factory_event seed for Factory fire.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:port_disruption
+  node_type: risk_event
+  layer: L10_risk_events
+  label: Port disruption
+  source_candidates:
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Port disruption
+  display_name: Port disruption
+  description: Canonical risk_event seed for Port disruption.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:cyber_attack
+  node_type: cyber_event
+  layer: L10_risk_events
+  label: Cyber attack
+  source_candidates:
+  - gdelt_semiconductor_lite
+  - sec_edgar_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Cyber attack
+  display_name: Cyber attack
+  description: Canonical cyber_event seed for Cyber attack.
+  example_source_ids:
+  - gdelt_semiconductor_lite
+  - sec_edgar_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:demand_spike
+  node_type: market_event
+  layer: L10_risk_events
+  label: Demand spike
+  source_candidates:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Demand spike
+  display_name: Demand spike
+  description: Canonical market_event seed for Demand spike.
+  example_source_ids:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: event:price_spike
+  node_type: market_event
+  layer: L10_risk_events
+  label: Price spike
+  source_candidates:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  attributes: {}
+  chain_layer: L10_risk_events
+  canonical_name: Price spike
+  display_name: Price spike
+  description: Canonical market_event seed for Price spike.
+  example_source_ids:
+  - wsts_historical_billings
+  - gdelt_semiconductor_lite
+  allowed_relationship_classes: *id011
+  display_group: L10_risk_events
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: policy:US_advanced_computing_controls
+  node_type: policy_event
+  layer: L11_compliance
+  label: US advanced computing controls
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  attributes:
+    jurisdiction: US
+  chain_layer: L11_compliance
+  canonical_name: US advanced computing controls
+  display_name: US advanced computing controls
+  description: Canonical policy_event seed for US advanced computing controls.
+  example_source_ids:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  allowed_relationship_classes: &id012
+  - PRODUCTION_DEPENDENCY
+  - EVIDENCE_CONTEXT
+  display_group: L11_compliance
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: policy:semiconductor_manufacturing_equipment_controls
+  node_type: restricted_item
+  layer: L11_compliance
+  label: Semiconductor manufacturing equipment controls
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  attributes: {}
+  chain_layer: L11_compliance
+  canonical_name: Semiconductor manufacturing equipment controls
+  display_name: Semiconductor manufacturing equipment controls
+  description: Canonical restricted_item seed for Semiconductor manufacturing equipment
+    controls.
+  example_source_ids:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  allowed_relationship_classes: *id012
+  display_group: L11_compliance
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: policy:entity_list_update
+  node_type: policy_event
+  layer: L11_compliance
+  label: Entity list update
+  source_candidates:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  attributes: {}
+  chain_layer: L11_compliance
+  canonical_name: Entity list update
+  display_name: Entity list update
+  description: Canonical policy_event seed for Entity list update.
+  example_source_ids:
+  - bis_export_controls_lite
+  - federal_register_export_controls_lite
+  allowed_relationship_classes: *id012
+  display_group: L11_compliance
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: list:OFAC_SDN
+  node_type: sanction_event
+  layer: L11_compliance
+  label: OFAC SDN list
+  source_candidates:
+  - ofac_sanctions_list_lite
+  attributes: {}
+  chain_layer: L11_compliance
+  canonical_name: OFAC SDN list
+  display_name: OFAC SDN list
+  description: Canonical sanction_event seed for OFAC SDN list.
+  example_source_ids:
+  - ofac_sanctions_list_lite
+  allowed_relationship_classes: *id012
+  display_group: L11_compliance
+  fixture_only: true
+  geography_policy_passed: false
+- node_id: list:Consolidated_Screening_List
+  node_type: restricted_entity
+  layer: L11_compliance
+  label: Consolidated Screening List
+  source_candidates:
+  - consolidated_screening_list_lite
+  attributes: {}
+  chain_layer: L11_compliance
+  canonical_name: Consolidated Screening List
+  display_name: Consolidated Screening List
+  description: Canonical restricted_entity seed for Consolidated Screening List.
+  example_source_ids:
+  - consolidated_screening_list_lite
+  allowed_relationship_classes: *id012
+  display_group: L11_compliance
+  fixture_only: true
+  geography_policy_passed: false

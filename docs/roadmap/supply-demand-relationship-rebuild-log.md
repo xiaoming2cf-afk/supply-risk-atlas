@@ -29,3 +29,13 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
   - Internal alias modules keep legacy external-source aliases only for normalization and entity resolution.
   - Render deployment was not redeployed or claimed verified in this gate.
 - Next gate decision: proceed to Gate 1 once this commit is created.
+
+## Gate 1 - Canonical Semiconductor Supply-Chain Concept Model
+
+- Gate status: PASS
+- Changed files: `configs/ontology/semiconductor_node_catalog.yaml`, `docs/domain/semiconductor-supply-chain-concept-model.md`, `tests/contract/test_semiconductor_node_catalog.py`.
+- Commands run:
+  - `python -m pytest tests/contract/test_semiconductor_chain_layers.py tests/contract/test_semiconductor_node_catalog.py tests/contract/test_semiconductor_edge_catalog.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`14 passed`)
+- Terminology normalization evidence: node catalog uses `region:china_taiwan`, display label `中国台湾`, and parent country context `country:CN` / `中国`.
+- Limitations: catalog nodes remain canonical fixture seeds and do not assert production relationships.
+- Next gate decision: proceed to relationship semantics.
