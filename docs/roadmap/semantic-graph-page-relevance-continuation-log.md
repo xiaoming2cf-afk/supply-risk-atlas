@@ -68,3 +68,28 @@
 - Final local evidence: concept model files exist, node catalog has `165` concrete nodes, relationship classes remain separated, relationship graph endpoints and analytics endpoints pass API tests, page relevance policy is smoke-tested, and no raw payload or production-readiness claim is introduced.
 - Deployment status: pending controlled GitHub/Render verification after this log commit.
 - Computer Use actions: none yet.
+
+## Controlled Deployment Verification
+
+- Gate status: PARTIAL / BLOCKED ON RENDER ACCESS
+- Pushed commit: `28f06cda3930a05ce0484d46c036da18f0798bd1`
+- GitHub Actions evidence:
+  - `ci #32` -> PASS, `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25807689897`
+  - `Quality Gates #32` -> PASS, `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25807689863`
+- Deployed API version check:
+  - Expected commit: `28f06cda3930a05ce0484d46c036da18f0798bd1`
+  - Observed API commit: `9cbb0e927a8bbcf66e05f19e5d3d70714f34204f`
+  - Status: stale deployment
+- Deployed smoke:
+  - `npm.cmd run smoke:web -- --mode=deployed` -> best-effort failure because deployed Web/API are still serving the old build.
+  - Evidence sanitized: the deployed graph does not yet include the local semantic/page relevance build and still emits noncanonical legacy geography labels from the old deployment.
+- Render redeploy attempt status:
+  - Render CLI: unavailable in this workspace.
+  - Render environment variable names: none available.
+  - Render MCP/tooling: no Render deployment tool was exposed in this session.
+  - Redeploy action: not performed because no authenticated Render control path was available.
+- Computer Use actions:
+  - No GUI Computer Use was performed.
+  - Verification used public GitHub API, public deployed API/Web endpoints, and local shell commands only.
+- Sensitive data handling: no secrets, tokens, cookies, private diagnostics, or account details were printed or recorded.
+- Required next step: manually redeploy `supply-risk-atlas-api` and `supply-risk-atlas-web` on Render from latest `main`, clear Web build cache if stale UI remains, then rerun deployed version check and deployed smoke.
