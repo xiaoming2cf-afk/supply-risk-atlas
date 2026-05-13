@@ -209,3 +209,20 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Deployment status: not attempted; no Computer Use was authorized or used.
 - Limitations: relevance policy is enforced through rendered metadata and browser smoke; it does not remove compatibility pages such as Global Risk Cockpit, Path Analysis, Prediction Center, or Country Lens.
 - Next gate decision: proceed to final local acceptance.
+## Final Acceptance Evidence - Page Relevance Update
+
+- Acceptance status: PASS locally
+- Current HEAD before final evidence commit: `9018c72`
+- Node catalog count: `165`
+- Commands run:
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` -> PASS
+  - `python -m pytest -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+- Page relevance evidence: smoke verifies policy metadata on System Health, Entity Risk 360, Graph Explorer, Shock Simulator, Reverse Stress Lab, Intervention Optimizer, Investigation Report, and Evidence Board. Non-graph pages must not render React Flow dense graph canvases.
+- Terminology normalization evidence: final quality and subsystem suites passed; canonical `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国` remain enforced.
+- Deployment status: deployed smoke was not run because deployment/Computer Use was not authorized in this implementation turn.
+- Computer Use actions: none.
+- Limitations: local acceptance only; no Render redeploy or deployed version verification was attempted.
