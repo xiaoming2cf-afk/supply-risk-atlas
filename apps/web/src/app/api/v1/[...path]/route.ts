@@ -7,8 +7,9 @@ const RENDER_API_ORIGIN = "https://supply-risk-atlas-api.onrender.com";
 const MAX_PROXY_PATH_SEGMENTS = 8;
 const MAX_PROXY_PATH_SEGMENT_LENGTH = 120;
 const TRANSIENT_UPSTREAM_STATUSES = new Set([502, 503, 504]);
-const MAX_GET_PROXY_ATTEMPTS = 10;
-const GET_PROXY_RETRY_DELAY_MS = 1500;
+const MAX_GET_PROXY_ATTEMPTS = 5;
+const GET_PROXY_RETRY_DELAY_MS = 1000;
+const UPSTREAM_FETCH_TIMEOUT_MS = 15000;
 
 type RouteContext = {
   params: Promise<{
@@ -134,12 +135,15 @@ async function fetchUpstreamWithRetries(
   const attempts = isReadRequest ? MAX_GET_PROXY_ATTEMPTS : 1;
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const abortController = new AbortController();
+    const timeout = setTimeout(() => abortController.abort(), UPSTREAM_FETCH_TIMEOUT_MS);
     try {
       const response = await fetch(upstreamUrl, {
         method,
         headers,
         body,
-        cache: "no-store"
+        cache: "no-store",
+        signal: abortController.signal
       });
       if (!isReadRequest || !TRANSIENT_UPSTREAM_STATUSES.has(response.status) || attempt === attempts) {
         return response;
@@ -149,6 +153,8 @@ async function fetchUpstreamWithRetries(
       if (attempt === attempts) {
         throw error;
       }
+    } finally {
+      clearTimeout(timeout);
     }
     await sleep(GET_PROXY_RETRY_DELAY_MS * attempt);
   }
