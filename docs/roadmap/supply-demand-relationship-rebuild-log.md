@@ -48,3 +48,13 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: relationship semantics carry `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国` policy.
 - Limitations: relationship classes are semantics contracts; graph construction integration follows in later gates.
 - Next gate decision: proceed to concrete node/source mapping validation and registry/contracts gates.
+## Gate 3 - Concrete Semiconductor Node Catalog
+
+- Gate status: PASS
+- Changed files: `tests/contract/test_semiconductor_node_catalog.py`.
+- Commands run:
+  - `python -m pytest tests/contract/test_semiconductor_node_catalog.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`10 passed`)
+- Evidence: node catalog has at least 120 concrete nodes and every concrete node has canonical/display names, chain layer, source candidates, allowed relationship classes, fixture-only status, and no production status.
+- Terminology normalization evidence: `region:china_taiwan` is the canonical region node with display `中国台湾` and parent `country:CN` / `中国`.
+- Limitations: node catalog remains a canonical seed catalog, not complete operational source coverage.
+- Next gate decision: proceed to node-source map and data requirements.

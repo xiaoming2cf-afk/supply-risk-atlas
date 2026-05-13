@@ -122,6 +122,25 @@ def test_china_taiwan_region_uses_canonical_parent_country_context() -> None:
     assert node["geography_policy_passed"] is True
 
 
+def test_every_concrete_node_has_gate_three_metadata() -> None:
+    chain = load_yaml(CHAIN_PATH)
+    catalog = load_yaml(NODE_PATH)
+    valid_layers = {layer["layer_id"] for layer in chain["layers"]}
+
+    for node in catalog["nodes"]:
+        assert node["node_id"]
+        assert node["canonical_name"]
+        assert node["display_name"]
+        assert node["node_type"]
+        assert node["chain_layer"] in valid_layers
+        assert node["description"]
+        assert node["example_source_ids"]
+        assert node["allowed_relationship_classes"]
+        assert node["display_group"]
+        assert node["fixture_only"] is True
+        assert node.get("production_status") != "production"
+
+
 def test_node_catalog_keeps_fixture_status_and_no_production_claim() -> None:
     catalog = load_yaml(NODE_PATH)
 
