@@ -22,6 +22,9 @@ const apiUrlLiteral = JSON.stringify(apiUrl.replace(/\/$/, ""));
 const artifactDir = path.join(root, "artifacts", "browser-smoke");
 const reportPath = path.join(artifactDir, "report.json");
 const deployedBestEffort = smokeMode === "deployed" || process.env.SUPPLY_RISK_SMOKE_BEST_EFFORT === "1";
+const waitForTimeoutMs = deployedBestEffort
+  ? Number(process.env.SUPPLY_RISK_SMOKE_WAIT_MS ?? 120000)
+  : 30000;
 
 const pages = [
   ["System Health Center", "#system-health-center"],
@@ -1677,7 +1680,7 @@ async function evaluate(client, expression) {
   return result.result.value;
 }
 
-async function waitFor(client, read, predicate, timeout = 30000) {
+async function waitFor(client, read, predicate, timeout = waitForTimeoutMs) {
   const startedAt = Date.now();
   let last;
   while (Date.now() - startedAt < timeout) {

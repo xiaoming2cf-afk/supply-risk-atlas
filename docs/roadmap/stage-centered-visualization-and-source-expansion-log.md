@@ -227,6 +227,33 @@
 - `python -m pytest tests/api -q` - first run hit command timeout, rerun with longer timeout passed
 - `npm.cmd run smoke:web` - pass, 57 checks
 
+## Deployed Proxy Stabilization Follow-Up
+
+### Files Changed
+
+- Updated `apps/web/src/app/api/v1/[...path]/route.ts`
+- Updated `scripts/browser-smoke.mjs`
+
+### Result
+
+- GitHub `ci` and `Quality Gates` passed for commit `ea9fd54d78c0901cc5155f6a92de794d3992cf8e`.
+- Render API service `supply-risk-atlas-api` was redeployed to commit `ea9fd54d78c0901cc5155f6a92de794d3992cf8e` and observed live.
+- Render Web service `supply-risk-atlas-web` was redeployed to commit `ea9fd54d78c0901cc5155f6a92de794d3992cf8e` and observed live.
+- Deployed API `/api/v1/version` reported `ea9fd54d78c0901cc5155f6a92de794d3992cf8e`.
+- Direct API and web proxy GET checks for Graph Explorer and risk portfolio returned HTTP 200 after Render warm-up.
+- Deployed smoke still did not complete consistently because first page fetches can receive transient 502 responses from the deployed web proxy before the API service is fully warm.
+- The web proxy now retries transient 502/503/504 responses for GET/HEAD requests only. POST requests remain non-retried by the proxy, and deployed write calls continue to use the direct API write base.
+- Deployed smoke now uses a longer wait budget only in deployed best-effort mode; local smoke keeps the existing stricter wait budget.
+- No secrets, cookies, tokens, account details, private URLs, or raw payloads were recorded.
+
+### Commands Run
+
+- `npm.cmd --workspace apps/web run typecheck` - pass
+- `python -m pytest tests/quality -q` - pass
+- `npm.cmd --workspace apps/web run build` - pass
+- `npm.cmd run smoke:web` - pass, 57 checks
+- `npm.cmd run smoke:web -- --mode=deployed` - best-effort incomplete before proxy retry deployment; Graph Explorer and Entity Risk pages saw transient 502 responses from the deployed web proxy
+
 ## Final Local Acceptance Evidence
 
 - `python -m pytest tests/quality -q` - pass

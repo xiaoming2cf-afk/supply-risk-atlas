@@ -6,6 +6,9 @@ const RENDER_WEB_HOSTNAME = "supply-risk-atlas-web.onrender.com";
 const RENDER_API_ORIGIN = "https://supply-risk-atlas-api.onrender.com";
 const MAX_PROXY_PATH_SEGMENTS = 8;
 const MAX_PROXY_PATH_SEGMENT_LENGTH = 120;
+const TRANSIENT_UPSTREAM_STATUSES = new Set([502, 503, 504]);
+const MAX_GET_PROXY_ATTEMPTS = 4;
+const GET_PROXY_RETRY_DELAY_MS = 750;
 
 type RouteContext = {
   params: Promise<{
@@ -73,12 +76,12 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   const upstreamUrl = new URL(`/api/v1/${path}${request.nextUrl.search}`, apiOrigin);
   let upstreamResponse: Response;
   try {
-    upstreamResponse = await fetch(upstreamUrl, {
-      method: request.method,
-      headers: forwardHeaders(request),
-      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
-      cache: "no-store"
-    });
+    upstreamResponse = await fetchUpstreamWithRetries(
+      upstreamUrl,
+      request.method,
+      forwardHeaders(request),
+      request.method === "GET" || request.method === "HEAD" ? undefined : await request.text()
+    );
   } catch {
     return NextResponse.json(
       {
@@ -121,6 +124,37 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   });
 }
 
+async function fetchUpstreamWithRetries(
+  upstreamUrl: URL,
+  method: string,
+  headers: Headers,
+  body: string | undefined
+): Promise<Response> {
+  const isReadRequest = method === "GET" || method === "HEAD";
+  const attempts = isReadRequest ? MAX_GET_PROXY_ATTEMPTS : 1;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(upstreamUrl, {
+        method,
+        headers,
+        body,
+        cache: "no-store"
+      });
+      if (!isReadRequest || !TRANSIENT_UPSTREAM_STATUSES.has(response.status) || attempt === attempts) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts) {
+        throw error;
+      }
+    }
+    await sleep(GET_PROXY_RETRY_DELAY_MS * attempt);
+  }
+  throw lastError instanceof Error ? lastError : new Error("Upstream public data service is unreachable.");
+}
+
 function resolveApiOrigin(request: NextRequest): string | undefined {
   const requestHost = request.headers.get("host")?.split(":")[0]?.toLowerCase();
   const deployTarget = process.env.SUPPLY_RISK_DEPLOY_TARGET?.trim().toLowerCase() || RENDER_WEB_HOSTNAME;
@@ -131,6 +165,12 @@ function resolveApiOrigin(request: NextRequest): string | undefined {
   if (API_ORIGIN) return API_ORIGIN;
   if (API_HOSTPORT) return `http://${API_HOSTPORT}`;
   return undefined;
+}
+
+function sleep(milliseconds: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }
 
 function validateProxyPath(pathSegments: string[]): string | null {
