@@ -101,3 +101,36 @@
 - Action: touch `render.yaml` with a comment-only deployment trigger so both Render services match their configured build filters.
 - Expected effect: Render auto-deploy should rebuild `supply-risk-atlas-api` and `supply-risk-atlas-web` from latest `main` without changing runtime config.
 - Sensitive data handling: no credentials, tokens, cookies, or private account details were entered or recorded.
+
+## Controlled Render Deployment Continuation
+
+- Gate status: IN PROGRESS
+- Pushed trigger commit: `540ad3e62399d5e620a179bf4872bd9a0c9c5507`
+- GitHub Actions evidence:
+  - `ci #34` -> PASS
+  - `Quality Gates #34` -> PASS
+- Computer Use actions:
+  - Used the authorized Chrome extension browser for project-scoped Render dashboard verification only.
+  - Opened Render dashboard services `supply-risk-atlas-api` and `supply-risk-atlas-web`.
+  - Triggered Render Web service redeploy with build cache clear from latest `main`.
+  - Observed Render API service deploying commit `540ad3e62399d5e620a179bf4872bd9a0c9c5507`.
+  - No unrelated tabs, unrelated apps, credentials, cookies, tokens, screenshots with secrets, or private diagnostics were accessed or recorded.
+- Deployment evidence:
+  - API `/api/v1/version` reports `git_commit=540ad3e62399d5e620a179bf4872bd9a0c9c5507`, `environment=render`, `storage_mode=sqlite`, `not_production_ready=true`.
+  - `scripts/check-deployed-version.py` reports API commit matches expected; Web commit is not directly visible, so Web version remains `commit_not_visible`.
+  - Manual Chrome verification of `https://supply-risk-atlas-web.onrender.com/#system-health-center` loaded System Health data, source registry details, `api_version`, `graphVersion`, and `sourceManifestId` after deployment.
+- Deployed smoke evidence:
+  - `npm.cmd run smoke:web -- --mode=deployed` exited best-effort status `0` but did not complete the full smoke path because headless deployed Web initially showed `Public data unavailable` while waiting for System Health evidence.
+  - Root cause observed from live API/Web checks: API was healthy, but deployed browser smoke is sensitive to Render cold start and dashboard API request timing.
+- Follow-up patch:
+  - Increased the frontend dashboard API client default request timeout from `12000` ms to `30000` ms to tolerate Render cold-start latency without changing API routes, source contracts, graph semantics, or security posture.
+- Validation for follow-up patch:
+  - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
+  - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py -q` -> PASS (`14 passed`)
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+- Limitations:
+  - The platform remains fixture/proxy/promoted-public-evidence research infrastructure and is not production-ready.
+  - Web build commit is not directly exposed in static HTML; deployed version verification therefore relies on API `/version`, Render deploy status, and deployed smoke behavior.
+  - A new commit is required for the timeout patch and then Render must rebuild Web/API again from latest `main`.

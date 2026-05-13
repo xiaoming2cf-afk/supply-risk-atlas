@@ -273,7 +273,7 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
   };
   const clientOptions = {
     fetcher: options.fetcher ?? ((input, init) => globalThis.fetch(input, init)),
-    requestTimeoutMs: Math.max(1000, options.requestTimeoutMs ?? 12000),
+    requestTimeoutMs: Math.max(1000, options.requestTimeoutMs ?? 30000),
     setEffectiveMode,
   };
 
