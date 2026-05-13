@@ -6,10 +6,13 @@ import {
   Grid3X3,
   Map as MapIcon,
   ListTree,
+  PackageCheck,
   Pin,
   RotateCcw,
   Route,
+  Scale,
   Share2,
+  TrendingUp,
   Workflow,
   type LucideIcon,
 } from "lucide-react";
@@ -30,6 +33,10 @@ const graphModeOptions: Array<{ id: GraphViewMode; label: string; icon: LucideIc
   { id: "evidence", label: "Evidence", icon: FileSearch },
   { id: "source-coverage", label: "Source Coverage", icon: ListTree },
   { id: "node-catalog", label: "Node Catalog", icon: ListTree },
+  { id: "supply", label: "Supply", icon: PackageCheck },
+  { id: "demand", label: "Demand", icon: TrendingUp },
+  { id: "production-dependency", label: "Production", icon: Workflow },
+  { id: "supply-demand-balance", label: "Balance", icon: Scale },
 ];
 
 export function GraphControls({

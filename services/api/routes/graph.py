@@ -22,6 +22,10 @@ def register(
     route_graph_scenario_overlay: Callable[..., dict[str, Any]],
     route_graph_node_catalog: Callable[..., dict[str, Any]],
     route_graph_source_coverage: Callable[..., dict[str, Any]],
+    route_graph_supply_relationships: Callable[..., dict[str, Any]],
+    route_graph_demand_relationships: Callable[..., dict[str, Any]],
+    route_graph_production_dependencies: Callable[..., dict[str, Any]],
+    route_graph_supply_demand_balance: Callable[..., dict[str, Any]],
     route_analytics_charts: Callable[..., dict[str, Any]],
     route_analytics_tables: Callable[..., dict[str, Any]],
     route_semiconductor_graph_snapshot: Callable[..., dict[str, Any]],
@@ -132,6 +136,34 @@ def register(
         x_request_id: str | None = Header(default=None),
     ) -> dict[str, Any]:
         return route_graph_source_coverage(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/supply-relationships")
+    def http_graph_supply_relationships(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_supply_relationships(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/demand-relationships")
+    def http_graph_demand_relationships(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_demand_relationships(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/production-dependencies")
+    def http_graph_production_dependencies(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_production_dependencies(limit=limit, request_id=x_request_id)
+
+    @app.get("/api/v1/graph/supply-demand-balance")
+    def http_graph_supply_demand_balance(
+        limit: int = Query(default=50, ge=1, le=500),
+        x_request_id: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        return route_graph_supply_demand_balance(limit=limit, request_id=x_request_id)
 
     @app.get("/api/v1/analytics/charts")
     def http_analytics_charts(

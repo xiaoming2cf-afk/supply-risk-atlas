@@ -375,6 +375,28 @@ async function main() {
         graphV3NodeCatalog.text.includes("canonical catalog rows"),
     });
 
+    const relationshipModeChecks = [
+      ["Supply", "Supply Relationship view", "supplied item"],
+      ["Demand", "Demand Relationship view", "demand edges are not supplier edges"],
+      ["Production", "Production Dependency view", "bottleneck flags"],
+      ["Balance", "Supply-Demand Balance view", "Shortage proxy"],
+    ];
+    for (const [buttonLabel, titleText, detailText] of relationshipModeChecks) {
+      await evaluate(client, `(() => {
+        const buttons = Array.from(document.querySelectorAll('button'));
+        buttons.find((button) => button.textContent?.trim().startsWith(${JSON.stringify(buttonLabel)}))?.click();
+      })()`);
+      const relationshipState = await waitFor(
+        client,
+        () => graphV2State(client),
+        (state) => state.text.includes(titleText) && state.text.includes(detailText),
+      );
+      checks.push({
+        page: `Graph Explorer supply-demand ${buttonLabel} mode`,
+        passed: relationshipState.text.includes(titleText) && relationshipState.text.includes(detailText),
+      });
+    }
+
     await navigate(client, `${webUrl}#system-health-center`);
     const healthSemiriskTerms = [
       "SemiRisk-KG v0.1 fixture graph",

@@ -26,7 +26,11 @@ export type GraphViewMode =
   | "scenario"
   | "evidence"
   | "source-coverage"
-  | "node-catalog";
+  | "node-catalog"
+  | "supply"
+  | "demand"
+  | "production-dependency"
+  | "supply-demand-balance";
 
 export type LegacyGraphExplorerMode =
   | GraphViewMode
@@ -120,6 +124,10 @@ export function graphModeLabel(mode: GraphViewMode) {
     evidence: "Evidence",
     "source-coverage": "Source Coverage",
     "node-catalog": "Node Catalog",
+    supply: "Supply relationships",
+    demand: "Demand relationships",
+    "production-dependency": "Production dependencies",
+    "supply-demand-balance": "Supply-Demand Balance",
   }[mode];
 }
 
@@ -269,6 +277,8 @@ export function buildGraphViewModel(input: GraphViewModelInput): GraphViewModel 
       .filter((link) => Boolean(link.sourceId || link.metadata?.source || link.metadata?.source_label))
       .slice(0, focusEdgeLimit)
       .forEach(addLinkContext);
+  } else if (isRelationshipTableMode(input.mode)) {
+    filteredLinks.slice(0, focusEdgeLimit).forEach(addLinkContext);
   } else if (input.mode === "geo") {
     addCountryNodeContext(input.graph, filteredLinks, selectedCountry?.code, addNode, addLinkContext);
   } else {
@@ -412,10 +422,14 @@ export function criticalGraphNodes(graph: GraphExplorerData): GraphNode[] {
 function renderLimitsForMode(mode: GraphViewMode) {
   if (mode === "overview" || mode === "geo" || mode === "matrix") return { nodeLimit: overviewNodeLimit, edgeLimit: overviewEdgeLimit };
   if (mode === "focus" || mode === "scenario") return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
-  if (mode === "evidence" || mode === "source-coverage" || mode === "node-catalog") {
+  if (mode === "evidence" || mode === "source-coverage" || mode === "node-catalog" || isRelationshipTableMode(mode)) {
     return { nodeLimit: focusNodeLimit, edgeLimit: focusEdgeLimit };
   }
   return { nodeLimit: pathNodeLimit, edgeLimit: pathEdgeLimit };
+}
+
+function isRelationshipTableMode(mode: GraphViewMode) {
+  return mode === "supply" || mode === "demand" || mode === "production-dependency" || mode === "supply-demand-balance";
 }
 
 function graphNodePassesAdvancedFilters(

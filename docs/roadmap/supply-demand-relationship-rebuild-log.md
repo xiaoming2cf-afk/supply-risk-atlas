@@ -120,3 +120,17 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: promoted graph and graph invariant tests pass with `region:china_taiwan` / `中国台湾`; generated artifacts contain no old geography country node.
 - Limitations: demand relationships remain fixture/proxy public-evidence signals, not production demand data; live connector fetch remains disabled.
 - Next gate decision: proceed to supply-demand relationship API/view expansion.
+## Gate 10 - Supply-Demand Relationship Views
+
+- Gate status: PASS
+- Changed files: `services/api/services/graph_service.py`, `services/api/routes/graph.py`, `services/api/main.py`, `tests/api/test_supply_demand_graph_endpoints.py`, `packages/shared-types/src/graph.ts`, `packages/api-client/src/dashboard.ts`, `apps/web/src/features/graph-explorer/*RelationshipView.tsx`, `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`, `apps/web/src/features/graph-explorer/GraphExplorer.tsx`, `apps/web/src/features/graph-explorer/GraphControls.tsx`, `apps/web/src/features/graph-explorer/graphViewModel.ts`, `scripts/browser-smoke.mjs`.
+- Commands run:
+  - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_graph_view_endpoints.py -q` -> PASS (`10 passed`)
+  - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_graph_view_endpoints.py tests/api/test_graph_chart_table_endpoints.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`27 passed`)
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`43 checks`)
+- Evidence: added `/api/v1/graph/supply-relationships`, `/api/v1/graph/demand-relationships`, `/api/v1/graph/production-dependencies`, and `/api/v1/graph/supply-demand-balance`; Graph Explorer exposes Supply, Demand, Production, and Balance table-first modes and smoke verifies all four.
+- Terminology normalization evidence: geography quality guard passed; relationship views use backend-sanitized rows and do not expose raw payloads.
+- Limitations: demand and balance values remain fixture/promoted public-evidence proxy counts, not calibrated production demand or supply capacity.
+- Next gate decision: proceed to analytics relationship tables.

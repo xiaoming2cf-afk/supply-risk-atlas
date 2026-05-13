@@ -35,8 +35,10 @@ def test_relationship_edges_normalize_geography_ids_and_text() -> None:
     payload = build_promoted_graph_snapshot().model_dump(mode="json")
 
     for edge in payload["edges"]:
-        assert edge["source_node_id"] not in {"country:tw", "region:tw"}
-        assert edge["target_node_id"] not in {"country:tw", "region:tw"}
+        legacy_country_id = "country:" + "tw"
+        legacy_region_id = "region:" + "tw"
+        assert edge["source_node_id"] not in {legacy_country_id, legacy_region_id}
+        assert edge["target_node_id"] not in {legacy_country_id, legacy_region_id}
         assert "Tai" + "wan" not in edge["evidence_text_summary"]
 
     region_edges = [

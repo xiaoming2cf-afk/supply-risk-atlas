@@ -22,6 +22,12 @@ from graph_kernel.semiconductor_snapshot import (
     build_semiconductor_fixture_snapshot,
     neighborhood as semiconductor_neighborhood,
 )
+from graph_kernel.supply_demand_builder import (
+    demand_relationship_rows,
+    production_dependency_rows,
+    supply_demand_balance_rows,
+    supply_relationship_rows,
+)
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from sra_core.contracts.domain import VersionMetadata
 from sra_core.real_pipeline import real_metadata, run_public_real_pipeline
@@ -555,6 +561,107 @@ def route_graph_source_coverage(
     )
 
 
+def route_graph_supply_relationships(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows = supply_relationship_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    payload = {
+        **_base_view_metadata(snapshot, mode="supply-relationships"),
+        "relationship_class": SUPPLY_RELATIONSHIP_CLASS,
+        "relationships": rows,
+        "supplier_concentration": _supplier_concentration(rows),
+        "limit": _bounded_limit(limit),
+        "layout_hints": {
+            "mode": "supply-relationships",
+            "table_only": True,
+            "does_not_render_full_graph": True,
+        },
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_demand_relationships(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows = demand_relationship_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    payload = {
+        **_base_view_metadata(snapshot, mode="demand-relationships"),
+        "relationship_class": DEMAND_RELATIONSHIP_CLASS,
+        "relationships": rows,
+        "limit": _bounded_limit(limit),
+        "layout_hints": {
+            "mode": "demand-relationships",
+            "table_only": True,
+            "does_not_render_full_graph": True,
+        },
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_production_dependencies(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows = production_dependency_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    payload = {
+        **_base_view_metadata(snapshot, mode="production-dependencies"),
+        "relationship_class": PRODUCTION_DEPENDENCY_CLASS,
+        "relationships": rows,
+        "limit": _bounded_limit(limit),
+        "layout_hints": {
+            "mode": "production-dependencies",
+            "table_only": True,
+            "does_not_render_full_graph": True,
+        },
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_supply_demand_balance(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows = supply_demand_balance_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    payload = {
+        **_base_view_metadata(snapshot, mode="supply-demand-balance"),
+        "relationship_class": "SUPPLY_DEMAND_BALANCE",
+        "balance_rows": rows,
+        "limit": _bounded_limit(limit),
+        "layout_hints": {
+            "mode": "supply-demand-balance",
+            "table_only": True,
+            "does_not_render_full_graph": True,
+        },
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
 def route_analytics_charts(
     chart_id: str | None = None,
     limit: int = 50,
@@ -811,24 +918,7 @@ def _node_view(node: Any) -> dict[str, Any]:
 
 def _edge_view(edge: Any) -> dict[str, Any]:
     layer = _layer_for_edge(edge.edge_type)
-    relationship = normalize_relationship_edge(
-        {
-            "edge_id": edge.edge_id,
-            "source_node_id": edge.source_node_id,
-            "target_node_id": edge.target_node_id,
-            "edge_type": edge.edge_type,
-            "weight": edge.weight,
-            "confidence": edge.confidence,
-            "attributes": edge.attributes or {},
-            "provenance_refs": [
-                ref.model_dump(mode="json") if hasattr(ref, "model_dump") else ref
-                for ref in edge.provenance_refs
-            ],
-            "evidence_text_summary": edge.evidence_text_summary,
-            "valid_from": edge.valid_from.isoformat() if hasattr(edge.valid_from, "isoformat") else None,
-            "valid_to": edge.valid_to.isoformat() if getattr(edge, "valid_to", None) else None,
-        }
-    )
+    relationship = _relationship_edge_payload(edge)
     relationship_attributes = relationship["attributes"]
     return {
         "id": edge.edge_id,
@@ -847,6 +937,45 @@ def _edge_view(edge: Any) -> dict[str, Any]:
         "user_facing_label": relationship_attributes.get("user_facing_label", edge.edge_type),
         "warning": relationship_attributes.get("warning"),
     }
+
+
+def _relationship_edge_payload(edge: Any) -> dict[str, Any]:
+    return normalize_relationship_edge(
+        {
+            "edge_id": edge.edge_id,
+            "source_node_id": edge.source_node_id,
+            "target_node_id": edge.target_node_id,
+            "edge_type": edge.edge_type,
+            "weight": edge.weight,
+            "confidence": edge.confidence,
+            "attributes": edge.attributes or {},
+            "provenance_refs": [
+                ref.model_dump(mode="json") if hasattr(ref, "model_dump") else ref
+                for ref in edge.provenance_refs
+            ],
+            "evidence_text_summary": edge.evidence_text_summary,
+            "valid_from": edge.valid_from.isoformat() if hasattr(edge.valid_from, "isoformat") else None,
+            "valid_to": edge.valid_to.isoformat() if getattr(edge, "valid_to", None) else None,
+        }
+    )
+
+
+def _relationship_edge_payloads(snapshot: Any) -> list[dict[str, Any]]:
+    return [_relationship_edge_payload(edge) for edge in snapshot.edges]
+
+
+def _supplier_concentration(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    counts = Counter(str(row["supplier_id"]) for row in rows)
+    total = sum(counts.values()) or 1
+    return [
+        {
+            "supplier_id": supplier_id,
+            "relationship_count": count,
+            "share": round(count / total, 4),
+            "hhi_component": round((count / total) ** 2, 6),
+        }
+        for supplier_id, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    ][:20]
 
 
 def _safe_metadata(attributes: dict[str, Any]) -> dict[str, Any]:

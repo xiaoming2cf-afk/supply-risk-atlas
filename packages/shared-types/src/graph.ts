@@ -442,6 +442,21 @@ export interface GraphSourceCoverageData extends GraphViewMetadata {
   evidence_refs: string[];
 }
 
+export interface GraphRelationshipData extends GraphViewMetadata {
+  relationship_class: string;
+  relationships: Array<Record<string, unknown>>;
+  supplier_concentration?: Array<Record<string, unknown>>;
+  limit: number;
+  layout_hints: Record<string, unknown>;
+}
+
+export interface GraphSupplyDemandBalanceData extends GraphViewMetadata {
+  relationship_class: string;
+  balance_rows: Array<Record<string, unknown>>;
+  limit: number;
+  layout_hints: Record<string, unknown>;
+}
+
 export interface AnalyticsChartsData extends GraphViewMetadata {
   charts: Record<string, Array<Record<string, unknown>>>;
   limit: number;

@@ -19,8 +19,10 @@ import type {
   GraphLayersData,
   GraphMatrixData,
   GraphNodeCatalogData,
+  GraphRelationshipData,
   GraphScenarioOverlayData,
   GraphSourceCoverageData,
+  GraphSupplyDemandBalanceData,
   GraphTimelineData,
   GraphExplorerQuery,
   GraphVersionStudioData,
@@ -75,6 +77,10 @@ export interface SupplyRiskApiClient {
   getGraphScenarioOverlay(options?: { runId?: string | null }): Promise<ApiResult<GraphScenarioOverlayData>>;
   getGraphNodeCatalog(options?: { limit?: number }): Promise<ApiResult<GraphNodeCatalogData>>;
   getGraphSourceCoverage(options?: { limit?: number }): Promise<ApiResult<GraphSourceCoverageData>>;
+  getGraphSupplyRelationships(options?: { limit?: number }): Promise<ApiResult<GraphRelationshipData>>;
+  getGraphDemandRelationships(options?: { limit?: number }): Promise<ApiResult<GraphRelationshipData>>;
+  getGraphProductionDependencies(options?: { limit?: number }): Promise<ApiResult<GraphRelationshipData>>;
+  getGraphSupplyDemandBalance(options?: { limit?: number }): Promise<ApiResult<GraphSupplyDemandBalanceData>>;
   getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
   getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
   getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
@@ -358,6 +364,14 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
       requestJson(baseUrl, `/graph/node-catalog${queryString({ limit: options?.limit })}`, undefined, clientOptions),
     getGraphSourceCoverage: (options) =>
       requestJson(baseUrl, `/graph/source-coverage${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphSupplyRelationships: (options) =>
+      requestJson(baseUrl, `/graph/supply-relationships${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphDemandRelationships: (options) =>
+      requestJson(baseUrl, `/graph/demand-relationships${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphProductionDependencies: (options) =>
+      requestJson(baseUrl, `/graph/production-dependencies${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphSupplyDemandBalance: (options) =>
+      requestJson(baseUrl, `/graph/supply-demand-balance${queryString({ limit: options?.limit })}`, undefined, clientOptions),
     getAnalyticsCharts: (options) =>
       requestJson(
         baseUrl,

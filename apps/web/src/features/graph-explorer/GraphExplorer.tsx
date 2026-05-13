@@ -9,8 +9,10 @@ import type {
   GraphNodeCatalogData,
   GraphNode,
   GraphNodeKind,
+  GraphRelationshipData,
   GraphScenarioOverlayData,
   GraphSourceCoverageData,
+  GraphSupplyDemandBalanceData,
   GraphTimelineData,
 } from "@supply-risk/shared-types";
 import { Panel } from "../../app/components";
@@ -32,6 +34,10 @@ import { GraphPathView } from "./GraphPathView";
 import { GraphScenarioOverlay } from "./GraphScenarioOverlay";
 import { GraphSourceCoverageView } from "./GraphSourceCoverageView";
 import { GraphTimelineView } from "./GraphTimelineView";
+import { DemandRelationshipView } from "./DemandRelationshipView";
+import { ProductionDependencyView } from "./ProductionDependencyView";
+import { SupplyDemandBalanceView } from "./SupplyDemandBalanceView";
+import { SupplyRelationshipView } from "./SupplyRelationshipView";
 import { defaultGraphLayerSet, findFirstGraphSearchMatch, type GraphLayerCategory } from "./graphFilters";
 import {
   buildGraphViewModel,
@@ -390,7 +396,15 @@ export function GraphExplorer({
         </div>
         <EndpointStatusPanel details={endpointDetails} />
         <div className="graph-canvas">
-          {mode === "matrix" ? (
+          {mode === "supply" ? (
+            <SupplyRelationshipView view={view} endpointData={endpointDetails.data} />
+          ) : mode === "demand" ? (
+            <DemandRelationshipView view={view} endpointData={endpointDetails.data} />
+          ) : mode === "production-dependency" ? (
+            <ProductionDependencyView view={view} endpointData={endpointDetails.data} />
+          ) : mode === "supply-demand-balance" ? (
+            <SupplyDemandBalanceView view={view} endpointData={endpointDetails.data} />
+          ) : mode === "matrix" ? (
             <GraphMatrixView graph={graph} view={view} endpointData={endpointDetails.data} />
           ) : mode === "evidence" ? (
             <GraphEvidenceView view={view} endpointData={endpointDetails.data} />
@@ -465,6 +479,8 @@ type GraphEndpointDetails = {
     | GraphScenarioOverlayData
     | GraphSourceCoverageData
     | GraphNodeCatalogData
+    | GraphRelationshipData
+    | GraphSupplyDemandBalanceData
     | Record<string, unknown>;
   message: string;
   source: "backend" | "fallback";
@@ -505,6 +521,14 @@ async function fetchGraphEndpointDetails(
     result = await apiClient.getGraphSourceCoverage({ limit: 50 });
   } else if (options.mode === "node-catalog") {
     result = await apiClient.getGraphNodeCatalog({ limit: 50 });
+  } else if (options.mode === "supply") {
+    result = await apiClient.getGraphSupplyRelationships({ limit: 50 });
+  } else if (options.mode === "demand") {
+    result = await apiClient.getGraphDemandRelationships({ limit: 50 });
+  } else if (options.mode === "production-dependency") {
+    result = await apiClient.getGraphProductionDependencies({ limit: 50 });
+  } else if (options.mode === "supply-demand-balance") {
+    result = await apiClient.getGraphSupplyDemandBalance({ limit: 50 });
   } else {
     result = await apiClient.getGraphScenarioOverlay({ runId: null });
   }
