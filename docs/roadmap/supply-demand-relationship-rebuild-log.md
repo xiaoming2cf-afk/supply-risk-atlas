@@ -39,3 +39,12 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: node catalog uses `region:china_taiwan`, display label `中国台湾`, and parent country context `country:CN` / `中国`.
 - Limitations: catalog nodes remain canonical fixture seeds and do not assert production relationships.
 - Next gate decision: proceed to relationship semantics.
+## Gate 2 - Supply, Demand, Dependency, And Evidence Relationship Semantics
+
+- Gate status: PASS
+- Changed files: `configs/ontology/semiconductor_relationship_semantics.yaml`, `docs/domain/semiconductor-supply-demand-relationship-model.md`, `tests/contract/test_semiconductor_relationship_semantics.py`.
+- Commands run:
+  - `python -m pytest tests/contract/test_semiconductor_relationship_semantics.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`8 passed`)
+- Terminology normalization evidence: relationship semantics carry `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国` policy.
+- Limitations: relationship classes are semantics contracts; graph construction integration follows in later gates.
+- Next gate decision: proceed to concrete node/source mapping validation and registry/contracts gates.

@@ -1,0 +1,160 @@
+relationship_semantics_version: semiconductor-relationship-semantics-v0.1
+production_status: research_fixture
+data_mode: fixture
+graph_mode: fixture
+calibration_status: fixture_proxy_not_calibrated
+warnings:
+  - Relationship classes define graph semantics only; they do not assert production completeness.
+  - Evidence-context links are inspection links and must never drive propagation.
+geography_terminology_policy:
+  canonical_region_id: region:china_taiwan
+  canonical_display: 中国台湾
+  parent_country_id: country:CN
+  parent_country_display: 中国
+relationship_classes:
+  SUPPLY_RELATIONSHIP:
+    meaning: A supplier provides a physical input, equipment, service, capacity, IP, logistics service, or process capability to another firm, stage, fab, or product.
+    propagation_use: physical_supply_propagation
+    allowed_edge_types:
+      - supplies
+      - supplies_item
+      - provides_equipment
+      - provides_material
+      - provides_chemical
+      - provides_ip
+      - provides_service
+      - provides_capacity
+      - packaged_by
+      - tested_by
+      - manufactured_by
+    direction:
+      - supplier -> supplied_item
+      - supplier -> buyer
+      - supplier -> process_stage
+      - supplier -> product_grade
+      - supplier -> fab
+    required_fields:
+      - supplier_id
+      - buyer_or_stage_id
+      - supplied_item_id
+      - supplied_item_type
+      - relationship_scope
+      - source_refs
+      - confidence
+      - valid_from
+    optional_fields:
+      - share_or_capacity_proxy
+      - lead_time_days
+      - qualification_time_days
+      - substitution_available
+      - valid_to
+    examples:
+      - source: company:ASML
+        edge_type: supplies_item
+        target: equipment:EUV_scanner
+      - source: company:ASE
+        edge_type: provides_service
+        target: packaging:advanced_packaging
+  DEMAND_RELATIONSHIP:
+    meaning: A downstream sector, region, market, or customer category creates demand for a chip type or product grade.
+    propagation_use: demand_shock_model_only
+    allowed_edge_types:
+      - demands
+      - demand_signal_for
+      - used_in_downstream_sector
+      - serves_downstream_sector
+      - demand_shock_on
+    direction:
+      - downstream_sector -> product_grade
+      - region_market -> product_grade
+      - demand_indicator -> product_grade
+      - product_grade -> required_capacity_from
+    required_fields:
+      - demand_source_id
+      - product_grade_id
+      - demand_proxy_type
+      - source_refs
+      - confidence
+      - valid_from
+    optional_fields:
+      - region
+      - period
+      - demand_value
+      - demand_growth_proxy
+      - valid_to
+    examples:
+      - source: sector:AI_datacenter
+        edge_type: demands
+        target: product:HBM
+      - source: demand:WSTS_Asia_Pacific_billings
+        edge_type: demand_signal_for
+        target: product:advanced_logic
+  PRODUCTION_DEPENDENCY:
+    meaning: A product, process, fab, package, or capacity node requires inputs or conditions to function.
+    propagation_use: physical_dependency_and_bottleneck_propagation
+    allowed_edge_types:
+      - requires
+      - depends_on
+      - uses_equipment
+      - uses_material
+      - uses_chemical
+      - uses_ip
+      - routes_through
+      - exposed_to_hazard
+      - restricted_by
+      - impacted_by
+    direction:
+      - product_grade -> process_stage
+      - process_stage -> equipment
+      - process_stage -> material
+      - process_stage -> chemical
+      - process_stage -> ip_core
+      - fab -> utility_or_logistics_or_hazard
+      - policy_event -> restricted_item_or_company_or_product
+      - risk_event -> impacted_node
+    required_fields:
+      - dependency_source_id
+      - dependency_target_id
+      - dependency_type
+      - criticality
+      - substitutability
+      - bottleneck_flag
+      - propagation_mode_hint
+      - source_refs
+      - confidence
+      - valid_from
+    optional_fields:
+      - valid_to
+    examples:
+      - source: product:advanced_logic
+        edge_type: requires
+        target: process:lithography
+      - source: process:lithography
+        edge_type: uses_equipment
+        target: equipment:EUV_scanner
+  EVIDENCE_CONTEXT:
+    meaning: A non-causal evidence or search-context connection used for inspection.
+    propagation_use: never
+    allowed_edge_types:
+      - evidence_context_link
+    direction:
+      - evidence_record -> node_or_edge
+    required_fields:
+      - derived_context
+      - not_supply_chain_dependency
+      - user_facing_label
+      - warning
+      - source_refs
+      - confidence
+      - valid_from
+    required_metadata:
+      derived_context: true
+      not_supply_chain_dependency: true
+      user_facing_label: evidence-context link
+      warning: This is not a supply-chain dependency edge.
+    optional_fields:
+      - valid_to
+    examples:
+      - source: evidence:sec_disclosure_excerpt
+        edge_type: evidence_context_link
+        target: company:TSMC
