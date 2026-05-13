@@ -2,17 +2,21 @@ from __future__ import annotations
 
 
 class ConnectorError(RuntimeError):
-    """Base connector failure with controlled caller-facing semantics."""
+    """Base error for controlled connector failures."""
+
+
+class LiveFetchDisabledError(ConnectorError):
+    """Raised when live fetch is requested without explicit enablement."""
 
 
 class ConnectorUnavailableError(ConnectorError):
-    """Raised when live fetching is unavailable or disabled by policy."""
+    """Raised when a connector cannot fetch from its source."""
 
 
-class ConnectorPolicyError(ConnectorError):
-    """Raised when a request violates connector policy bounds."""
+class ConnectorRateLimitError(ConnectorError):
+    """Raised when a connector would exceed its rate limit."""
 
 
-class ConnectorFetchError(ConnectorError):
-    """Raised for bounded fetch failures."""
+class ConnectorPayloadError(ConnectorError):
+    """Raised when connector input or output violates bounds."""
 

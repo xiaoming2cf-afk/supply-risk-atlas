@@ -1,24 +1,34 @@
 # Persistent Research Store
 
-SupplyRiskAtlas uses SQLite as its first durable research store. The store is for governed public-evidence metadata, graph snapshots, sanitized run summaries, and sanitized reports. It is not a raw data lake.
+SupplyRiskAtlas uses SQLite as its first durable research store. The store is for governed public-evidence metadata, graph snapshots, sanitized run summaries, validation artifacts, and sanitized reports. It is not a raw data lake and does not make the platform production ready.
 
 ## Configuration
 
 - `SUPPLY_RISK_STORAGE_MODE=memory|sqlite`
 - `SUPPLY_RISK_SQLITE_PATH=data/runtime/supply_risk_atlas.db`
 
-Local development may use SQLite when the path is writable. Tests use temporary databases. Existing in-memory run history remains available as a fallback.
+Tests use temporary SQLite databases. Local development may use SQLite when the configured path is writable. In-memory run history remains available through `SUPPLY_RISK_STORAGE_MODE=memory`.
+
+Run and report retention:
+
+- `SUPPLY_RISK_RUN_STORE_SIZE` bounds sanitized run summaries.
+- `SUPPLY_RISK_REPORT_STORE_SIZE` bounds sanitized report records.
+- `GET /api/v1/reports/{report_id}` retrieves a stored sanitized report.
+- `POST /api/v1/reports/investigation` remains the report generation endpoint.
 
 ## Stored Data
 
-The schema stores source manifests, raw-record indexes, silver entities/events, graph snapshots/nodes/edges, run records, report records, and audit events.
+The schema stores source manifests, source status, raw-record indexes, silver entities/events, market indicators, trade flows, policy events, logistics nodes, hazard events, graph snapshots/nodes/edges, graph view cache entries, run records, report records, audit events, and validation artifacts.
 
-Raw downloaded payloads are not stored by default. The raw index stores source IDs, source record IDs, payload hashes, short summaries, provenance URLs, retrieval times, and license or terms references.
+Raw downloaded payloads are not stored by default. The raw-record index stores source IDs, source record IDs, retrieval/as-of times, payload hashes, short summaries, provenance URLs, and license or terms references. The `raw_payload_stored` flag defaults to false.
 
 ## Safety Boundaries
 
-- No secrets, private diagnostics, cookies, tokens, or API keys.
-- No raw source payloads in API responses.
+- No secrets, cookies, tokens, Authorization headers, passwords, private diagnostics, or API keys.
+- No raw source payloads, raw article bodies, or raw filing bodies in API-visible outputs.
 - Reports and runs are sanitized before storage.
-- Every graph/run/report record keeps graph and source-manifest identifiers when available.
-- SQLite persistence does not make the platform production ready; current graph and model outputs remain fixture/proxy or promoted public-evidence artifacts.
+- Graph/run/report records preserve graph and source-manifest identifiers when available.
+- Local storage paths are an implementation detail and must not be exposed through public API responses.
+- Retention is bounded by store-specific limits for run and report records.
+
+Current graph and model outputs remain fixture/proxy or promoted public-evidence artifacts, not production decisions and not financial-loss estimates.

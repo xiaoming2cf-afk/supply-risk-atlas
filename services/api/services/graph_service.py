@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
+import os
 from typing import Any
 
 from graph_kernel.graph_diff import diff_edge_states
@@ -35,6 +36,8 @@ GRAPH_LAYERS = [
     {"id": "substitution", "label": "Substitution", "default_visible": False},
     {"id": "trade", "label": "Trade", "default_visible": True},
     {"id": "route", "label": "Route", "default_visible": True},
+    {"id": "hazard", "label": "Hazard", "default_visible": True},
+    {"id": "sanctions", "label": "Sanctions", "default_visible": False},
     {"id": "simulation_trace", "label": "Simulation trace", "default_visible": False},
 ]
 
@@ -43,6 +46,14 @@ GRAPH_LEGEND = [
     {"id": "active_path", "label": "Selected transmission path", "semantics": "path_only"},
     {"id": "cluster", "label": "Aggregated overview cluster", "semantics": "aggregate"},
 ]
+
+
+def _build_active_semiconductor_snapshot() -> Any:
+    if os.getenv("SUPPLY_RISK_GRAPH_MODE", "fixture").strip().lower() == "promoted":
+        from graph_kernel.promoted_pipeline import build_promoted_graph_snapshot
+
+        return build_promoted_graph_snapshot()
+    return build_semiconductor_fixture_snapshot()
 
 
 def metadata_for_result(result: Any) -> VersionMetadata:
@@ -90,7 +101,7 @@ def route_graph_diff(request_id: str | None = None) -> dict[str, Any]:
 
 def route_semiconductor_graph_snapshot(request_id: str | None = None) -> dict[str, Any]:
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = _build_active_semiconductor_snapshot()
     except Exception as exc:
         return make_error_envelope(
             "semiconductor_graph_unavailable",
@@ -118,7 +129,7 @@ def route_semiconductor_graph_neighborhood(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = _build_active_semiconductor_snapshot()
         payload = semiconductor_neighborhood(snapshot, node_id=node_id, depth=depth)
     except KeyError as exc:
         return make_error_envelope(
@@ -149,7 +160,7 @@ def route_graph_view(
     mode: str = "overview",
     request_id: str | None = None,
 ) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     selected_nodes = _overview_node_ids(snapshot)
     selected_edges = _edges_between(snapshot, selected_nodes)[:OVERVIEW_EDGE_CAP]
     payload = _view_payload(
@@ -174,7 +185,7 @@ def route_graph_focus(
     depth: int = 1,
     request_id: str | None = None,
 ) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     node_ids = {node.node_id for node in snapshot.nodes}
     if node_id not in node_ids:
         return make_error_envelope(
@@ -206,7 +217,7 @@ def route_graph_focus(
 
 
 def route_graph_clusters(request_id: str | None = None) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     clusters = _clusters(snapshot)
     payload = {
         **_base_view_metadata(snapshot, mode="overview"),
@@ -234,7 +245,7 @@ def route_graph_path_view(
     target_node_id: str = "product_grade:advanced_logic",
     request_id: str | None = None,
 ) -> dict[str, Any]:
-    snapshot = build_semiconductor_fixture_snapshot()
+    snapshot = _build_active_semiconductor_snapshot()
     path_edges = _find_directed_path(snapshot, source_node_id, target_node_id)
     path_node_ids: list[str] = []
     if path_edges:
@@ -269,20 +280,245 @@ def route_graph_path_view(
     )
 
 
+def route_graph_timeline(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows = []
+    for node in snapshot.nodes:
+        if node.node_type not in {"risk_event", "hazard_event", "policy_event", "sanctions_event"}:
+            continue
+        rows.append(
+            {
+                "node_id": node.node_id,
+                "label": node.canonical_name,
+                "event_type": node.node_type,
+                "event_time": node.valid_from.isoformat(),
+                "affected_nodes": _neighbors_for_node(snapshot, node.node_id)[:10],
+                "evidence_refs": source_ref_ids(node.source_refs),
+            }
+        )
+    payload = {
+        **_base_view_metadata(snapshot, mode="timeline"),
+        "events": rows[: _bounded_limit(limit)],
+        "layout_hints": {"mode": "timeline", "max_events": _bounded_limit(limit)},
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_geo(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    countries = [node for node in snapshot.nodes if node.node_type == "country"]
+    country_ids = {node.node_id for node in countries}
+    edges = [
+        edge
+        for edge in snapshot.edges
+        if edge.source_node_id in country_ids or edge.target_node_id in country_ids
+    ]
+    payload = {
+        **_base_view_metadata(snapshot, mode="geo"),
+        "countries": [_node_view(node) for node in countries[: _bounded_limit(limit)]],
+        "cross_border_edges": [_edge_view(edge) for edge in edges[: _bounded_limit(limit)]],
+        "concentration_metrics": _concentration_metrics(snapshot),
+        "layout_hints": {"mode": "geo", "aggregate_by": "country_region"},
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_matrix(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    node_ids = [node.node_id for node in snapshot.nodes[: _bounded_limit(limit)]]
+    node_set = set(node_ids)
+    adjacency = [
+        {
+            "source": edge.source_node_id,
+            "target": edge.target_node_id,
+            "edge_type": edge.edge_type,
+            "weight": edge.weight,
+            "confidence": edge.confidence,
+        }
+        for edge in snapshot.edges
+        if edge.source_node_id in node_set and edge.target_node_id in node_set
+    ][:_bounded_limit(limit)]
+    payload = {
+        **_base_view_metadata(snapshot, mode="matrix"),
+        "nodes": node_ids,
+        "adjacency_matrix": adjacency,
+        "dependency_matrix": [row for row in adjacency if row["edge_type"] in {"depends_on", "requires"}],
+        "trade_concentration_matrix": [
+            row for row in adjacency if row["edge_type"] == "trade_dependency_edge"
+        ],
+        "policy_exposure_matrix": [
+            row for row in adjacency if row["edge_type"] == "policy_restriction_edge"
+        ],
+        "layout_hints": {"mode": "matrix", "max_nodes": _bounded_limit(limit)},
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_layers(request_id: str | None = None) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    counts = Counter(_layer_for_edge(edge.edge_type) for edge in snapshot.edges)
+    payload = {
+        **_base_view_metadata(snapshot, mode="layers"),
+        "layers": [{**layer, "edge_count": counts.get(layer["id"], 0)} for layer in GRAPH_LAYERS],
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_evidence(
+    limit: int = 50,
+    source_id: str | None = None,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows: list[dict[str, Any]] = []
+    for edge in snapshot.edges:
+        refs = source_ref_ids(edge.provenance_refs)
+        if source_id and source_id not in refs:
+            continue
+        rows.append(
+            {
+                "edge_id": edge.edge_id,
+                "source_id": refs[0] if refs else "unknown",
+                "source_refs": refs,
+                "confidence": edge.confidence,
+                "evidence_summary": str(edge.evidence_text_summary or "")[:280],
+                "provenance_url": None,
+                "edge_type": edge.edge_type,
+            }
+        )
+    payload = {
+        **_base_view_metadata(snapshot, mode="evidence"),
+        "evidence_refs": rows[: _bounded_limit(limit)],
+        "limit": _bounded_limit(limit),
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_scenario_overlay(
+    run_id: str | None = None,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    payload = {
+        **_base_view_metadata(snapshot, mode="scenario-overlay"),
+        "run_id": run_id,
+        "simulation_version": "semirisk_simulation_overlay_v0.1",
+        "affected_nodes": [],
+        "affected_paths": [],
+        "loss_contributions": [],
+        "status": "no_selected_run" if not run_id else "run_not_loaded",
+        "warnings": [*semiconductor_fixture_warnings(snapshot), "scenario_overlay_requires_selected_run"],
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=payload["warnings"],
+    )
+
+
+def route_analytics_charts(
+    chart_id: str | None = None,
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    charts = _chart_payloads(snapshot, limit=_bounded_limit(limit))
+    payload = {
+        **_base_view_metadata(snapshot, mode="analytics-charts"),
+        "charts": charts if chart_id is None else {chart_id: charts.get(chart_id, [])},
+        "limit": _bounded_limit(limit),
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_analytics_tables(
+    table_id: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    tables = _table_payloads(snapshot)
+    bounded_limit = _bounded_limit(limit)
+    safe_offset = max(0, offset)
+    selected = tables if table_id is None else {table_id: tables.get(table_id, [])}
+    paged = {
+        key: rows[safe_offset : safe_offset + bounded_limit]
+        for key, rows in selected.items()
+    }
+    payload = {
+        **_base_view_metadata(snapshot, mode="analytics-tables"),
+        "tables": paged,
+        "limit": bounded_limit,
+        "offset": safe_offset,
+        "next_offset": safe_offset + bounded_limit,
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
 def _base_view_metadata(snapshot: Any, *, mode: str) -> dict[str, Any]:
+    graph_mode = getattr(snapshot, "graph_mode", "fixture")
+    data_mode = getattr(snapshot, "data_mode", "fixture")
     return {
         "view_version": GRAPH_VIEW_VERSION,
         "mode": mode,
         "graph_version": snapshot.graph_version,
         "source_manifest_id": snapshot.source_manifest_id,
         "as_of_time": snapshot.as_of_time.isoformat(),
+        "data_mode": data_mode,
+        "graph_mode": graph_mode,
         "layers": GRAPH_LAYERS,
         "legend": GRAPH_LEGEND,
         "warnings": semiconductor_fixture_warnings(snapshot),
         "fixture_limitations": [
             "fixture_graph:not_production_ready",
             "proxy_methodology:not_production_calibrated",
-            "raw_payloads_excluded",
+            "source_payloads_excluded",
         ],
     }
 
@@ -497,8 +733,20 @@ def _layer_for_edge(edge_type: str) -> str:
         return "event"
     if edge_type in {"exports_to", "imports_from"}:
         return "trade"
+    if edge_type in {"trade_dependency_edge"}:
+        return "trade"
     if edge_type in {"routes_through", "located_in"}:
         return "route"
+    if edge_type in {"logistics_route_edge"}:
+        return "route"
+    if edge_type in {"hazard_exposure_edge"}:
+        return "hazard"
+    if edge_type in {"policy_restriction_edge"}:
+        return "policy"
+    if edge_type in {"sanctions_screening_event", "compliance_risk"}:
+        return "sanctions"
+    if edge_type in {"evidence_for"}:
+        return "event"
     return "substitution"
 
 
@@ -513,3 +761,131 @@ def _node_type_priority(node_type: str) -> int:
     }
     return priorities.get(node_type, 1)
 
+
+def _bounded_limit(limit: int | None) -> int:
+    if limit is None:
+        return 50
+    return max(1, min(int(limit), 500))
+
+
+def _neighbors_for_node(snapshot: Any, node_id: str) -> list[str]:
+    neighbors: set[str] = set()
+    for edge in snapshot.edges:
+        if edge.source_node_id == node_id:
+            neighbors.add(edge.target_node_id)
+        if edge.target_node_id == node_id:
+            neighbors.add(edge.source_node_id)
+    return sorted(neighbors)
+
+
+def _concentration_metrics(snapshot: Any) -> list[dict[str, Any]]:
+    metrics = []
+    for edge in snapshot.edges:
+        if edge.edge_type != "trade_dependency_edge":
+            continue
+        attributes = getattr(edge, "attributes", {}) or {}
+        metrics.append(
+            {
+                "edge_id": edge.edge_id,
+                "source": edge.source_node_id,
+                "target": edge.target_node_id,
+                "weight": edge.weight,
+                "confidence": edge.confidence,
+                "country_product_hhi": attributes.get("country_product_hhi"),
+            }
+        )
+    return metrics[:50]
+
+
+def _chart_payloads(snapshot: Any, *, limit: int) -> dict[str, list[dict[str, Any]]]:
+    nodes = sorted(snapshot.nodes, key=lambda node: (-float(node.confidence), node.node_id))
+    edge_counts = Counter(edge.edge_type for edge in snapshot.edges)
+    source_counts = Counter(
+        source_id
+        for edge in snapshot.edges
+        for source_id in source_ref_ids(edge.provenance_refs)
+    )
+    return {
+        "risk_score_ranking": [
+            {"id": node.node_id, "label": node.canonical_name, "score": node.confidence}
+            for node in nodes[:limit]
+        ],
+        "risk_component_breakdown": [
+            {"component": edge_type, "value": count} for edge_type, count in edge_counts.items()
+        ][:limit],
+        "hhi_concentration_bar": _concentration_metrics(snapshot)[:limit],
+        "trade_flow_sankey": [
+            _edge_view(edge)
+            for edge in snapshot.edges
+            if edge.edge_type in {"trade_dependency_edge", "exports_to", "imports_from"}
+        ][:limit],
+        "country_dependency_heatmap": [
+            _edge_view(edge) for edge in snapshot.edges if _layer_for_edge(edge.edge_type) == "trade"
+        ][:limit],
+        "policy_event_timeline": [
+            _node_view(node) for node in snapshot.nodes if node.node_type == "policy_event"
+        ][:limit],
+        "hazard_exposure_timeline": [
+            _node_view(node) for node in snapshot.nodes if node.node_type == "hazard_event"
+        ][:limit],
+        "monte_carlo_loss_histogram": [],
+        "monte_carlo_ecdf": [],
+        "cvar_tail": [],
+        "resilience_functionality_curve": [],
+        "optimizer_before_after": [],
+        "validation_ablation_bar": [],
+        "source_freshness_table": [
+            {"source_id": source_id, "evidence_count": count}
+            for source_id, count in sorted(source_counts.items())
+        ][:limit],
+        "graph_quality_table": [
+            {"metric": key, "value": value}
+            for key, value in (snapshot.quality_report or {}).items()
+            if isinstance(value, (int, float, str))
+        ][:limit],
+        "evidence_refs_table": _evidence_rows(snapshot, limit=limit),
+    }
+
+
+def _table_payloads(snapshot: Any) -> dict[str, list[dict[str, Any]]]:
+    nodes = [_node_view(node) for node in snapshot.nodes]
+    edges = [_edge_view(edge) for edge in snapshot.edges]
+    evidence = _evidence_rows(snapshot, limit=500)
+    return {
+        "source_catalog": [],
+        "source_status": [],
+        "connector_status": [],
+        "graph_nodes": nodes,
+        "graph_edges": edges,
+        "unresolved_entities": [],
+        "risk_rankings": [
+            {"id": node["id"], "label": node["label"], "score": node["confidence"]}
+            for node in nodes
+        ],
+        "scenario_runs": [],
+        "reverse_stress_results": [],
+        "optimizer_actions": [],
+        "reports": [],
+        "validation_artifacts": [],
+        "evidence_refs": evidence,
+        "trade_flows": [edge for edge in edges if edge["edge_type"] == "trade_dependency_edge"],
+        "policy_events": [node for node in nodes if node["kind"] == "policy_event"],
+        "hazard_events": [node for node in nodes if node["kind"] == "hazard_event"],
+        "logistics_facilities": [node for node in nodes if node["kind"] == "logistics_facility"],
+    }
+
+
+def _evidence_rows(snapshot: Any, *, limit: int) -> list[dict[str, Any]]:
+    rows = []
+    for edge in snapshot.edges:
+        refs = source_ref_ids(edge.provenance_refs)
+        rows.append(
+            {
+                "edge_id": edge.edge_id,
+                "edge_type": edge.edge_type,
+                "source_refs": refs,
+                "confidence": edge.confidence,
+                "evidence_summary": str(edge.evidence_text_summary or "")[:280],
+            }
+        )
+    return rows[:limit]

@@ -27,7 +27,7 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return props.data.globalRiskCockpit ? <GlobalRiskCockpit data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "graph-explorer":
       return props.data.graphExplorer && props.data.pathExplainer ? (
-        <GraphExplorer data={props.data as SupplyRiskDashboardData} initialMode="supply-chain-flow" />
+        <GraphExplorer apiClient={props.apiClient} data={props.data as SupplyRiskDashboardData} initialMode="supply-chain-flow" />
       ) : (
         <PageDataUnavailable />
       );
@@ -37,13 +37,13 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       return props.data.predictionCenter ? <PredictionCenter data={props.data as SupplyRiskDashboardData} /> : <PageDataUnavailable />;
     case "path-analysis":
       return props.data.graphExplorer && props.data.pathExplainer ? (
-        <GraphExplorer data={props.data as SupplyRiskDashboardData} initialMode="risk-propagation" />
+        <GraphExplorer apiClient={props.apiClient} data={props.data as SupplyRiskDashboardData} initialMode="risk-propagation" />
       ) : (
         <PageDataUnavailable />
       );
     case "country-lens":
       return props.data.graphExplorer && props.data.pathExplainer ? (
-        <GraphExplorer data={props.data as SupplyRiskDashboardData} initialMode="geo-aggregate" />
+        <GraphExplorer apiClient={props.apiClient} data={props.data as SupplyRiskDashboardData} initialMode="geo-aggregate" />
       ) : (
         <PageDataUnavailable />
       );

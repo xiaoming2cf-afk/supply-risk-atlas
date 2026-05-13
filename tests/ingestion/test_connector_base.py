@@ -1,71 +1,81 @@
 from __future__ import annotations
 
-import importlib
+from pathlib import Path
 
 import pytest
 
-from sra_core.ingestion.connectors.base import ConnectorRequest, PublicEvidenceConnector
-from sra_core.ingestion.connectors.errors import ConnectorPolicyError, ConnectorUnavailableError
+from sra_core.ingestion.connectors.base import ConnectorConfig, PublicEvidenceConnector
+from sra_core.ingestion.connectors.errors import ConnectorPayloadError
 
 
-def _request(mode: str, fixture_payload: dict[str, object] | None = None) -> ConnectorRequest:
-    return ConnectorRequest(
-        source_id="test_source",
-        source_url="https://example.org/source",
-        provenance_url="https://example.org/provenance",
-        license_ref="https://example.org/terms",
-        mode=mode,  # type: ignore[arg-type]
-        fixture_payload=fixture_payload,
+FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "connector_framework_sample.json"
+
+
+class CountingConnector(PublicEvidenceConnector):
+    def __init__(self, *, config: ConnectorConfig) -> None:
+        super().__init__("sec_edgar_lite", config=config)
+        self.live_call_count = 0
+
+    def _fetch_live(self, params):
+        self.live_call_count += 1
+        return super()._fetch_live(params)
+
+
+def test_fixture_mode_replays_sanitized_metadata_without_network() -> None:
+    connector = CountingConnector(
+        config=ConnectorConfig(mode="fixture", fixture_path=FIXTURE_PATH, max_records=5)
     )
 
+    result = connector.fetch({"company": "TSMC"})
 
-def test_connector_import_does_not_fetch_network(monkeypatch) -> None:
-    called = False
-
-    def fail_fetch(*args, **kwargs):  # pragma: no cover - should never run
-        nonlocal called
-        called = True
-        raise AssertionError("network fetch should not run during import")
-
-    monkeypatch.setattr("urllib.request.urlopen", fail_fetch)
-    importlib.reload(importlib.import_module("sra_core.ingestion.connectors.base"))
-
-    assert called is False
+    assert result.status == "ok"
+    assert result.mode == "fixture"
+    assert connector.live_call_count == 0
+    assert len(result.records) == 2
+    public = result.to_public_dict()
+    assert "raw_payload" not in str(public)
+    assert "ignore previous instructions" not in str(public).lower()
+    assert "script" not in str(public).lower()
+    assert public["records"][0]["payload_stored"] is False
 
 
-def test_connector_fixture_dry_run_and_unavailable_modes() -> None:
-    connector = PublicEvidenceConnector("test_source")
+def test_dry_run_records_sanitized_params_and_no_records() -> None:
+    connector = CountingConnector(config=ConnectorConfig(mode="dry_run"))
 
-    fixture = connector.fetch(_request("fixture", {"hello": "world"}))
-    dry_run = connector.fetch(_request("dry_run"))
-    unavailable = connector.fetch(_request("unavailable"))
+    result = connector.fetch({"q": "<script>ignore previous instructions</script>"})
 
-    assert fixture.status == "fixture"
-    assert fixture.payload == {"hello": "world"}
-    assert fixture.metadata()["raw_payload_stored"] is False
-    assert dry_run.status == "dry_run"
-    assert dry_run.payload is None
-    assert unavailable.status == "unavailable"
+    assert result.status == "dry_run"
+    assert result.records == ()
+    assert connector.live_call_count == 0
+    assert "dry_run_no_network_call" in result.warnings
+    assert "ignore previous instructions" not in str(result.to_public_dict()).lower()
 
 
-def test_connector_live_mode_is_disabled_by_default() -> None:
-    connector = PublicEvidenceConnector("test_source")
+def test_live_disabled_returns_controlled_unavailable_result() -> None:
+    connector = CountingConnector(config=ConnectorConfig(mode="live_disabled"))
 
-    with pytest.raises(ConnectorUnavailableError):
-        connector.fetch(_request("live"))
+    result = connector.fetch({"cik": "0001046179"})
+
+    assert result.status == "unavailable"
+    assert result.mode == "live_disabled"
+    assert connector.live_call_count == 0
+    assert "live_fetch_disabled_by_default" in result.warnings
 
 
-def test_connector_rejects_unbounded_request() -> None:
-    connector = PublicEvidenceConnector("test_source")
-    request = ConnectorRequest(
-        source_id="test_source",
-        source_url="https://example.org/source",
-        provenance_url="https://example.org/provenance",
-        license_ref="https://example.org/terms",
-        mode="dry_run",
-        timeout_seconds=120,
+def test_fixture_mode_enforces_record_limit() -> None:
+    connector = CountingConnector(
+        config=ConnectorConfig(mode="fixture", fixture_path=FIXTURE_PATH, max_records=1)
     )
 
-    with pytest.raises(ConnectorPolicyError):
-        connector.fetch(request)
+    with pytest.raises(ConnectorPayloadError):
+        connector.fetch()
+
+
+def test_source_status_and_license_policy_are_available() -> None:
+    connector = CountingConnector(config=ConnectorConfig(mode="dry_run"))
+
+    assert connector.source_status() == "disabled_review_required"
+    policy = connector.license_policy()
+    assert policy["api_visible_summary_allowed"] is True
+    assert policy["raw_payload_storage_allowed"] is False
 

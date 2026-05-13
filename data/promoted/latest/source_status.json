@@ -1,192 +1,21 @@
 {
-  "connector_status_counts": {
-    "disabled_review_required": 2,
-    "fixture_connector": 4
-  },
-  "disabled_count": 2,
-  "enabled_count": 4,
-  "generated_at": "2026-05-10T00:00:00Z",
-  "license_status_counts": {
-    "raw_redistribution_disallowed": 6
-  },
-  "registry_version": "semiconductor-source-registry-v0.1",
-  "source_count": 6,
-  "sources": [
-    {
-      "connector": "unavailable:live_connector_not_implemented",
-      "connector_status": "fixture_connector",
-      "enabled_by_default": true,
-      "fixture_connector": true,
-      "freshness_sla_hours": 720,
-      "license_policy": {
-        "allowed_use": [
-          "research",
-          "derived_risk_analysis",
-          "internal_review"
-        ],
-        "license_or_terms_summary": "Public terms allow derived research analysis with attribution; raw redistribution is not approved by this registry.",
-        "redistribution_limits": "Do not redistribute raw payloads; expose only hashes, summaries, lineage, and derived graph facts.",
-        "source_id": "eto_cset_advanced_semiconductor_supply_chain",
-        "status": "raw_redistribution_disallowed",
-        "terms_url": "https://eto.tech/terms/"
-      },
-      "license_terms_status": "raw_redistribution_disallowed",
-      "live_connector_available": false,
-      "owner": "data-ingestion",
-      "publisher": "Georgetown CSET Emerging Technology Observatory",
-      "review_status": "approved_for_governance_registration",
-      "runtime_status": "enabled",
-      "source_id": "eto_cset_advanced_semiconductor_supply_chain",
-      "source_url": "https://eto.tech/dataset-docs/chipexplorer/",
-      "terms_url": "https://eto.tech/terms/"
-    },
-    {
-      "connector": "unavailable:live_connector_not_implemented",
-      "connector_status": "fixture_connector",
-      "enabled_by_default": true,
-      "fixture_connector": true,
-      "freshness_sla_hours": 720,
-      "license_policy": {
-        "allowed_use": [
-          "research",
-          "derived_market_indicator",
-          "internal_review"
-        ],
-        "license_or_terms_summary": "Public summaries may support attributed analysis; raw reports and tables must not be redistributed.",
-        "redistribution_limits": "Do not expose raw reports or tables; expose only normalized indicators with lineage.",
-        "source_id": "wsts_historical_billings",
-        "status": "raw_redistribution_disallowed",
-        "terms_url": "https://www.wsts.org/terms"
-      },
-      "license_terms_status": "raw_redistribution_disallowed",
-      "live_connector_available": false,
-      "owner": "data-ingestion",
-      "publisher": "World Semiconductor Trade Statistics",
-      "review_status": "approved_for_governance_registration",
-      "runtime_status": "enabled",
-      "source_id": "wsts_historical_billings",
-      "source_url": "https://www.wsts.org/",
-      "terms_url": "https://www.wsts.org/terms"
-    },
-    {
-      "connector": "unavailable:live_connector_not_implemented",
-      "connector_status": "fixture_connector",
-      "enabled_by_default": true,
-      "fixture_connector": true,
-      "freshness_sla_hours": 168,
-      "license_policy": {
-        "allowed_use": [
-          "research",
-          "policy_risk_analysis",
-          "internal_review"
-        ],
-        "license_or_terms_summary": "Public policy facts may be summarized with attribution; this registry does not provide compliance advice.",
-        "redistribution_limits": "Do not expose raw intervention payloads; expose normalized policy summaries and graph evidence only.",
-        "source_id": "global_trade_alert_semiconductor_export_controls",
-        "status": "raw_redistribution_disallowed",
-        "terms_url": "https://www.globaltradealert.org/terms-of-use"
-      },
-      "license_terms_status": "raw_redistribution_disallowed",
-      "live_connector_available": false,
-      "owner": "data-ingestion",
-      "publisher": "Global Trade Alert",
-      "review_status": "approved_for_governance_registration",
-      "runtime_status": "enabled",
-      "source_id": "global_trade_alert_semiconductor_export_controls",
-      "source_url": "https://www.globaltradealert.org/",
-      "terms_url": "https://www.globaltradealert.org/terms-of-use"
-    },
-    {
-      "connector": "unavailable:live_connector_not_implemented",
-      "connector_status": "fixture_connector",
-      "enabled_by_default": true,
-      "fixture_connector": true,
-      "freshness_sla_hours": 6,
-      "license_policy": {
-        "allowed_use": [
-          "research",
-          "event_monitoring",
-          "derived_risk_analysis"
-        ],
-        "license_or_terms_summary": "Public event metadata may be analyzed with attribution; article payloads must be summarized, not exposed.",
-        "redistribution_limits": "Do not expose article text or raw GDELT payloads; expose event summaries and lineage refs.",
-        "source_id": "gdelt_semiconductor_events",
-        "status": "raw_redistribution_disallowed",
-        "terms_url": "https://www.gdeltproject.org/about.html"
-      },
-      "license_terms_status": "raw_redistribution_disallowed",
-      "live_connector_available": false,
-      "owner": "data-ingestion",
-      "publisher": "The GDELT Project",
-      "review_status": "approved_for_governance_registration",
-      "runtime_status": "enabled",
-      "source_id": "gdelt_semiconductor_events",
-      "source_url": "https://www.gdeltproject.org/",
-      "terms_url": "https://www.gdeltproject.org/about.html"
-    },
-    {
-      "connector": "disabled:v0.2_review_required",
-      "connector_status": "disabled_review_required",
-      "enabled_by_default": false,
-      "fixture_connector": false,
-      "freshness_sla_hours": 72,
-      "license_policy": {
-        "allowed_use": [
-          "research",
-          "filing_risk_factor_analysis",
-          "internal_review"
-        ],
-        "license_or_terms_summary": "Public filings may support attributed derived analysis; request headers and rate limits must follow SEC guidance.",
-        "redistribution_limits": "Do not expose raw filing payloads through platform API or UI.",
-        "source_id": "sec_edgar",
-        "status": "raw_redistribution_disallowed",
-        "terms_url": "https://www.sec.gov/os/accessing-edgar-data"
-      },
-      "license_terms_status": "raw_redistribution_disallowed",
-      "live_connector_available": false,
-      "owner": "data-ingestion",
-      "publisher": "U.S. Securities and Exchange Commission",
-      "review_status": "disabled_pending_v0.2_review",
-      "runtime_status": "disabled",
-      "source_id": "sec_edgar",
-      "source_url": "https://www.sec.gov/edgar/sec-api-documentation",
-      "terms_url": "https://www.sec.gov/os/accessing-edgar-data"
-    },
-    {
-      "connector": "disabled:v0.2_review_required",
-      "connector_status": "disabled_review_required",
-      "enabled_by_default": false,
-      "fixture_connector": false,
-      "freshness_sla_hours": 2160,
-      "license_policy": {
-        "allowed_use": [
-          "research",
-          "trade_flow_analysis",
-          "internal_review"
-        ],
-        "license_or_terms_summary": "Public trade data may support attributed derived analysis subject to Comtrade terms and volume limits.",
-        "redistribution_limits": "Do not expose bulk raw trade payloads; expose governed indicators and lineage only.",
-        "source_id": "un_comtrade",
-        "status": "raw_redistribution_disallowed",
-        "terms_url": "https://comtradeplus.un.org/TermsOfUse"
-      },
-      "license_terms_status": "raw_redistribution_disallowed",
-      "live_connector_available": false,
-      "owner": "data-ingestion",
-      "publisher": "United Nations Comtrade",
-      "review_status": "disabled_pending_v0.2_review",
-      "runtime_status": "disabled",
-      "source_id": "un_comtrade",
-      "source_url": "https://comtradeplus.un.org/",
-      "terms_url": "https://comtradeplus.un.org/TermsOfUse"
-    }
+  "source_count": 12,
+  "source_ids": [
+    "bis_export_controls_lite",
+    "eto_cset_advanced_semiconductor_supply_chain",
+    "gdelt_semiconductor_events",
+    "gdelt_semiconductor_lite",
+    "global_trade_alert_semiconductor_export_controls",
+    "nga_world_port_index_lite",
+    "ofac_sanctions_list_lite",
+    "sec_edgar_lite",
+    "un_comtrade_semiconductor_trade_lite",
+    "usgs_earthquake_lite",
+    "world_bank_wits_trade_tariff_lite",
+    "wsts_historical_billings"
   ],
-  "status": "ready",
-  "unavailable_count": 0,
+  "status": "fixture_replayed_promoted",
   "warnings": [
-    "source_registry:no_live_fetch_in_runtime",
-    "disabled_sources_require_review:sec_edgar,un_comtrade",
-    "promoted_graph:no_live_fetch_during_build",
-    "raw_payloads_excluded"
+    "live_fetch_disabled_by_default"
   ]
 }

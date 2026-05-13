@@ -1,28 +1,45 @@
 # Promoted Graph Pipeline
 
-The promoted graph pipeline builds a deterministic graph snapshot from governed fixture/public-evidence records. It does not fetch live data during import, API startup, tests, or the default build path.
+The promoted graph pipeline builds a deterministic, sanitized graph snapshot
+from fixture public-evidence connectors and the existing SemiRisk fixture graph.
 
-Pipeline steps:
+## Inputs
 
-1. Load `configs/sources/semiconductor.yaml` through the source registry runtime.
-2. Replay governed fixture records and fixture-first public evidence connectors.
-3. Promote raw-record indexes into silver entities, silver events, market indicators, graph nodes, and graph edges.
-4. Validate ontology direction and provenance through the graph quality checks.
-5. Compute deterministic `source_manifest_id`, `manifest_hash`, and `graph_version`.
-6. Write sanitized artifacts under `data/promoted/latest/` or a caller-provided output directory.
-7. Optionally store sanitized snapshot, graph node/edge, manifest, and raw-record-index rows in SQLite.
+- Semiconductor fixture graph
+- SEC EDGAR Lite fixture connector
+- GDELT Semiconductor Lite fixture connector
+- UN Comtrade Lite fixture connector
+- WITS Lite fixture connector
+- USGS Earthquake Lite fixture connector
+- NGA World Port Index Lite fixture connector
+- OFAC Sanctions List Lite fixture connector
+- BIS Export Controls Lite fixture connector
 
-Default output files:
+No live connector fetch is performed by the pipeline.
 
-- `manifest.json`
-- `graph_snapshot.json`
-- `source_status.json`
+## Outputs
 
-The files contain payload hashes, summaries, provenance URLs, terms references, graph versions, source manifests, warnings, and fixture/promoted-public-evidence limitations. They do not contain raw filing bodies, article bodies, secrets, private diagnostics, or bulk downloaded source payloads.
+`scripts/build_promoted_graph.py` writes:
 
-Runtime mode:
+- `data/promoted/latest/manifest.json`
+- `data/promoted/latest/graph_snapshot.json`
+- `data/promoted/latest/source_status.json`
+- `data/promoted/latest/quality_report.json`
+- `data/promoted/latest/source_coverage.json`
+- `data/promoted/latest/entity_resolution_report.json`
 
-- `SUPPLY_RISK_GRAPH_MODE=fixture` keeps the existing fixture graph path.
-- `SUPPLY_RISK_GRAPH_MODE=promoted` may serve promoted graph artifacts once the API integration gate is enabled.
+Artifacts include `data_mode=public_evidence_promoted` and
+`graph_mode=promoted`.
 
-The promoted graph remains research infrastructure based on fixture/proxy/promoted public evidence. It is not production ready, not a production decision engine, and not a financial-loss model.
+## Safety Controls
+
+- Raw payload bodies are not written.
+- Connector fixture records contribute summaries, payload hashes, source refs,
+  provenance URLs, and license/terms refs only.
+- Evidence-context and policy/compliance records are not treated as real
+  supply-chain dependencies.
+- The promoted graph is not production ready and is not a production decision or
+  financial-loss engine.
+
+Set `SUPPLY_RISK_GRAPH_MODE=promoted` to serve promoted graph views from the API.
+The default remains fixture mode.

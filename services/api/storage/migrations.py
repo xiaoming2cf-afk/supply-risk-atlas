@@ -9,4 +9,3 @@ def initialize_storage(path: str | Path | None = None) -> SQLiteStore:
     store = SQLiteStore(path)
     store.initialize()
     return store
-

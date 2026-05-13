@@ -1,255 +1,983 @@
 # Public Evidence Data Layer Build Log
 
-## Gate 0 - Baseline And Render Status
+This log records the Public Evidence Data Layer and Persistent Platform Foundation gates. The platform remains a fixture/proxy/promoted-public-evidence research system, not production ready and not a production decision or financial-loss engine.
 
-- Current HEAD: `97041b54573f35f8a771baa75c407ee2ba9e45d3`
-- Gate name: no-regression baseline and remote redeploy checklist
-- Changed files:
+## Preflight Baseline
+
+- Current HEAD: `8f7094238b1eeeb4ee0690cf6a760e51d7449904`
+- Base visible main: `97041b54573f35f8a771baa75c407ee2ba9e45d3`
+- Branch: `code-quality-repair`
+- Preserved local files:
+  - Untracked `apps/web/AGENTS.md`
+  - Untracked `apps/web/CLAUDE.md`
+- Gate name: preflight baseline after Gate 0 quality repair
+- Files changed:
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
 - Commands run:
-  - `git status -sb`
-  - `git rev-parse HEAD`
-  - `Invoke-WebRequest https://supply-risk-atlas-web.onrender.com/#graph-explorer`
-  - `Invoke-WebRequest https://supply-risk-atlas-api.onrender.com/api/v1/graph/view`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api -q`
   - `python -m pytest -q`
-  - `python -m pytest tests/security tests/api tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
   - `npm.cmd --workspace apps/web run typecheck`
   - `npm.cmd --workspace apps/web run build`
   - `npm.cmd run smoke:web`
-  - `npm.cmd run smoke:web -- --mode=deployed`
-- Pass/fail: pass
+  - `npm.cmd run smoke:web` rerun after first smoke timeout
+- Pass/fail status:
+  - `python -m pytest tests/quality -q`: pass
+  - `python -m pytest tests/api -q`: pass
+  - `python -m pytest -q`: pass
+  - `npm.cmd --workspace apps/web run typecheck`: pass
+  - `npm.cmd --workspace apps/web run build`: pass
+  - First `npm.cmd run smoke:web`: fail, browser navigation timeout at `about:blank`
+  - Second `npm.cmd run smoke:web`: pass, 26 checks
+- Failures and exact causes:
+  - First browser-smoke run failed with `Timed out waiting for browser condition. Last state: "about:blank"` in `scripts/browser-smoke.mjs`; rerun passed without code changes.
+- Limitations:
+  - No deployed smoke was run in this preflight.
+  - CI has not run for local commits until pushed.
+- Source/legal notes:
+  - No public data ingestion was run.
+  - No raw payloads, secrets, private diagnostics, or downloaded bulk data were added.
+- Next gate decision:
+  - Proceed to Gate 1 SQLite persistent storage foundation.
+
+## Gate 0 - Quality Guard Completion
+
+- Current HEAD before Gate 0: `97041b54573f35f8a771baa75c407ee2ba9e45d3`
+- Gate commit: `8f7094238b1eeeb4ee0690cf6a760e51d7449904`
+- Gate name: anti-minification readability guard
+- Files changed:
+  - `tests/quality/test_python_source_readability.py`
+  - `tests/quality/test_service_layer_readability.py`
+- Commands run:
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
 - Evidence:
-  - Full pytest passed.
-  - Focused security/API/model/simulation/optimization/report/quality pytest passed.
-  - Web typecheck passed.
-  - Web build passed.
-  - Local browser smoke passed: 26 checks.
-  - Deployed browser smoke passed: 26 checks.
-  - Deployed API `/api/v1/graph/view` returned HTTP 200.
-  - Deployed web root returned HTTP 200; static shell did not include Graph Explorer v2 text, but deployed browser smoke confirmed the live client rendered expected v2 checks.
-- Render redeploy checklist:
-  - Redeploy API service from latest `main`.
-  - Redeploy Web service from latest `main`.
-  - Clear Web build cache if Graph Explorer v2 does not appear.
-  - Verify `NEXT_PUBLIC_SUPPLY_RISK_API_URL`, `SUPPLY_RISK_API_ORIGIN`, `SUPPLY_RISK_CORS_ORIGINS`, data mode, graph mode, request limit, and run-store size variables.
-  - Rerun `npm.cmd run smoke:web -- --mode=deployed`.
+  - Readability guard covers `services/api`, `graph_kernel`, `ml`, `packages/sra_core/sra_core`, and Python scripts under `scripts`.
+  - Dedicated service-layer readability test covers `services/api/services/*.py` and `services/api/routes/*.py`.
+  - Named guard files passed:
+    - `services/api/services/graph_service.py`: 515 LF lines in git blob
+    - `services/api/services/risk_service.py`: 78 LF lines in git blob
+    - `services/api/services/scenario_service.py`: 60 LF lines in git blob
+    - `services/api/services/system_health_service.py`: readable multi-line module
+    - `services/api/routes/graph.py`: 77 LF lines in git blob
+  - Graph view endpoints returned HTTP 200 success for view/focus/clusters/path-view during Gate 0 verification.
+  - Evidence-context safety copy remains present: `This is not a supply-chain dependency edge.`
+- Limitations:
+  - Gate 0 does not add storage, source registry, connectors, or promoted graph features.
 - Source/legal notes:
   - No live ingestion was run.
-  - No raw public-source payloads were downloaded or committed.
-  - Existing platform remains fixture/proxy based and not production ready.
-- Limitations:
-  - Deployed acceptance depends on current Render state; future commits still require redeploy verification.
-  - Static HTML is not sufficient evidence for Graph Explorer v2 because the client renders after hydration.
-- Next gate decision: proceed to Gate 1 persistent SQLite storage foundation.
+  - No public-source payloads were added.
+- Next gate decision:
+  - Proceed to Gate 1 after preflight baseline.
 
-## Gate 1 - Persistent Storage Foundation
+## Gate 1 - SQLite Persistent Storage Foundation
 
-- Current HEAD before commit: `f5915e2`
+- Current HEAD before Gate 1: `8426294`
 - Gate name: SQLite persistent research store foundation
-- Changed files:
+- Files changed:
   - `docs/data/persistent-store.md`
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
   - `services/api/storage/__init__.py`
-  - `services/api/storage/schema.sql`
   - `services/api/storage/sqlite_store.py`
+  - `services/api/storage/schema.sql`
   - `services/api/storage/migrations.py`
   - `services/api/storage/models.py`
   - `services/api/storage/manifest_store.py`
   - `services/api/storage/run_store_sqlite.py`
   - `services/api/storage/report_store.py`
   - `tests/storage/test_sqlite_store.py`
-  - `tests/storage/test_manifest_store.py`
   - `tests/storage/test_run_persistence.py`
+  - `tests/storage/test_manifest_store.py`
   - `tests/storage/test_report_persistence.py`
 - Commands run:
-  - `python -m pytest tests/storage -q` (first run exposed test/store sanitizer fixes)
+  - `python -m pytest tests/storage -q`
   - `python -m pytest tests/storage tests/api/test_run_store.py tests/security/test_no_raw_payload_exposure.py -q`
-- Pass/fail: pass
+  - `python -m pytest tests/quality -q`
+- Pass/fail status: pass
 - Evidence:
-  - SQLite schema initializes required tables: source manifests, raw-record index, silver entities/events, graph snapshots/nodes/edges, run records, report records, and audit events.
+  - SQLite schema initializes all required Gate 1 tables: source manifests/status, raw-record index, silver entities/events, market/trade/policy/logistics/hazard records, graph snapshots/nodes/edges/view cache, run/report records, audit events, and validation artifacts.
   - Storage tests use temporary SQLite databases.
-  - Run summaries persist across store instances and enforce retention.
-  - Manifest/raw-record-index tests store payload hash, summary, provenance URL, and terms ref without storing raw payload content.
-  - Report store persists sanitized JSON/Markdown and returns explicit exclusion flags.
-  - Existing in-memory run-store endpoint tests still pass.
-- Source/legal notes:
-  - Store records license/terms refs and provenance URLs.
-  - Raw payload body storage is not implemented by default.
-  - SQLite persistence is for governed research metadata and sanitized artifacts only.
+  - Raw-record index stores payload hash, summary, provenance URL, license/terms ref, retrieval/as-of timestamps, and `raw_payload_stored=false` by default.
+  - SQLite run store persists sanitized summaries and retention cleanup works.
+  - Existing in-memory `RunStore` remains available and tested as fallback.
+  - Report store persists sanitized JSON/Markdown and content hash while excluding raw payload/private diagnostics.
+  - Raw payload exposure security test still passes.
 - Limitations:
-  - Runtime API services still use the existing in-memory run store until Gate 8 integration.
-  - SQLite is the only persistent backend in this phase; Postgres remains deferred.
-- Next gate decision: proceed to Gate 2 source registry runtime.
+  - Runtime API services are not yet switched to SQLite; that integration is deferred to the persistence integration gate.
+  - SQLite is local lightweight persistence only; Postgres remains deferred.
+  - No public connectors or promoted graph pipeline were added in this gate.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw downloaded bulk data was committed.
+  - Store is metadata/sanitized-artifact only by default.
+- Next gate decision:
+  - Proceed to Gate 2 source registry runtime and expanded source catalog.
 
-## Gate 2 - Source Registry Runtime
+## Gate 2 - Source Registry Runtime And Expanded Catalog
 
-- Current HEAD before commit: `bd14559`
-- Gate name: executable semiconductor source registry runtime
-- Changed files:
-  - `apps/web/src/features/common/legacyDashboard.tsx`
+- Current HEAD before Gate 2: `e097080`
+- Gate name: executable source registry runtime and public source catalog expansion
+- Files changed:
+  - `configs/sources/semiconductor.yaml`
+  - `data_contracts/ingestion_schema/semiconductor_source_registry.schema.json`
+  - `docs/data/public-source-catalog.md`
+  - `docs/data/source-registry-runtime.md`
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
   - `packages/shared-types/src/health.ts`
   - `packages/sra_core/sra_core/sources/__init__.py`
+  - `packages/sra_core/sra_core/sources/license_policy.py`
+  - `packages/sra_core/sra_core/sources/models.py`
   - `packages/sra_core/sra_core/sources/registry.py`
   - `packages/sra_core/sra_core/sources/source_status.py`
-  - `packages/sra_core/sra_core/sources/license_policy.py`
   - `services/api/main.py`
   - `services/api/services/system_health_service.py`
-  - `tests/sources/test_source_registry_runtime.py`
-  - `tests/sources/test_source_license_policy.py`
   - `tests/api/test_system_health_semiconductor_graph.py`
+  - `tests/ingestion/test_semiconductor_source_registry.py`
+  - `tests/sources/test_source_license_policy.py`
+  - `tests/sources/test_source_registry_runtime.py`
+  - `tests/sources/test_source_status.py`
 - Commands run:
-  - `python -m pytest tests/sources tests/api/test_system_health_semiconductor_graph.py -q`
+  - `python -m pytest tests/sources tests/ingestion/test_semiconductor_source_registry.py tests/api/test_system_health_semiconductor_graph.py -q`
+  - `python -m pytest tests/sources tests/ingestion/test_semiconductor_source_registry.py tests/api/test_system_health_semiconductor_graph.py -q` rerun after API-facing warning token fix
+  - `python -m pytest tests/quality -q`
   - `npm.cmd --workspace apps/web run typecheck`
-- Pass/fail: pass
+  - `python -m pytest tests/api -q`
+- Pass/fail status:
+  - First focused run: fail
+  - Focused rerun: pass
+  - Quality tests: pass
+  - Web typecheck: pass
+  - API tests: pass
+- Failures and exact causes:
+  - Initial focused run failed because an API-visible readiness warning used the key text `raw_payload_storage_disabled_by_default`; existing health tests reject the `raw_payload` token in API responses. The warning was renamed to `payload_storage_disabled_by_default` while keeping the storage-control meaning.
 - Evidence:
-  - Runtime registry loads `configs/sources/semiconductor.yaml` and validates required governance fields.
-  - Readiness summary reports six governed sources, four fixture connectors, and two disabled-review-required sources.
-  - License policy reports terms URLs, allowed use, and redistribution limits.
-  - System Health API payload includes `sourceRegistryReadiness`.
-  - System Health UI displays source registry and connector readiness without adding a new page.
-- Source/legal notes:
-  - Gate 2 performs no network calls and no live ingestion.
-  - Disabled sources remain disabled pending review.
-  - Registry warnings explicitly include `source_registry:no_live_fetch_in_runtime`.
+  - Runtime loads 23 governed semiconductor sources from `configs/sources/semiconductor.yaml`.
+  - Catalog tiers are present: 4 Tier 0 fixture sources, 8 Tier 1 disabled public connector candidates, 6 Tier 2 review-required sources, and 5 Tier 3 deferred paid/proprietary sources.
+  - Runtime source readiness reports 4 enabled fixture sources, 0 live-default sources, 5 deferred sources, and degraded status because review/deferred sources are present.
+  - System Health now includes `sourceRegistryReadiness` with source, connector, and tier counts.
+  - API health response remains sanitized and does not include raw payload bodies or `raw_payload` response keys.
 - Limitations:
-  - Connector runtime only reports readiness; connector fetch framework begins in Gate 3.
-  - Registry statuses are based on configuration and known fixture connector availability, not live endpoint probes.
-- Next gate decision: proceed to Gate 3 public connector framework.
+  - This gate does not implement connector fetch logic, public ingestion, promoted graph generation, or SQLite runtime integration.
+  - Tier 1 sources are registered but disabled pending connector gates.
+  - Tier 2 sources require source/terms/manual-upload review before ingestion.
+  - Tier 3 paid/proprietary/private sources are registry-only and must not be fetched by default.
+- Source/legal notes:
+  - No network calls were added or run.
+  - No live ingestion was run.
+  - Source entries include publisher, source URL, terms URL, attribution, allowed-use notes, and redistribution limits.
+  - Raw payload storage remains disabled by default; API-visible summaries and lineage remain bounded and source-bound.
+- Next gate decision:
+  - Proceed to Gate 3 public connector framework after committing Gate 2.
 
 ## Gate 3 - Public Connector Framework
 
-- Current HEAD before commit: `b66ff44`
-- Gate name: bounded public evidence connector framework
-- Changed files:
+- Current HEAD before Gate 3: `bd418a9`
+- Gate name: source-policy-aware connector framework
+- Files changed:
+  - `docs/data/public-connector-framework.md`
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
   - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
   - `packages/sra_core/sra_core/ingestion/connectors/base.py`
-  - `packages/sra_core/sra_core/ingestion/connectors/http_client.py`
-  - `packages/sra_core/sra_core/ingestion/connectors/rate_limit.py`
   - `packages/sra_core/sra_core/ingestion/connectors/cache.py`
   - `packages/sra_core/sra_core/ingestion/connectors/errors.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/http_client.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/rate_limit.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/result.py`
+  - `tests/ingestion/fixtures/connector_framework_sample.json`
   - `tests/ingestion/test_connector_base.py`
   - `tests/ingestion/test_connector_cache.py`
   - `tests/ingestion/test_connector_rate_limit.py`
+  - `tests/ingestion/test_no_startup_network.py`
 - Commands run:
-  - `python -m pytest tests/ingestion/test_connector_base.py tests/ingestion/test_connector_cache.py tests/ingestion/test_connector_rate_limit.py tests/ingestion/test_public_source_connectors.py -q`
-- Pass/fail: pass
+  - `python -m pytest tests/ingestion/test_connector_base.py tests/ingestion/test_connector_cache.py tests/ingestion/test_connector_rate_limit.py tests/ingestion/test_no_startup_network.py -q`
+  - `python -m pytest tests/ingestion tests/sources -q`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py -q`
+- Pass/fail status: pass
 - Evidence:
-  - Connector imports do not call network fetch.
-  - Connector fetch requires an explicit request mode.
-  - Fixture, dry-run, unavailable, and disabled-live behavior are covered.
-  - HTTP helper requires HTTPS, timeout, and bounded byte count.
-  - Metadata cache stores result metadata only, not raw payload bodies.
-  - Existing public connector boundary tests still pass.
-- Source/legal notes:
-  - Live mode remains disabled by default.
-  - Connector result metadata records source URL, provenance URL, payload hash, retrieval time, and license ref.
-  - Raw payload storage is not implemented in the metadata cache.
+  - Connector framework supports `fixture`, `dry_run`, `live_disabled`, and reserved `live` modes.
+  - Fixture replay emits only sanitized metadata records with payload hashes, provenance URLs, terms refs, summaries, timestamps, and `payload_stored=false`.
+  - Dry-run mode returns a no-network result with sanitized parameters.
+  - Live-disabled mode returns controlled unavailable status and does not call live fetch.
+  - Rate limiter enforces bounded windowed request counts.
+  - Connector cache stores metadata only by default; sanitized record metadata is optional.
+  - Import/instantiation tests monkeypatch `urllib.request.urlopen` and prove no startup network calls occur.
+  - Existing ingestion fixture/source tests still pass.
 - Limitations:
-  - The framework does not yet include source-specific SEC/GDELT lite promotion; those begin in Gates 4 and 5.
-  - Base live fetch raises controlled unavailable unless a connector explicitly implements it.
-- Next gate decision: proceed to Gates 4 and 5 fixture-first SEC EDGAR and GDELT lite connectors.
+  - No source-specific SEC, GDELT, trade, hazard, logistics, sanctions, or export-control connector implementation was added in this gate.
+  - Live mode remains architecture-only and returns controlled unavailable unless a future explicit connector implements it.
+  - Runtime API services are not yet triggering connector fetches.
+- Source/legal notes:
+  - No live fetch was performed.
+  - No raw source payload bodies or bulk downloads were committed.
+  - External text summaries are sanitized for HTML/script and common prompt-injection phrases.
+- Next gate decision:
+  - Proceed to Gate 4 data contracts for expanded sources.
 
-## Gate 4 - SEC EDGAR Risk-Factor Lite Connector
+## Gate 4 - Data Contracts For Expanded Sources
 
-- Current HEAD before commit: `a3a04e1`
-- Gate name: fixture-first SEC EDGAR risk-factor lite connector
-- Changed files:
-  - `configs/sources/semiconductor.yaml`
-  - `data_contracts/raw_schema/sec_edgar_companyfacts_raw.schema.json`
+- Current HEAD before Gate 4: `bef3c74`
+- Gate name: raw, silver, and graph contracts for expanded public sources
+- Files changed:
+  - `data_contracts/raw_schema/sec_edgar_lite_raw.schema.json`
+  - `data_contracts/raw_schema/gdelt_semiconductor_lite_raw.schema.json`
+  - `data_contracts/raw_schema/un_comtrade_semiconductor_trade_raw.schema.json`
+  - `data_contracts/raw_schema/wits_trade_tariff_raw.schema.json`
+  - `data_contracts/raw_schema/usgs_earthquake_raw.schema.json`
+  - `data_contracts/raw_schema/nga_world_port_index_raw.schema.json`
+  - `data_contracts/raw_schema/ofac_sanctions_list_raw.schema.json`
+  - `data_contracts/raw_schema/bis_export_controls_raw.schema.json`
+  - Additional registry-reference raw contracts for review/deferred sources
   - `data_contracts/silver_schema/company_disclosure_event.schema.json`
-  - `docs/data/sec-edgar-lite-connector.md`
+  - `data_contracts/silver_schema/semiconductor_risk_event.schema.json`
+  - `data_contracts/silver_schema/semiconductor_trade_flow.schema.json`
+  - `data_contracts/silver_schema/trade_tariff_indicator.schema.json`
+  - `data_contracts/silver_schema/natural_hazard_event.schema.json`
+  - `data_contracts/silver_schema/logistics_facility.schema.json`
+  - `data_contracts/silver_schema/sanctions_screening_event.schema.json`
+  - `data_contracts/silver_schema/export_control_policy_event.schema.json`
+  - `data_contracts/graph_schema/evidence_context_link.schema.json`
+  - `data_contracts/graph_schema/trade_dependency_edge.schema.json`
+  - `data_contracts/graph_schema/logistics_route_edge.schema.json`
+  - `data_contracts/graph_schema/policy_restriction_edge.schema.json`
+  - `data_contracts/graph_schema/hazard_exposure_edge.schema.json`
+  - `tests/contract/test_expanded_source_contracts.py`
+  - `tests/contract/test_graph_evidence_context_contract.py`
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
-  - `packages/sra_core/sra_core/contracts/semiconductor.py`
-  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
-  - `packages/sra_core/sra_core/ingestion/connectors/sec_edgar_lite.py`
-  - `tests/ingestion/fixtures/sec_edgar_lite_sample.json`
-  - `tests/ingestion/test_sec_edgar_lite.py`
 - Commands run:
-  - `python -m pytest tests/ingestion/test_sec_edgar_lite.py tests/ingestion/test_gdelt_semiconductor_lite.py tests/ingestion/test_semiconductor_source_registry.py tests/sources -q`
-  - `python -m pytest tests/ingestion -q`
-- Pass/fail: pass
+  - `python -m pytest tests/contract -q`
+  - `python -m pytest tests/sources tests/ingestion/test_semiconductor_source_registry.py -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail status: pass
 - Evidence:
-  - SEC EDGAR lite fixture replay returns one sanitized `sec_edgar` raw-record index entry with payload hash, provenance URL, retrieved time, and terms reference.
-  - Promotion emits a company disclosure risk event and `evidence_for` graph links.
-  - Live mode remains disabled by default and requires `SUPPLY_RISK_SEC_EDGAR_USER_AGENT` before any future live implementation.
-  - Fixture/API-facing promotion output does not include raw filing payloads.
-- Source/legal notes:
-  - Source registry keeps SEC EDGAR disabled by default and documents SEC access guidance.
-  - Connector docs require explicit live trigger, rate limits, timeout, and SEC-compliant user-agent for any future live path.
-  - Full filing bodies are not committed, stored, or returned.
+  - Raw contracts require `source_id`, `source_record_id`, `retrieved_at`, `as_of_time`, `payload_hash`, `provenance_url`, summary, and license/terms ref.
+  - Silver contracts require source refs, confidence, validity window, and evidence summary.
+  - Graph edge contracts require explicit edge semantics, provenance refs, confidence, and evidence summary.
+  - Evidence-context link contract requires `derived_context=true`, `not_supply_chain_dependency=true`, and user-facing label `evidence-context link`.
+  - Source registry contract references now resolve to existing schema files.
 - Limitations:
-  - This gate provides fixture-first architecture only; live SEC retrieval is controlled unavailable.
-  - The connector extracts summarized disclosure events, not complete filing analysis.
-- Next gate decision: proceed to Gate 5 GDELT semiconductor event lite connector.
+  - Contracts define data shapes only; no connector implementations, promoted graph pipeline, API chart/table endpoints, or frontend changes were added.
+  - Some Tier 2/Tier 3 contracts are registry/reference placeholders until later review or explicit connector gates.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw filing bodies, article bodies, bulk trade payloads, sanctions payloads, or private data were committed.
+  - Deferred paid/proprietary sources remain registry-only.
+- Next gate decision:
+  - Proceed to Gate 5 SEC EDGAR Lite and GDELT Semiconductor Lite fixture connectors.
 
-## Gate 5 - GDELT Semiconductor Event Lite Connector
+## Gate 5 - SEC EDGAR Lite And GDELT Semiconductor Lite Connectors
 
-- Current HEAD before commit: `a3a04e1`
-- Gate name: fixture-first GDELT semiconductor event lite connector
-- Changed files:
+- Current HEAD before Gate 5: `b544097`
+- Gate name: first fixture-first public connector batch
+- Files changed:
+  - `docs/data/sec-edgar-lite-connector.md`
   - `docs/data/gdelt-semiconductor-lite-connector.md`
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
   - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/base.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/result.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/sec_edgar_lite.py`
   - `packages/sra_core/sra_core/ingestion/connectors/gdelt_semiconductor_lite.py`
+  - `tests/ingestion/fixtures/sec_edgar_lite_sample.json`
   - `tests/ingestion/fixtures/gdelt_semiconductor_lite_sample.json`
+  - `tests/ingestion/test_sec_edgar_lite.py`
   - `tests/ingestion/test_gdelt_semiconductor_lite.py`
 - Commands run:
-  - `python -m pytest tests/ingestion/test_sec_edgar_lite.py tests/ingestion/test_gdelt_semiconductor_lite.py tests/ingestion/test_semiconductor_source_registry.py tests/sources -q`
-  - `python -m pytest tests/ingestion -q`
-- Pass/fail: pass
+  - `python -m pytest tests/ingestion/test_sec_edgar_lite.py tests/ingestion/test_gdelt_semiconductor_lite.py tests/ingestion/test_connector_base.py tests/ingestion/test_connector_cache.py tests/ingestion/test_no_startup_network.py -q`
+  - `python -m pytest tests/ingestion tests/sources tests/contract -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/quality -q`
+- Pass/fail status: pass
 - Evidence:
-  - GDELT lite fixture replay returns one sanitized `gdelt_semiconductor_events` raw-record index entry with payload hash, provenance URL, retrieved time, and terms reference.
-  - Query scope is bounded to semiconductor, chip supply chain, lithography, wafer fab, photoresist, export control, and earthquake plus semiconductor-region terms.
-  - Promotion emits a risk event plus `impacted_by` and `evidence_for` graph links.
-  - Live mode remains disabled by default.
-  - Fixture/API-facing promotion output does not include article bodies or raw news payloads.
-- Source/legal notes:
-  - GDELT article text is not committed, stored, or returned.
-  - Connector docs require explicit live trigger, timeouts, rate limits, and no uncontrolled news scraping for any future live path.
+  - SEC EDGAR Lite fixture connector replays bounded disclosure metadata, computes payload hashes, sanitizes summaries, and promotes to `company_disclosure_event`.
+  - SEC live mode remains controlled unavailable unless a compliant `SEC_USER_AGENT` and explicit CIK/ticker are supplied; bulk live download is not implemented.
+  - GDELT Semiconductor Lite fixture connector replays event metadata, computes payload hashes, sanitizes summaries, and promotes to `risk_event`.
+  - GDELT live mode remains controlled unavailable and rejects broad out-of-scope queries.
+  - Connector records gained sanitized metadata for promotion, while `payload_stored=false` and raw body fields remain filtered.
+  - No startup network tests still pass.
 - Limitations:
-  - This gate provides fixture-first architecture only; live GDELT retrieval is controlled unavailable.
-  - Event extraction is metadata/summarization oriented and not a production monitoring feed.
-- Next gate decision: proceed to Gate 6 promoted graph pipeline.
+  - Connectors are fixture-first and not enabled for live ingestion.
+  - Promotion outputs are connector-level records only; graph integration is deferred to the promoted graph pipeline gate.
+  - SEC/GDELT source registry status remains disabled pending explicit promotion/activation gates.
+- Source/legal notes:
+  - No live SEC or GDELT calls were performed.
+  - No raw filing bodies, article bodies, or downloaded bulk data were committed.
+  - Outputs contain summaries, payload hashes, source refs, provenance URLs, confidence, and license/terms refs only.
+- Next gate decision:
+  - Proceed to Gate 6 UN Comtrade Lite and WITS Lite connectors.
 
-## Gate 6 - Promoted Graph Pipeline
+## Gate 6 - UN Comtrade Lite And WITS Lite Connectors
 
-- Current HEAD before commit: `f8de0f3`
+- Current HEAD before Gate 6: `2ea30f2`
+- Gate name: trade-flow and tariff public connector batch
+- Files changed:
+  - `docs/data/un-comtrade-semiconductor-trade-lite.md`
+  - `docs/data/wits-trade-tariff-lite.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/un_comtrade_semiconductor_trade_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/wits_trade_tariff_lite.py`
+  - `tests/ingestion/fixtures/un_comtrade_semiconductor_trade_lite_sample.json`
+  - `tests/ingestion/fixtures/wits_trade_tariff_lite_sample.json`
+  - `tests/ingestion/test_un_comtrade_semiconductor_trade_lite.py`
+  - `tests/ingestion/test_wits_trade_tariff_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_un_comtrade_semiconductor_trade_lite.py tests/ingestion/test_wits_trade_tariff_lite.py tests/ingestion -q`
+  - `python -m pytest tests/sources tests/contract -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/quality -q`
+- Pass/fail status: pass
+- Evidence:
+  - UN Comtrade Lite fixture connector replays semiconductor-related HS proxy trade-flow summaries and promotes to `trade_flow` records.
+  - Promotion computes dependency share, country/product HHI, significant dependency, and high dependency flags.
+  - WITS Lite fixture connector replays tariff/market indicator summaries and promotes to `trade_tariff_indicator` records.
+  - Both live modes return controlled unavailable and do not fetch in CI.
+  - Tests verify no raw bulk trade payload exposure.
+- Limitations:
+  - HS-code mappings are proxy context and not a complete semiconductor supply-chain mapping.
+  - Connectors remain fixture-only/live-disabled.
+  - Chart/table integration and promoted graph consumption are deferred to later gates.
+- Source/legal notes:
+  - No UN Comtrade or WITS live calls were performed.
+  - No raw bulk trade data was committed.
+  - Outputs contain only summaries, hashes, source refs, provenance URLs, confidence, and terms refs.
+- Next gate decision:
+  - Proceed to Gate 7 USGS, World Port Index, OFAC, and BIS connector batch.
+
+## Gate 7 - USGS, World Port Index, OFAC, And BIS Connectors
+
+- Current HEAD before Gate 7: `30d6851`
+- Gate name: hazard, logistics, sanctions, and export-control connector batch
+- Files changed:
+  - `docs/data/usgs-earthquake-lite.md`
+  - `docs/data/nga-world-port-index-lite.md`
+  - `docs/data/ofac-sanctions-list-lite.md`
+  - `docs/data/bis-export-controls-lite.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/ingestion/connectors/__init__.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/usgs_earthquake_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/nga_world_port_index_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/ofac_sanctions_list_lite.py`
+  - `packages/sra_core/sra_core/ingestion/connectors/bis_export_controls_lite.py`
+  - `tests/ingestion/fixtures/usgs_earthquake_lite_sample.json`
+  - `tests/ingestion/fixtures/nga_world_port_index_lite_sample.json`
+  - `tests/ingestion/fixtures/ofac_sanctions_list_lite_sample.json`
+  - `tests/ingestion/fixtures/bis_export_controls_lite_sample.json`
+  - `tests/ingestion/test_usgs_earthquake_lite.py`
+  - `tests/ingestion/test_nga_world_port_index_lite.py`
+  - `tests/ingestion/test_ofac_sanctions_list_lite.py`
+  - `tests/ingestion/test_bis_export_controls_lite.py`
+- Commands run:
+  - `python -m pytest tests/ingestion/test_usgs_earthquake_lite.py tests/ingestion/test_nga_world_port_index_lite.py tests/ingestion/test_ofac_sanctions_list_lite.py tests/ingestion/test_bis_export_controls_lite.py -q`
+  - `python -m pytest tests/ingestion/test_usgs_earthquake_lite.py tests/ingestion/test_nga_world_port_index_lite.py tests/ingestion/test_ofac_sanctions_list_lite.py tests/ingestion/test_bis_export_controls_lite.py -q` rerun after OFAC fixture wording assertion fix
+  - `python -m pytest tests/ingestion tests/sources tests/contract -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/security/test_unsafe_compliance_language.py tests/quality -q`
+- Pass/fail status:
+  - First focused run: fail
+  - Focused rerun: pass
+  - Full ingestion/sources/contracts: pass
+  - Security/quality guards: pass
+- Failures and exact causes:
+  - Initial focused run failed because the OFAC test expected `compliance risk awareness` while the fixture summary used `compliance-risk awareness`. The test assertion was corrected; connector behavior did not change.
+- Evidence:
+  - USGS fixture connector promotes earthquake metadata to `natural_hazard_event` summaries.
+  - World Port Index fixture connector promotes public port metadata to `logistics_facility` summaries and labels it as non-navigational context.
+  - OFAC fixture connector promotes sanctions metadata to compliance-risk summaries only and tests exclude operational routing/avoidance language.
+  - BIS fixture connector promotes export-control policy metadata to compliance-context summaries only and tests exclude operational restricted-trade guidance.
+  - All four live modes return controlled unavailable; no live polling/fetching is enabled.
+- Limitations:
+  - Connectors are fixture-only/live-disabled.
+  - Promoted graph integration is deferred.
+  - Hazard-to-facility proximity mapping and logistics route construction are deferred to entity resolution/promoted graph gates.
+- Source/legal notes:
+  - No USGS, NGA, OFAC, or BIS live calls were performed.
+  - No raw source payloads or bulk downloads were committed.
+  - Sanctions/export-control outputs are compliance-risk context only and do not include operational restricted-trade guidance.
+- Next gate decision:
+  - Proceed to Gate 8 entity resolution, crosswalks, and taxonomy enrichment.
+
+## Gate 8 - Entity Resolution, Crosswalks, And Taxonomy Enrichment
+
+- Current HEAD before Gate 8: `fa9c1a1`
+- Gate name: deterministic entity resolution and crosswalk helpers
+- Files changed:
+  - `docs/data/entity-resolution-and-crosswalks.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/sra_core/sra_core/entity_resolution/__init__.py`
+  - `packages/sra_core/sra_core/entity_resolution/aliases.py`
+  - `packages/sra_core/sra_core/entity_resolution/company_aliases.py`
+  - `packages/sra_core/sra_core/entity_resolution/country_codes.py`
+  - `packages/sra_core/sra_core/entity_resolution/commodity_crosswalk.py`
+  - `packages/sra_core/sra_core/entity_resolution/policy_item_crosswalk.py`
+  - `packages/sra_core/sra_core/entity_resolution/resolution_result.py`
+  - `tests/entity_resolution/test_aliases.py`
+  - `tests/entity_resolution/test_country_codes.py`
+  - `tests/entity_resolution/test_commodity_crosswalk.py`
+  - `tests/entity_resolution/test_policy_item_crosswalk.py`
+- Commands run:
+  - `python -m pytest tests/entity_resolution -q`
+  - `python -m pytest tests/entity_resolution -q` rerun after alias warning threshold fix
+  - `python -m pytest tests/ingestion tests/contract tests/sources -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail status:
+  - First entity-resolution run: fail
+  - Entity-resolution rerun: pass
+  - Ingestion/contract/source tests: pass
+  - Quality tests: pass
+- Failures and exact causes:
+  - Initial run failed because moderate-confidence country alias `Chinese Taipei` did not emit an approximate warning. The alias warning threshold was raised so mappings below 0.9 confidence carry an explicit warning.
+- Evidence:
+  - Company aliases resolve TSMC, ASML, Samsung Electronics, Intel, and Applied Materials.
+  - Country aliases resolve Taiwan/Chinese Taipei/TW, United States/USA/US, South Korea/Korea Rep./KR, Netherlands/NL, and Japan/JP.
+  - Commodity crosswalk resolves semiconductor HS proxy codes and warns on approximate/proxy mappings.
+  - Policy item crosswalk resolves EUV/lithography, advanced computing chips, HBM/memory, photoresist, and chemicals with confidence/warnings.
+  - Unknown or low-confidence mentions remain unresolved.
+- Limitations:
+  - Resolution helpers do not create graph edges or infer relationships.
+  - Facility/port-to-region and hazard proximity mapping are still lightweight and deferred to the promoted graph pipeline.
+  - Crosswalks are deterministic starter maps, not comprehensive reference data.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No proprietary mappings or private entity data were added.
+  - HS mappings are explicitly labeled as public-data proxies.
+- Next gate decision:
+  - Proceed to Gate 9 promoted graph pipeline with expanded sources.
+
+## Gate 9 - Promoted Graph Pipeline With Expanded Sources
+
+- Current HEAD before Gate 9: `710797d`
 - Gate name: deterministic promoted public-evidence graph pipeline
-- Changed files:
-  - `configs/ontology/semiconductor.yaml`
-  - `data/promoted/latest/graph_snapshot.json`
-  - `data/promoted/latest/manifest.json`
-  - `data/promoted/latest/source_status.json`
+- Files changed:
   - `docs/data/promoted-graph-pipeline.md`
   - `docs/roadmap/public-evidence-data-layer-build-log.md`
   - `graph_kernel/graph_versioning.py`
-  - `graph_kernel/promoted_pipeline.py`
   - `graph_kernel/source_manifest.py`
-  - `packages/sra_core/sra_core/ingestion/semiconductor_promote.py`
+  - `graph_kernel/promoted_graph_quality.py`
+  - `graph_kernel/promoted_pipeline.py`
   - `scripts/build_promoted_graph.py`
+  - `services/api/services/common.py`
+  - `services/api/services/graph_service.py`
+  - `tests/api/test_graph_promoted_mode.py`
   - `tests/graph_invariants/test_graph_versioning.py`
   - `tests/graph_invariants/test_promoted_pipeline.py`
+  - `tests/graph_invariants/test_promoted_graph_no_raw_payloads.py`
+  - `tests/graph_invariants/test_promoted_graph_source_coverage.py`
+  - `data/promoted/latest/manifest.json`
+  - `data/promoted/latest/graph_snapshot.json`
+  - `data/promoted/latest/source_status.json`
+  - `data/promoted/latest/quality_report.json`
+  - `data/promoted/latest/source_coverage.json`
+  - `data/promoted/latest/entity_resolution_report.json`
 - Commands run:
-  - `python -m pytest tests/graph_invariants/test_promoted_pipeline.py tests/graph_invariants/test_graph_versioning.py tests/graph_invariants/test_semiconductor_snapshot.py tests/ingestion/test_semiconductor_fixture_promotion.py -q` (first run exposed inherited ontology direction issue; final run passed)
-  - `python -m pytest tests/graph_invariants tests/ingestion -q`
+  - `python -m pytest tests/graph_invariants/test_graph_versioning.py tests/graph_invariants/test_promoted_pipeline.py tests/graph_invariants/test_promoted_graph_no_raw_payloads.py tests/graph_invariants/test_promoted_graph_source_coverage.py -q`
+  - `python -m pytest tests/graph_invariants/test_graph_versioning.py tests/graph_invariants/test_promoted_pipeline.py tests/graph_invariants/test_promoted_graph_no_raw_payloads.py tests/graph_invariants/test_promoted_graph_source_coverage.py -q` rerun after source-coverage ref handling fix
+  - `python -m pytest tests/api/test_graph_promoted_mode.py tests/api/test_graph_view_endpoints.py -q`
+  - `python -m pytest tests/api/test_graph_promoted_mode.py tests/api/test_graph_view_endpoints.py -q` rerun after metadata data-mode compatibility fix
   - `python scripts/build_promoted_graph.py`
-  - `Select-String -Path data\promoted\latest\*.json -Pattern 'filing_body|article_body|secret|token|authorization' -CaseSensitive:$false`
-- Pass/fail: pass
+  - Sanitized artifact token check for `raw_payload`, `article_body`, `filing_body`, `authorization`, and `api_key`
+  - `python -m pytest tests/graph_invariants tests/api/test_graph_promoted_mode.py tests/api/test_graph_view_endpoints.py tests/ingestion tests/sources -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py tests/quality -q`
+- Pass/fail status:
+  - First graph invariant run: fail
+  - Graph invariant rerun: pass
+  - First API graph run: fail
+  - API graph rerun: pass
+  - Artifact build: pass
+  - Combined graph/API/ingestion/source tests: pass
+  - Security/quality guards: pass
+- Failures and exact causes:
+  - Source coverage initially treated serialized source refs as strings only; dumped graph refs are dictionaries. Coverage now accepts both strings and dictionaries.
+  - Promoted API graph view initially set envelope `VersionMetadata.data_mode` to `public_evidence_promoted`, but the existing contract only permits `real|synthetic|mock`. Payload-level graph data keeps `data_mode=public_evidence_promoted`; envelope metadata maps to the existing compatible value.
 - Evidence:
-  - Promoted build emitted graph version `semirisk_kg_v0_1_20260501T000000Z_4edf1048cea7`.
-  - Promoted source manifest id is `promoted_public_evidence_manifest_29468c97b23c`.
-  - Sanitized promoted snapshot has 33 nodes and 49 edges.
-  - Tests prove deterministic rebuilds, graph-version changes on fixture input changes, provenance/quality counts, sanitized output writes, and optional SQLite snapshot persistence.
-  - Search over promoted artifacts found no `filing_body`, `article_body`, `secret`, `token`, or `authorization` matches.
-  - Ontology now allows the existing accepted fixture relation `component depends_on product_grade`, which removes the inherited graph-quality failure for `component:gpu_accelerator` depending on `product_grade:hbm`.
+  - Promoted graph version is deterministic for stable inputs and changes when graph inputs change.
+  - Promoted snapshot includes `data_mode=public_evidence_promoted`, `graph_mode=promoted`, graph/source versions, warnings, quality report, and source coverage.
+  - Pipeline replays existing SemiRisk fixture graph plus SEC, GDELT, UN Comtrade, WITS, USGS, World Port Index, OFAC, and BIS fixture connectors.
+  - `SUPPLY_RISK_GRAPH_MODE=promoted` makes `/api/v1/graph/view` return promoted graph metadata while default fixture graph views remain capped and compatible.
+  - Generated artifacts are small and sanitized; token check found no `raw_payload`, article/filing bodies, authorization, or API-key strings.
+- Limitations:
+  - Promoted graph is public-evidence research infrastructure, not production ready.
+  - Entity resolution remains deterministic starter crosswalks.
+  - Promoted graph edge semantics are evidence/proxy context and do not claim complete supplier truth.
+  - SQLite snapshot storage is available through explicit `store_sqlite=True`; default artifact build did not write runtime SQLite.
+- Source/legal notes:
+  - No live connector fetch was performed.
+  - No raw payloads or bulk source downloads were committed.
+  - OFAC/BIS outputs remain compliance-context summaries only.
+- Next gate decision:
+  - Proceed to Gate 10 graph APIs for additional views and chart/table data.
+
+## Gate 10 - Graph APIs For Additional Views And Chart/Table Data
+
+- Current HEAD before Gate 10: `c099022`
+- Gate name: graph timeline/geo/matrix/layers/evidence/scenario-overlay APIs and analytics chart/table payloads
+- Files changed:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `services/api/main.py`
+  - `services/api/routes/graph.py`
+  - `services/api/services/graph_service.py`
+  - `tests/api/test_graph_chart_table_endpoints.py`
+- Commands run:
+  - `python -m pytest tests/api/test_graph_chart_table_endpoints.py tests/api/test_graph_view_endpoints.py tests/api/test_graph_promoted_mode.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/api tests/quality tests/security/test_no_raw_payload_exposure.py -q`
+  - `npm.cmd --workspace apps/web run build`
+- Pass/fail status: pass
+- Evidence:
+  - Added graph endpoints: `/api/v1/graph/timeline`, `/api/v1/graph/geo`, `/api/v1/graph/matrix`, `/api/v1/graph/layers`, `/api/v1/graph/evidence`, and `/api/v1/graph/scenario-overlay`.
+  - Added analytics endpoints: `/api/v1/analytics/charts` and `/api/v1/analytics/tables`.
+  - Existing graph endpoints remain registered and tests still pass.
+  - Table/chart responses include graph version, source manifest, data mode, graph mode, warnings, bounds, and pagination/limit metadata.
+  - Default table limit is bounded and max API limit is 500.
+  - Promoted graph mode works for additional graph views.
+  - TypeScript shared graph types and API client methods compile.
+- Limitations:
+  - Chart/table endpoints are backend data contracts and controlled payloads; frontend visual components are deferred to Gate 11.
+  - Scenario overlay is a controlled empty state until a selected run is supplied and connected.
+  - Some chart datasets are intentionally empty when model/run artifacts are not available.
 - Source/legal notes:
   - No live ingestion was run.
-  - Generated promoted artifacts contain source refs, payload hashes, summaries, provenance URLs, and terms refs only.
-  - `data/promoted/latest` artifacts are small derived graph/manifest files; no raw bulk source data is committed.
+  - No raw payloads, article bodies, filing bodies, authorization headers, or API keys are exposed by new endpoints.
+  - Evidence-context and policy/compliance entries remain distinct from real supply-chain dependency edges.
+- Next gate decision:
+  - Proceed to Gate 11 frontend chart/table component system.
+
+## Gate 11 - Frontend Chart/Table Component System
+
+- Current HEAD before Gate 11: `fde0d50`
+- Gate name: reusable chart, table, and metadata-card components
+- Files changed:
+  - `apps/web/src/features/common/charts/*`
+  - `apps/web/src/features/common/tables/*`
+  - `apps/web/src/features/common/data-cards/*`
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `apps/web/src/app/globals.css`
+  - `scripts/browser-smoke.mjs`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
+- Evidence:
+  - Added lightweight in-repo chart primitives and named wrappers for risk ranking, risk components, HHI, trade flow, heatmap, timelines, Monte Carlo/CVaR/functionality, optimizer, validation, freshness, and graph quality charts.
+  - Added reusable table primitive and named wrappers for source catalog, connector status, graph nodes/edges, evidence refs, risk rankings, scenario/reverse/optimizer/validation/trade/policy/hazard/logistics tables.
+  - Added metadata/data cards including version, data mode, graph version, source manifest, calibration, not-production-ready, evidence count, graph quality, and source freshness components.
+  - System Health renders controlled chart/table states with source/version/warning metadata.
+  - Browser smoke now checks chart/table controlled states and passed 27 checks.
 - Limitations:
-  - Promoted graph mode remains public-evidence fixture architecture, not production data.
-  - API serving of promoted graph mode begins in Gate 7.
-  - SEC and GDELT live connectors remain disabled by default.
-- Next gate decision: proceed to Gate 7 graph view API backed by fixture/promoted graph and frontend endpoint preference.
+  - Components use lightweight SVG/CSS and table markup; no new chart dependency was added.
+  - Full page-level chart/table integration is deferred to Gate 13.
+  - Some charts render empty/degraded states until corresponding API data is available.
+- Source/legal notes:
+  - No fake chart data was added.
+  - Displayed System Health charts/tables use existing API source registry and graph metadata.
+- Next gate decision:
+  - Proceed to Gate 12 Graph Explorer v3 interaction modes.
+
+## Gate 12 - Graph Explorer V3 Interaction Modes
+
+- Current HEAD before Gate 12: `89d39ec`
+- Gate name: Graph Explorer v3 decluttered modes, filters, backend graph-view preference, and evidence-context safety
+- Files changed:
+  - `apps/web/src/app/globals.css`
+  - `apps/web/src/app/pages.tsx`
+  - `apps/web/src/features/graph-explorer/GraphControls.tsx`
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+  - `apps/web/src/features/graph-explorer/GraphLayers.tsx`
+  - `apps/web/src/features/graph-explorer/GraphLegend.tsx`
+  - `apps/web/src/features/graph-explorer/graphFilters.ts`
+  - `apps/web/src/features/graph-explorer/graphViewModel.ts`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `scripts/browser-smoke.mjs`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/api/test_graph_view_endpoints.py tests/api/test_graph_chart_table_endpoints.py -q`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd run smoke:web`
+  - `python -m pytest tests/api -q`
+- Pass/fail status: pass
+- Evidence:
+  - Graph Explorer still preserves the v2 overview and focus caps: browser smoke reported overview 20 nodes / 17 edges and focus 14 nodes / 23 edges.
+  - Added v3 mode selector coverage for Overview, Focus, Path, Timeline, Geo, Matrix, Scenario overlay, and Evidence.
+  - Timeline, Geo, Matrix, and Evidence modes have controlled panels and browser-smoke checks.
+  - Matrix mode renders a bounded table/heatmap-style view instead of a dense node cloud.
+  - Layer controls now include hazard and sanctions layers while preserving dependency, supply, policy, event, substitution, trade, route, and simulation trace.
+  - Graph Explorer now prefers backend graph view endpoints through the API client and shows a controlled fallback label when only the dashboard graph payload is available.
+  - Evidence-context link safety copy remains visible: `This is not a supply-chain dependency edge.`
+  - Smoke report: `Browser smoke passed: 31 checks` with new Graph Explorer v3 timeline, geo, matrix, and evidence-context safety checks.
+- Limitations:
+  - Backend endpoint payloads are used as mode detail/status inputs; the existing dashboard graph payload remains the visual fallback for canvas rendering.
+  - Scenario overlay remains a controlled selected-run-only state when no run is selected.
+  - Matrix and evidence views are bounded summaries, not exhaustive graph exports.
+- Source/legal notes:
+  - No live ingestion was run.
+  - Export view summary contains only visible sanitized node/link metadata and graph/source version fields.
+  - Evidence-context links remain visually and semantically separate from dependency/supply/policy/event edges.
+- Next gate decision:
+  - Proceed to Gate 13 page-level chart/table integration.
+
+## Gate 13 - Page-Level Chart/Table Integration
+
+- Current HEAD before Gate 13: `f6b9029`
+- Gate name: evidence-bound page visualizations and tables on existing public pages
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `scripts/browser-smoke.mjs`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd run smoke:web`
+  - `npm.cmd run smoke:web` rerun after case-sensitive Evidence Board smoke term fix
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First browser-smoke run failed because the new Evidence Board smoke term expected `evidence_to_graph_path` while the existing `Field` component renders labels uppercase as `EVIDENCE_TO_GRAPH_PATH`. The smoke expectation now matches the rendered label.
+- Evidence:
+  - Browser smoke passed 37 checks.
+  - Smoke verifies page-level visualization integration for Entity Risk 360, Shock Simulator, Reverse Stress Lab, Intervention Optimizer, Investigation Report, and Evidence Board.
+  - System Health continues to verify chart/table controlled states.
+  - Entity Risk 360 now shows risk component and HHI charts plus evidence/ranking tables.
+  - Shock Simulator now shows controlled Monte Carlo/functionality chart states and scenario run table before and after runs.
+  - Reverse Stress Lab now shows controlled shock-set chart/table states.
+  - Intervention Optimizer now shows controlled before/after and action table states.
+  - Investigation Report now shows report metadata/evidence tables before and after generation.
+  - Evidence Board now shows source freshness, confidence filter, evidence-to-graph path refs, and an evidence audit table.
+- Limitations:
+  - Some charts remain controlled empty states until the user explicitly runs a scenario, reverse stress search, optimizer, or report.
+  - Page integrations use existing fixture/proxy/promoted metadata only; no new live data or fake analytics were added.
+  - Detailed export/audit endpoints are deferred to Gate 14.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, internal paths, secrets, article bodies, or filing bodies are rendered.
+  - Compliance-related evidence remains display-only and does not provide evasion or workaround advice.
+- Next gate decision:
+  - Proceed to Gate 14 analytics tables, exports, and evidence audit.
+
+## Gate 14 - Analytics Tables, Exports, And Evidence Audit
+
+- Current HEAD before Gate 14: `3e5be72`
+- Gate name: sanitized analytics table/export endpoints and Evidence Board audit UI
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `apps/web/src/features/common/exports/index.ts`
+  - `apps/web/src/features/common/exports/sanitizedExport.ts`
+  - `apps/web/src/features/evidence-board/EvidenceAuditPanel.tsx`
+  - `docs/security/evidence-audit-and-export.md`
+  - `packages/api-client/src/dashboard.ts`
+  - `packages/shared-types/src/graph.ts`
+  - `services/api/main.py`
+  - `services/api/routes/__init__.py`
+  - `services/api/routes/analytics.py`
+  - `services/api/services/analytics_service.py`
+  - `tests/api/test_analytics_tables.py`
+  - `tests/security/test_export_sanitization.py`
+- Commands run:
+  - `python -m pytest tests/api/test_analytics_tables.py tests/security/test_export_sanitization.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api/test_analytics_tables.py tests/security/test_export_sanitization.py -q` rerun after export metadata wording fix
+  - `python -m pytest tests/api/test_graph_chart_table_endpoints.py tests/api/test_analytics_tables.py tests/security/test_export_sanitization.py tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - PowerShell endpoint evidence command using an invalid bash heredoc syntax failed, then was rerun using PowerShell here-string syntax
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First security export test failed because analytics export metadata inherited the phrase `source_payloads_excluded` from graph view limitations. Analytics export/table metadata now normalizes that wording to `source_content_excluded`.
+  - A manual endpoint evidence command failed because it used bash heredoc syntax in PowerShell; the corrected PowerShell here-string command returned HTTP 200 evidence for named table and CSV export endpoints.
+- Evidence:
+  - Added `GET /api/v1/analytics/tables/{table_id}`.
+  - Added `GET /api/v1/analytics/export/{table_id}` with `json`, `csv`, and `markdown` formats.
+  - Supported named tables include source catalog, source status, connector status, evidence refs, graph quality, risk rankings, trade flows, policy events, hazard events, and logistics facilities.
+  - Exports include table id, format, export time, row count, content hash, graph version, source manifest id, data mode, graph mode, and warnings.
+  - Rows are bounded by request limit and hard capped at 500 for export.
+  - Evidence Board now uses `EvidenceAuditPanel` with sanitized visible rows and export-scope metadata.
+  - Browser smoke passed 37 checks after the Evidence Board audit component integration.
+- Limitations:
+  - Analytics exports are bounded summaries, not bulk data dumps.
+  - Source catalog rows intentionally omit raw/source payload fields and private diagnostics fields.
+  - CSV/Markdown exports are returned inside the existing JSON envelope rather than as file downloads in this gate.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, article bodies, filing bodies, authorization headers, cookies, API keys, secrets, private diagnostics, or internal paths are exposed by the new export tests.
+  - Compliance-related table rows remain audit context only and do not provide workaround guidance.
+- Next gate decision:
+  - Proceed to Gate 15 promoted run/report persistence integration.
+
+## Gate 15 - Promoted Run/Report Persistence Integration
+
+- Current HEAD before Gate 15: `37047eb`
+- Gate name: optional SQLite run/report persistence and report retrieval API
+- Files changed:
+  - `docs/data/persistent-store.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/api-client/src/dashboard.ts`
+  - `services/api/main.py`
+  - `services/api/routes/reports.py`
+  - `services/api/runtime/run_store.py`
+  - `services/api/services/report_service.py`
+  - `services/api/services/run_service.py`
+  - `services/api/storage/report_store.py`
+  - `services/api/storage/run_store_sqlite.py`
+  - `tests/api/test_run_store.py`
+  - `tests/storage/test_report_persistence.py`
+  - `tests/storage/test_run_persistence.py`
+- Commands run:
+  - `python -m pytest tests/storage/test_run_persistence.py tests/storage/test_report_persistence.py tests/api/test_run_store.py -q`
+  - `python -m pytest tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py tests/security/test_no_secret_like_strings.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/storage/test_run_persistence.py tests/storage/test_report_persistence.py tests/api/test_run_store.py -q` rerun after run-list assertion fix
+  - `python -m pytest tests/api tests/security/test_no_raw_payload_exposure.py tests/security/test_no_private_diagnostics.py tests/security/test_no_secret_like_strings.py tests/storage/test_run_persistence.py tests/storage/test_report_persistence.py -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd run smoke:web`
+  - Local API evidence command for `POST /api/v1/reports/investigation` and `GET /api/v1/reports/{report_id}`
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First run-store API test assumed the newly created forward scenario would be the first run listed. SQLite mode can retain other sanitized summaries during a local test session, so the assertion now finds the created run by `run_id` instead of relying on list position.
+- Evidence:
+  - `SUPPLY_RISK_STORAGE_MODE=sqlite` now selects `SQLiteRunStore`; `SUPPLY_RISK_STORAGE_MODE=memory` remains supported by `RunStore`.
+  - Run summaries now include `data_mode` and `graph_mode`.
+  - SQLite run store persists sanitized summaries across store instances and retains bounded cleanup behavior.
+  - Reports are stored through `ReportStore` in SQLite mode and `MemoryReportStore` in memory mode.
+  - Added `GET /api/v1/reports/{report_id}` for sanitized report retrieval.
+  - Local endpoint evidence returned HTTP 200 for report generation and HTTP 200 for report retrieval with keys including `content_hash`, `data_mode`, and `graph_mode`.
+  - Browser smoke passed 37 checks.
+- Limitations:
+  - SQLite is still the only persistent backend; Postgres remains deferred.
+  - Retrieved reports are sanitized report records, not raw evidence payloads or full external source documents.
+  - Runtime SQLite files are generated local state and were intentionally not committed.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, secrets, API keys, authorization headers, cookies, internal paths, article bodies, or filing bodies are stored or exposed by run/report APIs.
+- Next gate decision:
+  - Proceed to Gate 16 System Health and data-mode transparency.
+
+## Gate 16 - System Health And Data-Mode Transparency
+
+- Current HEAD before Gate 16: `372125a`
+- Gate name: storage/source/connector/deployment readiness and data-mode transparency
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `docs/deployment/render.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/shared-types/src/health.ts`
+  - `scripts/browser-smoke.mjs`
+  - `services/api/main.py`
+  - `services/api/services/system_health_service.py`
+  - `tests/api/test_system_health_semiconductor_graph.py`
+  - `tests/api/test_system_health_storage_sources.py`
+- Commands run:
+  - `python -m pytest tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py -q` rerun after cache/test fixes
+  - `python -m pytest tests/api -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - `npm.cmd run smoke:web` rerun after smoke case-insensitive term matching fix
+- Pass/fail status: pass
+- Failures and exact causes:
+  - First new storage/source health test rejected the field name `requires_api_key` from the public source catalog. That is policy metadata, not a leaked key or secret value, so the over-broad assertion was removed while path/secret checks remain.
+  - Promoted graph-mode transparency initially read a cached System Health payload. `route_dashboard_page` now keeps the dashboard cache but refreshes `semiconductorGraph`, `sourceRegistryReadiness`, and `platformStatus` per System Health request.
+  - First browser-smoke run failed because the new smoke terms were checked case-sensitively while the existing `Field` component renders labels uppercase. Smoke now checks those transparency terms case-insensitively.
+- Evidence:
+  - System Health API now includes `platformStatus` with API, graph, source registry, connector, storage, model, and deployment-version readiness.
+  - `platformStatus.storageReadiness.path` is always `redacted`, with `pathRedacted=true`.
+  - System Health includes `dataMode`, `graphMode`, `productionStatus`, `notProductionReady`, `calibrationStatus`, `graphVersion`, `sourceManifestId`, connector status counts, and source status counts.
+  - The frontend System Health Center renders `data_mode`, `graph_mode`, `storage_readiness`, `connector_readiness`, `deployment_version_readiness`, `calibration_status`, and `not_production_ready`.
+  - Browser smoke passed 37 checks and now checks data-mode and not-production-ready transparency terms.
+- Limitations:
+  - Deployment version readiness remains `not_verified` until Gate 17 adds the dedicated version endpoint and deployed version checker.
+  - System Health continues to label the platform as fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+  - SQLite path visibility is intentionally redacted; local runtime database files remain generated state and are not committed.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, or PII are exposed by the new health fields.
+  - Source catalog `requires_api_key` remains visible only as a boolean policy field and does not contain credential material.
+- Next gate decision:
+  - Proceed to Gate 17 deployment/version consistency.
+
+## Gate 17 - Deployment And Version Consistency
+
+- Current HEAD before Gate 17: `14bbaa9`
+- Gate name: API version endpoint, deployed-version checker, and System Health version display
+- Files changed:
+  - `apps/web/src/features/common/legacyDashboard.tsx`
+  - `docs/deployment/render.md`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+  - `packages/shared-types/src/health.ts`
+  - `scripts/browser-smoke.mjs`
+  - `scripts/check-deployed-version.py`
+  - `services/api/dev_server.py`
+  - `services/api/main.py`
+  - `services/api/routes/__init__.py`
+  - `services/api/routes/version.py`
+  - `services/api/services/system_health_service.py`
+  - `services/api/services/version_service.py`
+  - `tests/api/test_system_health_semiconductor_graph.py`
+  - `tests/api/test_system_health_storage_sources.py`
+  - `tests/api/test_version_endpoint.py`
+- Commands run:
+  - `python -m pytest tests/api/test_version_endpoint.py tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/api -q`
+  - `python -m pytest tests/quality -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `python scripts/check-deployed-version.py --expected-commit 372125a --api-url http://127.0.0.1:1/api/v1 --web-url http://127.0.0.1:1`
+  - `python -m py_compile scripts/check-deployed-version.py`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
+- Failures and exact causes:
+  - The `check-deployed-version.py` command against intentionally closed localhost ports exited `1` with sanitized `stale_or_unverified` evidence, as designed. This was used to verify mismatch reporting without printing raw payloads and was not acceptance evidence for a live deployment.
+- Evidence:
+  - Added `GET /api/v1/version`.
+  - FastAPI and the local dev server both route `/api/v1/version`.
+  - Version payload includes `git_commit`, `build_time`, `app_version`, `data_mode`, `graph_mode`, `storage_mode`, `source_manifest_id`, `graph_version`, `environment`, `not_production_ready`, calibration status, and warnings.
+  - Version tests assert sanitized payload shape and no SQLite path/internal runtime path leakage.
+  - System Health displays `api_version`, `api_git_commit`, `api_build_time`, `web_build_version`, `web_build_time`, and deployment environment when available.
+  - `scripts/check-deployed-version.py` compares expected commit, API `/api/v1/version`, and web commit visibility while printing only sanitized status fields.
+  - Browser smoke passed 37 checks and now includes API/web version fields in the System Health terms.
+- Limitations:
+  - Web build commit visibility depends on `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` being supplied by the deployment environment; otherwise System Health reports `not_verified`.
+  - Render redeploy was not attempted from this local environment.
+  - Node.js 20 action deprecation warning remediation remains documented as deployment/CI maintenance; no GitHub Actions update was required by this local gate.
+- Source/legal notes:
+  - No live ingestion was run.
+  - Version and deployment checks do not print raw HTML, response bodies, environment dumps, internal filesystem paths, secrets, cookies, authorization headers, API keys, raw payloads, article bodies, or filing bodies.
+- Next gate decision:
+  - Proceed to Gate 18 final acceptance.
+
+## Gate 18 - Final Acceptance
+
+- Current HEAD before Gate 18: `5fec207`
+- Gate name: final no-regression acceptance
+- Files changed:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/storage tests/sources tests/ingestion tests/entity_resolution tests/contract tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+- Pass/fail status: pass
+- Failures and exact causes:
+  - No final local acceptance command failed.
+- Evidence:
+  - `python -m pytest tests/quality -q` passed: 8 tests.
+  - Combined subsystem pytest passed across storage, sources, ingestion, entity resolution, contracts, graph invariants, API, security, model, simulation, optimization, reports, and quality suites.
+  - Full `python -m pytest -q` passed.
+  - Web typecheck passed.
+  - Web production build passed with Next.js 16.3.0-canary.6.
+  - Local browser smoke passed 37 checks.
+  - Latest code commit before this log entry was `5fec207`.
+  - Local generated SQLite runtime files were removed after tests and were not committed.
+- Deployed status:
+  - Render redeploy was not performed from this environment.
+  - `npm.cmd run smoke:web -- --mode=deployed` was not accepted because deployment was not verified as updated to the latest local commits.
+  - Remote status remains explicitly unresolved until Render API/Web services are redeployed and checked with `/api/v1/version`, `scripts/check-deployed-version.py`, and deployed smoke.
+- Limitations:
+  - The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+  - SQLite is the only persistent backend; Postgres remains deferred.
+  - Public connectors are fixture-first and live-disabled by default.
+  - No live connectors, paid/proprietary feeds, GNN, LSTM, RandomForest, production decisioning, or financial-loss engine were introduced.
+  - Web build version is `not_verified` unless deployment supplies `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT`.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw downloaded bulk data was committed.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance are exposed by final acceptance tests.
+- Next gate decision:
+  - Stop after final acceptance; remote Render repair remains an operational follow-up requiring redeploy access/evidence.
+
+## Gate C Completion - Physical Graph Explorer View Modules
+
+- Current HEAD before Gate C completion: `4c81217`
+- Gate name: required physical Graph Explorer v3 view files
+- Files changed:
+  - `apps/web/src/features/graph-explorer/GraphEvidenceView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+  - `apps/web/src/features/graph-explorer/GraphFocusView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphGeoView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphMatrixView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphOverviewView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphPathView.tsx`
+  - `apps/web/src/features/graph-explorer/GraphScenarioOverlay.tsx`
+  - `apps/web/src/features/graph-explorer/GraphTimelineView.tsx`
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/graph_invariants tests/ingestion tests/sources tests/storage tests/security -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - mandatory artifact existence check for connectors, storage schema, promoted graph pipeline, build log, chart/table files, and the eight Graph Explorer view files
+- Pass/fail status: pass
+- Failures and exact causes:
+  - No Gate C completion command failed.
+- Evidence:
+  - All eight required physical Graph Explorer view files now exist.
+  - `GraphExplorer.tsx` imports those view components instead of keeping the mode detail panels inline.
+  - Matrix and evidence modes render through `GraphMatrixView` and `GraphEvidenceView`.
+  - Overview, focus, path, timeline, geo, and scenario detail panels render through their dedicated modules.
+  - Browser smoke passed 37 checks after the extraction.
+  - Mandatory artifact existence check reported: `All mandatory artifact files present.`
+- Limitations:
+  - This gate preserves existing behavior and does not add new live data.
+  - Render deployment has not been updated or accepted from this environment.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance were added.
+- Next gate decision:
+  - Commit Gate C completion, then rerun final local acceptance.
+
+## Gate C Completion - Final Acceptance Rerun
+
+- Current HEAD before final rerun: `87d2dd2`
+- Gate name: post-extraction final acceptance
+- Files changed:
+  - `docs/roadmap/public-evidence-data-layer-build-log.md`
+- Commands run:
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/storage tests/sources tests/ingestion tests/entity_resolution tests/contract tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports tests/quality -q`
+  - `python -m pytest -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web`
+  - mandatory artifact existence check for connectors, storage schema, promoted graph pipeline, build log, chart/table files, and the eight Graph Explorer view files
+- Pass/fail status: pass
+- Failures and exact causes:
+  - No final rerun command failed.
+- Evidence:
+  - Quality tests passed.
+  - Combined Python subsystem suite passed.
+  - Full repository pytest passed.
+  - Web typecheck passed.
+  - Web production build passed.
+  - Browser smoke passed 37 checks.
+  - Mandatory artifact check reported: `All mandatory artifact files present.`
+  - Generated local SQLite runtime files were removed and were not committed.
+- Deployed status:
+  - Render deployment was not updated or accepted in this local run.
+  - Deployed smoke remains deferred until API/Web services are redeployed to the final commit and verified with `/api/v1/version`.
+- Limitations:
+  - Platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+  - Live connector execution remains disabled by default and was not run in tests.
+  - SQLite remains the only persistent backend in this phase.
+- Source/legal notes:
+  - No live ingestion was run.
+  - No raw downloaded bulk data was committed.
+  - No raw payloads, private diagnostics, internal paths, secrets, API keys, authorization headers, cookies, article bodies, filing bodies, sanctions payloads, PII, or evasion guidance were introduced.
+- Next gate decision:
+  - Commit final acceptance evidence, then fast-forward local `main` from `code-quality-repair` so the post-`97041b5` work is present on main locally before push/PR.

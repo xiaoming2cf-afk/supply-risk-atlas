@@ -22,9 +22,16 @@ The Blueprint pins `PYTHON_VERSION=3.11.9` and `NODE_VERSION=22` for reproducibl
 | `SUPPLY_RISK_CORS_ORIGINS` | API | Comma-separated allowed web origins. Production must not use wildcard CORS. |
 | `SUPPLY_RISK_ENV` | API | Use `production` on Render so CORS defaults stay strict. |
 | `SUPPLY_RISK_DATA_MODE` | both | Current value is `fixture`; no production data mode is enabled. |
+| `SUPPLY_RISK_GRAPH_MODE` | API | `fixture` by default; `promoted` may serve prebuilt public-evidence promoted graph artifacts when present. |
+| `SUPPLY_RISK_STORAGE_MODE` | API | `memory` or `sqlite`; SQLite stores sanitized manifests, runs, reports, and graph metadata only. |
+| `SUPPLY_RISK_SQLITE_PATH` | API | SQLite database location. The API health payload must report only `redacted`, never the raw path. |
 | `SUPPLY_RISK_FIXTURE_GRAPH_MODE` | both | Documents the active fixture graph mode, currently `semirisk_fixture_v0.1`. |
 | `SUPPLY_RISK_MAX_REQUEST_BYTES` | API | Request body cap; default and Render value are `262144`. |
 | `SUPPLY_RISK_RUN_STORE_SIZE` | API | Bounded in-memory run summary count; default and Render value are `32`. |
+| `SUPPLY_RISK_GIT_COMMIT` | API | Optional explicit deployed API commit. Render may also provide `RENDER_GIT_COMMIT`; `/api/v1/version` reports this without paths. |
+| `SUPPLY_RISK_BUILD_TIME` | API | Optional build timestamp for `/api/v1/version`; use an ISO-8601 timestamp when configured. |
+| `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` | web | Optional web build commit shown in System Health; set to the deployed Git SHA when Render exposes it. |
+| `NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME` | web | Optional web build timestamp shown in System Health. |
 
 Current limits are `forward iterations <= 5000`, `reverse beam_width <= 20`, `reverse max_combination_size <= 4`, `reverse iterations_per_candidate <= 1000`, and `optimizer max_actions <= 10`.
 
@@ -62,7 +69,10 @@ The web service must receive both:
 NEXT_PUBLIC_SUPPLY_RISK_API_URL=https://supply-risk-atlas-api.onrender.com/api/v1
 SUPPLY_RISK_API_ORIGIN=https://supply-risk-atlas-api.onrender.com
 SUPPLY_RISK_DATA_MODE=fixture
+SUPPLY_RISK_GRAPH_MODE=fixture
 SUPPLY_RISK_FIXTURE_GRAPH_MODE=semirisk_fixture_v0.1
+NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT=<deployed-git-sha-if-available>
+NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME=<iso-build-time-if-available>
 ```
 
 The API service must receive:
@@ -71,12 +81,45 @@ The API service must receive:
 SUPPLY_RISK_ENV=production
 SUPPLY_RISK_CORS_ORIGINS=https://supply-risk-atlas-web.onrender.com
 SUPPLY_RISK_DATA_MODE=fixture
+SUPPLY_RISK_GRAPH_MODE=fixture
+SUPPLY_RISK_STORAGE_MODE=sqlite
+SUPPLY_RISK_SQLITE_PATH=data/runtime/supply_risk_atlas.db
 SUPPLY_RISK_FIXTURE_GRAPH_MODE=semirisk_fixture_v0.1
 SUPPLY_RISK_MAX_REQUEST_BYTES=262144
 SUPPLY_RISK_RUN_STORE_SIZE=32
+SUPPLY_RISK_GIT_COMMIT=<deployed-git-sha-if-available>
+SUPPLY_RISK_BUILD_TIME=<iso-build-time-if-available>
 ```
 
-`SUPPLY_RISK_API_HOSTPORT` is optional and is used only as a private-network fallback for the same-origin proxy. Keep the direct public API URL configured so browser smoke diagnostics and runtime pages do not depend on the proxy path. `SUPPLY_RISK_DATA_MODE=fixture` documents that the deployed first platform slices use the promoted SemiRisk fixture graph and must carry the `fixture_graph:not_production_ready` warning.
+`SUPPLY_RISK_API_HOSTPORT` is optional and is used only as a private-network fallback for the same-origin proxy. Keep the direct public API URL configured so browser smoke diagnostics and runtime pages do not depend on the proxy path. `SUPPLY_RISK_DATA_MODE=fixture` and `SUPPLY_RISK_GRAPH_MODE=fixture` document that the deployed first platform slices use the SemiRisk fixture graph and must carry the `fixture_graph:not_production_ready` warning. System Health must display storage/source/connector/deployment readiness with the SQLite path redacted.
+
+## Deployment Version Checks
+
+The API exposes sanitized deployment metadata at:
+
+```text
+https://supply-risk-atlas-api.onrender.com/api/v1/version
+```
+
+The response reports `git_commit`, `build_time`, `app_version`, `data_mode`,
+`graph_mode`, `storage_mode`, `source_manifest_id`, `graph_version`,
+`environment`, and warnings. It must not expose filesystem paths, environment
+variable dumps, secrets, private diagnostics, or raw source payloads.
+
+Run the local/deployed comparison script after a Render deploy:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit <latest-main-sha>
+```
+
+If the script reports `stale_or_unverified`, use the manual repair flow:
+
+1. Redeploy the API service from the latest `main` commit.
+2. Redeploy the Web service from the latest `main` commit.
+3. Clear the Web build cache if Graph Explorer v2/v3 or System Health version fields remain stale.
+4. Verify `SUPPLY_RISK_CORS_ORIGINS`, `NEXT_PUBLIC_SUPPLY_RISK_API_URL`, `SUPPLY_RISK_API_ORIGIN`, `SUPPLY_RISK_DATA_MODE`, `SUPPLY_RISK_GRAPH_MODE`, and storage env vars.
+5. Rerun `python scripts/check-deployed-version.py --expected-commit <latest-main-sha>`.
+6. Rerun `npm.cmd run smoke:web -- --mode=deployed`.
 
 ## Data Hygiene
 

@@ -1,0 +1,35 @@
+{
+  "source_id": "world_bank_wits_trade_tariff_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "wits-lite-tw-370790-tariff-2025",
+      "indicator_type": "applied_tariff_proxy",
+      "country": "TW",
+      "partner": "world",
+      "commodity_group": "370790 photoresist-related proxy",
+      "period": "2025",
+      "value": 3.2,
+      "unit": "percent",
+      "summary": "Public WITS-style tariff indicator summary for photoresist-related proxy category.",
+      "provenance_url": "https://wits.worldbank.org/example/tw-370790",
+      "license_or_terms_ref": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets",
+      "confidence": 0.58
+    },
+    {
+      "source_record_id": "wits-lite-us-848620-concentration-2025",
+      "indicator_type": "market_concentration_proxy",
+      "country": "US",
+      "partner": "world",
+      "commodity_group": "848620 semiconductor manufacturing machines",
+      "period": "2025",
+      "value": 0.48,
+      "unit": "hhi",
+      "summary": "Public WITS-style market concentration proxy for semiconductor manufacturing machines.",
+      "provenance_url": "https://wits.worldbank.org/example/us-848620",
+      "license_or_terms_ref": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets",
+      "confidence": 0.6
+    }
+  ]
+}

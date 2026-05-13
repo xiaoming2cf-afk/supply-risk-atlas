@@ -49,6 +49,40 @@ export interface SourceRegistrySummary {
   sources: SourceRegistryRow[];
 }
 
+export interface SourceRegistryReadiness {
+  registry_version: string;
+  generated_at: string | null;
+  status: "ready" | "degraded" | "unavailable";
+  source_count: number;
+  enabled_count: number;
+  disabled_count: number;
+  live_default_count: number;
+  terms_review_count: number;
+  deferred_count: number;
+  source_status_counts: Record<string, number>;
+  connector_status_counts: Record<string, number>;
+  source_tier_counts: Record<string, number>;
+  sources: Array<{
+    source_id: string;
+    publisher: string;
+    source_tier: string;
+    data_category: string;
+    enabled_by_default: boolean;
+    live_fetch_default: boolean;
+    status: string;
+    connector_status: string;
+    license_policy: {
+      api_visible_summary_allowed: boolean;
+      payload_storage_allowed: boolean;
+      redistribution_allowed: boolean;
+      attribution_required: boolean;
+      terms_review_required: boolean;
+      manual_review_note: string;
+    };
+  } & Record<string, unknown>>;
+  warnings: string[];
+}
+
 export interface EntityResolutionSummary {
   totalEntities: number;
   averageConfidence: number;
@@ -134,33 +168,49 @@ export interface SemiconductorGraphHealth {
   missingProvenanceCount: number;
   unresolvedEntityCount: number;
   staleSourceCount: number;
+  dataMode?: "fixture" | "promoted" | "live_disabled" | "live_enabled" | string;
+  graphMode?: "fixture" | "promoted" | string;
+  productionStatus?: "not_production_ready" | "research_fixture" | "public_evidence_promoted" | string;
+  notProductionReady?: boolean;
+  calibrationStatus?: string;
   warnings: string[];
-  sourceRegistryReadiness?: SourceRegistryReadiness;
 }
 
-export interface SourceRegistryReadiness {
-  registry_version: string;
-  generated_at: string;
-  status: "ready" | "degraded" | "unavailable" | string;
-  source_count: number;
-  enabled_count: number;
-  disabled_count: number;
-  unavailable_count: number;
-  connector_status_counts: Record<string, number>;
-  license_status_counts: Record<string, number>;
+export interface PlatformStatus {
+  apiReadiness: string;
+  graphReadiness: string;
+  sourceRegistryReadiness: string;
+  connectorReadiness: string;
+  storageReadiness: {
+    status: string;
+    storageMode: "memory" | "sqlite" | string;
+    pathRedacted: boolean;
+    path: "redacted" | string;
+  };
+  modelReadiness: string;
+  deploymentVersionReadiness: {
+    status: string;
+    apiVersion: string;
+    apiGitCommit?: string;
+    apiBuildTime?: string;
+    webVersion: string;
+    webGitCommit?: string;
+    environment?: "local" | "render" | "unknown" | string;
+    warnings: string[];
+  };
+  dataMode: "fixture" | "promoted" | "live_disabled" | "live_enabled" | string;
+  graphMode: "fixture" | "promoted" | string;
+  productionStatus: "not_production_ready" | "research_fixture" | "public_evidence_promoted" | string;
+  notProductionReady: boolean;
+  calibrationStatus: string[];
+  sourceManifestId: string;
+  graphVersion: string;
+  connectorStatusCounts: Record<string, number>;
+  sourceStatusCounts: Record<string, number>;
+  sourceCount: number;
+  enabledSourceCount: number;
+  liveDefaultCount: number;
   warnings: string[];
-  sources: Array<{
-    source_id: string;
-    publisher: string;
-    runtime_status: string;
-    connector_status: string;
-    license_terms_status: string;
-    terms_url: string;
-    source_url: string;
-    freshness_sla_hours: number;
-    review_status: string;
-    owner: string;
-  }>;
 }
 
 export interface SystemHealthData {
@@ -168,9 +218,10 @@ export interface SystemHealthData {
   stages: PipelineStage[];
   logs: string[];
   sourceRegistry: SourceRegistrySummary;
+  sourceRegistryReadiness?: SourceRegistryReadiness;
   entityResolution: EntityResolutionSummary;
   evidenceLineage: EvidenceLineageSummary;
   dataCatalog?: DataCatalogSummary;
   semiconductorGraph?: SemiconductorGraphHealth;
-  sourceRegistryReadiness?: SourceRegistryReadiness;
+  platformStatus?: PlatformStatus;
 }

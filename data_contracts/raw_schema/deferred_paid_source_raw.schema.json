@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "deferred_paid_source_raw",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "enum": [
+        "paid_semi_market_data"
+      ]
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "as_of_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "provenance_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "raw_payload_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "license_or_terms_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deferred_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_id",
+    "source_record_id",
+    "retrieved_at",
+    "as_of_time",
+    "payload_hash",
+    "provenance_url",
+    "raw_payload_summary",
+    "license_or_terms_ref"
+  ]
+}

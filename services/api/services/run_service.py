@@ -7,6 +7,8 @@ from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snap
 from sra_core.api.envelope import make_envelope
 from services.api.runtime.run_store import RUN_STORE_VERSION, RunStore
 from services.api.services.common import semiconductor_metadata
+from services.api.storage.run_store_sqlite import SQLiteRunStore
+from services.api.storage.sqlite_store import SQLiteStore, configured_storage_mode
 
 
 def run_store_size() -> int:
@@ -17,7 +19,13 @@ def run_store_size() -> int:
     return max(1, min(configured, 256))
 
 
-RUN_STORE = RunStore(max_items=run_store_size())
+def build_run_store() -> RunStore | SQLiteRunStore:
+    if configured_storage_mode() == "sqlite":
+        return SQLiteRunStore(SQLiteStore(), max_items=run_store_size())
+    return RunStore(max_items=run_store_size())
+
+
+RUN_STORE = build_run_store()
 RUN_CACHE = RUN_STORE
 
 
@@ -28,6 +36,9 @@ def route_runs(request_id: str | None = None) -> dict[str, Any]:
         "run_store_version": RUN_STORE_VERSION,
         "graph_version": snapshot.graph_version,
         "source_manifest_id": snapshot.source_manifest_id,
+        "data_mode": "fixture",
+        "graph_mode": "fixture",
+        "storage_mode": configured_storage_mode(),
         "as_of_time": snapshot.as_of_time,
         "count": len(runs),
         "max_items": RUN_STORE.max_items,
@@ -52,6 +63,9 @@ def route_run_detail(run_id: str, request_id: str | None = None) -> dict[str, An
         "run_store_version": RUN_STORE_VERSION,
         "graph_version": run.get("graph_version") or snapshot.graph_version,
         "source_manifest_id": run.get("source_manifest_id") or snapshot.source_manifest_id,
+        "data_mode": run.get("data_mode") or "fixture",
+        "graph_mode": run.get("graph_mode") or "fixture",
+        "storage_mode": configured_storage_mode(),
         "raw_payload_excluded": True,
         "private_diagnostics_excluded": True,
         "warnings": sorted(
@@ -70,4 +84,3 @@ def route_run_detail(run_id: str, request_id: str | None = None) -> dict[str, An
         request_id=request_id,
         warnings=payload["warnings"],
     )
-

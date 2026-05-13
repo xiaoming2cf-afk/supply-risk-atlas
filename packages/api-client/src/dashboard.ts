@@ -3,12 +3,23 @@ import type {
   ApiMode,
   ApiResult,
   ApiSourceStatus,
+  AnalyticsChartsData,
+  AnalyticsExportData,
+  AnalyticsNamedTableData,
+  AnalyticsTablesData,
   CausalEvidenceBoardData,
   CompanyRisk360Data,
   ForwardScenarioInput,
   ForwardScenarioResult,
   GlobalRiskCockpitData,
+  GraphBackendViewData,
   GraphExplorerData,
+  GraphEvidenceData,
+  GraphGeoData,
+  GraphLayersData,
+  GraphMatrixData,
+  GraphScenarioOverlayData,
+  GraphTimelineData,
   GraphExplorerQuery,
   GraphVersionStudioData,
   InterventionOptimizationInput,
@@ -50,12 +61,27 @@ export interface SupplyRiskApiClient {
   getSystemHealthCenter(): Promise<ApiResult<SystemHealthData>>;
   getSemiriskGraphSnapshot(): Promise<ApiResult<SemiriskGraphSnapshotData>>;
   getSemiriskGraphNeighborhood(nodeId: string, depth?: number): Promise<ApiResult<SemiriskGraphNeighborhoodData>>;
+  getGraphView(options?: { mode?: string }): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphFocus(options?: { nodeId?: string; depth?: number }): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphClusters(): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphPathView(options?: { sourceNodeId?: string; targetNodeId?: string }): Promise<ApiResult<GraphBackendViewData>>;
+  getGraphTimeline(options?: { limit?: number }): Promise<ApiResult<GraphTimelineData>>;
+  getGraphGeo(options?: { limit?: number }): Promise<ApiResult<GraphGeoData>>;
+  getGraphMatrix(options?: { limit?: number }): Promise<ApiResult<GraphMatrixData>>;
+  getGraphLayers(): Promise<ApiResult<GraphLayersData>>;
+  getGraphEvidence(options?: { sourceId?: string | null; limit?: number }): Promise<ApiResult<GraphEvidenceData>>;
+  getGraphScenarioOverlay(options?: { runId?: string | null }): Promise<ApiResult<GraphScenarioOverlayData>>;
+  getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
+  getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
+  getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
+  exportAnalyticsTable(tableId: string, options?: { format?: "json" | "csv" | "markdown"; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsExportData>>;
   getSemiriskEntityRisk(entityId: string): Promise<ApiResult<SemiriskEntityRiskScore>>;
   getSemiriskRiskPortfolio(options?: { nodeType?: string | null; limit?: number }): Promise<ApiResult<SemiriskRiskPortfolioData>>;
   runForwardScenario(input: ForwardScenarioInput): Promise<ApiResult<ForwardScenarioResult>>;
   runReverseStress(input: ReverseStressInput): Promise<ApiResult<ReverseStressResult>>;
   optimizeInterventions(input: InterventionOptimizationInput): Promise<ApiResult<InterventionOptimizationResult>>;
   generateInvestigationReport(input: InvestigationReportInput): Promise<ApiResult<InvestigationReportData>>;
+  getInvestigationReport(reportId: string): Promise<ApiResult<InvestigationReportData>>;
   listRuns(): Promise<ApiResult<RunHistoryData>>;
   getRun(runId: string): Promise<ApiResult<RunDetailData>>;
 }
@@ -283,6 +309,79 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         undefined,
         clientOptions,
       ),
+    getGraphView: (options) =>
+      requestJson(baseUrl, `/graph/view${queryString({ mode: options?.mode })}`, undefined, clientOptions),
+    getGraphFocus: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/focus${queryString({ node_id: options?.nodeId, depth: options?.depth })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphClusters: () => requestJson(baseUrl, "/graph/clusters", undefined, clientOptions),
+    getGraphPathView: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/path-view${queryString({
+          source_node_id: options?.sourceNodeId,
+          target_node_id: options?.targetNodeId,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphTimeline: (options) =>
+      requestJson(baseUrl, `/graph/timeline${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphGeo: (options) =>
+      requestJson(baseUrl, `/graph/geo${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphMatrix: (options) =>
+      requestJson(baseUrl, `/graph/matrix${queryString({ limit: options?.limit })}`, undefined, clientOptions),
+    getGraphLayers: () => requestJson(baseUrl, "/graph/layers", undefined, clientOptions),
+    getGraphEvidence: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/evidence${queryString({ source_id: options?.sourceId ?? undefined, limit: options?.limit })}`,
+        undefined,
+        clientOptions,
+      ),
+    getGraphScenarioOverlay: (options) =>
+      requestJson(
+        baseUrl,
+        `/graph/scenario-overlay${queryString({ run_id: options?.runId ?? undefined })}`,
+        undefined,
+        clientOptions,
+      ),
+    getAnalyticsCharts: (options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/charts${queryString({ chart_id: options?.chartId ?? undefined, limit: options?.limit })}`,
+        undefined,
+        clientOptions,
+      ),
+    getAnalyticsTables: (options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/tables${queryString({ table_id: options?.tableId ?? undefined, limit: options?.limit, offset: options?.offset })}`,
+        undefined,
+        clientOptions,
+      ),
+    getAnalyticsTable: (tableId, options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/tables/${encodeURIComponent(tableId)}${queryString({ limit: options?.limit, offset: options?.offset })}`,
+        undefined,
+        clientOptions,
+      ),
+    exportAnalyticsTable: (tableId, options) =>
+      requestJson(
+        baseUrl,
+        `/analytics/export/${encodeURIComponent(tableId)}${queryString({
+          format: options?.format,
+          limit: options?.limit,
+          offset: options?.offset,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
     getSemiriskEntityRisk: (entityId) =>
       requestJson(baseUrl, `/risk/entities/${encodeURIComponent(entityId)}`, undefined, clientOptions),
     getSemiriskRiskPortfolio: (options) =>
@@ -323,6 +422,8 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         { method: "POST", body: JSON.stringify(input) },
         clientOptions,
       ),
+    getInvestigationReport: (reportId) =>
+      requestJson(baseUrl, `/reports/${encodeURIComponent(reportId)}`, undefined, clientOptions),
     listRuns: () => requestJson(baseUrl, "/runs", undefined, clientOptions),
     getRun: (runId) => requestJson(baseUrl, `/runs/${encodeURIComponent(runId)}`, undefined, clientOptions),
   };

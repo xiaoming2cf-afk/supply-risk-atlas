@@ -1,0 +1,56 @@
+{
+  "source_id": "un_comtrade_semiconductor_trade_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "comtrade-lite-tw-jp-370790-2025",
+      "reporter": "TW",
+      "partner": "JP",
+      "flow_type": "import",
+      "commodity_code": "370790",
+      "commodity_label": "photoresist-related photographic chemicals proxy",
+      "period": "2025",
+      "trade_value": 70.0,
+      "quantity": 12.5,
+      "unit": "tonnes",
+      "summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from Japan.",
+      "provenance_url": "https://comtradeplus.un.org/example/tw-jp-370790",
+      "license_or_terms_ref": "https://comtradeplus.un.org/TermsOfUse",
+      "confidence": 0.62
+    },
+    {
+      "source_record_id": "comtrade-lite-tw-us-370790-2025",
+      "reporter": "TW",
+      "partner": "US",
+      "flow_type": "import",
+      "commodity_code": "370790",
+      "commodity_label": "photoresist-related photographic chemicals proxy",
+      "period": "2025",
+      "trade_value": 30.0,
+      "quantity": 5.5,
+      "unit": "tonnes",
+      "summary": "Proxy trade-flow summary for Taiwan imports of photoresist-related chemicals from the United States.",
+      "provenance_url": "https://comtradeplus.un.org/example/tw-us-370790",
+      "license_or_terms_ref": "https://comtradeplus.un.org/TermsOfUse",
+      "confidence": 0.62
+    },
+    {
+      "source_record_id": "comtrade-lite-us-nl-848620-2025",
+      "reporter": "US",
+      "partner": "NL",
+      "flow_type": "import",
+      "commodity_code": "848620",
+      "commodity_label": "semiconductor manufacturing machines",
+      "period": "2025",
+      "trade_value": 85.0,
+      "quantity": 9.0,
+      "unit": "units",
+      "summary": "Proxy trade-flow summary for United States imports of semiconductor manufacturing machines from the Netherlands.",
+      "provenance_url": "https://comtradeplus.un.org/example/us-nl-848620",
+      "license_or_terms_ref": "https://comtradeplus.un.org/TermsOfUse",
+      "confidence": 0.64
+    }
+  ]
+}
+

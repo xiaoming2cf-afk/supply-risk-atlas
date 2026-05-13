@@ -1,36 +1,28 @@
 from __future__ import annotations
 
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+import json
+import urllib.request
+from dataclasses import dataclass
+from typing import Any
 
-from sra_core.ingestion.connectors.errors import ConnectorFetchError, ConnectorPolicyError
+from sra_core.ingestion.connectors.errors import ConnectorPayloadError
 
 
-def bounded_http_get(
-    url: str,
-    *,
-    timeout_seconds: float,
-    max_bytes: int,
-    user_agent: str,
-) -> bytes:
-    if not url.startswith("https://"):
-        raise ConnectorPolicyError("connector fetch URL must be https")
-    if max_bytes <= 0 or max_bytes > 8 * 1024 * 1024:
-        raise ConnectorPolicyError("max_bytes must be bounded")
-    request = Request(url, headers={"User-Agent": user_agent})
-    chunks: list[bytes] = []
-    total = 0
-    try:
-        with urlopen(request, timeout=timeout_seconds) as response:
-            while True:
-                chunk = response.read(min(64 * 1024, max_bytes - total + 1))
-                if not chunk:
-                    break
-                total += len(chunk)
-                if total > max_bytes:
-                    raise ConnectorPolicyError("connector response exceeded max_bytes")
-                chunks.append(chunk)
-    except URLError as exc:
-        raise ConnectorFetchError("connector fetch failed") from exc
-    return b"".join(chunks)
+@dataclass(frozen=True)
+class SafeHttpClient:
+    timeout_seconds: float = 10.0
+    max_response_bytes: int = 256_000
+    user_agent: str = "SupplyRiskAtlas research connector; contact=not-configured"
+
+    def get_json(self, url: str, *, headers: dict[str, str] | None = None) -> Any:
+        request_headers = {"User-Agent": self.user_agent, **(headers or {})}
+        request = urllib.request.Request(url, headers=request_headers, method="GET")
+        with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+            content_length = response.headers.get("Content-Length")
+            if content_length and int(content_length) > self.max_response_bytes:
+                raise ConnectorPayloadError("connector response exceeds configured byte limit")
+            payload = response.read(self.max_response_bytes + 1)
+        if len(payload) > self.max_response_bytes:
+            raise ConnectorPayloadError("connector response exceeds configured byte limit")
+        return json.loads(payload.decode("utf-8"))
 

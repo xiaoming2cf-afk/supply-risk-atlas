@@ -19,8 +19,25 @@
               "wsts_historical_billings",
               "global_trade_alert_semiconductor_export_controls",
               "gdelt_semiconductor_events",
-              "sec_edgar",
-              "un_comtrade"
+              "sec_edgar_lite",
+              "gdelt_semiconductor_lite",
+              "un_comtrade_semiconductor_trade_lite",
+              "world_bank_wits_trade_tariff_lite",
+              "usgs_earthquake_lite",
+              "nga_world_port_index_lite",
+              "ofac_sanctions_list_lite",
+              "bis_export_controls_lite",
+              "federal_register_export_controls_lite",
+              "world_bank_macro_indicators_lite",
+              "ourairports_lite",
+              "openalex_crossref_literature_lite",
+              "company_annual_report_manual_upload",
+              "customs_trade_manual_upload",
+              "paid_semi_market_data",
+              "proprietary_factset_supply_chain",
+              "bloomberg_supply_chain",
+              "wind_or_choice_private_data",
+              "company_private_order_data"
             ]
           },
           "publisher": { "type": "string", "minLength": 1 },
@@ -32,6 +49,7 @@
           "attribution": { "type": "string", "minLength": 1 },
           "requires_api_key": { "type": "boolean" },
           "enabled_by_default": { "type": "boolean" },
+          "live_fetch_default": { "type": "boolean" },
           "update_frequency": {
             "type": "string",
             "enum": ["15_minutes", "hourly", "daily", "weekly", "monthly", "irregular"]
@@ -42,7 +60,35 @@
           "silver_contract": { "type": "string", "minLength": 1 },
           "graph_contract": { "type": "string", "minLength": 1 },
           "owner": { "type": "string", "minLength": 1 },
-          "review_status": { "type": "string", "minLength": 1 }
+          "review_status": { "type": "string", "minLength": 1 },
+          "source_tier": {
+            "type": "string",
+            "enum": ["tier_0", "tier_1", "tier_2", "tier_3"]
+          },
+          "data_category": {
+            "type": "string",
+            "enum": [
+              "supply_chain_structure",
+              "market_indicator",
+              "trade_flow",
+              "policy_export_control",
+              "sanctions_compliance",
+              "event_news",
+              "natural_hazard",
+              "logistics",
+              "literature_methodology",
+              "manual_upload"
+            ]
+          },
+          "pii_risk": { "type": "string", "minLength": 1 },
+          "raw_payload_storage_policy": {
+            "type": "string",
+            "enum": ["hash_and_summary_only", "registry_only", "manual_review_required"]
+          },
+          "api_visibility_policy": {
+            "type": "string",
+            "enum": ["summary_and_lineage_only", "summary_only", "metadata_only", "registry_only"]
+          }
         },
         "required": [
           "source_id",
@@ -55,6 +101,7 @@
           "attribution",
           "requires_api_key",
           "enabled_by_default",
+          "live_fetch_default",
           "update_frequency",
           "freshness_sla_hours",
           "connector",
@@ -62,7 +109,12 @@
           "silver_contract",
           "graph_contract",
           "owner",
-          "review_status"
+          "review_status",
+          "source_tier",
+          "data_category",
+          "pii_risk",
+          "raw_payload_storage_policy",
+          "api_visibility_policy"
         ]
       }
     }

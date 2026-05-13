@@ -24,6 +24,7 @@ class Handler(BaseHTTPRequestHandler):
         routes = {
             "/health": lambda: main.route_health(request_id=request_id),
             "/api/v1/health": lambda: main.route_health(request_id=request_id),
+            "/api/v1/version": lambda: main.route_version(request_id=request_id),
             "/lineage": lambda: main.route_lineage(
                 source_id=_first(query.get("source_id")),
                 target_id=_first(query.get("target_id")),

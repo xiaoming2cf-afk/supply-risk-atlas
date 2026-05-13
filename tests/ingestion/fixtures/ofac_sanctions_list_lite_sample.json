@@ -1,0 +1,20 @@
+{
+  "source_id": "ofac_sanctions_list_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "ofac-lite-example-entity",
+      "entity_name": "Example Listed Entity",
+      "list_type": "SDN",
+      "program": "EXAMPLE",
+      "country": "ZZ",
+      "match_confidence": 0.82,
+      "summary": "Public sanctions list metadata summary for compliance-risk awareness.",
+      "provenance_url": "https://ofac.treasury.gov/sanctions-list-service/example",
+      "license_or_terms_ref": "https://home.treasury.gov/privacy-policy",
+      "confidence": 0.68
+    }
+  ]
+}
+

@@ -1,58 +1,51 @@
 from __future__ import annotations
 
-import json
+from pathlib import Path
 
-import pytest
-
-from sra_core.ingestion.connectors.errors import ConnectorUnavailableError
+from sra_core.ingestion.connectors.base import ConnectorConfig
 from sra_core.ingestion.connectors.gdelt_semiconductor_lite import (
-    GDELT_SEMICONDUCTOR_QUERY_TERMS,
     GdeltSemiconductorLiteConnector,
 )
 
 
-def test_gdelt_lite_query_scope_is_narrow_and_semiconductor_specific() -> None:
-    expected_terms = {
-        "semiconductor",
-        "chip supply chain",
-        "lithography",
-        "wafer fab",
-        "photoresist",
-        "export control",
-        "earthquake semiconductor region",
-    }
-
-    assert set(GDELT_SEMICONDUCTOR_QUERY_TERMS) == expected_terms
+FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "gdelt_semiconductor_lite_sample.json"
 
 
-def test_gdelt_lite_replays_fixture_without_article_body() -> None:
-    records = GdeltSemiconductorLiteConnector().replay_fixture()
+def test_gdelt_semiconductor_lite_fixture_replay_has_no_article_body() -> None:
+    connector = GdeltSemiconductorLiteConnector(
+        config=ConnectorConfig(mode="fixture", fixture_path=FIXTURE_PATH, max_records=10)
+    )
 
-    assert len(records) == 1
-    payload = records[0].model_dump(mode="json")
-    rendered = json.dumps(payload)
-    assert payload["source_id"] == "gdelt_semiconductor_events"
-    assert len(payload["payload_hash"]) == 64
-    assert payload["provenance_url"].startswith("https://")
-    assert "raw_payload" not in payload
-    assert "article_body" not in rendered.lower()
+    result = connector.fetch()
 
-
-def test_gdelt_lite_promotes_risk_event_and_graph_evidence() -> None:
-    promoted = GdeltSemiconductorLiteConnector().promote_fixture()
-
-    assert promoted["raw_record_count"] == 1
-    assert promoted["query_terms"] == list(GDELT_SEMICONDUCTOR_QUERY_TERMS)
-    event = promoted["silver_events"][0]
-    assert event["attributes"]["event_type_label"] == "earthquake semiconductor region"
-    assert event["attributes"]["location"] == "Taiwan"
-    assert event["attributes"]["evidence_url"].startswith("https://")
-    edge_types = {edge["edge_type"] for edge in promoted["graph_edges"]}
-    assert {"impacted_by", "evidence_for"} <= edge_types
+    assert result.status == "ok"
+    assert len(result.records) == 2
+    public = result.to_public_dict()
+    assert "raw_payload" not in str(public)
+    assert "article_body" not in str(public)
+    assert all(record.payload_summary for record in result.records)
 
 
-def test_gdelt_lite_live_mode_is_disabled_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("SUPPLY_RISK_GDELT_LIVE_ENABLED", raising=False)
+def test_gdelt_semiconductor_lite_promotes_to_risk_events() -> None:
+    connector = GdeltSemiconductorLiteConnector(
+        config=ConnectorConfig(mode="fixture", fixture_path=FIXTURE_PATH, max_records=10)
+    )
+    result = connector.fetch()
 
-    with pytest.raises(ConnectorUnavailableError):
-        GdeltSemiconductorLiteConnector().fetch_live(request=object())  # type: ignore[arg-type]
+    promoted = connector.promote(result.records)
+
+    assert {row["record_type"] for row in promoted} == {"risk_event"}
+    assert promoted[0]["event_type"] == "policy_export_control"
+    assert promoted[0]["affected_entities"] == ["company:asml", "product:euv_lithography"]
+    assert promoted[0]["source_refs"] == ["gdelt_semiconductor_lite:gdelt-lite-2026-0001"]
+    assert promoted[0]["payload_hash"]
+    assert "article_body" not in str(promoted)
+
+
+def test_gdelt_semiconductor_lite_live_mode_rejects_broad_queries_without_fetch() -> None:
+    connector = GdeltSemiconductorLiteConnector(config=ConnectorConfig(mode="live"))
+
+    result = connector.fetch({"query": "general business news"})
+
+    assert result.status == "unavailable"
+    assert "query_scope_not_allowed" in result.warnings

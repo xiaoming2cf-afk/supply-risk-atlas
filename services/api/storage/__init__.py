@@ -7,4 +7,3 @@ from services.api.storage.sqlite_store import (
 )
 
 __all__ = ["SQLiteStore", "configured_storage_mode", "default_sqlite_path"]
-

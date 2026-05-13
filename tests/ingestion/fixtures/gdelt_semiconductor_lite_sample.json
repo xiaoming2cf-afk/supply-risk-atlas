@@ -1,67 +1,33 @@
 {
-  "fixture_version": "public_evidence_lite_v0.1",
-  "source_id": "gdelt_semiconductor_events",
+  "source_id": "gdelt_semiconductor_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
   "records": [
     {
-      "source_record_id": "gdelt-semiconductor-earthquake-region-lite-2026-04",
-      "retrieved_at": "2026-05-01T00:00:00Z",
-      "source_published_at": "2026-04-28T00:00:00Z",
-      "as_of_time": "2026-05-01T00:00:00Z",
-      "provenance_url": "https://www.gdeltproject.org/",
-      "raw_payload_summary": "Fixture-only GDELT semiconductor event metadata summary; article text is excluded.",
-      "event_time": "2026-04-28T00:00:00Z",
-      "event_type_label": "earthquake semiconductor region",
-      "location": "Taiwan",
-      "affected_entities": ["country:tw", "facility:tsmc_fab18", "process_stage:wafer_fabrication"],
-      "evidence_url": "https://www.gdeltproject.org/",
-      "confidence": 0.67,
-      "entities": [
-        {
-          "node_id": "risk_event:gdelt_taiwan_semiconductor_region_signal_2026_04",
-          "node_type": "risk_event",
-          "canonical_name": "Taiwan semiconductor-region disruption signal",
-          "aliases": ["GDELT semiconductor region signal"],
-          "country_code": "TW",
-          "sector_tags": ["risk_event", "semiconductor_region"],
-          "confidence": 0.67
-        }
-      ],
-      "events": [
-        {
-          "event_id": "risk_event:gdelt_taiwan_semiconductor_region_signal_2026_04",
-          "event_type": "risk_event",
-          "canonical_name": "Taiwan semiconductor-region disruption signal",
-          "event_time": "2026-04-28T00:00:00Z",
-          "summary": "Fixture-only GDELT event metadata indicating a semiconductor-region disruption signal in Taiwan.",
-          "affected_entity_ids": ["country:tw", "facility:tsmc_fab18", "process_stage:wafer_fabrication"],
-          "confidence": 0.67,
-          "attributes": {
-            "event_type_label": "earthquake semiconductor region",
-            "location": "Taiwan",
-            "evidence_url": "https://www.gdeltproject.org/"
-          }
-        }
-      ],
-      "edges": [
-        {
-          "edge_id": "edge:country_tw:impacted_by:gdelt_semiconductor_region_signal",
-          "source_node_id": "country:tw",
-          "target_node_id": "risk_event:gdelt_taiwan_semiconductor_region_signal_2026_04",
-          "edge_type": "impacted_by",
-          "weight": 0.42,
-          "confidence": 0.67,
-          "evidence_text_summary": "GDELT fixture metadata links Taiwan to a semiconductor-region disruption signal."
-        },
-        {
-          "edge_id": "edge:fab18:evidence_for:gdelt_semiconductor_region_signal",
-          "source_node_id": "facility:tsmc_fab18",
-          "target_node_id": "risk_event:gdelt_taiwan_semiconductor_region_signal_2026_04",
-          "edge_type": "evidence_for",
-          "weight": 0.31,
-          "confidence": 0.61,
-          "evidence_text_summary": "The event metadata references a semiconductor region associated with TSMC Fab 18."
-        }
-      ]
+      "source_record_id": "gdelt-lite-2026-0001",
+      "event_time": "2026-05-01T08:00:00+00:00",
+      "event_type": "policy_export_control",
+      "location": { "country": "US", "region": "North America" },
+      "affected_entities": ["company:asml", "product:euv_lithography"],
+      "summary": "Public event metadata summary reports export-control policy discussion affecting lithography equipment.",
+      "source_name": "GDELT",
+      "tone_or_severity_proxy": 0.58,
+      "provenance_url": "https://www.gdeltproject.org/example/event-0001",
+      "license_or_terms_ref": "https://www.gdeltproject.org/about.html",
+      "confidence": 0.61
+    },
+    {
+      "source_record_id": "gdelt-lite-2026-0002",
+      "event_time": "2026-05-03T12:30:00+00:00",
+      "event_type": "natural_hazard",
+      "location": { "country": "TW", "region": "Hsinchu" },
+      "affected_entities": ["company:tsmc", "region:taiwan"],
+      "summary": "Public event metadata summary reports earthquake monitoring near semiconductor manufacturing region.",
+      "source_name": "GDELT",
+      "tone_or_severity_proxy": 0.42,
+      "provenance_url": "https://www.gdeltproject.org/example/event-0002",
+      "license_or_terms_ref": "https://www.gdeltproject.org/about.html",
+      "confidence": 0.57
     }
   ]
 }

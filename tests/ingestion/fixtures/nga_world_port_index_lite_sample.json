@@ -1,0 +1,20 @@
+{
+  "source_id": "nga_world_port_index_lite",
+  "retrieved_at": "2026-05-12T00:00:00+00:00",
+  "as_of_time": "2026-05-12T00:00:00+00:00",
+  "records": [
+    {
+      "source_record_id": "wpi-lite-kaohsiung",
+      "port_name": "Kaohsiung",
+      "country_code": "TW",
+      "latitude": 22.6,
+      "longitude": 120.3,
+      "port_characteristics": "major container port",
+      "summary": "Public World Port Index-style logistics metadata for Kaohsiung.",
+      "provenance_url": "https://msi.nga.mil/Publications/WPI/example-kaohsiung",
+      "license_or_terms_ref": "https://www.nga.mil/about/Legal.html",
+      "confidence": 0.66
+    }
+  ]
+}
+

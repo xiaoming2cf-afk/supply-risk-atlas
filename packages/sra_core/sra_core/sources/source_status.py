@@ -1,33 +1,55 @@
 from __future__ import annotations
 
+from collections import Counter
+from typing import Any
 
-FIXTURE_SOURCE_IDS = {
-    "eto_cset_advanced_semiconductor_supply_chain",
-    "wsts_historical_billings",
-    "global_trade_alert_semiconductor_export_controls",
-    "gdelt_semiconductor_events",
-}
+from sra_core.sources.models import SourceEntry
 
 
-def connector_status(source: dict[str, object]) -> str:
-    source_id = str(source.get("source_id") or "")
-    connector = str(source.get("connector") or "").strip().lower()
-    enabled = bool(source.get("enabled_by_default"))
-    review_status = str(source.get("review_status") or "").lower()
-    if not enabled or connector.startswith("disabled") or "disabled" in review_status:
+def connector_status_for_source(source: SourceEntry) -> str:
+    connector = source.connector.lower()
+    review_status = source.review_status.lower()
+
+    if source.source_tier == "tier_3" or connector.startswith("deferred:"):
+        return "deferred_not_allowed"
+    if "review_required" in connector or "review_required" in review_status:
         return "disabled_review_required"
-    if source_id in FIXTURE_SOURCE_IDS:
+    if connector.startswith("fixture:"):
         return "fixture_connector"
-    if connector.startswith("unavailable"):
+    if connector.startswith("promoted:"):
+        return "promoted_connector"
+    if connector.startswith("live:") and source.live_fetch_default:
+        return "live_connector_available"
+    if connector.startswith("unavailable:"):
         return "live_connector_unavailable"
-    return "live_connector_available"
+    if connector.startswith("disabled:"):
+        return "disabled_review_required"
+    return "live_connector_unavailable"
 
 
-def source_runtime_status(source: dict[str, object]) -> str:
-    status = connector_status(source)
-    if status == "disabled_review_required":
-        return "disabled"
-    if status == "live_connector_unavailable":
-        return "unavailable"
-    return "enabled"
+def source_status_for_source(source: SourceEntry) -> str:
+    connector_status = connector_status_for_source(source)
+    review_status = source.review_status.lower()
+
+    if source.source_tier == "tier_3" or connector_status == "deferred_not_allowed":
+        return "deferred_paid_or_proprietary"
+    if "terms_review" in review_status:
+        return "unavailable_terms_review"
+    if connector_status == "fixture_connector" and source.enabled_by_default:
+        return "enabled_fixture"
+    if connector_status == "promoted_connector" and source.enabled_by_default:
+        return "enabled_promoted"
+    if connector_status == "live_connector_available" and source.enabled_by_default:
+        return "enabled_live_available"
+    if connector_status == "live_connector_unavailable":
+        return "live_unavailable"
+    return "disabled_review_required"
+
+
+def summarize_status_counts(sources: list[dict[str, Any]]) -> dict[str, int]:
+    return dict(Counter(str(source.get("status", "unknown")) for source in sources))
+
+
+def summarize_connector_counts(sources: list[dict[str, Any]]) -> dict[str, int]:
+    return dict(Counter(str(source.get("connector_status", "unknown")) for source in sources))
 

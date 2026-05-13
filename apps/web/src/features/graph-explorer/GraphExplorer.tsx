@@ -1,15 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
-import type { SupplyRiskDashboardData } from "@supply-risk/api-client";
-import type { GraphNodeKind } from "@supply-risk/shared-types";
+import type { SupplyRiskApiClient, SupplyRiskDashboardData } from "@supply-risk/api-client";
+import type {
+  ApiResult,
+  GraphEvidenceData,
+  GraphExplorerData,
+  GraphGeoData,
+  GraphMatrixData,
+  GraphNode,
+  GraphNodeKind,
+  GraphScenarioOverlayData,
+  GraphTimelineData,
+} from "@supply-risk/shared-types";
 import { Panel } from "../../app/components";
 import { useI18n } from "../../app/i18n";
 import { GraphBreadcrumbs } from "./GraphBreadcrumbs";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphControls } from "./GraphControls";
 import { GraphEmptyState } from "./GraphEmptyState";
+import { GraphEvidenceView } from "./GraphEvidenceView";
+import { GraphFocusView } from "./GraphFocusView";
+import { GraphGeoView } from "./GraphGeoView";
 import { GraphInspector } from "./GraphInspector";
 import { GraphLayers } from "./GraphLayers";
 import { GraphLegend } from "./GraphLegend";
+import { GraphMatrixView } from "./GraphMatrixView";
+import { GraphOverviewView } from "./GraphOverviewView";
+import { GraphPathView } from "./GraphPathView";
+import { GraphScenarioOverlay } from "./GraphScenarioOverlay";
+import { GraphTimelineView } from "./GraphTimelineView";
 import { defaultGraphLayerSet, findFirstGraphSearchMatch, type GraphLayerCategory } from "./graphFilters";
 import {
   buildGraphViewModel,
@@ -18,15 +36,18 @@ import {
   graphViewModeUsesPath,
   normalizeGraphViewMode,
   type GraphFocusDirection,
+  type GraphViewModel,
   type GraphVersionMetadata,
   type GraphViewMode,
   type LegacyGraphExplorerMode,
 } from "./graphViewModel";
 
 export function GraphExplorer({
+  apiClient,
   data,
   initialMode = "overview",
 }: {
+  apiClient?: SupplyRiskApiClient;
   data: SupplyRiskDashboardData;
   initialMode?: LegacyGraphExplorerMode;
 }) {
@@ -43,6 +64,16 @@ export function GraphExplorer({
     graph.countryLens?.selectedCountryCode ?? graph.availableCountries?.[0]?.code ?? "US",
   );
   const [enabledLayers, setEnabledLayers] = useState<Set<GraphLayerCategory>>(() => new Set(defaultGraphLayerSet));
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [countryFilter, setCountryFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
+  const [confidenceMin, setConfidenceMin] = useState(0);
+  const [evidenceOnly, setEvidenceOnly] = useState(false);
+  const [endpointDetails, setEndpointDetails] = useState<GraphEndpointDetails>({
+    source: "fallback",
+    status: "fallback",
+    message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
+  });
   const [hideLowConfidence, setHideLowConfidence] = useState(false);
   const [showEdgeLabels, setShowEdgeLabels] = useState(false);
   const [focusDepth, setFocusDepth] = useState(1);
@@ -51,6 +82,8 @@ export function GraphExplorer({
   const metadata = useMemo(() => graphMetadata(data), [data]);
   const countries = graph.availableCountries ?? graph.countryLens?.countries ?? [];
   const criticalNodes = useMemo(() => criticalGraphNodes(graph), [graph]);
+  const sourceOptions = useMemo(() => graphSourceOptions(graph), [graph]);
+  const productOptions = useMemo(() => graphProductOptions(graph), [graph]);
 
   useEffect(() => {
     const nextMode = normalizeGraphViewMode(initialMode);
@@ -71,6 +104,48 @@ export function GraphExplorer({
     setSelectedPathStepIndex(0);
   }, [selectedPathId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!apiClient) {
+      setEndpointDetails({
+        source: "fallback",
+        status: "fallback",
+        message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
+      });
+      return;
+    }
+
+    const loadEndpointDetails = async () => {
+      setEndpointDetails((current) => ({
+        ...current,
+        status: "loading",
+        message: "Backend graph view endpoint loading.",
+      }));
+      try {
+        const result = await fetchGraphEndpointDetails(apiClient, {
+          mode,
+          selectedNodeId: selectedNodeId ?? graph.selectedNodeId,
+          focusDepth,
+          selectedPath: graph.transmissionPaths?.find((path) => path.id === selectedPathId) ?? graph.transmissionPaths?.[0],
+        });
+        if (cancelled) return;
+        setEndpointDetails(result);
+      } catch (error) {
+        if (cancelled) return;
+        setEndpointDetails({
+          source: "fallback",
+          status: "fallback",
+          message: error instanceof Error ? error.message : "Fallback graph payload: backend graph view endpoint unavailable.",
+        });
+      }
+    };
+
+    void loadEndpointDetails();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient, focusDepth, graph.selectedNodeId, graph.transmissionPaths, mode, selectedNodeId, selectedPathId]);
+
   const view = useMemo(
     () =>
       buildGraphViewModel({
@@ -84,7 +159,12 @@ export function GraphExplorer({
         searchQuery: query,
         nodeKind,
         enabledLayers,
+        confidenceMin,
+        countryFilter,
+        evidenceOnly,
         hideLowConfidence,
+        productFilter,
+        sourceFilter,
         pinnedNodeIds,
         focusDepth,
         focusDirection,
@@ -94,16 +174,21 @@ export function GraphExplorer({
       focusDepth,
       focusDirection,
       graph,
+      confidenceMin,
+      countryFilter,
+      evidenceOnly,
       hideLowConfidence,
       mode,
       nodeKind,
       pinnedNodeIds,
+      productFilter,
       query,
       selectedCountryCode,
       selectedEdgeId,
       selectedNodeId,
       selectedPathId,
       selectedPathStepIndex,
+      sourceFilter,
     ],
   );
   const selectedPathStepEdgeId =
@@ -139,23 +224,96 @@ export function GraphExplorer({
     }
   };
 
+  const resetView = () => {
+    setMode("overview");
+    setSelectedEdgeId(null);
+    setSelectedNodeId(graph.selectedNodeId);
+    setSelectedPathId(graph.transmissionPaths?.[0]?.id ?? data.pathExplainer.selectedPathId);
+    setSelectedPathStepIndex(0);
+    setSourceFilter("all");
+    setCountryFilter("all");
+    setProductFilter("all");
+    setConfidenceMin(0);
+    setEvidenceOnly(false);
+    setHideLowConfidence(false);
+    setShowEdgeLabels(false);
+    setFocusDepth(1);
+    setFocusDirection("both");
+    setPinnedNodeIds(new Set());
+    setEnabledLayers(new Set(defaultGraphLayerSet));
+  };
+
+  const exportViewSummary = () => {
+    if (typeof document === "undefined") return;
+    const summary = {
+      export_type: "graph_view_summary",
+      exported_at: new Date().toISOString(),
+      mode,
+      graph_version: metadata.graphVersion,
+      source_manifest_id: metadata.sourceManifestId,
+      warnings: metadata.warnings,
+      data_scope: "sanitized_visible_graph_only",
+      filters: {
+        nodeKind,
+        sourceFilter,
+        countryFilter,
+        productFilter,
+        confidenceMin,
+        evidenceOnly,
+        hideLowConfidence,
+        enabledLayers: Array.from(enabledLayers),
+      },
+      nodes: view.visibleNodes.map((node) => ({
+        id: node.id,
+        label: node.label,
+        kind: node.kind,
+        countryCode: node.countryCode,
+        score: node.score,
+      })),
+      links: view.visibleLinks.map((link) => ({
+        id: link.id,
+        source: link.source,
+        target: link.target,
+        label: link.label,
+        edgeType: link.edgeType,
+        edgeRole: link.edgeRole,
+        sourceId: link.sourceId,
+        derived_context: link.metadata?.derived_context === true,
+        not_supply_chain_dependency: link.metadata?.not_supply_chain_dependency === true,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(summary, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `graph-view-summary-${mode}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="graph-workbench graph-workbench-v2">
-      <Panel title="Graph scope" subtitle="Graph Explorer v2 layered views." className="graph-side-panel">
+    <div className="graph-workbench graph-workbench-v2 graph-workbench-v3">
+      <Panel title="Graph scope" subtitle="Graph Explorer v2 / v3 layered views." className="graph-side-panel">
         <div className="graph-version-strip">
-          <strong>Graph Explorer v2</strong>
+          <strong>Graph Explorer v2 / v3</strong>
           <span>{graphModeLabel(mode)}</span>
         </div>
         <GraphControls
+          confidenceMin={confidenceMin}
           countries={countries}
+          countryFilter={countryFilter}
           criticalNodes={criticalNodes}
+          evidenceOnly={evidenceOnly}
           filters={graph.filters}
           focusDepth={focusDepth}
           focusDirection={focusDirection}
           mode={mode}
           nodeKind={nodeKind}
+          onConfidenceMinChange={setConfidenceMin}
+          onCountryFilterChange={setCountryFilter}
           onCountrySelect={(countryCode) => {
             setSelectedCountryCode(countryCode);
+            setCountryFilter(countryCode);
             setSelectedEdgeId(null);
             setMode("geo");
           }}
@@ -166,6 +324,8 @@ export function GraphExplorer({
             setFocusDepth(1);
             setFocusDirection("both");
           }}
+          onEvidenceOnlyChange={setEvidenceOnly}
+          onExportView={exportViewSummary}
           onFocusChange={(direction, depth) => {
             setFocusDirection(direction);
             setFocusDepth(depth);
@@ -179,8 +339,13 @@ export function GraphExplorer({
             setMode("path");
           }}
           onPinSelected={pinSelectedNode}
+          onProductFilterChange={setProductFilter}
+          onResetView={resetView}
           onSearchChange={setQuery}
+          onSourceFilterChange={setSourceFilter}
           paths={graph.transmissionPaths ?? []}
+          productFilter={productFilter}
+          productOptions={productOptions}
           query={query}
           renderCounts={{
             edgeLimit: view.renderLimits.edgeLimit,
@@ -193,6 +358,8 @@ export function GraphExplorer({
           selectedCountryCode={view.selectedCountry?.code}
           selectedNodeId={view.selectedNode?.id}
           selectedPathId={view.activePath?.id}
+          sourceFilter={sourceFilter}
+          sourceOptions={sourceOptions}
         />
         <GraphLayers
           enabledLayers={enabledLayers}
@@ -217,8 +384,13 @@ export function GraphExplorer({
           <span>focus cap: 25 nodes / 40 edges</span>
           <span>edge labels hidden by default</span>
         </div>
+        <EndpointStatusPanel details={endpointDetails} />
         <div className="graph-canvas">
-          {view.visibleNodes.length > 0 ? (
+          {mode === "matrix" ? (
+            <GraphMatrixView graph={graph} view={view} endpointData={endpointDetails.data} />
+          ) : mode === "evidence" ? (
+            <GraphEvidenceView view={view} endpointData={endpointDetails.data} />
+          ) : view.visibleNodes.length > 0 ? (
             <GraphCanvas
               activePathEdgeIds={view.activePathEdgeIds}
               activePathNodeIds={view.activePathNodeIds}
@@ -246,6 +418,13 @@ export function GraphExplorer({
             <GraphEmptyState message={view.emptyReason ?? "No entities match the active graph filters."} />
           )}
         </div>
+        <GraphModeDetailPanel
+          endpointDetails={endpointDetails}
+          graph={graph}
+          metadata={metadata}
+          mode={mode}
+          view={view}
+        />
       </Panel>
 
       <Panel title="Inspector" subtitle="Evidence, selection, and fixture limits." className="graph-inspector-panel">
@@ -267,6 +446,130 @@ export function GraphExplorer({
       </Panel>
     </div>
   );
+}
+
+type GraphEndpointDetails = {
+  data?: GraphTimelineData | GraphGeoData | GraphMatrixData | GraphEvidenceData | GraphScenarioOverlayData | Record<string, unknown>;
+  message: string;
+  source: "backend" | "fallback";
+  status: "active" | "fallback" | "loading";
+};
+
+async function fetchGraphEndpointDetails(
+  apiClient: SupplyRiskApiClient,
+  options: {
+    mode: GraphViewMode;
+    selectedNodeId?: string;
+    focusDepth: number;
+    selectedPath?: { sourceId: string; targetId: string };
+  },
+): Promise<GraphEndpointDetails> {
+  let result: ApiResult<unknown>;
+  if (options.mode === "overview") {
+    result = await apiClient.getGraphView({ mode: "overview" });
+  } else if (options.mode === "focus") {
+    result = await apiClient.getGraphFocus({
+      nodeId: options.selectedNodeId ?? "company:tsmc",
+      depth: options.focusDepth,
+    });
+  } else if (options.mode === "path") {
+    result = await apiClient.getGraphPathView({
+      sourceNodeId: options.selectedPath?.sourceId ?? "company:tsmc",
+      targetNodeId: options.selectedPath?.targetId ?? "product_grade:advanced_logic",
+    });
+  } else if (options.mode === "timeline") {
+    result = await apiClient.getGraphTimeline({ limit: 50 });
+  } else if (options.mode === "geo") {
+    result = await apiClient.getGraphGeo({ limit: 50 });
+  } else if (options.mode === "matrix") {
+    result = await apiClient.getGraphMatrix({ limit: 30 });
+  } else if (options.mode === "evidence") {
+    result = await apiClient.getGraphEvidence({ limit: 50 });
+  } else {
+    result = await apiClient.getGraphScenarioOverlay({ runId: null });
+  }
+
+  if (result.data && result.envelope.status !== "error") {
+    return {
+      data: result.data as GraphEndpointDetails["data"],
+      message: "Backend graph view endpoint active.",
+      source: "backend",
+      status: "active",
+    };
+  }
+  return {
+    message: result.envelope.warnings?.[0] ?? "Fallback graph payload: backend graph view endpoint unavailable.",
+    source: "fallback",
+    status: "fallback",
+  };
+}
+
+function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
+  return (
+    <div className={`graph-endpoint-status is-${details.status}`}>
+      <strong>{details.source === "backend" ? "Backend graph view endpoint" : "Fallback graph payload"}</strong>
+      <span>{details.message}</span>
+    </div>
+  );
+}
+
+function GraphModeDetailPanel({
+  endpointDetails,
+  graph,
+  metadata,
+  mode,
+  view,
+}: {
+  endpointDetails: GraphEndpointDetails;
+  graph: GraphExplorerData;
+  metadata: GraphVersionMetadata;
+  mode: GraphViewMode;
+  view: GraphViewModel;
+}) {
+  if (mode === "overview") return <GraphOverviewView graph={graph} metadata={metadata} view={view} />;
+  if (mode === "timeline") return <GraphTimelineView graph={graph} endpointData={endpointDetails.data} view={view} />;
+  if (mode === "geo") return <GraphGeoView endpointData={endpointDetails.data} graph={graph} view={view} />;
+  if (mode === "scenario") return <GraphScenarioOverlay endpointData={endpointDetails.data} view={view} />;
+  if (mode === "path") return <GraphPathView view={view} />;
+  if (mode === "focus") return <GraphFocusView view={view} />;
+  return null;
+}
+
+function graphSourceOptions(graph: GraphExplorerData) {
+  const sources = new Set<string>();
+  for (const node of graph.nodes) {
+    collectOption(sources, node.metadata.source);
+    collectOption(sources, node.metadata.source_id);
+    collectOption(sources, node.metadata.sourceId);
+    collectOption(sources, node.metadata.dataset);
+  }
+  for (const link of graph.links) {
+    collectOption(sources, link.sourceId);
+    collectOption(sources, link.metadata?.source);
+    collectOption(sources, link.metadata?.source_label);
+  }
+  return [...sources].sort().slice(0, 40);
+}
+
+function graphProductOptions(graph: GraphExplorerData) {
+  const products = new Set<string>();
+  for (const node of graph.nodes) {
+    if (node.kind === "product_grade" || node.kind === "commodity" || node.kind === "component" || node.kind === "raw_material") {
+      collectOption(products, node.kind);
+    }
+    collectOption(products, node.entityType);
+    collectOption(products, node.metadata.product_grade);
+    collectOption(products, node.metadata.product_category);
+    collectOption(products, node.metadata.commodity_code);
+    collectOption(products, node.metadata.category);
+  }
+  return [...products].sort().slice(0, 40);
+}
+
+function collectOption(target: Set<string>, value: unknown) {
+  if (typeof value !== "string") return;
+  const normalized = value.trim();
+  if (normalized && normalized.length <= 80) target.add(normalized);
 }
 
 function graphMetadata(data: SupplyRiskDashboardData): GraphVersionMetadata {

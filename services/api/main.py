@@ -31,6 +31,7 @@ from services.api.prediction_center import (
     ranked_paths_for_target,
 )
 from services.api.routes import graph as graph_routes
+from services.api.routes import analytics as analytics_routes
 from services.api.routes import optimization as optimization_routes
 from services.api.routes import reports as report_routes
 from services.api.routes import reverse_stress as reverse_stress_routes
@@ -38,6 +39,7 @@ from services.api.routes import risk as risk_routes
 from services.api.routes import runs as run_routes
 from services.api.routes import scenarios as scenario_routes
 from services.api.routes import system_health as system_health_routes
+from services.api.routes import version as version_routes
 from services.api.runtime.errors import ControlledApiError
 from services.api.security.headers import cors_origins, security_headers
 from services.api.security.validation import (
@@ -53,14 +55,23 @@ from services.api.services.graph_service import (
     route_graph_clusters,
     route_graph_diff,
     route_graph_focus,
+    route_graph_evidence,
+    route_graph_geo,
+    route_graph_layers,
+    route_graph_matrix,
     route_graph_path_view,
     route_graph_snapshots,
+    route_graph_scenario_overlay,
+    route_graph_timeline,
     route_graph_view,
+    route_analytics_charts,
+    route_analytics_tables,
     route_semiconductor_graph_neighborhood,
     route_semiconductor_graph_snapshot,
 )
+from services.api.services.analytics_service import route_analytics_export, route_analytics_table
 from services.api.services.optimization_service import route_intervention_optimization
-from services.api.services.report_service import route_investigation_report
+from services.api.services.report_service import route_investigation_report, route_report_detail
 from services.api.services.reverse_stress_service import route_reverse_scenario
 from services.api.services.risk_service import (
     route_semirisk_entity_risk,
@@ -71,8 +82,10 @@ from services.api.services.scenario_service import route_forward_scenario
 from services.api.services.system_health_service import (
     semiconductor_graph_health_payload as _semiconductor_graph_health_payload,
     semiconductor_only_system_health_payload as _semiconductor_only_system_health_payload,
+    platform_status_payload as _platform_status_payload,
+    source_registry_readiness_payload as _source_registry_readiness_payload,
 )
-from sra_core.sources.registry import source_registry_readiness
+from services.api.services.version_service import route_version
 from sra_core.api.envelope import make_envelope as build_envelope
 from sra_core.api.envelope import make_error_envelope
 from sra_core.contracts.domain import (
@@ -551,8 +564,18 @@ def route_dashboard_page(
     payloads = _dashboard_payloads(result) if not query else _real_dashboard_payloads(result, query=query)
     if page_id not in payloads:
         raise LookupError(f"Dashboard page not found: {page_id}")
+    page_payload = payloads[page_id]
+    if page_id == "system-health-center":
+        health_graph = _semiconductor_graph_health_payload()
+        health_source_readiness = _source_registry_readiness_payload()
+        page_payload = {
+            **page_payload,
+            "sourceRegistryReadiness": health_source_readiness,
+            "semiconductorGraph": health_graph,
+            "platformStatus": _platform_status_payload(health_graph, health_source_readiness),
+        }
     return make_envelope(
-        payloads[page_id],
+        page_payload,
         metadata=metadata_for_result(result),
         request_id=request_id,
         warnings=_real_data_warnings(result),
@@ -656,6 +679,9 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
     )
     path_explainer_paths = _dashboard_paths(paths, result.edge_states, entity_by_id)
     prediction_payload = build_prediction_center_payload(result)
+    health_graph = _semiconductor_graph_health_payload()
+    health_source_readiness = _source_registry_readiness_payload()
+    health_platform_status = _platform_status_payload(health_graph, health_source_readiness)
 
     return {
         "global-risk-cockpit": {
@@ -788,11 +814,12 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
                 f"{last_updated} point-in-time guard enforced observed_time and ingest_time cutoffs",
             ],
             "sourceRegistry": _source_registry_payload(result),
+            "sourceRegistryReadiness": health_source_readiness,
             "entityResolution": _entity_resolution_payload(result),
             "evidenceLineage": _evidence_lineage_payload(result),
             "dataCatalog": _data_catalog_payload(result),
-            "semiconductorGraph": _semiconductor_graph_health_payload(),
-            "sourceRegistryReadiness": source_registry_readiness(),
+            "semiconductorGraph": health_graph,
+            "platformStatus": health_platform_status,
         },
     }
 
@@ -2566,6 +2593,11 @@ def create_app() -> Any:
         Header=Header,
         route_system_health_center=route_system_health_center,
     )
+    version_routes.register(
+        app,
+        Header=Header,
+        route_version=route_version,
+    )
     graph_routes.register(
         app,
         Header=Header,
@@ -2576,8 +2608,23 @@ def create_app() -> Any:
         route_graph_focus=route_graph_focus,
         route_graph_clusters=route_graph_clusters,
         route_graph_path_view=route_graph_path_view,
+        route_graph_timeline=route_graph_timeline,
+        route_graph_geo=route_graph_geo,
+        route_graph_matrix=route_graph_matrix,
+        route_graph_layers=route_graph_layers,
+        route_graph_evidence=route_graph_evidence,
+        route_graph_scenario_overlay=route_graph_scenario_overlay,
+        route_analytics_charts=route_analytics_charts,
+        route_analytics_tables=route_analytics_tables,
         route_semiconductor_graph_snapshot=route_semiconductor_graph_snapshot,
         route_semiconductor_graph_neighborhood=route_semiconductor_graph_neighborhood,
+    )
+    analytics_routes.register(
+        app,
+        Header=Header,
+        Query=Query,
+        route_analytics_export=route_analytics_export,
+        route_analytics_table=route_analytics_table,
     )
     risk_routes.register(
         app,
@@ -2609,6 +2656,7 @@ def create_app() -> Any:
         Body=Body,
         Header=Header,
         route_investigation_report=route_investigation_report,
+        route_report_detail=route_report_detail,
     )
     run_routes.register(
         app,

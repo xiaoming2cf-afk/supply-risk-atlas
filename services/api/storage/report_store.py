@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from sra_core.contracts.semiconductor import payload_hash
 from services.api.runtime.run_store import sanitized_run_copy
 from services.api.storage.sqlite_store import SQLiteStore
 
@@ -19,22 +20,28 @@ class ReportStore:
         if not report_id:
             return None
         versions = clean.get("versions") if isinstance(clean.get("versions"), dict) else {}
+        clean.setdefault("data_mode", clean.get("data_mode") or versions.get("data_mode") or "fixture")
+        clean.setdefault("graph_mode", clean.get("graph_mode") or versions.get("graph_mode") or "fixture")
+        clean_markdown = sanitized_run_copy(markdown) if markdown is not None else None
+        content_hash = payload_hash({"report": clean, "markdown": clean_markdown})
         self.store.execute(
             """
             INSERT OR REPLACE INTO report_record
-            (report_id, created_at, graph_version, source_manifest_id, format, report_json,
-             report_markdown, warnings_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (report_id, report_run_id, created_at, format, graph_version, source_manifest_id,
+             report_json, report_markdown, content_hash, warnings_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 report_id,
+                clean.get("report_run_id"),
                 str(clean.get("generated_at") or ""),
-                versions.get("graph_version"),
-                versions.get("source_manifest_id"),
-                str(clean.get("format") or ("markdown" if markdown else "json")),
-                json.dumps(clean, sort_keys=True),
-                markdown,
-                json.dumps(clean.get("warnings", []), sort_keys=True),
+                str(clean.get("format") or ("markdown" if clean_markdown else "json")),
+                versions.get("graph_version") or clean.get("graph_version"),
+                versions.get("source_manifest_id") or clean.get("source_manifest_id"),
+                _json(clean),
+                clean_markdown,
+                content_hash,
+                _json(clean.get("warnings", [])),
             ),
         )
         self.cleanup()
@@ -47,6 +54,7 @@ class ReportStore:
         report = sanitized_run_copy(json.loads(row["report_json"]))
         report["raw_payload_excluded"] = True
         report["private_diagnostics_excluded"] = True
+        report["content_hash"] = row["content_hash"]
         if row.get("report_markdown"):
             report["markdown"] = row["report_markdown"]
         return report
@@ -61,3 +69,10 @@ class ReportStore:
             """,
             (self.max_items,),
         )
+
+    def clear(self) -> None:
+        self.store.execute("DELETE FROM report_record")
+
+
+def _json(value: Any) -> str:
+    return json.dumps(sanitized_run_copy(value), sort_keys=True)

@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-import json
-import os
-from pathlib import Path
 from typing import Any
 
-from sra_core.contracts.semiconductor import SemiconductorRawRecord
-from sra_core.ingestion.connectors.base import ConnectorRequest, PublicEvidenceConnector
-from sra_core.ingestion.connectors.base_semiconductor import default_fixture_dir, source_terms_ref
-from sra_core.ingestion.connectors.errors import ConnectorPolicyError, ConnectorUnavailableError
+from sra_core.ingestion.connectors.base import ConnectorConfig, PublicEvidenceConnector
+from sra_core.ingestion.connectors.result import (
+    ConnectorFetchResult,
+    ConnectorRecord,
+    sanitize_external_text,
+)
 
 
-GDELT_SEMICONDUCTOR_QUERY_TERMS = (
+ALLOWED_QUERY_HINTS = {
     "semiconductor",
     "chip supply chain",
     "lithography",
@@ -19,58 +18,60 @@ GDELT_SEMICONDUCTOR_QUERY_TERMS = (
     "photoresist",
     "export control",
     "earthquake semiconductor region",
-)
+    "power outage semiconductor",
+    "hbm demand spike",
+    "port disruption chip supply chain",
+}
 
 
 class GdeltSemiconductorLiteConnector(PublicEvidenceConnector):
-    def __init__(self) -> None:
-        super().__init__("gdelt_semiconductor_events")
+    def __init__(self, *, config: ConnectorConfig | None = None) -> None:
+        super().__init__("gdelt_semiconductor_lite", config=config)
 
-    def load_fixture(self, fixture_dir: str | Path | None = None) -> dict[str, Any]:
-        base = Path(fixture_dir) if fixture_dir else default_fixture_dir()
-        payload = json.loads((base / "gdelt_semiconductor_lite_sample.json").read_text(encoding="utf-8"))
-        if payload.get("source_id") != self.source_id:
-            raise ConnectorPolicyError("GDELT semiconductor lite fixture source_id mismatch")
-        return payload
-
-    def replay_fixture(
-        self,
-        *,
-        fixture_dir: str | Path | None = None,
-        registry_path: str | Path | None = None,
-    ) -> list[SemiconductorRawRecord]:
-        fixture = self.load_fixture(fixture_dir)
-        terms_ref = source_terms_ref(self.source_id, registry_path)
-        return [
-            SemiconductorRawRecord.from_fixture(
-                source_id="gdelt_semiconductor_events",
-                row=row,
-                license_or_terms_ref=terms_ref,
+    def promote(self, records: tuple[ConnectorRecord, ...]) -> list[dict[str, Any]]:
+        promoted: list[dict[str, Any]] = []
+        for record in records:
+            metadata = record.metadata
+            promoted.append(
+                {
+                    "record_type": "risk_event",
+                    "event_id": f"risk_event:{record.source_record_id}",
+                    "event_time": sanitize_external_text(metadata.get("event_time")),
+                    "event_type": sanitize_external_text(metadata.get("event_type")),
+                    "location": metadata.get("location") or {},
+                    "affected_entities": [
+                        sanitize_external_text(entity)
+                        for entity in metadata.get("affected_entities", [])
+                    ],
+                    "evidence_url": record.provenance_url,
+                    "source_name": sanitize_external_text(metadata.get("source_name") or "GDELT"),
+                    "confidence": float(metadata.get("confidence", 0.55)),
+                    "tone_or_severity_proxy": metadata.get("tone_or_severity_proxy"),
+                    "payload_hash": record.payload_hash,
+                    "source_refs": [f"{record.source_id}:{record.source_record_id}"],
+                    "license_or_terms_ref": record.license_or_terms_ref,
+                    "evidence_text_summary": record.payload_summary,
+                }
             )
-            for row in fixture.get("records", [])
-        ]
+        return promoted
 
-    def promote_fixture(self, **kwargs: Any) -> dict[str, Any]:
-        records = self.replay_fixture(**kwargs)
-        events = [event for record in records for event in record.payload.get("events", [])]
-        entities = [node for record in records for node in record.payload.get("entities", [])]
-        edges = [edge for record in records for edge in record.payload.get("edges", [])]
-        return {
-            "source_id": self.source_id,
-            "query_terms": list(GDELT_SEMICONDUCTOR_QUERY_TERMS),
-            "raw_record_count": len(records),
-            "raw_records": [record.model_dump(mode="json") for record in records],
-            "silver_events": events,
-            "graph_nodes": entities,
-            "graph_edges": edges,
-            "warnings": ["gdelt_semiconductor_lite:fixture_mode", "raw_article_body_excluded"],
-        }
-
-    def fetch_live(self, request: ConnectorRequest):
-        if os.getenv("SUPPLY_RISK_GDELT_LIVE_ENABLED") != "1":
-            raise ConnectorUnavailableError("GDELT semiconductor lite live mode is disabled by default.")
-        raise ConnectorUnavailableError("GDELT semiconductor lite live fetch is not implemented in this phase.")
+    def _fetch_live(self, params: dict[str, Any]) -> ConnectorFetchResult:
+        query = sanitize_external_text(params.get("query", "")).lower()
+        if query and all(hint not in query for hint in ALLOWED_QUERY_HINTS):
+            return ConnectorFetchResult.unavailable(
+                source_id=self.source_id,
+                mode="live",
+                reason="query_scope_not_allowed",
+                warnings=("narrow_semiconductor_query_required",),
+            )
+        return ConnectorFetchResult.unavailable(
+            source_id=self.source_id,
+            mode="live",
+            reason="gdelt_semiconductor_lite_live_fetch_not_implemented",
+            warnings=("live_fetch_disabled_by_default", "fixture_mode_required_in_ci"),
+        )
 
 
-def replay_fixture(**kwargs: Any) -> list[SemiconductorRawRecord]:
-    return GdeltSemiconductorLiteConnector().replay_fixture(**kwargs)
+def replay_fixture(**kwargs: Any) -> ConnectorFetchResult:
+    config = ConnectorConfig(mode="fixture", **kwargs)
+    return GdeltSemiconductorLiteConnector(config=config).fetch()

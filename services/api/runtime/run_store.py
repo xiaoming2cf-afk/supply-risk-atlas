@@ -64,6 +64,8 @@ class RunStore:
             "created_at": data.get("timestamp") or data.get("generated_at") or _utc_now(),
             "graph_version": data.get("graph_version") or _nested_get(data, "versions", "graph_version"),
             "source_manifest_id": data.get("source_manifest_id") or _nested_get(data, "versions", "source_manifest_id"),
+            "data_mode": data.get("data_mode") or data.get("dataMode") or _nested_get(data, "versions", "data_mode") or "fixture",
+            "graph_mode": data.get("graph_mode") or data.get("graphMode") or _nested_get(data, "versions", "graph_mode") or "fixture",
             "status": payload.get("status", "success"),
             "warnings": sanitized_run_copy(payload.get("warnings") or data.get("warnings") or []),
             "summary": _summary_for_run(data),

@@ -1,9 +1,37 @@
 # SEC EDGAR Lite Connector
 
-The SEC EDGAR lite connector is a fixture-first proof of the public evidence ingestion boundary. It extracts only bounded filing metadata and summarized risk-factor signals for explicitly requested company identifiers.
+`SecEdgarLiteConnector` is a fixture-first connector for public SEC EDGAR
+company disclosure metadata.
 
-Live mode is disabled by default. A future live mode must be explicitly triggered, use a SEC-compliant `SUPPLY_RISK_SEC_EDGAR_USER_AGENT`, apply timeouts and rate limits, and avoid bulk filing downloads. The connector must not fetch during import or API startup.
+## Current Mode
 
-Stored outputs are limited to source URLs, provenance URLs, retrieval timestamps, payload hashes, terms references, risk-factor summaries, supply-chain keywords, confidence scores, silver disclosure events, and `evidence_for` graph edges. Full filing bodies are not stored or returned through API/UI paths.
+- Fixture mode is implemented and tested.
+- Live mode is disabled by default.
+- Live mode returns controlled unavailable unless `SEC_USER_AGENT` is set and
+  an explicit CIK or ticker request is provided. Bulk downloads are not
+  implemented.
 
-The platform remains fixture/proxy/promoted-public-evidence based and is not production ready.
+## Extracted Fields
+
+- company identifier
+- filing date
+- filing type
+- disclosure type
+- risk-factor summary
+- supply-chain keywords
+- semiconductor keyword match
+- source URL
+- confidence
+- payload hash
+- license/terms ref
+
+The connector does not store or expose raw filing bodies.
+
+## Promotion
+
+Fixture records promote to `company_disclosure_event` summaries with source
+refs, provenance URL, payload hash, confidence, and evidence summary.
+
+This connector is for research evidence context only. It does not make
+production-readiness or investment/financial-loss claims.
+

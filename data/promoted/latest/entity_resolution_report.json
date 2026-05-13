@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "unresolved_count": 0,
+  "warnings": [
+    "crosswalks_are_deterministic_starter_maps"
+  ]
+}

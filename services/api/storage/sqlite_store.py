@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from pathlib import Path
 import os
+from pathlib import Path
 import sqlite3
 from typing import Any, Iterator
 
@@ -64,4 +64,3 @@ class SQLiteStore:
         with self.connect() as connection:
             rows = connection.execute(sql, params).fetchall()
         return [dict(row) for row in rows]
-

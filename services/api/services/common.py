@@ -23,6 +23,8 @@ def semiconductor_metadata(
         else "semirisk_fixture_manifest_unavailable"
     )
     as_of_time = snapshot.as_of_time if snapshot is not None else semiconductor_default_time()
+    data_mode = getattr(snapshot, "data_mode", "fixture") if snapshot is not None else "fixture"
+    metadata_data_mode = data_mode if data_mode in {"real", "synthetic", "mock"} else "real"
     return VersionMetadata(
         graph_version=graph_version,
         feature_version=feature_version,
@@ -31,7 +33,7 @@ def semiconductor_metadata(
         as_of_time=as_of_time,
         audit_ref="semirisk_fixture_graph_v0.1",
         lineage_ref=source_manifest_id,
-        data_mode="real",
+        data_mode=metadata_data_mode,
         freshness_status="partial",
         source_count=4,
         source_manifest_ref=source_manifest_id,
@@ -39,6 +41,25 @@ def semiconductor_metadata(
 
 
 def semiconductor_fixture_warnings(snapshot: Any) -> list[str]:
+    graph_mode = getattr(snapshot, "graph_mode", "fixture")
+    data_mode = getattr(snapshot, "data_mode", "fixture")
+    if graph_mode == "promoted":
+        warnings = [
+            "promoted_public_evidence:not_production_ready",
+            (
+                "promoted_public_evidence_metadata: "
+                f"graphVersion={snapshot.graph_version}; "
+                f"sourceManifestId={snapshot.source_manifest_id}; "
+                f"nodeCount={snapshot.node_count}; "
+                f"edgeCount={snapshot.edge_count}; "
+                f"dataMode={data_mode}; "
+                f"graphMode={graph_mode}; "
+                "liveFetch=false"
+            ),
+        ]
+        if snapshot.missing_provenance_count:
+            warnings.append(f"missing_graph_provenance:{snapshot.missing_provenance_count}")
+        return warnings
     warnings = [
         "fixture_graph:not_production_ready",
         (
@@ -71,4 +92,3 @@ def source_ref_ids(refs: Any) -> list[str]:
         if source_id:
             ids.append(str(source_id))
     return sorted(set(ids))
-

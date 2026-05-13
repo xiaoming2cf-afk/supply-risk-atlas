@@ -1,9 +1,36 @@
 # GDELT Semiconductor Lite Connector
 
-The GDELT semiconductor lite connector is a fixture-first proof of narrow public event ingestion for semiconductor supply-risk evidence. Query scope is intentionally bounded to semiconductor, chip supply chain, lithography, wafer fab, photoresist, export control, and earthquake plus semiconductor-region signals.
+`GdeltSemiconductorLiteConnector` is a fixture-first connector for bounded
+semiconductor-related public event metadata.
 
-Live mode is disabled by default and must be explicitly enabled in a future phase. The connector must not fetch during import or API startup, must use bounded HTTP requests with timeouts and rate limits, and must not perform uncontrolled news scraping.
+## Current Mode
 
-Stored outputs are limited to source URLs, event metadata, location, affected entity identifiers, payload hashes, provenance URLs, terms references, confidence scores, silver risk events, `impacted_by` edges, and `evidence_for` edges. Article text is not stored or returned through API/UI paths.
+- Fixture mode is implemented and tested.
+- Live mode is disabled by default.
+- Live mode returns controlled unavailable and rejects broad queries outside the
+  semiconductor event scope.
 
-The platform remains fixture/proxy/promoted-public-evidence based and is not production ready.
+Allowed query hints for future live work include semiconductor, chip supply
+chain, lithography, wafer fab, photoresist, export control, earthquake near
+semiconductor regions, power outage, HBM demand spike, and port disruption.
+
+## Extracted Fields
+
+- event time
+- event type
+- location
+- affected entities
+- evidence URL
+- source name
+- confidence
+- tone/severity proxy where available
+- payload hash
+- license/terms ref
+
+The connector does not perform uncontrolled news scraping and does not store or
+expose article bodies.
+
+## Promotion
+
+Fixture records promote to `risk_event` summaries with affected entities,
+source refs, provenance URL, payload hash, confidence, and evidence summary.

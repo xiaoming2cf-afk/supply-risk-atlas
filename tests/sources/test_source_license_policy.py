@@ -1,20 +1,39 @@
 from __future__ import annotations
 
-from sra_core.sources.license_policy import license_policy_summary, license_terms_status
-from sra_core.sources.registry import load_semiconductor_source_registry
+from sra_core.sources import license_policy_for_source, load_semiconductor_source_registry
 
 
-def test_license_policy_reports_terms_and_redistribution_limits() -> None:
+def test_license_policy_allows_summary_lineage_but_not_raw_payload_by_default() -> None:
+    source = load_semiconductor_source_registry().get("sec_edgar_lite")
+    policy = license_policy_for_source(source)
+
+    assert policy["api_visible_summary_allowed"] is True
+    assert policy["raw_payload_storage_allowed"] is False
+    assert policy["attribution_required"] is True
+    assert "summaries and lineage" in policy["manual_review_note"].lower()
+
+
+def test_terms_review_sources_are_blocked_from_live_use() -> None:
+    source = load_semiconductor_source_registry().get("ourairports_lite")
+    policy = license_policy_for_source(source)
+
+    assert policy["terms_review_required"] is True
+    assert policy["raw_payload_storage_allowed"] is False
+    assert policy["redistribution_allowed"] is False
+
+
+def test_paid_and_proprietary_sources_are_registry_only() -> None:
     registry = load_semiconductor_source_registry()
-    source = next(item for item in registry["sources"] if item["source_id"] == "sec_edgar")
-    policy = license_policy_summary(source)
-
-    assert policy["source_id"] == "sec_edgar"
-    assert policy["terms_url"].startswith("https://www.sec.gov/")
-    assert policy["status"] in {"terms_registered", "raw_redistribution_disallowed"}
-    assert "raw filing" in str(policy["redistribution_limits"]).lower()
-
-
-def test_license_terms_missing_is_controlled_status() -> None:
-    assert license_terms_status({"terms_url": "", "license_or_terms_summary": ""}) == "terms_missing"
+    for source_id in [
+        "paid_semi_market_data",
+        "proprietary_factset_supply_chain",
+        "bloomberg_supply_chain",
+        "wind_or_choice_private_data",
+        "company_private_order_data",
+    ]:
+        policy = license_policy_for_source(registry.get(source_id))
+        assert policy["terms_review_required"] is True
+        assert policy["raw_payload_storage_allowed"] is False
+        assert policy["redistribution_allowed"] is False
+        assert "registry-only" in policy["manual_review_note"]
 

@@ -11,6 +11,7 @@ def test_report_store_persists_sanitized_report(tmp_path) -> None:
     stored = store.put_report(
         {
             "report_id": "report_test",
+            "report_run_id": "run_test",
             "report_version": "report_v1",
             "generated_at": "2026-05-01T00:00:00Z",
             "format": "json",
@@ -28,9 +29,13 @@ def test_report_store_persists_sanitized_report(tmp_path) -> None:
 
     assert loaded is not None
     assert loaded["report_id"] == "report_test"
+    assert loaded["report_run_id"] == "run_test"
     assert loaded["versions"]["source_manifest_id"] == "manifest_test"
     assert loaded["raw_payload_excluded"] is True
     assert loaded["private_diagnostics_excluded"] is True
+    assert loaded["data_mode"] == "fixture"
+    assert loaded["graph_mode"] == "fixture"
+    assert loaded["content_hash"]
     assert loaded["markdown"] == "# Sanitized report"
     assert "must-not-store" not in rendered
     assert '"raw_payload":' not in rendered

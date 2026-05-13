@@ -1,83 +1,76 @@
 from __future__ import annotations
 
-import json
 import os
-from pathlib import Path
 from typing import Any
 
-from sra_core.contracts.semiconductor import SemiconductorRawRecord
-from sra_core.ingestion.connectors.base import ConnectorRequest, PublicEvidenceConnector
-from sra_core.ingestion.connectors.base_semiconductor import default_fixture_dir, source_terms_ref
-from sra_core.ingestion.connectors.errors import ConnectorPolicyError, ConnectorUnavailableError
-
-
-SEC_EDGAR_LITE_REQUIRED_FIELDS = {
-    "company_identifier",
-    "filing_date",
-    "disclosure_type",
-    "risk_factor_summary",
-    "supply_chain_keywords",
-    "source_url",
-    "confidence",
-}
+from sra_core.ingestion.connectors.base import ConnectorConfig, PublicEvidenceConnector
+from sra_core.ingestion.connectors.result import (
+    ConnectorFetchResult,
+    ConnectorRecord,
+    sanitize_external_text,
+)
 
 
 class SecEdgarLiteConnector(PublicEvidenceConnector):
-    def __init__(self) -> None:
-        super().__init__("sec_edgar")
+    def __init__(self, *, config: ConnectorConfig | None = None) -> None:
+        super().__init__("sec_edgar_lite", config=config)
 
-    def load_fixture(self, fixture_dir: str | Path | None = None) -> dict[str, Any]:
-        base = Path(fixture_dir) if fixture_dir else default_fixture_dir()
-        payload = json.loads((base / "sec_edgar_lite_sample.json").read_text(encoding="utf-8"))
-        if payload.get("source_id") != self.source_id:
-            raise ConnectorPolicyError("SEC EDGAR lite fixture source_id mismatch")
-        return payload
-
-    def replay_fixture(
-        self,
-        *,
-        fixture_dir: str | Path | None = None,
-        registry_path: str | Path | None = None,
-    ) -> list[SemiconductorRawRecord]:
-        fixture = self.load_fixture(fixture_dir)
-        terms_ref = source_terms_ref(self.source_id, registry_path)
-        return [
-            SemiconductorRawRecord.from_fixture(
-                source_id="sec_edgar",
-                row=row,
-                license_or_terms_ref=terms_ref,
-            )
-            for row in fixture.get("records", [])
-        ]
-
-    def promote_fixture(self, **kwargs: Any) -> dict[str, Any]:
-        records = self.replay_fixture(**kwargs)
-        events = [event for record in records for event in record.payload.get("events", [])]
-        entities = [node for record in records for node in record.payload.get("entities", [])]
-        edges = [edge for record in records for edge in record.payload.get("edges", [])]
+    def promote(self, records: tuple[ConnectorRecord, ...]) -> list[dict[str, Any]]:
+        promoted: list[dict[str, Any]] = []
         for record in records:
-            missing = SEC_EDGAR_LITE_REQUIRED_FIELDS - set(record.payload)
-            if missing:
-                raise ConnectorPolicyError(
-                    f"SEC EDGAR lite fixture record missing required fields: {sorted(missing)}"
-                )
-        return {
-            "source_id": self.source_id,
-            "raw_record_count": len(records),
-            "raw_records": [record.model_dump(mode="json") for record in records],
-            "silver_events": events,
-            "graph_nodes": entities,
-            "graph_edges": edges,
-            "warnings": ["sec_edgar_lite:fixture_mode", "raw_filing_body_excluded"],
-        }
+            metadata = record.metadata
+            promoted.append(
+                {
+                    "record_type": "company_disclosure_event",
+                    "event_id": f"company_disclosure:{record.source_record_id}",
+                    "company_identifier": sanitize_external_text(
+                        metadata.get("company_identifier") or "unknown"
+                    ),
+                    "filing_date": sanitize_external_text(metadata.get("filing_date")),
+                    "filing_type": sanitize_external_text(metadata.get("filing_type")),
+                    "disclosure_type": sanitize_external_text(metadata.get("disclosure_type")),
+                    "risk_factor_summary": record.payload_summary,
+                    "supply_chain_keywords": [
+                        sanitize_external_text(keyword)
+                        for keyword in metadata.get("supply_chain_keywords", [])
+                    ],
+                    "semiconductor_keyword_match": bool(
+                        metadata.get("semiconductor_keyword_match", False)
+                    ),
+                    "source_url": record.provenance_url,
+                    "confidence": float(metadata.get("confidence", 0.6)),
+                    "payload_hash": record.payload_hash,
+                    "source_refs": [f"{record.source_id}:{record.source_record_id}"],
+                    "license_or_terms_ref": record.license_or_terms_ref,
+                    "evidence_text_summary": record.payload_summary,
+                }
+            )
+        return promoted
 
-    def fetch_live(self, request: ConnectorRequest):
-        if os.getenv("SUPPLY_RISK_SEC_EDGAR_LIVE_ENABLED") != "1":
-            raise ConnectorUnavailableError("SEC EDGAR lite live mode is disabled by default.")
-        if not os.getenv("SUPPLY_RISK_SEC_EDGAR_USER_AGENT"):
-            raise ConnectorPolicyError("SEC EDGAR live mode requires SUPPLY_RISK_SEC_EDGAR_USER_AGENT.")
-        raise ConnectorUnavailableError("SEC EDGAR lite live fetch is not implemented in this phase.")
+    def _fetch_live(self, params: dict[str, Any]) -> ConnectorFetchResult:
+        if not os.environ.get("SEC_USER_AGENT"):
+            return ConnectorFetchResult.unavailable(
+                source_id=self.source_id,
+                mode="live",
+                reason="sec_user_agent_required_for_live_edgar_fetch",
+                warnings=("live_fetch_disabled_by_default",),
+            )
+        if not (params.get("cik") or params.get("ticker")):
+            return ConnectorFetchResult.unavailable(
+                source_id=self.source_id,
+                mode="live",
+                reason="explicit_cik_or_ticker_required",
+                warnings=("no_bulk_edgar_downloads",),
+            )
+        return ConnectorFetchResult.unavailable(
+            source_id=self.source_id,
+            mode="live",
+            reason="sec_edgar_lite_live_fetch_not_implemented",
+            warnings=("fixture_mode_required_in_ci",),
+        )
 
 
-def replay_fixture(**kwargs: Any) -> list[SemiconductorRawRecord]:
-    return SecEdgarLiteConnector().replay_fixture(**kwargs)
+def replay_fixture(**kwargs: Any) -> ConnectorFetchResult:
+    config = ConnectorConfig(mode="fixture", **kwargs)
+    return SecEdgarLiteConnector(config=config).fetch()
+
