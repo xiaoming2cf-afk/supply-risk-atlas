@@ -123,13 +123,14 @@
   - `npm.cmd run smoke:web -- --mode=deployed` exited best-effort status `0` but did not complete the full smoke path because headless deployed Web initially showed `Public data unavailable` while waiting for System Health evidence.
   - Root cause observed from live API/Web checks: API was healthy, but deployed browser smoke is sensitive to Render cold start and dashboard API request timing.
 - Follow-up patch:
-  - Increased the frontend dashboard API client default request timeout from `12000` ms to `30000` ms to tolerate Render cold-start latency without changing API routes, source contracts, graph semantics, or security posture.
+  - Increased the frontend dashboard API client default request timeout from `12000` ms to `60000` ms to tolerate Render cold-start latency and slow free-instance risk endpoints without changing API routes, source contracts, graph semantics, or security posture.
 - Validation for follow-up patch:
   - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
   - `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py -q` -> PASS (`14 passed`)
   - `npm.cmd --workspace apps/web run typecheck` -> PASS
   - `npm.cmd --workspace apps/web run build` -> PASS
   - `npm.cmd run smoke:web` -> PASS (`51 checks`)
+  - Deployed risk endpoint spot check before the final timeout adjustment: `/risk/entities/company:tsmc` returned success in about 17 seconds; `/risk/portfolio?node_type=company&limit=20` returned success in about 16 seconds.
 - Limitations:
   - The platform remains fixture/proxy/promoted-public-evidence research infrastructure and is not production-ready.
   - Web build commit is not directly exposed in static HTML; deployed version verification therefore relies on API `/version`, Render deploy status, and deployed smoke behavior.
