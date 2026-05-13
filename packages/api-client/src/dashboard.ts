@@ -156,7 +156,11 @@ async function requestJson<T>(
       return createUnavailableResult(endpoint, "partial", "API response did not include a metadata envelope.", undefined, response.status);
     } catch (error) {
       lastError = error;
-      if (error instanceof DashboardApiHttpError || attempt === MAX_NETWORK_ATTEMPTS) {
+      const isRetryableHttpError =
+        error instanceof DashboardApiHttpError &&
+        error.status >= 500 &&
+        error.status < 600;
+      if ((!isRetryableHttpError && error instanceof DashboardApiHttpError) || attempt === MAX_NETWORK_ATTEMPTS) {
         break;
       }
       await sleep(NETWORK_RETRY_BACKOFF_MS * attempt);
