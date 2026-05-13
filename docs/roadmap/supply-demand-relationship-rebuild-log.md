@@ -171,3 +171,17 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: docs use `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国`; repository geography guard passed.
 - Limitations: documentation describes fixture/proxy/promoted-public-evidence usage only and adds no production-readiness claim or live ingestion.
 - Next gate decision: proceed to final acceptance tests.
+## Final Acceptance Evidence
+
+- Acceptance status: PASS locally
+- Current HEAD before final evidence commit: `d3843b1`
+- Commands run:
+  - `python -m pytest tests/quality -q` -> PASS (`12 passed`)
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` -> PASS
+  - `python -m pytest -q` -> PASS
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `npm.cmd run smoke:web` -> PASS (`43 checks`)
+- Terminology normalization evidence: final quality and subsystem suites passed; graph, API, chart, table, report, connector, and promoted artifact checks continue to enforce `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国`.
+- Relationship evidence: supply, demand, production dependency, and evidence context relationship classes remain distinct; evidence context links are excluded from propagation and are labeled as non-dependency inspection links.
+- Limitations: all data remains fixture/proxy/promoted-public-evidence research infrastructure; no live connector fetch was enabled; no production-readiness, financial-loss, or audited capacity claim is introduced.
