@@ -160,3 +160,14 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: geography quality guard and browser smoke passed; charts use existing sanitized metadata and controlled empty states.
 - Limitations: charts are evidence-bound summaries/proxy metrics; no production supply capacity, demand forecast, or financial loss claims are introduced.
 - Next gate decision: proceed to documentation and glossary.
+## Gate 13 - Documentation And Glossary
+
+- Gate status: PASS
+- Changed files: `docs/domain/semiconductor-supply-chain-glossary.md`, `docs/domain/supply-demand-supplier-relationship-guide.md`, `docs/data/supply-demand-data-requirements.md`, `docs/model/supply-demand-risk-usage.md`.
+- Commands run:
+  - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
+  - `python -m pytest tests/contract/test_semiconductor_relationship_semantics.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`8 passed`)
+- Evidence: docs define supply relationships, demand relationships, production dependencies, evidence context links, supplier/buyer/supplied-item terms, critical inputs, bottlenecks, substitutability, HHI, demand pressure, supply capacity proxy, and shortage proxy.
+- Terminology normalization evidence: docs use `region:china_taiwan` / `中国台湾` and parent `country:CN` / `中国`; repository geography guard passed.
+- Limitations: documentation describes fixture/proxy/promoted-public-evidence usage only and adds no production-readiness claim or live ingestion.
+- Next gate decision: proceed to final acceptance tests.
