@@ -77,3 +77,12 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Evidence: required public, review-required, and deferred sources are registry-visible; live fetch defaults remain disabled; geography normalization policy is present on API-visible registry rows.
 - Limitations: registry entries are source governance metadata, not executed live ingestion.
 - Next gate decision: proceed to data contract verification.
+## Gate 6 - Data Contracts For Supply/Demand Source Types
+
+- Gate status: PASS
+- Changed files: supply, demand, and production dependency graph schemas plus expanded contract tests.
+- Commands run:
+  - `python -m pytest tests/contract/test_expanded_source_contracts.py tests/contract/test_graph_evidence_context_contract.py tests/contract/test_semiconductor_node_source_map.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`13 passed`)
+- Evidence: raw contracts remain summary/hash/provenance only; graph contracts require provenance refs and relationship semantics; evidence-context remains separate.
+- Limitations: schemas define contracts only; connector and graph construction integration follows.
+- Next gate decision: proceed to connector framework and fixture connector verification.

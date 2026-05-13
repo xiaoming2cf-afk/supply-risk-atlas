@@ -46,6 +46,9 @@ REQUIRED_GRAPH_SCHEMAS = [
     "hazard_exposure_edge.schema.json",
     "mineral_dependency_edge.schema.json",
     "downstream_demand_edge.schema.json",
+    "supply_relationship_edge.schema.json",
+    "demand_relationship_edge.schema.json",
+    "production_dependency_edge.schema.json",
 ]
 
 RAW_REQUIRED_FIELDS = {
