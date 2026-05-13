@@ -126,6 +126,7 @@
   - Increased the frontend dashboard API client default request timeout from `12000` ms to `60000` ms to tolerate Render cold-start latency and slow free-instance risk endpoints without changing API routes, source contracts, graph semantics, or security posture.
   - Added a shared in-process `lru_cache(maxsize=1)` around the deterministic SemiRisk fixture snapshot used by API service endpoints, avoiding repeated snapshot rebuilds for risk, forward scenario, reverse stress, optimizer, report, and run-history routes.
   - Tested the same-origin `/api/v1` Next proxy on Render; it remained unavailable with `502` responses in this environment, so deployed Web keeps using the public API URL configured by `NEXT_PUBLIC_SUPPLY_RISK_API_URL`.
+  - Restored the deployed hostname fallback to `https://supply-risk-atlas-api.onrender.com/api/v1` because the Render Web build did not expose the configured public API URL and otherwise fell back to the unavailable proxy.
   - Added bounded dashboard API network retries (`3` attempts with short backoff) to tolerate intermittent deployed browser fetch resets while preserving explicit degraded envelopes when retries fail.
 - Validation for follow-up patch:
   - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)

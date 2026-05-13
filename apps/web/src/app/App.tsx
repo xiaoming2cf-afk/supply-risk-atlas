@@ -67,6 +67,12 @@ type DashboardDataState = Partial<SupplyRiskDashboardData>;
 
 function resolveApiBaseUrl(hostname: string | null) {
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
+  if (
+    hostname === "supply-risk-atlas-web.onrender.com" &&
+    (!configured || configured === "/api/v1")
+  ) {
+    return "https://supply-risk-atlas-api.onrender.com/api/v1";
+  }
   if (configured) {
     return configured;
   }
