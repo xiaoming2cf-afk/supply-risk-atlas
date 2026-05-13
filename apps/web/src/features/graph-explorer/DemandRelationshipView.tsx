@@ -1,4 +1,5 @@
 import type { GraphRelationshipData } from "@supply-risk/shared-types";
+import { DownstreamDemandPressureChart } from "../common/charts";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function DemandRelationshipView({
@@ -24,6 +25,10 @@ export function DemandRelationshipView({
       <div className="section-kicker">Demand Relationship view</div>
       <p className="inspector-note">Demand rows show downstream source, product grade, and proxy type; demand edges are not supplier edges.</p>
       <RelationshipMetadata data={data} />
+      <DownstreamDemandPressureChart
+        data={demandChartData(rows)}
+        metadata={metadataForRelationshipData(data)}
+      />
       <table className="graph-evidence-table">
         <thead>
           <tr>
@@ -60,4 +65,23 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
       <span>{(data.warnings ?? []).slice(0, 1).join(", ")}</span>
     </div>
   );
+}
+
+function demandChartData(rows: Array<Record<string, unknown>>) {
+  const counts = new Map<string, number>();
+  rows.forEach((row) => {
+    const key = String(row.product_grade_id ?? "product_grade");
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  });
+  return [...counts.entries()].slice(0, 6).map(([label, value]) => ({ label, value }));
+}
+
+function metadataForRelationshipData(data?: GraphRelationshipData) {
+  return data
+    ? {
+        graphVersion: data.graph_version,
+        sourceManifestId: data.source_manifest_id,
+        warnings: data.warnings,
+      }
+    : undefined;
 }

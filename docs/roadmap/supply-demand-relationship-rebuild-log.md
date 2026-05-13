@@ -146,3 +146,17 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: export sanitization and geography quality guards passed; no raw payload keys are exposed.
 - Limitations: table rows are fixture/promoted public-evidence summaries and proxy counts, not audited production supply-demand records.
 - Next gate decision: proceed to supply-demand-specific charts and page integration.
+## Gate 12 - Supply-Demand And Supplier Relationship Charts
+
+- Gate status: PASS
+- Changed files: supply-demand chart wrappers under `apps/web/src/features/common/charts/`, `apps/web/src/features/common/charts/index.ts`, `apps/web/src/features/graph-explorer/*RelationshipView.tsx`, `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`, `apps/web/src/features/common/legacyDashboard.tsx`, `scripts/browser-smoke.mjs`.
+- Commands run:
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`4 passed`)
+  - `npm.cmd --workspace apps/web run build` -> PASS
+  - `python -m pytest tests/api/test_supply_demand_analytics_tables.py tests/api/test_supply_demand_graph_endpoints.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`18 passed`)
+  - `npm.cmd run smoke:web` -> PASS (`43 checks`)
+- Evidence: added `SupplyDemandBalanceChart`, `SupplierConcentrationHHIChart`, `CriticalInputBottleneckChart`, `DownstreamDemandPressureChart`, `ProductToProcessDependencyChart`, `PolicyRestrictionImpactChart`, `HazardExposureByLayerChart`, and `SupplierCountryConcentrationChart`; smoke checks supply-demand chart cards on System Health, Entity Risk, Shock Simulator, Reverse Stress, Optimizer, and Graph Explorer relationship modes.
+- Terminology normalization evidence: geography quality guard and browser smoke passed; charts use existing sanitized metadata and controlled empty states.
+- Limitations: charts are evidence-bound summaries/proxy metrics; no production supply capacity, demand forecast, or financial loss claims are introduced.
+- Next gate decision: proceed to documentation and glossary.

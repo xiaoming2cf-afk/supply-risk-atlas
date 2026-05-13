@@ -73,16 +73,24 @@ import { useI18n } from "../../app/i18n";
 import { EvidenceAuditPanel } from "../evidence-board/EvidenceAuditPanel";
 import {
   CVaRTailChart,
+  CriticalInputBottleneckChart,
   DependencyHeatmap,
+  DownstreamDemandPressureChart,
   FunctionalityCurveChart,
   GraphQualityChart,
+  HazardExposureByLayerChart,
   HHIConcentrationChart,
   MonteCarloECDF,
   MonteCarloHistogram,
   OptimizerBeforeAfterChart,
+  PolicyRestrictionImpactChart,
+  ProductToProcessDependencyChart,
   RiskComponentStackedBar,
   RiskRankingBarChart,
   SourceFreshnessChart,
+  SupplierConcentrationHHIChart,
+  SupplierCountryConcentrationChart,
+  SupplyDemandBalanceChart,
 } from "./charts";
 import {
   CalibrationStatusBadge,
@@ -2101,6 +2109,21 @@ export function CompanyRisk360({
                   ]}
                   metadata={chartMetadataForRisk(risk)}
                 />
+                <SupplierConcentrationHHIChart
+                  data={[
+                    { label: "source_concentration", value: Number(sourceConcentration?.["hhi"] ?? 0) },
+                    { label: "country_concentration", value: Number(countryConcentration?.["hhi"] ?? 0) },
+                  ]}
+                  metadata={chartMetadataForRisk(risk)}
+                />
+                <DownstreamDemandPressureChart
+                  data={relationshipEvidenceChartData(risk, "demand")}
+                  metadata={chartMetadataForRisk(risk)}
+                />
+                <ProductToProcessDependencyChart
+                  data={relationshipEvidenceChartData(risk, "dependency")}
+                  metadata={chartMetadataForRisk(risk)}
+                />
               </div>
               <EvidenceRefsTable
                 rows={risk.evidence_refs.map((evidence) => ({
@@ -2679,6 +2702,21 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               metadata={result ? chartMetadataForScenario(result) : undefined}
               emptyLabel="Run a forward scenario to populate the functionality curve."
             />
+            <DownstreamDemandPressureChart
+              data={result ? [{ label: "demand_fulfillment_loss", value: Number(result.demand_fulfillment_loss ?? 0) }] : []}
+              metadata={result ? chartMetadataForScenario(result) : undefined}
+              emptyLabel="Run a forward scenario to populate demand shock evidence."
+            />
+            <CriticalInputBottleneckChart
+              data={result ? [{ label: "capacity_functionality_loss", value: Number(result.capacity_functionality_loss ?? 0) }] : []}
+              metadata={result ? chartMetadataForScenario(result) : undefined}
+              emptyLabel="Run a forward scenario to populate supply disruption evidence."
+            />
+            <ProductToProcessDependencyChart
+              data={result ? [{ label: "graph_weighted_loss", value: Number(result.graph_weighted_loss ?? 0) }] : []}
+              metadata={result ? chartMetadataForScenario(result) : undefined}
+              emptyLabel="Run a forward scenario to populate production dependency propagation evidence."
+            />
           </div>
           <ScenarioRunTable
             rows={runHistory.forwardRuns.map((run) => ({
@@ -3019,6 +3057,15 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
               metadata={result ? chartMetadataForReverse(result) : undefined}
               emptyLabel="Run reverse stress to populate plausibility cost."
             />
+            <CriticalInputBottleneckChart
+              title="Critical input shock set explanation"
+              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet) => ({
+                label: shockSet.shock_set_id,
+                value: shockSet.shocks.length,
+              })) : []}
+              metadata={result ? chartMetadataForReverse(result) : undefined}
+              emptyLabel="Run reverse stress to populate critical input shock sets."
+            />
           </div>
           <ReverseStressResultTable
             title="Ranked shock sets table"
@@ -3331,6 +3378,12 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
               })) : []}
               metadata={result ? chartMetadataForOptimization(result) : undefined}
               emptyLabel="Run the optimizer to populate action effects."
+            />
+            <SupplyDemandBalanceChart
+              title="Intervention target category"
+              data={result ? interventionCategoryChartData(result) : []}
+              metadata={result ? chartMetadataForOptimization(result) : undefined}
+              emptyLabel="Run the optimizer to populate intervention target categories."
             />
           </div>
           <OptimizerActionTable
@@ -3938,6 +3991,50 @@ function chartMetadataForOptimization(result: InterventionOptimizationResult) {
     sourceManifestId: result.source_manifest_id,
     warnings: result.warnings,
   };
+}
+
+function relationshipEvidenceChartData(risk: SemiriskEntityRiskScore, relationship: "demand" | "dependency") {
+  const counts = new Map<string, number>();
+  for (const evidence of risk.evidence_refs) {
+    const edgeType = evidence.edge_type.toLowerCase();
+    const isDemand = edgeType.includes("demand");
+    const isDependency =
+      edgeType.includes("requires") ||
+      edgeType.includes("depends") ||
+      edgeType.includes("dependency") ||
+      edgeType.includes("uses_");
+    if ((relationship === "demand" && !isDemand) || (relationship === "dependency" && !isDependency)) {
+      continue;
+    }
+    counts.set(evidence.edge_type, (counts.get(evidence.edge_type) ?? 0) + 1);
+  }
+  return [...counts.entries()].slice(0, 6).map(([label, value]) => ({ label, value }));
+}
+
+function interventionCategoryChartData(result: InterventionOptimizationResult) {
+  const counts = new Map<string, number>();
+  for (const action of result.recommended_actions) {
+    const category = interventionCategory(action.intervention_type);
+    counts.set(category, (counts.get(category) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([label, value]) => ({ label, value }));
+}
+
+function interventionCategory(interventionType: string) {
+  if (interventionType.includes("supplier")) return "supplier diversification";
+  if (interventionType.includes("inventory")) return "critical input backup";
+  if (interventionType.includes("logistics") || interventionType.includes("route")) return "logistics redundancy";
+  if (interventionType.includes("policy") || interventionType.includes("compliance")) return "compliance monitoring";
+  return "demand smoothing";
+}
+
+function countRowsByKey(rows: Array<Record<string, unknown>>, key: string) {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const label = String(row[key] ?? "unavailable");
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  return [...counts.entries()].slice(0, 8).map(([label, value]) => ({ label, value }));
 }
 
 function lossDistributionChartData(result: ForwardScenarioResult) {
@@ -4787,6 +4884,16 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         <div className="driver-grid" style={{ marginTop: 16 }}>
           <SourceFreshnessChart data={sourceFreshnessData} metadata={chartMetadata} />
           <GraphQualityChart data={graphQualityData} metadata={chartMetadata} />
+          <SupplierCountryConcentrationChart
+            title="Source coverage by tier"
+            data={countRowsByKey(sourceCatalogRows, "source_tier")}
+            metadata={chartMetadata}
+          />
+          <HazardExposureByLayerChart
+            title="Chain layer coverage"
+            data={countRowsByKey(sourceCatalogRows, "status")}
+            metadata={chartMetadata}
+          />
         </div>
         <div className="driver-grid" style={{ marginTop: 16 }}>
           <SourceFreshnessCard status={freshnessStatus} />

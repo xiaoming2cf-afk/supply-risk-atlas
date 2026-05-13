@@ -1,4 +1,5 @@
 import type { GraphRelationshipData } from "@supply-risk/shared-types";
+import { SupplierConcentrationHHIChart } from "../common/charts";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function SupplyRelationshipView({
@@ -25,6 +26,13 @@ export function SupplyRelationshipView({
       <div className="section-kicker">Supply Relationship view</div>
       <p className="inspector-note">Supplier rows are table-first and show supplied item, source refs, and confidence without rendering a dense graph.</p>
       <RelationshipMetadata data={data} />
+      <SupplierConcentrationHHIChart
+        data={(data?.supplier_concentration ?? []).slice(0, 6).map((row) => ({
+          label: String(row.supplier_id ?? "supplier"),
+          value: Number(row.hhi_component ?? row.share ?? 0),
+        }))}
+        metadata={metadataForRelationshipData(data)}
+      />
       <table className="graph-evidence-table">
         <thead>
           <tr>
@@ -67,4 +75,14 @@ function formatPercent(value: unknown) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "n/a";
   return `${Math.round(numeric * 100)}%`;
+}
+
+function metadataForRelationshipData(data?: GraphRelationshipData) {
+  return data
+    ? {
+        graphVersion: data.graph_version,
+        sourceManifestId: data.source_manifest_id,
+        warnings: data.warnings,
+      }
+    : undefined;
 }

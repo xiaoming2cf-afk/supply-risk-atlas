@@ -1,4 +1,5 @@
 import type { GraphRelationshipData } from "@supply-risk/shared-types";
+import { CriticalInputBottleneckChart } from "../common/charts";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function ProductionDependencyView({
@@ -26,6 +27,10 @@ export function ProductionDependencyView({
       <div className="section-kicker">Production Dependency view</div>
       <p className="inspector-note">Production dependency rows separate required inputs, bottleneck flags, and propagation hints from evidence-context links.</p>
       <RelationshipMetadata data={data} />
+      <CriticalInputBottleneckChart
+        data={criticalInputChartData(rows)}
+        metadata={metadataForRelationshipData(data)}
+      />
       <table className="graph-evidence-table">
         <thead>
           <tr>
@@ -59,4 +64,21 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
       <span>{(data.warnings ?? []).slice(0, 1).join(", ")}</span>
     </div>
   );
+}
+
+function criticalInputChartData(rows: Array<Record<string, unknown>>) {
+  return rows.slice(0, 6).map((row) => ({
+    label: String(row.dependency_target_id ?? row.dependency_type ?? "dependency"),
+    value: row.bottleneck_flag === true ? 1 : 0.25,
+  }));
+}
+
+function metadataForRelationshipData(data?: GraphRelationshipData) {
+  return data
+    ? {
+        graphVersion: data.graph_version,
+        sourceManifestId: data.source_manifest_id,
+        warnings: data.warnings,
+      }
+    : undefined;
 }

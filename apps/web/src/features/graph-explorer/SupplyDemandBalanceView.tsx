@@ -1,4 +1,5 @@
 import type { GraphSupplyDemandBalanceData } from "@supply-risk/shared-types";
+import { SupplyDemandBalanceChart } from "../common/charts";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function SupplyDemandBalanceView({
@@ -32,6 +33,22 @@ export function SupplyDemandBalanceView({
       ) : (
         <p className="inspector-note">Backend balance endpoint unavailable; showing controlled local graph rows.</p>
       )}
+      <SupplyDemandBalanceChart
+        data={rows.slice(0, 6).map((row) => ({
+          label: String((row as Record<string, unknown>).product_grade_id ?? "product"),
+          value: Number((row as Record<string, unknown>).shortage_proxy ?? 0),
+          secondaryValue: Number((row as Record<string, unknown>).demand_edge_count ?? 0),
+        }))}
+        metadata={
+          data
+            ? {
+                graphVersion: data.graph_version,
+                sourceManifestId: data.source_manifest_id,
+                warnings: data.warnings,
+              }
+            : undefined
+        }
+      />
       <table className="graph-evidence-table">
         <thead>
           <tr>
