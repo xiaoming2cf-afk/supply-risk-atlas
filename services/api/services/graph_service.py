@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
 import os
+from pathlib import Path
 from typing import Any
+
+import yaml
 
 from graph_kernel.graph_diff import diff_edge_states
 from graph_kernel.path_index import build_path_index
+from graph_kernel.promoted_graph_quality import node_catalog_coverage, source_coverage
 from graph_kernel.semiconductor_snapshot import (
     build_semiconductor_fixture_snapshot,
     neighborhood as semiconductor_neighborhood,
@@ -451,6 +455,86 @@ def route_graph_scenario_overlay(
     )
 
 
+def route_graph_node_catalog(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    rows = _node_catalog_rows(limit=_bounded_limit(limit))
+    payload = {
+        **_base_view_metadata(snapshot, mode="node-catalog"),
+        "node_catalog": rows,
+        "limit": _bounded_limit(limit),
+        "layout_hints": {
+            "mode": "node-catalog",
+            "table_only": True,
+            "does_not_render_full_graph": True,
+        },
+        "evidence_refs": sorted(
+            {
+                source_id
+                for row in rows
+                for source_id in row.get("source_candidates", [])
+            }
+        ),
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
+def route_graph_source_coverage(
+    limit: int = 50,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    snapshot = _build_active_semiconductor_snapshot()
+    nodes = [node.model_dump(mode="json") for node in snapshot.nodes]
+    edges = [edge.model_dump(mode="json") for edge in snapshot.edges]
+    coverage = source_coverage(nodes, edges)
+    catalog_coverage = node_catalog_coverage(nodes)
+    rows = [
+        {
+            "source_id": source_id,
+            "reference_count": count,
+        }
+        for source_id, count in sorted(
+            coverage.get("counts_by_source_id", {}).items(),
+            key=lambda item: (-int(item[1]), str(item[0])),
+        )
+    ][: _bounded_limit(limit)]
+    payload = {
+        **_base_view_metadata(snapshot, mode="source-coverage"),
+        "source_coverage": {
+            **coverage,
+            "rows": rows,
+            "node_catalog_coverage": {
+                "catalog_version": catalog_coverage["catalog_version"],
+                "status": catalog_coverage["status"],
+                "catalog_node_count": catalog_coverage["catalog_node_count"],
+                "covered_catalog_node_count": catalog_coverage["covered_catalog_node_count"],
+                "coverage_ratio": catalog_coverage["coverage_ratio"],
+                "warnings": catalog_coverage["warnings"],
+            },
+        },
+        "limit": _bounded_limit(limit),
+        "layout_hints": {
+            "mode": "source-coverage",
+            "table_only": True,
+            "does_not_render_full_graph": True,
+        },
+        "evidence_refs": [row["source_id"] for row in rows],
+    }
+    return make_envelope(
+        payload,
+        metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
+        request_id=request_id,
+        warnings=semiconductor_fixture_warnings(snapshot),
+    )
+
+
 def route_analytics_charts(
     chart_id: str | None = None,
     limit: int = 50,
@@ -766,6 +850,25 @@ def _bounded_limit(limit: int | None) -> int:
     if limit is None:
         return 50
     return max(1, min(int(limit), 500))
+
+
+def _node_catalog_rows(*, limit: int) -> list[dict[str, Any]]:
+    root = Path(__file__).resolve().parents[3]
+    catalog_path = root / "configs" / "ontology" / "semiconductor_node_catalog.yaml"
+    catalog = yaml.safe_load(catalog_path.read_text(encoding="utf-8"))
+    rows: list[dict[str, Any]] = []
+    for node in catalog.get("nodes", [])[:limit]:
+        rows.append(
+            {
+                "node_id": str(node["node_id"]),
+                "node_type": str(node["node_type"]),
+                "layer": str(node["layer"]),
+                "label": str(node["label"]),
+                "source_candidates": [str(item) for item in node.get("source_candidates", [])],
+                "warnings": ["catalog_seed_not_production_relationship"],
+            }
+        )
+    return rows
 
 
 def _neighbors_for_node(snapshot: Any, node_id: str) -> list[str]:

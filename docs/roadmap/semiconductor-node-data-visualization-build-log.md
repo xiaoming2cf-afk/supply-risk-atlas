@@ -251,3 +251,30 @@
   - Node catalog coverage is a transparency artifact, not a completeness claim.
 - Next gate:
   - Proceed to Gate 8 graph APIs for richer interaction views.
+
+## Gate 8 - Graph APIs For Node Catalog And Source Coverage
+
+- Current HEAD: `1cdb6bd`
+- Gate name: richer graph view API endpoints
+- Files changed:
+  - `services/api/services/graph_service.py`
+  - `services/api/routes/graph.py`
+  - `services/api/main.py`
+  - `tests/api/test_graph_chart_table_endpoints.py`
+- Commands run:
+  - `python -m pytest tests/api/test_graph_chart_table_endpoints.py tests/api/test_graph_view_endpoints.py -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail: pass
+- Evidence:
+  - Graph API endpoint tests passed: 17 tests.
+  - Quality tests passed: 8 tests.
+  - Added `GET /api/v1/graph/node-catalog`.
+  - Added `GET /api/v1/graph/source-coverage`.
+  - New responses include graph/source/data-mode metadata, warnings, bounded rows, source candidates, and no raw payload fields.
+- Source/legal notes:
+  - Node catalog endpoint returns catalog seeds and source candidates only.
+  - Source coverage endpoint reports coverage/transparency metrics, not production completeness.
+- Limitations:
+  - Endpoints are table-style graph views and do not render or return the full dense graph.
+- Next gate:
+  - Proceed to Gate 9 frontend graph views.

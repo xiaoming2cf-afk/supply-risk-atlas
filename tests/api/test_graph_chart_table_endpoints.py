@@ -40,6 +40,8 @@ def _assert_sanitized_envelope(payload: dict[str, object]) -> dict[str, object]:
         ("/api/v1/graph/layers", "layers"),
         ("/api/v1/graph/evidence", "evidence_refs"),
         ("/api/v1/graph/scenario-overlay", "affected_nodes"),
+        ("/api/v1/graph/node-catalog", "node_catalog"),
+        ("/api/v1/graph/source-coverage", "source_coverage"),
     ],
 )
 def test_additional_graph_view_endpoints_return_bounded_sanitized_data(path: str, key: str) -> None:
@@ -51,6 +53,29 @@ def test_additional_graph_view_endpoints_return_bounded_sanitized_data(path: str
     value = data[key]
     if isinstance(value, list):
         assert len(value) <= 500
+
+
+def test_graph_node_catalog_endpoint_is_table_only_and_source_bound() -> None:
+    response = _client().get("/api/v1/graph/node-catalog?limit=20")
+    data = _assert_sanitized_envelope(response.json())
+
+    assert response.status_code == 200
+    assert len(data["node_catalog"]) <= 20
+    assert data["layout_hints"]["table_only"] is True
+    assert data["layout_hints"]["does_not_render_full_graph"] is True
+    assert all(row["source_candidates"] for row in data["node_catalog"])
+
+
+def test_graph_source_coverage_endpoint_reports_catalog_coverage() -> None:
+    response = _client().get("/api/v1/graph/source-coverage?limit=20")
+    data = _assert_sanitized_envelope(response.json())
+
+    assert response.status_code == 200
+    coverage = data["source_coverage"]
+    assert coverage["source_count"] > 0
+    assert len(coverage["rows"]) <= 20
+    assert coverage["node_catalog_coverage"]["catalog_node_count"] >= 150
+    assert coverage["node_catalog_coverage"]["status"] in {"pass", "partial"}
 
 
 def test_analytics_charts_endpoint_returns_expected_chart_keys() -> None:
