@@ -134,3 +134,15 @@ pm.cmd run smoke:web -> PASS (Browser smoke passed: 39 checks)
 - Terminology normalization evidence: geography quality guard passed; relationship views use backend-sanitized rows and do not expose raw payloads.
 - Limitations: demand and balance values remain fixture/promoted public-evidence proxy counts, not calibrated production demand or supply capacity.
 - Next gate decision: proceed to analytics relationship tables.
+## Gate 11 - Analytics Tables For Supply/Demand/Supplier Relationships
+
+- Gate status: PASS
+- Changed files: `services/api/services/analytics_service.py`, `tests/api/test_supply_demand_analytics_tables.py`, `apps/web/src/features/common/tables/SupplyRelationshipTable.tsx`, `apps/web/src/features/common/tables/DemandRelationshipTable.tsx`, `apps/web/src/features/common/tables/ProductionDependencyTable.tsx`, `apps/web/src/features/common/tables/SupplierConcentrationTable.tsx`, `apps/web/src/features/common/tables/ProductDemandTable.tsx`, `apps/web/src/features/common/tables/CriticalInputTable.tsx`, `apps/web/src/features/common/tables/SupplyDemandBalanceTable.tsx`, `apps/web/src/features/common/tables/index.ts`.
+- Commands run:
+  - `python -m pytest tests/api/test_supply_demand_analytics_tables.py tests/security/test_export_sanitization.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS (`14 passed`)
+  - `npm.cmd --workspace apps/web run typecheck` -> PASS
+  - `npm.cmd --workspace apps/web run build` -> PASS
+- Evidence: added bounded analytics table/export support for supply relationships, demand relationships, production dependencies, supplier concentration, product demand, critical inputs, and supply-demand balance; new frontend table wrappers use shared empty/loading/degraded states through `DataTable`.
+- Terminology normalization evidence: export sanitization and geography quality guards passed; no raw payload keys are exposed.
+- Limitations: table rows are fixture/promoted public-evidence summaries and proxy counts, not audited production supply-demand records.
+- Next gate decision: proceed to supply-demand-specific charts and page integration.

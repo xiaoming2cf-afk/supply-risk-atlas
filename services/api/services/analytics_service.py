@@ -15,7 +15,15 @@ from services.api.services.graph_service import (
     _bounded_limit,
     _build_active_semiconductor_snapshot,
     _chart_payloads,
+    _relationship_edge_payloads,
+    _supplier_concentration,
     _table_payloads,
+)
+from graph_kernel.supply_demand_builder import (
+    demand_relationship_rows,
+    production_dependency_rows,
+    supply_demand_balance_rows,
+    supply_relationship_rows,
 )
 from sra_core.sources.registry import source_readiness_rows
 
@@ -36,6 +44,13 @@ TABLE_ALIASES = {
     "policy-events": "policy_events",
     "hazard-events": "hazard_events",
     "logistics-facilities": "logistics_facilities",
+    "supply-relationships": "supply_relationships",
+    "demand-relationships": "demand_relationships",
+    "production-dependencies": "production_dependencies",
+    "supplier-concentration": "supplier_concentration",
+    "product-demand": "product_demand",
+    "critical-inputs": "critical_inputs",
+    "supply-demand-balance": "supply_demand_balance",
 }
 
 PUBLIC_TABLE_IDS = {
@@ -49,6 +64,13 @@ PUBLIC_TABLE_IDS = {
     "policy_events",
     "hazard_events",
     "logistics_facilities",
+    "supply_relationships",
+    "demand_relationships",
+    "production_dependencies",
+    "supplier_concentration",
+    "product_demand",
+    "critical_inputs",
+    "supply_demand_balance",
 }
 
 EXPORT_FORMATS = {"json", "csv", "markdown"}
@@ -210,6 +232,24 @@ def _all_table_rows(table_id: str) -> list[dict[str, Any]]:
 
     if table_id == "graph_quality_table":
         return _chart_payloads(snapshot, limit=MAX_EXPORT_ROWS).get("graph_quality_table", [])
+    relationship_edges = _relationship_edge_payloads(snapshot)
+    if table_id == "supply_relationships":
+        return supply_relationship_rows(relationship_edges)
+    if table_id == "demand_relationships":
+        return demand_relationship_rows(relationship_edges)
+    if table_id == "production_dependencies":
+        return production_dependency_rows(relationship_edges)
+    if table_id == "supplier_concentration":
+        return _supplier_concentration(supply_relationship_rows(relationship_edges))
+    if table_id == "product_demand":
+        return demand_relationship_rows(relationship_edges)
+    if table_id == "critical_inputs":
+        return [
+            row for row in production_dependency_rows(relationship_edges)
+            if row.get("bottleneck_flag") is True
+        ]
+    if table_id == "supply_demand_balance":
+        return supply_demand_balance_rows(relationship_edges)
     return _table_payloads(snapshot).get(table_id, [])
 
 
