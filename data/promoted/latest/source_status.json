@@ -1,8 +1,10 @@
 {
-  "source_count": 12,
+  "source_count": 15,
   "source_ids": [
     "bis_export_controls_lite",
+    "consolidated_screening_list_lite",
     "eto_cset_advanced_semiconductor_supply_chain",
+    "federal_register_export_controls_lite",
     "gdelt_semiconductor_events",
     "gdelt_semiconductor_lite",
     "global_trade_alert_semiconductor_export_controls",
@@ -11,6 +13,7 @@
     "sec_edgar_lite",
     "un_comtrade_semiconductor_trade_lite",
     "usgs_earthquake_lite",
+    "usgs_mineral_commodity_summaries_lite",
     "world_bank_wits_trade_tariff_lite",
     "wsts_historical_billings"
   ],

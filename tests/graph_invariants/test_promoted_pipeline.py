@@ -26,10 +26,11 @@ def test_promoted_pipeline_writes_expected_artifacts(tmp_path) -> None:
         "quality_report.json",
         "source_coverage.json",
         "entity_resolution_report.json",
+        "node_catalog_coverage.json",
     ]:
         assert (tmp_path / filename).exists()
 
     assert artifacts["manifest"]["data_mode"] == "public_evidence_promoted"
     assert artifacts["manifest"]["graph_mode"] == "promoted"
     assert artifacts["graph_snapshot"]["graph_version"] == artifacts["manifest"]["graph_version"]
-
+    assert artifacts["node_catalog_coverage"]["catalog_node_count"] > 100

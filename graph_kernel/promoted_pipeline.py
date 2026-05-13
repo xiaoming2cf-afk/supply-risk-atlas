@@ -9,11 +9,17 @@ from pathlib import Path
 from typing import Any
 
 from graph_kernel.graph_versioning import promoted_graph_version, stable_hash
-from graph_kernel.promoted_graph_quality import quality_report, source_coverage
+from graph_kernel.promoted_graph_quality import node_catalog_coverage, quality_report, source_coverage
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from graph_kernel.source_manifest import build_source_manifest
 from sra_core.ingestion.connectors.base import ConnectorConfig, PublicEvidenceConnector
 from sra_core.ingestion.connectors.bis_export_controls_lite import BisExportControlsLiteConnector
+from sra_core.ingestion.connectors.consolidated_screening_list_lite import (
+    ConsolidatedScreeningListLiteConnector,
+)
+from sra_core.ingestion.connectors.federal_register_export_controls_lite import (
+    FederalRegisterExportControlsLiteConnector,
+)
 from sra_core.ingestion.connectors.gdelt_semiconductor_lite import GdeltSemiconductorLiteConnector
 from sra_core.ingestion.connectors.nga_world_port_index_lite import NgaWorldPortIndexLiteConnector
 from sra_core.ingestion.connectors.ofac_sanctions_list_lite import OfacSanctionsListLiteConnector
@@ -22,6 +28,7 @@ from sra_core.ingestion.connectors.un_comtrade_semiconductor_trade_lite import (
     UnComtradeSemiconductorTradeLiteConnector,
 )
 from sra_core.ingestion.connectors.usgs_earthquake_lite import UsgsEarthquakeLiteConnector
+from sra_core.ingestion.connectors.usgs_minerals_lite import UsgsMineralsLiteConnector
 from sra_core.ingestion.connectors.wits_trade_tariff_lite import WitsTradeTariffLiteConnector
 
 
@@ -182,6 +189,14 @@ def connector_specs(fixture_dir: Path | None = None) -> list[tuple[PublicEvidenc
             fixture_dir / "wits_trade_tariff_lite_sample.json",
         ),
         (
+            UsgsMineralsLiteConnector(
+                config=ConnectorConfig(
+                    mode="fixture", fixture_path=fixture_dir / "usgs_minerals_lite_sample.json"
+                )
+            ),
+            fixture_dir / "usgs_minerals_lite_sample.json",
+        ),
+        (
             UsgsEarthquakeLiteConnector(
                 config=ConnectorConfig(
                     mode="fixture", fixture_path=fixture_dir / "usgs_earthquake_lite_sample.json"
@@ -207,12 +222,30 @@ def connector_specs(fixture_dir: Path | None = None) -> list[tuple[PublicEvidenc
             fixture_dir / "ofac_sanctions_list_lite_sample.json",
         ),
         (
+            ConsolidatedScreeningListLiteConnector(
+                config=ConnectorConfig(
+                    mode="fixture",
+                    fixture_path=fixture_dir / "consolidated_screening_list_lite_sample.json",
+                )
+            ),
+            fixture_dir / "consolidated_screening_list_lite_sample.json",
+        ),
+        (
             BisExportControlsLiteConnector(
                 config=ConnectorConfig(
                     mode="fixture", fixture_path=fixture_dir / "bis_export_controls_lite_sample.json"
                 )
             ),
             fixture_dir / "bis_export_controls_lite_sample.json",
+        ),
+        (
+            FederalRegisterExportControlsLiteConnector(
+                config=ConnectorConfig(
+                    mode="fixture",
+                    fixture_path=fixture_dir / "federal_register_export_controls_lite_sample.json",
+                )
+            ),
+            fixture_dir / "federal_register_export_controls_lite_sample.json",
         ),
     ]
 
@@ -304,6 +337,7 @@ def build_promoted_artifacts(
     )
     manifest = build_source_manifest(source_ids)
     coverage = source_coverage(snapshot_payload["nodes"], snapshot_payload["edges"])
+    catalog_coverage = node_catalog_coverage(snapshot_payload["nodes"])
     resolution_report = {
         "status": "pass",
         "unresolved_count": snapshot.unresolved_entity_count,
@@ -326,6 +360,7 @@ def build_promoted_artifacts(
         "quality_report": snapshot.quality_report,
         "source_coverage": coverage,
         "entity_resolution_report": resolution_report,
+        "node_catalog_coverage": catalog_coverage,
     }
     if output_dir is not None:
         write_promoted_artifacts(artifacts, output_dir)
@@ -341,6 +376,7 @@ def write_promoted_artifacts(artifacts: dict[str, Any], output_dir: Path) -> Non
         "quality_report": "quality_report.json",
         "source_coverage": "source_coverage.json",
         "entity_resolution_report": "entity_resolution_report.json",
+        "node_catalog_coverage": "node_catalog_coverage.json",
     }
     for key, filename in mapping.items():
         (output_dir / filename).write_text(
@@ -383,6 +419,15 @@ def _add_promoted_records(
             _ensure_node(node_rows, country, "country", record["country"], record)
             _ensure_node(node_rows, indicator, "market_indicator", record["indicator_type"], record)
             _add_edge(edge_rows, country, indicator, "evidence_for", record)
+        elif record_type == "mineral_supply_indicator":
+            mineral = f"critical_mineral:{record['mineral']}"
+            country = f"country:{record['country']}"
+            indicator = record["indicator_id"]
+            _ensure_node(node_rows, mineral, "critical_mineral", record["mineral"], record)
+            _ensure_node(node_rows, country, "country", record["country"], record)
+            _ensure_node(node_rows, indicator, "market_indicator", record["mineral"], record)
+            _add_edge(edge_rows, country, mineral, "mineral_dependency_edge", record)
+            _add_edge(edge_rows, mineral, indicator, "evidence_for", record)
         elif record_type == "natural_hazard_event":
             event_id = record["hazard_event_id"]
             _ensure_node(node_rows, event_id, "hazard_event", record["affected_region"], record)

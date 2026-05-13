@@ -213,3 +213,41 @@
   - Entity resolution is deterministic and conservative; unresolved mentions remain unresolved until evidence and confidence improve.
 - Next gate:
   - Proceed to Gate 7 promoted graph pipeline updates.
+
+## Gate 7 - Promoted Graph Pipeline With Node Catalog Coverage
+
+- Current HEAD: `1c59fcd`
+- Gate name: promoted graph node-catalog coverage
+- Files changed:
+  - `graph_kernel/promoted_pipeline.py`
+  - `graph_kernel/promoted_graph_quality.py`
+  - `tests/graph_invariants/test_promoted_pipeline.py`
+  - `tests/graph_invariants/test_promoted_graph_source_coverage.py`
+  - `tests/graph_invariants/test_node_catalog_coverage.py`
+  - `data/promoted/latest/manifest.json`
+  - `data/promoted/latest/graph_snapshot.json`
+  - `data/promoted/latest/source_status.json`
+  - `data/promoted/latest/quality_report.json`
+  - `data/promoted/latest/source_coverage.json`
+  - `data/promoted/latest/entity_resolution_report.json`
+  - `data/promoted/latest/node_catalog_coverage.json`
+- Commands run:
+  - `python -m pytest tests/graph_invariants -q`
+  - `python scripts/build_promoted_graph.py`
+  - `python -m pytest tests/graph_invariants -q`
+  - `python -m pytest tests/quality -q`
+- Pass/fail: pass
+- Evidence:
+  - Graph invariant tests passed: 21 tests.
+  - Quality tests passed: 8 tests.
+  - Promoted graph artifacts were rebuilt with `node_catalog_coverage.json`.
+  - Promoted graph now replays the added USGS minerals, consolidated screening list, and Federal Register fixtures.
+  - Source coverage includes the added fixture connector source IDs.
+- Source/legal notes:
+  - Artifacts are sanitized promoted summaries only; no raw payloads or bulk source downloads were written.
+  - Node catalog coverage is reported as partial when fixture/promoted evidence does not cover the full canonical catalog.
+- Limitations:
+  - Default runtime graph mode remains fixture unless `SUPPLY_RISK_GRAPH_MODE=promoted` is explicitly configured.
+  - Node catalog coverage is a transparency artifact, not a completeness claim.
+- Next gate:
+  - Proceed to Gate 8 graph APIs for richer interaction views.

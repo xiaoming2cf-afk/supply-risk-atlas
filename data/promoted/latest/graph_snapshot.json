@@ -1,19 +1,20 @@
 {
   "as_of_time": "2026-05-12T00:00:00+00:00",
   "data_mode": "public_evidence_promoted",
-  "edge_count": 62,
+  "edge_count": 65,
   "edge_count_by_type": {
     "correlated_with": 4,
     "depends_on": 1,
-    "evidence_for": 7,
+    "evidence_for": 8,
     "exports_to": 1,
     "hazard_exposure_edge": 1,
     "impacted_by": 9,
     "imports_from": 1,
     "located_in": 8,
     "logistics_route_edge": 1,
+    "mineral_dependency_edge": 1,
     "participates_in": 6,
-    "policy_restriction_edge": 1,
+    "policy_restriction_edge": 2,
     "produces": 3,
     "requires": 8,
     "restricted_by": 4,
@@ -1122,6 +1123,27 @@
         "data_mode": "public_evidence_promoted",
         "not_supply_chain_dependency": true
       },
+      "confidence": 0.66,
+      "edge_id": "promoted:evidence_for:6db342ff5fc3",
+      "edge_type": "evidence_for",
+      "evidence_text_summary": "Gallium mineral supply proxy summary for semiconductor upstream risk context.",
+      "provenance_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
+      "source_node_id": "critical_mineral:gallium",
+      "target_node_id": "mineral_supply:usgs-minerals-gallium-example",
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null,
+      "weight": 0.5
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "not_supply_chain_dependency": true
+      },
       "confidence": 0.62,
       "edge_id": "promoted:evidence_for:81c000dd427e",
       "edge_type": "evidence_for",
@@ -1290,6 +1312,48 @@
         "data_mode": "public_evidence_promoted",
         "not_supply_chain_dependency": true
       },
+      "confidence": 0.66,
+      "edge_id": "promoted:mineral_dependency_edge:ce604312ddf1",
+      "edge_type": "mineral_dependency_edge",
+      "evidence_text_summary": "Gallium mineral supply proxy summary for semiconductor upstream risk context.",
+      "provenance_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
+      "source_node_id": "country:CN",
+      "target_node_id": "critical_mineral:gallium",
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null,
+      "weight": 0.5
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "not_supply_chain_dependency": true
+      },
+      "confidence": 0.58,
+      "edge_id": "promoted:policy_restriction_edge:7e32335405e0",
+      "edge_type": "policy_restriction_edge",
+      "evidence_text_summary": "Federal Register policy metadata summary for compliance risk and resilience planning only.",
+      "provenance_refs": [
+        {
+          "source_id": "federal_register_export_controls_lite",
+          "source_record_id": "fr-export-controls-example"
+        }
+      ],
+      "source_node_id": "country:US",
+      "target_node_id": "federal_register_policy:fr-export-controls-example",
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null,
+      "weight": 0.5
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "not_supply_chain_dependency": true
+      },
       "confidence": 0.63,
       "edge_id": "promoted:policy_restriction_edge:dfaf8b8972ce",
       "edge_type": "policy_restriction_edge",
@@ -1371,29 +1435,30 @@
     }
   ],
   "graph_mode": "promoted",
-  "graph_version": "promoted_public_evidence_v0_1_3fb1e8c7550755e5",
+  "graph_version": "promoted_public_evidence_v0_1_bbc2bbff208e4ddb",
   "missing_provenance_count": 0,
-  "node_count": 48,
+  "node_count": 53,
   "node_count_by_type": {
     "chemical": 2,
     "commodity": 2,
     "company": 5,
     "component": 1,
-    "country": 9,
+    "country": 10,
+    "critical_mineral": 1,
     "entity_or_region": 2,
     "equipment": 1,
     "facility": 3,
     "hazard_event": 1,
     "logistics_facility": 1,
-    "market_indicator": 3,
+    "market_indicator": 4,
     "material": 1,
-    "policy_event": 2,
+    "policy_event": 3,
     "process_stage": 3,
     "product_grade": 2,
     "region": 1,
     "risk_event": 5,
     "route": 1,
-    "sanctions_event": 1,
+    "sanctions_event": 2,
     "technology_node": 1,
     "trade_flow": 1
   },
@@ -1672,6 +1737,24 @@
         "data_mode": "public_evidence_promoted",
         "graph_mode": "promoted"
       },
+      "canonical_name": "CN",
+      "confidence": 0.66,
+      "node_id": "country:CN",
+      "node_type": "country",
+      "source_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
       "canonical_name": "JP",
       "confidence": 0.62,
       "node_id": "country:JP",
@@ -1861,6 +1944,24 @@
     },
     {
       "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
+      "canonical_name": "gallium",
+      "confidence": 0.66,
+      "node_id": "critical_mineral:gallium",
+      "node_type": "critical_mineral",
+      "source_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
         "aliases": [
           "EUV lithography scanner"
         ],
@@ -1979,6 +2080,24 @@
         "data_mode": "public_evidence_promoted",
         "graph_mode": "promoted"
       },
+      "canonical_name": "Example semiconductor manufacturing equipment rule summary",
+      "confidence": 0.58,
+      "node_id": "federal_register_policy:fr-export-controls-example",
+      "node_type": "policy_event",
+      "source_refs": [
+        {
+          "source_id": "federal_register_export_controls_lite",
+          "source_record_id": "fr-export-controls-example"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
       "canonical_name": "Near Hsinchu semiconductor manufacturing region, Taiwan",
       "confidence": 0.74,
       "node_id": "hazard_event:usgs-lite-tw-2026-0001",
@@ -2057,6 +2176,24 @@
         {
           "source_id": "eto_cset_advanced_semiconductor_supply_chain",
           "source_record_id": "eto-semiconductor-network-2026-05"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
+      "canonical_name": "gallium",
+      "confidence": 0.66,
+      "node_id": "mineral_supply:usgs-minerals-gallium-example",
+      "node_type": "market_indicator",
+      "source_refs": [
+        {
+          "source_id": "usgs_mineral_commodity_summaries_lite",
+          "source_record_id": "usgs-minerals-gallium-example"
         }
       ],
       "valid_from": "2026-05-12T00:00:00+00:00",
@@ -2372,6 +2509,24 @@
     },
     {
       "attributes": {
+        "data_mode": "public_evidence_promoted",
+        "graph_mode": "promoted"
+      },
+      "canonical_name": "Consolidated Screening List",
+      "confidence": 0.62,
+      "node_id": "screening_event:csl-lite-example-entity",
+      "node_type": "sanctions_event",
+      "source_refs": [
+        {
+          "source_id": "consolidated_screening_list_lite",
+          "source_record_id": "csl-lite-example-entity"
+        }
+      ],
+      "valid_from": "2026-05-12T00:00:00+00:00",
+      "valid_to": null
+    },
+    {
+      "attributes": {
         "aliases": [
           "5nm"
         ],
@@ -2457,19 +2612,20 @@
   ],
   "ontology_version": "semirisk_public_evidence_ontology_v0.1",
   "quality_report": {
-    "edge_count": 62,
+    "edge_count": 65,
     "edge_count_by_type": {
       "correlated_with": 4,
       "depends_on": 1,
-      "evidence_for": 7,
+      "evidence_for": 8,
       "exports_to": 1,
       "hazard_exposure_edge": 1,
       "impacted_by": 9,
       "imports_from": 1,
       "located_in": 8,
       "logistics_route_edge": 1,
+      "mineral_dependency_edge": 1,
       "participates_in": 6,
-      "policy_restriction_edge": 1,
+      "policy_restriction_edge": 2,
       "produces": 3,
       "requires": 8,
       "restricted_by": 4,
@@ -2479,34 +2635,35 @@
     },
     "missing_edge_provenance_count": 0,
     "missing_node_provenance_count": 0,
-    "node_count": 48,
+    "node_count": 53,
     "node_count_by_type": {
       "chemical": 2,
       "commodity": 2,
       "company": 5,
       "component": 1,
-      "country": 9,
+      "country": 10,
+      "critical_mineral": 1,
       "entity_or_region": 2,
       "equipment": 1,
       "facility": 3,
       "hazard_event": 1,
       "logistics_facility": 1,
-      "market_indicator": 3,
+      "market_indicator": 4,
       "material": 1,
-      "policy_event": 2,
+      "policy_event": 3,
       "process_stage": 3,
       "product_grade": 2,
       "region": 1,
       "risk_event": 5,
       "route": 1,
-      "sanctions_event": 1,
+      "sanctions_event": 2,
       "technology_node": 1,
       "trade_flow": 1
     },
     "status": "pass",
     "warnings": []
   },
-  "source_manifest_id": "public_evidence_manifest_23245551e6f882c4",
+  "source_manifest_id": "public_evidence_manifest_fe05bb8bf33d17e9",
   "stale_source_count": 0,
   "unresolved_entity_count": 0,
   "warnings": [
