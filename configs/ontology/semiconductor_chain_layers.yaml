@@ -1,0 +1,117 @@
+chain_map_version: semiconductor-chain-map-v0.1
+production_status: research_fixture
+calibration_status: fixture_proxy_not_calibrated
+data_mode: fixture
+graph_mode: fixture
+warnings:
+  - Canonical chain-map catalog only; not a production supply-chain database.
+  - Source-backed promoted graph evidence is required before operational use.
+layers:
+  - layer_id: L0_policy_macro
+    order: 0
+    description: Countries, regions, policy regimes, macro indicators, and industrial policy context.
+    node_types:
+      - country
+      - region
+      - policy_regime
+      - macro_indicator
+      - industrial_policy
+      - export_control_regime
+  - layer_id: L1_raw_minerals
+    order: 1
+    description: Critical minerals, raw materials, mining geographies, and refining geographies.
+    node_types:
+      - critical_mineral
+      - raw_material
+      - mining_country
+      - refining_country
+  - layer_id: L2_materials_chemicals
+    order: 2
+    description: Wafers, electronic chemicals, photoresists, specialty gases, masks, substrates, and CMP materials.
+    node_types:
+      - wafer_material
+      - electronic_chemical
+      - photoresist
+      - specialty_gas
+      - mask_reticle
+      - substrate_material
+      - cmp_material
+  - layer_id: L3_design_eda_ip
+    order: 3
+    description: Design firms, EDA tooling, IP blocks, fabless firms, IDMs, and architectures.
+    node_types:
+      - design_company
+      - eda_tool
+      - ip_core
+      - fabless_company
+      - idm
+      - architecture
+  - layer_id: L4_equipment
+    order: 4
+    description: Semiconductor manufacturing equipment, equipment suppliers, categories, and components.
+    node_types:
+      - equipment
+      - equipment_supplier
+      - equipment_category
+      - equipment_component
+  - layer_id: L5_fabrication
+    order: 5
+    description: Foundries, fabs, process stages, technology nodes, capacity nodes, and wafer processes.
+    node_types:
+      - foundry
+      - fab
+      - process_stage
+      - technology_node
+      - capacity_node
+      - wafer_process
+  - layer_id: L6_products
+    order: 6
+    description: Product grades, chip types, and downstream semiconductor products.
+    node_types:
+      - product_grade
+      - chip_type
+      - downstream_product
+  - layer_id: L7_packaging_testing
+    order: 7
+    description: OSAT firms, packaging stages, advanced packaging, substrates, and testing stages.
+    node_types:
+      - osat_company
+      - packaging_stage
+      - advanced_packaging
+      - substrate
+      - testing_stage
+  - layer_id: L8_logistics
+    order: 8
+    description: Ports, airports, logistics routes, shipping lanes, and customs regions.
+    node_types:
+      - port
+      - airport
+      - logistics_route
+      - shipping_lane
+      - customs_region
+  - layer_id: L9_downstream_demand
+    order: 9
+    description: Downstream sectors, customer industries, and demand indicators.
+    node_types:
+      - downstream_sector
+      - customer_industry
+      - demand_indicator
+  - layer_id: L10_risk_events
+    order: 10
+    description: Risk, hazard, market, factory, cyber, and labor events.
+    node_types:
+      - risk_event
+      - hazard_event
+      - market_event
+      - factory_event
+      - cyber_event
+      - labor_event
+  - layer_id: L11_compliance
+    order: 11
+    description: Policy events, sanctions events, restricted items, restricted entities, and compliance-risk context.
+    node_types:
+      - policy_event
+      - sanction_event
+      - restricted_item
+      - restricted_entity
+      - compliance_risk

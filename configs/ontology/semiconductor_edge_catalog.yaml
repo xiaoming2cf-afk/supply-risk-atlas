@@ -1,0 +1,159 @@
+edge_catalog_version: semiconductor-edge-catalog-v0.1
+production_status: research_fixture
+calibration_status: fixture_proxy_not_calibrated
+warnings:
+  - Edge catalog defines allowable semantics only; it does not assert production relationships.
+edge_types:
+  - edge_type: located_in
+    source_type: "*"
+    target_type: country|region
+    direction: source_to_location
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Links an entity, event, facility, or route to a country or region.
+  - edge_type: participates_in
+    source_type: company|facility|process_stage
+    target_type: value_chain_stage
+    direction: participant_to_stage
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates participation in a semiconductor value-chain stage.
+  - edge_type: requires
+    source_type: process_stage|product_grade|chip_type
+    target_type: material|equipment|ip_core|technology_node
+    direction: consumer_to_requirement
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates that a stage or product requires an input, process, or capability.
+  - edge_type: produces
+    source_type: company|fab|process_stage
+    target_type: product_grade|chip_type|material
+    direction: producer_to_output
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates output from a firm, fab, or process stage.
+  - edge_type: supplies
+    source_type: supplier|country|facility
+    target_type: company|process_stage|product_grade
+    direction: supplier_to_consumer
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates a source-backed supply relationship.
+  - edge_type: depends_on
+    source_type: company|process_stage|product_grade|country
+    target_type: company|material|equipment|country|region
+    direction: dependent_to_dependency
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates a source-backed dependency relationship.
+  - edge_type: substitutable_with
+    source_type: material|equipment|company|product_grade
+    target_type: material|equipment|company|product_grade
+    direction: bidirectional_candidate
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates a potential substitute, subject to confidence and fit limits.
+  - edge_type: restricted_by
+    source_type: product_grade|equipment|company|technology_node|restricted_item
+    target_type: policy_event|export_control_regime|restricted_entity
+    direction: item_to_restriction
+    required_provenance: [source_id, provenance_url, evidence_text_summary, compliance_note]
+    description: Indicates compliance restriction context only; never evasion advice.
+  - edge_type: impacted_by
+    source_type: company|facility|country|region|port|product_grade
+    target_type: risk_event|hazard_event|market_event|policy_event
+    direction: exposed_entity_to_event
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Indicates that an entity or region is affected by an event.
+  - edge_type: exports_to
+    source_type: country|region
+    target_type: country|region
+    direction: reporter_to_partner
+    required_provenance: [source_id, provenance_url, commodity_code, period]
+    description: Trade-flow export relation for a commodity or product proxy.
+  - edge_type: imports_from
+    source_type: country|region
+    target_type: country|region
+    direction: reporter_to_partner
+    required_provenance: [source_id, provenance_url, commodity_code, period]
+    description: Trade-flow import relation for a commodity or product proxy.
+  - edge_type: trade_dependency
+    source_type: country|region|product_grade
+    target_type: country|region|commodity
+    direction: dependent_to_trade_source
+    required_provenance: [source_id, provenance_url, commodity_code, period, dependency_share]
+    description: Concentration or dependency relation derived from bounded public trade data.
+  - edge_type: routes_through
+    source_type: logistics_route|shipping_lane|company|country
+    target_type: port|airport|customs_region
+    direction: route_to_node
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Logistics context relation; not navigational decision support.
+  - edge_type: exposed_to_hazard
+    source_type: country|region|fab|port|airport
+    target_type: hazard_event
+    direction: exposed_asset_to_hazard
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Hazard exposure relation with approximate geospatial limits when applicable.
+  - edge_type: uses_equipment
+    source_type: process_stage|fab|technology_node
+    target_type: equipment|equipment_category
+    direction: process_to_equipment
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Process or fab uses equipment category or tool.
+  - edge_type: uses_material
+    source_type: process_stage|fab|technology_node|product_grade
+    target_type: wafer_material|substrate_material|cmp_material|raw_material
+    direction: process_to_material
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Process or product uses a material input.
+  - edge_type: uses_chemical
+    source_type: process_stage|fab|technology_node
+    target_type: electronic_chemical|photoresist|specialty_gas
+    direction: process_to_chemical
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Process uses a chemical, gas, or photoresist input.
+  - edge_type: uses_ip
+    source_type: design_company|fabless_company|idm|product_grade
+    target_type: ip_core|architecture
+    direction: design_to_ip
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Design relation to IP or architecture.
+  - edge_type: designed_by
+    source_type: product_grade|chip_type
+    target_type: design_company|fabless_company|idm
+    direction: product_to_designer
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Product or chip type designed by a firm.
+  - edge_type: manufactured_by
+    source_type: product_grade|chip_type
+    target_type: foundry|fab|idm
+    direction: product_to_manufacturer
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Product or chip type manufactured by a firm or fab.
+  - edge_type: packaged_by
+    source_type: product_grade|chip_type
+    target_type: osat_company|packaging_stage|advanced_packaging
+    direction: product_to_packaging
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Product packaging or OSAT relation.
+  - edge_type: tested_by
+    source_type: product_grade|chip_type
+    target_type: osat_company|testing_stage
+    direction: product_to_test
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Product testing relation.
+  - edge_type: serves_downstream_sector
+    source_type: product_grade|chip_type|company
+    target_type: downstream_sector|customer_industry
+    direction: supply_to_demand
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Relation from semiconductor product or firm to downstream demand sector.
+  - edge_type: evidence_for
+    source_type: evidence_record|risk_event|policy_event|market_indicator
+    target_type: node|edge
+    direction: evidence_to_claim
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    description: Evidence support relation for a node or graph claim.
+  - edge_type: evidence_context_link
+    source_type: search_result_metadata|evidence_record
+    target_type: node|edge
+    direction: evidence_context_to_object
+    required_provenance: [source_id, provenance_url, evidence_text_summary]
+    derived_context: true
+    not_supply_chain_dependency: true
+    user_facing_label: evidence-context link
+    description: Derived evidence-context link. This is not a supply-chain dependency edge.
