@@ -787,3 +787,50 @@
 - Deployment cannot be claimed verified until Web HTML exposes the latest commit marker and `scripts/check-deployed-version.py` returns `deployed_verified`.
 - GPT Pro has not reviewed this local gate yet because Browser access to the project conversation failed after the Render login attempt.
 - Live connectors remain disabled by default; stage coverage remains fixture/promoted-public-evidence with explicit proxy limitations.
+
+## 2026-05-16 Deployment Version Readiness Patch
+
+### Current HEAD
+
+- Local HEAD before this patch: `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+- `data/runtime/` remains ignored runtime state and was not staged.
+
+### Gate Result
+
+- Render API and Web were manually redeployed from latest `main` using project-scoped Chrome Browser control.
+- API service `supply-risk-atlas-api` started a Render build for `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+- Web service `supply-risk-atlas-web` started a Render build for `fa26bb0b468ae058a3ce3e346a56536303463e36`; build logs showed Next.js build success and health-check deployment in progress.
+- Post-redeploy probes showed API, Web proxy, and Web HTML all reporting or exposing `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+- Remaining deployed warning was traced to `/api/v1/version` self-reporting `deployment_stale_or_unverified=true` solely because API runtime does not receive a Web build commit environment variable.
+- Version readiness semantics were patched so API reports `api_commit_reported` when API commit is known and Web commit is not available to the API process; the external deployed checker still verifies API/Web/HTML cross-service commit consistency.
+
+### Files Changed
+
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `services/api/services/version_service.py`
+- `tests/api/test_version_endpoint.py`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_version_endpoint.py tests/quality/test_deployed_version_checker.py -q` - pass, 18 tests.
+- `python scripts/check-deployed-version.py --expected-commit fa26bb0b468ae058a3ce3e346a56536303463e36 --timeout 25` - controlled failure before this patch because API self-reported `deployment_stale_or_unverified`; external probes already matched latest API/Web commit.
+
+### Computer Use Actions
+
+- Used Chrome Browser extension only for project-scoped Render Dashboard actions.
+- Triggered `Deploy latest commit` for `supply-risk-atlas-api`.
+- Triggered `Deploy latest commit` for `supply-risk-atlas-web`.
+- Captured public deployed-page screenshots for GPT Pro review packet:
+  - `artifacts/gpt-pro-review/system-health.png`
+  - `artifacts/gpt-pro-review/graph-explorer.png`
+- Entity Risk screenshot capture timed out twice; failed project pages were closed before continuing to avoid tab buildup.
+- No secrets, cookies, tokens, credentials, OTPs, private diagnostics, local filesystem paths, raw payloads, or PII were copied into logs.
+
+### Known Limitations
+
+- A new API redeploy is required after this patch is committed and pushed so `/api/v1/version` reports the updated readiness semantics.
+- GPT Pro review packet is still pending after this patch commit and deployment verification.
+- The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.

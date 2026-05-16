@@ -39,8 +39,8 @@ def test_route_version_returns_sanitized_deployment_metadata(monkeypatch) -> Non
     assert data["source_status"] == "partial"
     assert data["web_commit"] == "not_verified"
     assert data["commit_mismatch"] is False
-    assert data["deployment_readiness_state"] == "stale_or_unverified"
-    assert data["deployment_stale_or_unverified"] is True
+    assert data["deployment_readiness_state"] == "api_commit_reported"
+    assert data["deployment_stale_or_unverified"] is False
     assert data["deployment_unavailable"] is False
     assert data["last_checked_at"].endswith("Z")
     assert data["not_production_ready"] is True

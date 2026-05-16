@@ -135,7 +135,7 @@ def deployment_readiness_state(api_commit: str, web_commit: str) -> str:
     if api_commit in {"unknown", "not_verified"}:
         return "unavailable"
     if web_commit in {"unknown", "not_verified"}:
-        return "stale_or_unverified"
+        return "api_commit_reported"
     if commit_mismatch(api_commit, web_commit):
         return "stale_or_unverified"
     return "commit_reported"
