@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -12,6 +13,7 @@ from urllib.request import Request, urlopen
 
 DEFAULT_API_URL = "https://supply-risk-atlas-api.onrender.com/api/v1"
 DEFAULT_WEB_URL = "https://supply-risk-atlas-web.onrender.com"
+GIT_SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
 
 
 def main() -> int:
@@ -35,7 +37,7 @@ def main() -> int:
     if api_commit == "unknown":
         status = "stale_or_unverified"
         warnings.append("api_commit_unknown")
-    elif expected_commit != "unknown" and api_commit != expected_commit:
+    elif expected_commit != "unknown" and not commits_match(expected_commit, api_commit):
         status = "stale_or_unverified"
         warnings.append("api_commit_mismatch")
     if web_result["status"] != "verified":
@@ -90,7 +92,7 @@ def fetch_web_commit_presence(web_url: str, expected_commit: str, timeout: float
     except (OSError, URLError) as exc:
         return {"status": "failed", "commit_visible": False, "error": type(exc).__name__, "latency_class": "failed"}
     latency = time.perf_counter() - started
-    visible = expected_commit in html or expected_commit[:12] in html or expected_commit[:7] in html
+    visible = web_commit_visible(html, expected_commit)
     return {
         "status": "verified" if visible else "commit_not_visible",
         "commit_visible": visible,
@@ -123,8 +125,34 @@ def latency_class(seconds: float) -> str:
 
 
 def _clean_commit(value: str) -> str:
-    cleaned = "".join(character for character in value.strip() if character.isalnum())
-    return cleaned if len(cleaned) >= 7 else "unknown"
+    cleaned = "".join(character for character in value.strip().lower() if character.isalnum())
+    return cleaned if GIT_SHA_RE.fullmatch(cleaned) else "unknown"
+
+
+def commits_match(expected_commit: str, observed_commit: str) -> bool:
+    expected = _clean_commit(expected_commit)
+    observed = _clean_commit(observed_commit)
+    if expected == "unknown" or observed == "unknown":
+        return False
+    return expected.startswith(observed) or observed.startswith(expected)
+
+
+def web_commit_visible(html: str, expected_commit: str) -> bool:
+    expected = _clean_commit(expected_commit)
+    if expected == "unknown":
+        return False
+    candidates = [expected]
+    if len(expected) == 40:
+        candidates.append(expected[:12])
+    lower_html = html.lower()
+    return any(_contains_commit_token(lower_html, candidate) for candidate in candidates)
+
+
+def _contains_commit_token(text: str, commit: str) -> bool:
+    if len(commit) < 12:
+        return False
+    pattern = re.compile(rf"(?<![0-9a-f]){re.escape(commit)}(?![0-9a-f])")
+    return bool(pattern.search(text))
 
 
 if __name__ == "__main__":

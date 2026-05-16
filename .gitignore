@@ -20,6 +20,7 @@ data/gold/
 data/graph/
 data/cache/
 data/promoted/
+data/runtime/
 artifacts/
 /models/
 /minio_data/

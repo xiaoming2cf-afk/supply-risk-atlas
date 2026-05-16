@@ -2,29 +2,57 @@
 
 ## Current Status
 
-- Latest pushed commit: `28f06cda3930a05ce0484d46c036da18f0798bd1`
-- GitHub Actions:
-  - `ci #32`: success
-  - `Quality Gates #32`: success
-- Local final acceptance: passed.
-- Deployed API/Web status: stale. The API version endpoint still reports commit `9cbb0e927a8bbcf66e05f19e5d3d70714f34204f`.
-- Deployed smoke: best-effort failure because Render is still serving the old build.
+- Latest pushed commit before the current narrow patch: `9674e60`.
+- Branch: `main`.
+- GitHub Actions for recent pushed commits:
+  - `8942950`: `ci` and `Quality Gates` passed.
+  - `9674e60`: `ci` and `Quality Gates` passed.
+- Render deployment status: `deployed_stale_or_unverified`.
+  - The most recent deployed API verification seen in this run still reported an older API commit.
+  - Deployed smoke reached a controlled unavailable state with sanitized endpoint diagnostics.
+  - No deployed-complete claim is made until API/Web version evidence matches the latest pushed commit and deployed smoke passes or reports only expected controlled degradation.
+- Local validation already recorded in the roadmap log:
+  - full pytest passed.
+  - web typecheck/build passed.
+  - local browser smoke passed.
+  - geography and raw-payload guards passed.
 
-## Required Manual Render Step
+## Computer Use / GPT Pro Handoff Status
 
-1. Redeploy Render service `supply-risk-atlas-api` from latest `main`.
-2. Redeploy Render service `supply-risk-atlas-web` from latest `main`.
-3. If the web UI remains stale, clear the web service build cache and redeploy again.
-4. Verify `/api/v1/version` reports `28f06cda3930a05ce0484d46c036da18f0798bd1`.
-5. Rerun deployed smoke:
+- Project-scoped Computer Use was used for the project ChatGPT conversation and limited Chrome verification only.
+- No credentials, cookies, tokens, screenshots with secrets, raw payloads, private diagnostics, account details, or unrelated personal content were copied into the repo log.
+- Private operational ChatGPT conversation links are intentionally not recorded here.
+- GPT Pro second-round review returned:
+  - `judgment: PASS`
+  - `blocking_issue: NONE`
+  - `narrow_patch_required: NONE`
+  - next authorized action: run R1/R2/R3/R4 review before starting the M1-4 W6 candidate inventory.
 
-```powershell
-npm.cmd run smoke:web -- --mode=deployed
-```
+## R1-R4 Review Status
+
+- R1 implementation reliability: PASS.
+- R2 deployment evidence: initially FAIL because short SHA and full SHA were compared by exact string in the deployed checker.
+- R3 relationship semantics: PASS.
+- R4 safety/governance: initially FAIL because runtime artifacts were not explicitly ignored/scanned, a private ChatGPT URL was recorded in this file, stale deployment text overclaimed an old live commit, and Web HTML commit detection could false-pass on a 7-character SHA.
+
+## Current Narrow Patch
+
+- Make deployed API commit matching accept only valid Git SHA hex prefixes.
+- Make Web commit visibility conservative: no 7-character arbitrary HTML match.
+- Ignore `data/runtime/` while preserving local files.
+- Fail raw/private payload checks if runtime databases, `.raw`, `.parquet`, pickle, or other raw runtime artifacts are tracked.
+- Keep deployment status as `deployed_stale_or_unverified` until Render version evidence is current.
+
+## Request For Next Prompt
+
+请审查当前 Codex 完成结果，并给出下一轮 prompt。
 
 ## Constraints For The Next Run
 
-- Do not expose secrets, cookies, tokens, private diagnostics, internal account details, or raw payloads.
-- Keep the canonical geography terminology: `region:china_taiwan` / `中国台湾`, with parent `country:CN` / `中国`.
+- Preserve existing public pages and API endpoints.
+- Do not enable live connector fetch during import, tests, CI, app startup, or Render startup.
+- Do not expose raw payloads, secrets, cookies, tokens, private diagnostics, local filesystem paths, private operational URLs, or PII.
+- Keep canonical geography terminology: `region:china_taiwan` / `中国台湾`, parent `country:CN` / `中国`.
 - Evidence-context links remain non-dependency inspection links.
+- Keep supply, demand, production dependency, and evidence-context relationship classes separated.
 - The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.

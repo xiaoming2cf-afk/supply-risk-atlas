@@ -390,3 +390,54 @@
 - No raw payload, authorization header, cookie, token, private path, or secret-bearing diagnostics were introduced.
 - Relationship views keep authoritative rows empty when relationship endpoints are unavailable.
 - Evidence-context links remain non-propagating and excluded from supply/demand/production relationship rows.
+
+## 2026-05-16 GPT Pro R1-R4 Review And Deployed Checker Patch
+
+### GPT Pro Review Result
+
+- Sent a sanitized second-round status report for commits `c4609dc`, `8942950`, and `9674e60` to the project ChatGPT conversation.
+- GPT Pro returned `judgment: PASS`, `blocking_issue: NONE`, and `narrow_patch_required: NONE` for the M1-4 stage-start narrow patch review.
+- GPT Pro authorized the next action only after R1/R2/R3/R4 review: forward the judgment to four reviewers and begin the M1-4 W6 candidate inventory only if all reviewers pass without reservation.
+
+### R1-R4 Review Status
+
+- R1 implementation reliability review: PASS. It verified API read retry behavior, sanitized diagnostics, version metadata, proxy error envelopes, app/Graph Explorer diagnostics, and no authoritative fallback rows.
+- R2 deployment evidence review: FAIL on one narrow issue. `scripts/check-deployed-version.py` treated short SHA `8942950` and the matching full SHA as different commits, which could leave deployment evidence incorrectly `stale_or_unverified`.
+- R3 relationship semantics review: PASS. It verified relationship class separation, evidence-context exclusion from propagation, relationship endpoint metadata, and no backend-unavailable authoritative fallback rows.
+- R4 safety/governance review: initial FAIL on two narrow issues. Runtime artifacts under `data/runtime/` were untracked but not ignored, and raw scan coverage did not block tracked `.db`/`.raw` runtime artifacts. The first deployed checker patch also accepted any alphanumeric prefix instead of Git SHA hex only.
+- R4 final re-review: PASS after the continuation request, deployed checker, raw scan, runtime ignore, and new quality tests were patched.
+
+### Narrow Patch
+
+- `.gitignore` now excludes `data/runtime/` so local SQLite/debug runtime files are preserved but not accidentally staged.
+- `scripts/check-deployed-version.py` now treats sanitized Git SHA hex values as matching when either value is a prefix of the other, while rejecting unknown, too-short, non-hex, or unrelated values.
+- `scripts/check-no-raw-payloads.py` now fails if raw/runtime artifacts such as `data/runtime/*`, `data/raw/*`, `.db`, `.raw`, `.parquet`, or pickle files are tracked.
+- `tests/quality/test_deployed_version_checker.py` covers short-vs-full SHA matching in both directions and rejection of unknown/unrelated commit values.
+- `tests/quality/test_no_tracked_runtime_artifacts.py` covers tracked runtime database/raw files and raw artifact suffixes outside runtime.
+- R4 re-review then identified three more governance issues:
+  - `docs/roadmap/codex-continuation-request.md` contained stale deployment-success claims for an older commit.
+  - The same continuation file recorded a private ChatGPT conversation URL.
+  - Web commit detection could mark a 7-character SHA that appeared anywhere in HTML as verified.
+- `docs/roadmap/codex-continuation-request.md` was rewritten as a sanitized, conservative continuation request: deployment remains `deployed_stale_or_unverified`, private operational URLs are not recorded, and GPT Pro/R1-R4 status is summarized without secrets.
+- `scripts/check-deployed-version.py` now requires at least a 12-character bounded SHA token for Web HTML commit visibility; 7-character generic HTML matches no longer verify Web deployment.
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_version_checker.py -q` - pass, 3 tests
+- `python -m py_compile scripts/check-deployed-version.py` - pass
+- `python -m pytest tests/quality/test_deployed_version_checker.py tests/api/test_version_endpoint.py tests/sources/test_stage_source_coverage_matrix.py tests/quality/test_no_forbidden_geography_labels.py -q` - pass, 15 tests
+- `python scripts/check-deployed-version.py --expected-commit 9674e60 --api-url http://127.0.0.1:1/api/v1 --web-url http://127.0.0.1:1` - expected conservative failure with sanitized `stale_or_unverified`, `api_commit_unknown`, and no raw response body
+- `python -m pytest tests/quality/test_deployed_version_checker.py tests/quality/test_no_tracked_runtime_artifacts.py tests/api/test_version_endpoint.py tests/sources/test_stage_source_coverage_matrix.py tests/quality/test_no_forbidden_geography_labels.py -q` - pass, 17 tests
+- `python scripts/check-no-raw-payloads.py` - pass
+- `python -m py_compile scripts/check-deployed-version.py scripts/check-no-raw-payloads.py` - pass
+- `git status --short --ignored data/runtime` - shows `!! data/runtime/`, confirming runtime files are ignored
+- `python -m pytest tests/quality/test_deployed_version_checker.py tests/quality/test_no_tracked_runtime_artifacts.py tests/sources/test_stage_source_coverage_matrix.py tests/quality/test_no_forbidden_geography_labels.py -q` - pass, 17 tests
+- `rg -n "chatgpt\\.com/g/|live at commit|deployed smoke passed|reports the expected commit|9d119739" docs\\roadmap scripts tests -g "*.md" -g "*.py" -g "*.mjs"` - no current continuation private URL or stale deployment-success claim; remaining hits are historical deployment log context or baseline commit references
+- R4 final re-review ran `python -m pytest tests/quality/test_deployed_version_checker.py tests/quality/test_no_tracked_runtime_artifacts.py tests/sources/test_stage_source_coverage_matrix.py tests/quality/test_no_forbidden_geography_labels.py -q -p no:cacheprovider` - pass, 17 tests
+
+### Computer Use And Deployment Status
+
+- Computer Use used Chrome only for the project ChatGPT conversation and sanitized GPT Pro review handoff.
+- A stale Render login page was identified; closing it through browser automation timed out, so no further Render UI action was attempted in that failed page.
+- No credentials, cookies, tokens, private diagnostics, raw payloads, screenshots with secrets, or unrelated personal content were copied into the log or GPT Pro handoff.
+- Deployment remains `deployed_stale_or_unverified`; no deployed-complete claim is made.
