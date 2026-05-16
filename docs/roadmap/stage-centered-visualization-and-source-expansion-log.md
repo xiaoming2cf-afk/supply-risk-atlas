@@ -375,6 +375,15 @@
 - Deployment status remains `deployed_stale_or_unverified` until Render API/Web report the new commit and deployed smoke passes or reaches only a controlled unavailable state with matching version evidence.
 - Previous deployed check showed API `/api/v1/version` still at `13b3ece3e2f41918578a13c573905f1b16b73fab`; no deployment success is claimed here.
 
+### Post-Push CI And Deployed Evidence
+
+- Commit `8942950` pushed to `origin/main`.
+- GitHub Actions `ci` passed for `8942950`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25963294094`.
+- GitHub Actions `Quality Gates` passed for `8942950`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25963294096`.
+- `python scripts/check-deployed-version.py --expected-commit 8942950` returned `stale_or_unverified`; the direct version probe still reported deployed API commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- `npm.cmd run smoke:web -- --mode=deployed` ran in best-effort mode and exited without failing the shell, but the smoke did not complete. It reached Entity Risk 360 and reported a controlled unavailable state with `failed_endpoint=api-unavailable://risk/entities/company%3Atsmc`, `portfolio_endpoint=api-unavailable://risk/portfolio?node_type=company&limit=20`, `source_status=unavailable`, and HTTP 502 diagnostic messages.
+- Deployment status remains `deployed_stale_or_unverified`; do not claim deployed completion until Render API/Web expose the latest HEAD and deployed smoke passes or reports only expected controlled degradation with matching version evidence.
+
 ### Safety Evidence
 
 - No live fetch behavior was enabled.
