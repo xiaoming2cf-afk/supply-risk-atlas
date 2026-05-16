@@ -487,3 +487,10 @@
 
 - Deployment remains `deployed_stale_or_unverified`.
 - No Render deployment success is claimed until the deployed API/Web version endpoint reports the latest commit and deployed smoke passes or returns only controlled, actionable unavailable diagnostics.
+
+### Post-Push Evidence
+
+- Commit `99132bd3803073f42a28cbb24cdfbf7dd23345ad` pushed to `origin/main`.
+- GitHub Actions `ci` passed for `99132bd`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966115107`.
+- GitHub Actions `Quality Gates` passed for `99132bd`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966115177`.
+- `python scripts/check-deployed-version.py --expected-commit 99132bd --timeout 20` returned sanitized `stale_or_unverified` with `api_commit_unknown` and Web `HTTPError`; deployment is still not verified.
