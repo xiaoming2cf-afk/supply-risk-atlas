@@ -61,6 +61,9 @@ def test_connector_stage_audit_does_not_claim_production_readiness() -> None:
 
     assert "production readiness" not in text
     assert "production-ready" not in text
+    assert "production ready" not in text
+    assert "production_verified" not in text
+    assert "official" not in text
     assert "disabled by default" in text
 
 

@@ -196,6 +196,11 @@ export interface PlatformStatus {
     webVersion: string;
     webGitCommit?: string;
     commitMismatch?: boolean;
+    deploymentState?: string;
+    staleOrUnverified?: boolean;
+    unavailable?: boolean;
+    lastCheckedAt?: string;
+    expectedCommit?: string;
     environment?: "local" | "render" | "unknown" | string;
     warnings: string[];
   };

@@ -340,7 +340,8 @@ export function GraphExplorer({
 
   const exportViewSummary = () => {
     if (typeof document === "undefined") return;
-    const summary = {
+    const relationshipSummary = buildRelationshipExportSummary(mode, endpointDataForMode, endpointDetails, metadata);
+    const summary = relationshipSummary ?? {
       export_type: "graph_view_summary",
       exported_at: new Date().toISOString(),
       mode,
@@ -600,6 +601,76 @@ function StageModePanel({
   return <ComplianceRiskGraphView {...props} />;
 }
 
+function buildRelationshipExportSummary(
+  mode: GraphViewMode,
+  endpointData: GraphEndpointDetails["data"] | undefined,
+  endpointDetails: GraphEndpointDetails,
+  metadata: GraphVersionMetadata,
+) {
+  const expectedClassByMode: Partial<Record<GraphViewMode, string>> = {
+    supply: "SUPPLY_RELATIONSHIP",
+    demand: "DEMAND_RELATIONSHIP",
+    "production-dependency": "PRODUCTION_DEPENDENCY",
+    "supply-demand-balance": "SUPPLY_DEMAND_BALANCE",
+  };
+  const expectedClass = expectedClassByMode[mode];
+  if (!expectedClass) return undefined;
+  const base = {
+    export_type: "relationship_view_summary",
+    exported_at: new Date().toISOString(),
+    mode,
+    graph_version: metadata.graphVersion,
+    source_manifest_id: metadata.sourceManifestId,
+    warnings: metadata.warnings,
+    relationship_class: expectedClass,
+  };
+  if (!isPlainRecord(endpointData) || endpointData.relationship_class !== expectedClass) {
+    return {
+      ...base,
+      data_scope: "unavailable_preview_no_authoritative_relationship_rows",
+      preview_state: "unavailable_preview",
+      endpoint_status: endpointDetails.status,
+      endpoint_source: endpointDetails.source,
+      diagnostics: endpointDetails.diagnostics,
+      relationships: [],
+      balance_rows: [],
+      warnings: [...metadata.warnings, "relationship_endpoint_unavailable_or_wrong_class"],
+    };
+  }
+  if (mode === "supply-demand-balance") {
+    const balanceRows = Array.isArray(endpointData.balance_rows)
+      ? endpointData.balance_rows.filter(
+          (row) =>
+            isPlainRecord(row) &&
+            row.relationship_class === expectedClass &&
+            row.row_type === "aggregate" &&
+            row.not_supply_chain_dependency === true,
+        )
+      : [];
+    return {
+      ...base,
+      data_scope: "authoritative_backend_aggregate_rows_only",
+      balance_rows: balanceRows,
+      relationships: [],
+    };
+  }
+  const relationships = Array.isArray(endpointData.relationships)
+    ? endpointData.relationships.filter(
+        (row) => isPlainRecord(row) && row.relationship_class === expectedClass,
+      )
+    : [];
+  return {
+    ...base,
+    data_scope: "authoritative_backend_relationship_rows_only",
+    relationships,
+    balance_rows: [],
+  };
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 type GraphEndpointDetails = {
   data?:
     | GraphTimelineData
@@ -720,7 +791,10 @@ function diagnosticsForEndpointResult(result: ApiResult<unknown>): GraphEndpoint
 
 function sanitizeEndpointDiagnostic(value: unknown) {
   if (typeof value !== "string") return undefined;
-  return value.replace(/https?:\/\/[^\s)]+/gi, "endpoint://redacted").slice(0, 160);
+  return value
+    .replace(/[a-z][a-z0-9+.-]*:\/\/[^\s)]+/gi, "endpoint://redacted")
+    .replace(/[?&][A-Za-z0-9_.~-]+=[^&\s)]+/g, "")
+    .slice(0, 160);
 }
 
 function GraphModeDetailPanel({

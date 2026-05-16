@@ -381,7 +381,7 @@
 - GitHub Actions `ci` passed for `8942950`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25963294094`.
 - GitHub Actions `Quality Gates` passed for `8942950`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25963294096`.
 - `python scripts/check-deployed-version.py --expected-commit 8942950` returned `stale_or_unverified`; the direct version probe still reported deployed API commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
-- `npm.cmd run smoke:web -- --mode=deployed` ran in best-effort mode and exited without failing the shell, but the smoke did not complete. It reached Entity Risk 360 and reported a controlled unavailable state with `failed_endpoint=api-unavailable://risk/entities/company%3Atsmc`, `portfolio_endpoint=api-unavailable://risk/portfolio?node_type=company&limit=20`, `source_status=unavailable`, and HTTP 502 diagnostic messages.
+- `npm.cmd run smoke:web -- --mode=deployed` ran in best-effort mode and exited without failing the shell, but the smoke did not complete. It reached Entity Risk 360 and reported a controlled unavailable state with redacted endpoint diagnostics, `source_status=unavailable`, and HTTP 502 diagnostic messages.
 - Deployment status remains `deployed_stale_or_unverified`; do not claim deployed completion until Render API/Web expose the latest HEAD and deployed smoke passes or reports only expected controlled degradation with matching version evidence.
 
 ### Safety Evidence
@@ -630,3 +630,77 @@
 - GitHub Actions `Quality Gates` passed for `623adac`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25968271843`.
 - `python scripts/check-deployed-version.py --expected-commit 623adac --timeout 20` returned sanitized `stale_or_unverified`; API and Web probes failed in that run, so deployed success is not claimed.
 - Render redeploy remains blocked by interactive login or missing safe local Render automation credentials.
+
+## 2026-05-16 Deployment Version And Relationship Authority Regression Closure
+
+### Current HEAD
+
+- Local HEAD before this gate: `18cdd05db779337b1dcfb8550a97f270018960be`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+- `data/runtime/` remains ignored runtime state and was not staged.
+
+### Gate Result
+
+- Deployment version semantics hardened locally. Version payloads now expose explicit `deployment_readiness_state`, `deployment_stale_or_unverified`, `deployment_unavailable`, and sanitized `last_checked_at` fields.
+- Deployed version checker hardened locally. Status values are limited to `deployed_verified`, `deployed_stale_or_unverified`, `deployed_unavailable`, and `probe_error`; exact deployed success requires API/Web commit verification.
+- Relationship authority regression fixed locally. Browser smoke now probes backend relationship endpoints before deciding whether a relationship view must show authoritative backend rows or only a controlled `unavailable_preview`.
+- Local data API access regression fixed. `services/api/dev_server.py` now exposes the same graph view and relationship endpoints needed by local web proxy and direct API smoke.
+- Relationship exports remain backend-authoritative. Graph Explorer relationship exports use backend endpoint data only; unavailable previews are labeled and excluded from relationship rows.
+- Source coverage policy clarified. `unavailable_preview` and unavailable relationship endpoints do not count as source/stage coverage.
+- Page relevance smoke now checks visible shared metadata, disallowed major sections, deployment-success claims, dense graph allowance, Path Analysis, and Country Lens.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `configs/sources/stage_source_coverage_matrix.yaml`
+- `docs/data/stage-source-coverage-matrix.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `packages/shared-types/src/health.ts`
+- `scripts/browser-smoke.mjs`
+- `scripts/check-deployed-version.py`
+- `services/api/dev_server.py`
+- `services/api/services/graph_service.py`
+- `services/api/services/system_health_service.py`
+- `services/api/services/version_service.py`
+- `tests/api/test_dev_server_graph_routes.py`
+- `tests/api/test_supply_demand_graph_endpoints.py`
+- `tests/api/test_system_health_semiconductor_graph.py`
+- `tests/api/test_system_health_storage_sources.py`
+- `tests/api/test_version_endpoint.py`
+- `tests/quality/test_deployed_version_checker.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+- `tests/sources/test_connector_stage_coverage.py`
+- `tests/sources/test_stage_source_coverage_matrix.py`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_dev_server_graph_routes.py tests/api/test_supply_demand_graph_endpoints.py -q` - pass, 9 tests.
+- `python -m pytest tests/quality -q` - pass, 35 tests.
+- `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` - pass.
+- `python -m pytest -q` - pass.
+- `npm.cmd --workspace apps/web run typecheck` - pass.
+- `npm.cmd --workspace apps/web run typecheck:packages` - pass.
+- `npm.cmd --workspace apps/web run build` - pass.
+- `npm.cmd run smoke:web` - pass, 63 checks.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_EXPECT_MODE=real npm.cmd run smoke:web` - pass, 67 checks.
+- `python scripts/check-no-raw-payloads.py` - pass.
+- `python scripts/check-deployed-version.py --expected-commit 18cdd05 --timeout 20` - controlled failure with `deployed_unavailable`; deployed success is not claimed.
+
+### Deployment Probe Evidence
+
+- Expected commit during local probe: `18cdd05`.
+- Deployment status: `deployed_unavailable`.
+- Sanitized warnings: `api_unavailable`, `web_unavailable`, `web_proxy_unavailable`.
+- No Render credentials were submitted.
+- No tokens, cookies, raw payloads, local filesystem diagnostics, private account details, or PII were recorded.
+
+### Known Limitations
+
+- Render deployment remains unverified and unavailable from automation until project-scoped Render access is restored safely.
+- The latest local implementation still needs to be committed, pushed, and verified in GitHub Actions before any new GPT Pro review packet is sent.
+- The platform remains fixture/proxy/promoted-public-evidence research infrastructure; no deployment success or operational readiness claim is made.

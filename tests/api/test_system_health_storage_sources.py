@@ -21,9 +21,13 @@ def test_system_health_exposes_storage_source_and_connector_readiness_without_pa
     assert platform["sourceRegistryReadiness"] in {"ready", "degraded", "unavailable"}
     assert platform["connectorReadiness"] in {"ready", "unavailable"}
     assert platform["modelReadiness"] in {"fixture_ready", "unavailable"}
-    assert platform["deploymentVersionReadiness"]["status"] in {"reported", "not_verified"}
+    assert platform["deploymentVersionReadiness"]["status"] in {"commit_reported", "stale_or_unverified", "unavailable"}
     assert platform["deploymentVersionReadiness"]["apiVersion"] == "0.1.0"
     assert platform["deploymentVersionReadiness"]["apiGitCommit"]
+    assert platform["deploymentVersionReadiness"]["deploymentState"] == platform["deploymentVersionReadiness"]["status"]
+    assert isinstance(platform["deploymentVersionReadiness"]["staleOrUnverified"], bool)
+    assert isinstance(platform["deploymentVersionReadiness"]["unavailable"], bool)
+    assert platform["deploymentVersionReadiness"]["lastCheckedAt"]
     assert platform["dataMode"] in {"fixture", "promoted", "live_disabled", "live_enabled"}
     assert platform["graphMode"] in {"fixture", "promoted"}
     assert platform["productionStatus"] in {"research_fixture", "public_evidence_promoted"}

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import subprocess
 from typing import Any
+from datetime import datetime, timezone
 
 from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.api.envelope import make_envelope
@@ -42,6 +43,7 @@ def build_version_payload() -> dict[str, Any]:
         warnings.append("build_time_not_verified")
 
     web_commit = current_web_commit()
+    deployment_state = deployment_readiness_state(git_commit, web_commit)
     return {
         "api_commit": git_commit,
         "git_commit": git_commit,
@@ -58,6 +60,10 @@ def build_version_payload() -> dict[str, Any]:
         "source_status": "partial",
         "web_commit": web_commit,
         "commit_mismatch": commit_mismatch(git_commit, web_commit),
+        "deployment_readiness_state": deployment_state,
+        "deployment_stale_or_unverified": deployment_state == "stale_or_unverified",
+        "deployment_unavailable": deployment_state == "unavailable",
+        "last_checked_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "production_status": "public_evidence_promoted" if graph_mode == "promoted" else "research_fixture",
         "calibration_status": ["fixture_proxy_not_calibrated", "not_financial_loss"],
         "not_production_ready": True,
@@ -107,7 +113,7 @@ def current_build_time() -> str:
         "NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME",
     )
     if configured:
-        return configured
+        return _sanitize_build_time(configured)
     return "unknown"
 
 
@@ -122,7 +128,17 @@ def current_web_commit() -> str:
 def commit_mismatch(api_commit: str, web_commit: str) -> bool:
     if api_commit in {"unknown", "not_verified"} or web_commit in {"unknown", "not_verified"}:
         return False
-    return api_commit != web_commit
+    return not commits_match(api_commit, web_commit)
+
+
+def deployment_readiness_state(api_commit: str, web_commit: str) -> str:
+    if api_commit in {"unknown", "not_verified"}:
+        return "unavailable"
+    if web_commit in {"unknown", "not_verified"}:
+        return "stale_or_unverified"
+    if commit_mismatch(api_commit, web_commit):
+        return "stale_or_unverified"
+    return "commit_reported"
 
 
 def runtime_environment() -> str:
@@ -158,7 +174,25 @@ def _first_env(*names: str) -> str | None:
 
 
 def _short_or_full_commit(value: str) -> str:
-    cleaned = "".join(character for character in value.strip() if character.isalnum())
-    if len(cleaned) >= 7:
-        return cleaned
+    cleaned = value.strip().lower()
+    if 7 <= len(cleaned) <= 40:
+        return cleaned if all(character in "0123456789abcdef" for character in cleaned) else "unknown"
     return "unknown"
+
+
+def commits_match(left_commit: str, right_commit: str) -> bool:
+    left = _short_or_full_commit(left_commit)
+    right = _short_or_full_commit(right_commit)
+    if left == "unknown" or right == "unknown":
+        return False
+    return left.startswith(right) or right.startswith(left)
+
+
+def _sanitize_build_time(value: str) -> str:
+    cleaned = value.strip()
+    if len(cleaned) > 40:
+        return "unknown"
+    if any(token in cleaned.lower() for token in ("authorization", "cookie", "token", "secret", "\\", "/", ":\\", "://")):
+        return "unknown"
+    allowed = set("0123456789TtZz:+-._ ")
+    return cleaned if cleaned and all(character in allowed for character in cleaned) else "unknown"

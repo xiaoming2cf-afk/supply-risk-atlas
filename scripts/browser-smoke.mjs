@@ -193,6 +193,10 @@ async function main() {
       systemHealth: await fetchApiJson("/dashboard/system-health-center"),
       graphSnapshot: await fetchApiJson("/graph/snapshot"),
       graphNeighborhood: await fetchApiJson("/graph/neighborhood?node_id=company:tsmc&depth=1"),
+      supplyRelationships: await fetchApiJson("/graph/supply-relationships?limit=25"),
+      demandRelationships: await fetchApiJson("/graph/demand-relationships?limit=25"),
+      productionDependencies: await fetchApiJson("/graph/production-dependencies?limit=25"),
+      supplyDemandBalance: await fetchApiJson("/graph/supply-demand-balance?limit=25"),
       entityRisk: await fetchApiJson("/risk/entities/company:tsmc"),
       riskPortfolio: await fetchApiJson("/risk/portfolio?node_type=company&limit=3"),
       forwardScenario: await fetchApiJson("/scenarios/forward", {
@@ -254,6 +258,11 @@ async function main() {
     const semiriskGraphReady =
       isSuccessfulEnvelope(apiCapabilities.graphSnapshot) &&
       isSuccessfulEnvelope(apiCapabilities.graphNeighborhood);
+    const relationshipEndpointsReady =
+      isSuccessfulEnvelope(apiCapabilities.supplyRelationships) &&
+      isSuccessfulEnvelope(apiCapabilities.demandRelationships) &&
+      isSuccessfulEnvelope(apiCapabilities.productionDependencies) &&
+      isSuccessfulEnvelope(apiCapabilities.supplyDemandBalance);
     const forwardScenarioReady = isSuccessfulEnvelope(apiCapabilities.forwardScenario);
     const reverseScenarioReady = isSuccessfulEnvelope(apiCapabilities.reverseScenario);
     const interventionOptimizationReady = isSuccessfulEnvelope(apiCapabilities.interventionOptimization);
@@ -264,13 +273,17 @@ async function main() {
       systemHealthStatus: apiCapabilities.systemHealth.status,
       graphSnapshotStatus: apiCapabilities.graphSnapshot.status,
       graphNeighborhoodStatus: apiCapabilities.graphNeighborhood.status,
+      supplyRelationshipsStatus: apiCapabilities.supplyRelationships.status,
+      demandRelationshipsStatus: apiCapabilities.demandRelationships.status,
+      productionDependenciesStatus: apiCapabilities.productionDependencies.status,
+      supplyDemandBalanceStatus: apiCapabilities.supplyDemandBalance.status,
       entityRiskStatus: apiCapabilities.entityRisk.status,
       riskPortfolioStatus: apiCapabilities.riskPortfolio.status,
       forwardScenarioStatus: apiCapabilities.forwardScenario.status,
       reverseScenarioStatus: apiCapabilities.reverseScenario.status,
       interventionOptimizationStatus: apiCapabilities.interventionOptimization.status,
       investigationReportStatus: apiCapabilities.investigationReport.status,
-      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady && interventionOptimizationReady && investigationReportReady : true,
+      passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && relationshipEndpointsReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady && interventionOptimizationReady && investigationReportReady : true,
     });
 
     for (const [page, hash] of pages) {
@@ -491,11 +504,22 @@ async function main() {
       const relationshipState = await waitFor(
         client,
         () => graphV2State(client),
-        (state) => state.text.includes(titleText) && state.text.includes(detailText),
+        (state) =>
+          state.text.includes(titleText) &&
+          state.text.includes(detailText) &&
+          (relationshipEndpointsReady
+            ? !state.text.includes("unavailable_preview")
+            : state.text.includes("unavailable_preview")),
       );
+      const hasUnavailablePreview = relationshipState.text.includes("unavailable_preview");
       checks.push({
         page: `Graph Explorer supply-demand ${buttonLabel} mode`,
-        passed: relationshipState.text.includes(titleText) && relationshipState.text.includes(detailText),
+        relationshipEndpointsReady,
+        hasUnavailablePreview,
+        passed:
+          relationshipState.text.includes(titleText) &&
+          relationshipState.text.includes(detailText) &&
+          (relationshipEndpointsReady ? !hasUnavailablePreview : hasUnavailablePreview),
       });
     }
 
@@ -681,6 +705,7 @@ async function main() {
         relevance.requiredSignals.includes("graph_version") &&
         relevance.requiredSignals.includes("source_manifest_id");
       const denseGraphAllowed = relevance.allowsDenseGraph === "true";
+      const denseGraphCount = relevance.flowNodeCount + Math.max(0, relevance.graphNodeCount - 8);
       checks.push({
         page: `${expected.title} page relevance policy`,
         policy: relevance.policy,
@@ -688,14 +713,46 @@ async function main() {
         requiredSignals: relevance.requiredSignals,
         disallowedMajorSections: relevance.disallowedMajorSections,
         flowNodeCount: relevance.flowNodeCount,
+        graphNodeCount: relevance.graphNodeCount,
+        hasVisibleSharedMetadata: relevance.hasVisibleSharedMetadata,
+        hasDisallowedText: relevance.hasDisallowedText,
+        hasDeploymentSuccessClaim: relevance.hasDeploymentSuccessClaim,
         passed:
           relevance.policy === expected.policy &&
           requiredSignals &&
           hasSharedMetadata &&
+          relevance.hasVisibleSharedMetadata &&
+          !relevance.hasDisallowedText &&
+          !relevance.hasDeploymentSuccessClaim &&
           denseGraphAllowed === expected.allowsDenseGraph &&
-          (expected.allowsDenseGraph || relevance.flowNodeCount === 0),
+          (expected.allowsDenseGraph || denseGraphCount === 0),
       });
     }
+
+    await navigate(client, `${webUrl}#path-analysis`);
+    const pathPageState = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.title === "Path Analysis" && state.text.includes("Path view") && state.text.includes("Transmission paths"),
+    );
+    checks.push({
+      page: "Path Analysis direct path mode",
+      passed:
+        pathPageState.title === "Path Analysis" &&
+        pathPageState.text.includes("Path view") &&
+        pathPageState.text.includes("Transmission paths"),
+    });
+
+    await navigate(client, `${webUrl}#country-lens`);
+    const countryPageState = await waitFor(
+      client,
+      () => graphV2State(client),
+      (state) => state.title === "Country Lens" && state.text.includes("Geo mode"),
+    );
+    checks.push({
+      page: "Country Lens direct geo mode",
+      passed: countryPageState.title === "Country Lens" && countryPageState.text.includes("Geo mode"),
+    });
 
     await navigate(client, `${webUrl}#company-risk-360`);
     const riskEvidenceTerms = [
@@ -1632,7 +1689,20 @@ async function pageRelevanceState(client) {
       disallowedMajorSections: (policy?.dataset?.disallowedMajorSections ?? '').split('|').filter(Boolean),
       allowsDenseGraph: policy?.dataset?.allowsDenseGraph ?? '',
       flowNodeCount: document.querySelectorAll('.react-flow__node').length,
+      graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
       text: document.body?.innerText ?? '',
+      hasVisibleSharedMetadata: ['data_mode', 'source_status', 'graph_mode', 'graph_version', 'source_manifest_id', 'not_production_ready']
+        .every((term) => (document.body?.innerText ?? '').includes(term)),
+      hasDisallowedText: (policy?.dataset?.disallowedMajorSections ?? '').split('|').filter(Boolean)
+        .some((section) => {
+          const text = document.body?.innerText ?? '';
+          if (section === 'optimizer_actions') return text.includes('Optimizer action') || text.includes('Recommended actions');
+          if (section === 'scenario_inputs') return text.includes('Scenario inputs');
+          if (section === 'report_export') return text.includes('Markdown export') || text.includes('JSON export');
+          if (section === 'dense_graph_canvas') return document.querySelectorAll('.react-flow__node').length > 0;
+          return false;
+        }),
+      hasDeploymentSuccessClaim: /deployed_success|deployment success|production ready|production-ready/i.test(document.body?.innerText ?? ''),
     };
   })()`);
 }

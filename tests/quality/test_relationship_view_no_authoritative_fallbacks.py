@@ -40,3 +40,16 @@ def test_graph_explorer_keeps_diagnostics_separate_from_relationship_rows() -> N
     assert "mode: options.mode" in source
     assert 'status: "loading"' in source
     assert "visibleLinks.slice" not in source
+    assert "buildRelationshipExportSummary(mode, endpointDataForMode, endpointDetails, metadata)" in source
+    assert "data_scope: \"unavailable_preview_no_authoritative_relationship_rows\"" in source
+    assert "authoritative_backend_relationship_rows_only" in source
+    assert "authoritative_backend_aggregate_rows_only" in source
+    assert source.index("buildRelationshipExportSummary") < source.index("links: view.visibleLinks.map")
+
+
+def test_supply_demand_balance_ui_requires_aggregate_markers() -> None:
+    source = (REPO_ROOT / "apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx").read_text(encoding="utf-8")
+
+    assert "row.relationship_class === SUPPLY_DEMAND_BALANCE_CLASS" in source
+    assert 'row.row_type === "aggregate"' in source
+    assert "row.not_supply_chain_dependency === true" in source

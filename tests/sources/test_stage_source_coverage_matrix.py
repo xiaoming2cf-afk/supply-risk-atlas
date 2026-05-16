@@ -81,6 +81,9 @@ def test_stage_source_coverage_matrix_records_fixture_defaults() -> None:
     assert matrix["defaults"]["fixture_required"] is True
     assert matrix["defaults"]["api_visibility_policy"] == "sanitized_summary_and_lineage_only"
     assert matrix["defaults"]["source_payload_policy"] == "no_raw_source_records"
+    assert matrix["defaults"]["coverage_counting_policy"] == "authoritative_source_records_only"
+    assert matrix["defaults"]["unavailable_preview_counted_as_coverage"] is False
+    assert matrix["defaults"]["relationship_unavailable_counted_as_stage_coverage"] is False
     assert REQUIRED_SOURCE_FAMILIES <= set(matrix["source_family_definitions"])
 
 
@@ -185,3 +188,34 @@ def test_stage_matrix_has_no_forbidden_geography_or_production_claim() -> None:
         "production_status: production",
     ]
     assert all(token not in rendered for token in forbidden_tokens)
+
+
+def test_stage_source_docs_define_statuses_and_unavailable_preview_policy() -> None:
+    matrix = _load_yaml(MATRIX_PATH)
+    doc_text = (ROOT / "docs" / "data" / "stage-source-coverage-matrix.md").read_text(encoding="utf-8")
+
+    assert "Source Status Legend" in doc_text
+    assert "`unavailable_preview` UI states and unavailable relationship endpoints never count as stage coverage" in doc_text
+    for status in ALLOWED_SOURCE_STATUSES:
+        assert f"`{status}`" in doc_text
+    for stage in matrix["stages"]:
+        assert f"| {stage['stage_id'].split('_', 1)[0]}" in doc_text
+        assert f"`{stage['source_status']}`" in doc_text
+
+
+def test_stage_source_docs_have_no_expanded_production_claims() -> None:
+    docs = [
+        ROOT / "docs" / "data" / "stage-source-coverage-matrix.md",
+        ROOT / "docs" / "data" / "connector-stage-coverage-audit.md",
+    ]
+    forbidden = [
+        "production-ready",
+        "production ready",
+        "official",
+        "production_verified",
+        "authoritative live data",
+    ]
+    for path in docs:
+        text = path.read_text(encoding="utf-8").lower()
+        for token in forbidden:
+            assert token not in text, f"{path} contains {token!r}"

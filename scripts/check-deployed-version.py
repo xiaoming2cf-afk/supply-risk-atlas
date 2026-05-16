@@ -26,26 +26,23 @@ def main() -> int:
 
     expected_commit = _clean_commit(args.expected_commit or local_git_commit())
     api_result = fetch_api_version(args.api_url, args.timeout)
-    web_result = fetch_web_commit_presence(args.web_url, expected_commit, args.timeout)
+    web_html_result = fetch_web_commit_presence(args.web_url, expected_commit, args.timeout)
+    web_proxy_result = fetch_web_proxy_version(args.web_url, args.timeout)
     api_commit = _clean_commit(str(api_result.get("git_commit") or "unknown"))
+    web_proxy_commit = _clean_commit(str(web_proxy_result.get("git_commit") or "unknown"))
 
-    status = "verified"
-    warnings: list[str] = []
-    if expected_commit == "unknown":
-        status = "not_verified"
-        warnings.append("expected_commit_unknown")
-    if api_commit == "unknown":
-        status = "stale_or_unverified"
-        warnings.append("api_commit_unknown")
-    elif expected_commit != "unknown" and not commits_match(expected_commit, api_commit):
-        status = "stale_or_unverified"
-        warnings.append("api_commit_mismatch")
-    if web_result["status"] != "verified":
-        status = "stale_or_unverified"
-        warnings.append(str(web_result["status"]))
+    status, warnings = deployment_status(
+        expected_commit=expected_commit,
+        api_result=api_result,
+        api_commit=api_commit,
+        web_html_result=web_html_result,
+        web_proxy_result=web_proxy_result,
+        web_proxy_commit=web_proxy_commit,
+    )
 
     report = {
         "status": status,
+        "deployment_status": status,
         "expected_commit": expected_commit,
         "api": {
             "status": api_result.get("status", "failed"),
@@ -54,11 +51,20 @@ def main() -> int:
             "environment": api_result.get("environment", "unknown"),
             "latency_class": api_result.get("latency_class", "failed"),
         },
-        "web": web_result,
+        "web": {
+            "html": web_html_result,
+            "proxy": {
+                "status": web_proxy_result.get("status", "failed"),
+                "git_commit": web_proxy_commit,
+                "app_version": web_proxy_result.get("app_version", "unknown"),
+                "environment": web_proxy_result.get("environment", "unknown"),
+                "latency_class": web_proxy_result.get("latency_class", "failed"),
+            },
+        },
         "warnings": sorted(set(warnings)),
     }
     print(json.dumps(report, indent=2, sort_keys=True))
-    return 0 if status == "verified" else 1
+    return 0 if status == "deployed_verified" else 1
 
 
 def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
@@ -66,16 +72,41 @@ def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
     started = time.perf_counter()
     try:
         with urlopen(Request(url, headers={"accept": "application/json"}), timeout=timeout) as response:
-            body = json.loads(response.read().decode("utf-8"))
-    except (OSError, URLError, json.JSONDecodeError) as exc:
+            body = json.loads(response.read(250_000).decode("utf-8"))
+    except (OSError, URLError, json.JSONDecodeError, AttributeError) as exc:
         return {"status": "failed", "error": type(exc).__name__, "latency_class": "failed"}
     latency = time.perf_counter() - started
+    if not isinstance(body, dict):
+        return {"status": "failed", "error": "InvalidEnvelope", "latency_class": latency_class(latency)}
     data = body.get("data") if isinstance(body, dict) else {}
     if not isinstance(data, dict):
         data = {}
     return {
         "status": "ok" if body.get("status") == "success" else "failed",
         "git_commit": data.get("git_commit", "unknown"),
+        "app_version": data.get("app_version", "unknown"),
+        "environment": data.get("environment", "unknown"),
+        "latency_class": latency_class(latency),
+    }
+
+
+def fetch_web_proxy_version(web_url: str, timeout: float) -> dict[str, Any]:
+    proxy_url = f"{web_url.rstrip('/')}/api/v1/version"
+    started = time.perf_counter()
+    try:
+        with urlopen(Request(proxy_url, headers={"accept": "application/json"}), timeout=timeout) as response:
+            body = json.loads(response.read(250_000).decode("utf-8"))
+    except (OSError, URLError, json.JSONDecodeError, AttributeError) as exc:
+        return {"status": "failed", "error": type(exc).__name__, "latency_class": "failed"}
+    latency = time.perf_counter() - started
+    if not isinstance(body, dict):
+        return {"status": "failed", "error": "InvalidEnvelope", "latency_class": latency_class(latency)}
+    data = body.get("data") if isinstance(body, dict) else {}
+    if not isinstance(data, dict):
+        data = {}
+    return {
+        "status": "ok" if body.get("status") == "success" else "failed",
+        "git_commit": data.get("git_commit") or data.get("api_commit", "unknown"),
         "app_version": data.get("app_version", "unknown"),
         "environment": data.get("environment", "unknown"),
         "latency_class": latency_class(latency),
@@ -98,6 +129,43 @@ def fetch_web_commit_presence(web_url: str, expected_commit: str, timeout: float
         "commit_visible": visible,
         "latency_class": latency_class(latency),
     }
+
+
+def deployment_status(
+    *,
+    expected_commit: str,
+    api_result: dict[str, Any],
+    api_commit: str,
+    web_html_result: dict[str, Any],
+    web_proxy_result: dict[str, Any],
+    web_proxy_commit: str,
+) -> tuple[str, list[str]]:
+    warnings: list[str] = []
+    if expected_commit == "unknown":
+        return "probe_error", ["expected_commit_unknown"]
+
+    api_failed = api_result.get("status") != "ok"
+    web_html_failed = web_html_result.get("status") == "failed"
+    web_proxy_failed = web_proxy_result.get("status") != "ok"
+    if api_failed and web_html_failed and web_proxy_failed:
+        return "deployed_unavailable", ["api_unavailable", "web_unavailable", "web_proxy_unavailable"]
+
+    if api_failed:
+        warnings.append("api_unavailable")
+    elif not commits_match(expected_commit, api_commit):
+        warnings.append("api_commit_mismatch")
+
+    if web_proxy_failed:
+        warnings.append("web_proxy_unavailable")
+    elif not commits_match(expected_commit, web_proxy_commit):
+        warnings.append("web_proxy_commit_mismatch")
+
+    if web_html_result.get("status") != "verified":
+        warnings.append(f"web_html_{web_html_result.get('status', 'not_verified')}")
+
+    if warnings:
+        return "deployed_stale_or_unverified", warnings
+    return "deployed_verified", []
 
 
 def local_git_commit() -> str:

@@ -11,6 +11,9 @@ defaults:
   fixture_required: true
   api_visibility_policy: sanitized_summary_and_lineage_only
   source_payload_policy: no_raw_source_records
+  coverage_counting_policy: authoritative_source_records_only
+  unavailable_preview_counted_as_coverage: false
+  relationship_unavailable_counted_as_stage_coverage: false
 source_family_definitions:
   national_policy_macro_public: National, multilateral, policy, macro, trade, sanctions, hazard, and logistics public records used as summarized fixture evidence.
   enterprise_public_disclosure: Public company filings, sanitized disclosure summaries, and reviewed public annual-report uploads used as enterprise evidence.

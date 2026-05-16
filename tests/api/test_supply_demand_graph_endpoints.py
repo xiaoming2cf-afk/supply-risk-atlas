@@ -135,18 +135,33 @@ def test_supply_demand_balance_endpoint_returns_product_grade_rows(
     assert data["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
     assert any(row["demand_edge_count"] >= 1 for row in data["balance_rows"])
     for row in data["balance_rows"]:
+        assert row["relationship_class"] == "SUPPLY_DEMAND_BALANCE"
         assert row["row_type"] == "aggregate"
         assert row["not_supply_chain_dependency"] is True
+        assert row.get("edge_type") != "evidence_context_link"
         assert row["source_refs"]
         assert row["evidence_refs"]
         assert row["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
         assert "supply_demand_balance_is_aggregate_not_dependency_edge" in row["warnings"]
+    serialized = json.dumps(data, sort_keys=True)
+    assert "EVIDENCE_CONTEXT" not in serialized
+    assert "evidence_context_link" not in serialized
 
 
-def test_graph_view_filters_by_relationship_class() -> None:
-    response = _client().get("/api/v1/graph/view?relationship_class=SUPPLY_RELATIONSHIP")
+@pytest.mark.parametrize("relationship_class", ["SUPPLY_RELATIONSHIP", " supply_relationship "])
+def test_graph_view_filters_by_relationship_class(relationship_class: str) -> None:
+    response = _client().get("/api/v1/graph/view", params={"relationship_class": relationship_class})
     data = _assert_graph_relationship_envelope(response.json())
 
     assert response.status_code == 200
     assert data["relationship_class_filter"] == "SUPPLY_RELATIONSHIP"
     assert all(edge["relationship_class"] == "SUPPLY_RELATIONSHIP" for edge in data["edges"])
+
+
+def test_graph_view_rejects_unknown_relationship_class_filter() -> None:
+    response = _client().get("/api/v1/graph/view?relationship_class=not_a_class")
+    data = _assert_graph_relationship_envelope(response.json())
+
+    assert response.status_code == 200
+    assert data.get("relationship_class_filter") is None
+    assert data["edges"] == []

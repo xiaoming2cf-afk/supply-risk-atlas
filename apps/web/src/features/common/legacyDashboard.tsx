@@ -191,6 +191,14 @@ function formatDateTime(value: string) {
   return parsed.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+function sanitizePublicEndpointDiagnostic(value: unknown) {
+  if (typeof value !== "string") return "endpoint://redacted";
+  return value
+    .replace(/[a-z][a-z0-9+.-]*:\/\/[^\s)]+/gi, "endpoint://redacted")
+    .replace(/[?&][A-Za-z0-9_.~-]+=[^&\s)]+/g, "")
+    .slice(0, 160);
+}
+
 function isAcceptedRealApiResult<T>(result: ApiResult<T>): result is ApiResult<T> & { data: T } {
   return (
     result.envelope.status === "success" &&
@@ -1987,13 +1995,17 @@ export function CompanyRisk360({
       "Risk Score v0 is unavailable until the SemiRisk fixture graph API is reachable."
     : "";
   const failedRiskEndpoint =
-    riskResult?.envelope.source?.lineage_ref ??
-    riskResult?.envelope.metadata?.lineage_ref ??
-    `api-unavailable://risk/entities/${selectedNodeId}`;
+    sanitizePublicEndpointDiagnostic(
+      riskResult?.envelope.source?.lineage_ref ??
+      riskResult?.envelope.metadata?.lineage_ref ??
+      `api-unavailable://risk/entities/${selectedNodeId}`,
+    );
   const failedPortfolioEndpoint =
-    portfolioResult?.envelope.source?.lineage_ref ??
-    portfolioResult?.envelope.metadata?.lineage_ref ??
-    "api-unavailable://risk/portfolio";
+    sanitizePublicEndpointDiagnostic(
+      portfolioResult?.envelope.source?.lineage_ref ??
+      portfolioResult?.envelope.metadata?.lineage_ref ??
+      "api-unavailable://risk/portfolio",
+    );
   const sourceConcentration = asRecord(risk?.concentration?.["source_concentration"]);
   const countryConcentration = asRecord(risk?.concentration?.["country_concentration"]);
 
@@ -2585,7 +2597,9 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
       .finally(() => setIsRunning(false));
   };
 
-  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://scenarios/forward";
+  const failedEndpoint = sanitizePublicEndpointDiagnostic(
+    failure?.envelope.metadata.lineage_ref ?? "api-unavailable://scenarios/forward",
+  );
   const sourceStatus = failure?.sourceStatus ?? "unavailable";
 
   return (
@@ -2936,7 +2950,9 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
       .finally(() => setIsRunning(false));
   };
 
-  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://scenarios/reverse";
+  const failedEndpoint = sanitizePublicEndpointDiagnostic(
+    failure?.envelope.metadata.lineage_ref ?? "api-unavailable://scenarios/reverse",
+  );
   const sourceStatus = failure?.sourceStatus ?? "unavailable";
   const topShockSet = result?.ranked_shock_sets[0];
 
@@ -3274,7 +3290,9 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
       .finally(() => setIsRunning(false));
   };
 
-  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://optimization/interventions";
+  const failedEndpoint = sanitizePublicEndpointDiagnostic(
+    failure?.envelope.metadata.lineage_ref ?? "api-unavailable://optimization/interventions",
+  );
   const sourceStatus = failure?.sourceStatus ?? "unavailable";
   const optimizerContextSource = input.reverse_stress_run
     ? "reverse_stress"
@@ -3608,7 +3626,9 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
       .finally(() => setIsRunning(false));
   };
 
-  const failedEndpoint = failure?.envelope.metadata.lineage_ref ?? "api-unavailable://reports/investigation";
+  const failedEndpoint = sanitizePublicEndpointDiagnostic(
+    failure?.envelope.metadata.lineage_ref ?? "api-unavailable://reports/investigation",
+  );
   const sourceStatus = failure?.sourceStatus ?? "unavailable";
 
   return (
@@ -4725,6 +4745,10 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
       apiBuildTime: "not_verified",
       webVersion: "not_verified",
       webGitCommit: "not_verified",
+      deploymentState: "not_verified",
+      staleOrUnverified: true,
+      unavailable: true,
+      lastCheckedAt: "not_verified",
       environment: "unknown",
       warnings: ["deployment_version_not_verified"],
     },
@@ -4856,6 +4880,10 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <Field label="web_build_version" value={webGitCommit} />
           <Field label="web_build_time" value={WEB_BUILD_TIME} />
           <Field label="commit_mismatch" value={deploymentReadiness.commitMismatch ? "true" : "false"} />
+          <Field label="deployment_state" value={deploymentReadiness.deploymentState ?? deploymentReadiness.status} />
+          <Field label="deployment_stale_or_unverified" value={deploymentReadiness.staleOrUnverified ? "true" : "false"} />
+          <Field label="deployment_unavailable" value={deploymentReadiness.unavailable ? "true" : "false"} />
+          <Field label="deployment_last_checked_at" value={deploymentReadiness.lastCheckedAt ?? "not_verified"} />
           <Field label="deployment_environment" value={deploymentReadiness.environment ?? "unknown"} />
           <Field label="validation_readiness" value={validationReadiness} />
           <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />

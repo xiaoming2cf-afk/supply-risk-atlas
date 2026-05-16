@@ -46,6 +46,8 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
 };
 
 const deploymentTarget = "supply-risk-atlas-web.onrender.com";
+const webBuildCommit = process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT ?? "not_verified";
+const webBuildTime = process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME ?? "not_verified";
 const publicPageIds = new Set<DashboardPageId>([
   "system-health-center",
   "global-risk-cockpit",
@@ -272,7 +274,12 @@ export function App() {
 
   return (
     <I18nProvider language={language} setLanguage={setLanguage}>
-    <div className="app-shell" data-deploy-target={deploymentTarget}>
+    <div
+      className="app-shell"
+      data-deploy-target={deploymentTarget}
+      data-web-build-commit={webBuildCommit}
+      data-web-build-time={webBuildTime}
+    >
       <aside className="side-rail" aria-label="SupplyRiskAtlas navigation">
         <div className="brand-lockup">
           <div className="brand-mark">
@@ -409,6 +416,13 @@ function DataLineageBanner({ status }: { status: DataStatus }) {
         <span>{t("Coverage")}: {t(publicCoverageLabel(status.sourceStatus))}</span>
         <span>{t("Updated")}: {formatPublicFreshness(status.freshness)}</span>
         <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
+        <span>data_mode: {status.mode}</span>
+        <span>source_status: {status.sourceStatus}</span>
+        <span>graph_mode: {status.graphMode}</span>
+        <span>graph_version: {status.graphVersion}</span>
+        <span>source_manifest_id: {status.sourceManifestId}</span>
+        <span>calibration_status: fixture_proxy_not_calibrated; not_financial_loss</span>
+        <span>not_production_ready: true</span>
       </div>
       <DiagnosticChips status={status} />
     </section>
@@ -440,6 +454,9 @@ interface DataStatus {
   lineage: string;
   requestId: string;
   details: string[];
+  graphVersion: string;
+  sourceManifestId: string;
+  graphMode: string;
   diagnostics?: {
     failedEndpoint?: string;
     sourceStatus?: string;
@@ -464,6 +481,9 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
       lineage: "unavailable",
       requestId: "pending",
       details: error ? [error] : [],
+      graphVersion: "unavailable",
+      sourceManifestId: "unavailable",
+      graphMode: "unavailable",
       diagnostics: {
         sourceStatus: hasApiBaseUrl ? "partial" : "unavailable",
         lastCheckedAt: new Date().toISOString(),
@@ -515,6 +535,9 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
     lineage: envelope.source?.lineage_ref ?? envelope.metadata?.lineage_ref ?? "unavailable",
     requestId: envelope.request_id,
     details: [...(envelope.warnings ?? []), ...(envelope.errors ?? []).map((item) => `${item.code}: ${item.message}`)],
+    graphVersion: envelope.metadata?.graph_version ?? "unavailable",
+    sourceManifestId: envelope.metadata?.source_manifest_ref ?? envelope.source?.lineage_ref ?? "unavailable",
+    graphMode: inferGraphMode(envelope.warnings),
     diagnostics: {
       failedEndpoint: sanitizeDiagnosticText(envelope.metadata?.failed_endpoint),
       sourceStatus: sanitizeDiagnosticText(envelope.metadata?.source_status ?? sourceStatus),
@@ -526,9 +549,21 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
   };
 }
 
+function inferGraphMode(warnings: string[] | undefined) {
+  const warningText = (warnings ?? []).join(";");
+  const match = warningText.match(/graphMode=([A-Za-z0-9_-]+)/);
+  if (match?.[1]) return match[1];
+  if (warningText.includes("promoted_public_evidence")) return "promoted";
+  if (warningText.includes("fixture_graph")) return "fixture";
+  return "fixture_or_promoted";
+}
+
 function sanitizeDiagnosticText(value: unknown) {
   if (typeof value !== "string") return undefined;
-  return value.replace(/https?:\/\/[^\s)]+/gi, "endpoint://redacted").slice(0, 160);
+  return value
+    .replace(/[a-z][a-z0-9+.-]*:\/\/[^\s)]+/gi, "endpoint://redacted")
+    .replace(/[?&][A-Za-z0-9_.~-]+=[^&\s)]+/g, "")
+    .slice(0, 160);
 }
 
 function canRenderPageData(

@@ -196,8 +196,9 @@ def route_graph_view(
         node_cap=OVERVIEW_NODE_CAP,
         edge_cap=OVERVIEW_EDGE_CAP,
     )
-    if relationship_class:
-        payload["relationship_class_filter"] = relationship_class
+    requested_relationship_class = _normalize_relationship_class_filter(relationship_class)
+    if requested_relationship_class:
+        payload["relationship_class_filter"] = requested_relationship_class
     return make_envelope(
         payload,
         metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
@@ -238,8 +239,9 @@ def route_graph_focus(
         edge_cap=FOCUS_EDGE_CAP,
         selected_node_id=node_id,
     )
-    if relationship_class:
-        payload["relationship_class_filter"] = relationship_class
+    requested_relationship_class = _normalize_relationship_class_filter(relationship_class)
+    if requested_relationship_class:
+        payload["relationship_class_filter"] = requested_relationship_class
     return make_envelope(
         payload,
         metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
@@ -856,8 +858,17 @@ def _edges_between(snapshot: Any, selected_nodes: list[str]) -> list[Any]:
 
 
 def _filter_edges_by_relationship_class(edges: list[Any], relationship_class: str | None) -> list[Any]:
+    requested = _normalize_relationship_class_filter(relationship_class)
     if not relationship_class:
         return edges
+    if not requested:
+        return []
+    return [edge for edge in edges if classify_edge(edge.edge_type) == requested]
+
+
+def _normalize_relationship_class_filter(relationship_class: str | None) -> str | None:
+    if not relationship_class:
+        return None
     allowed = {
         SUPPLY_RELATIONSHIP_CLASS,
         DEMAND_RELATIONSHIP_CLASS,
@@ -866,8 +877,8 @@ def _filter_edges_by_relationship_class(edges: list[Any], relationship_class: st
     }
     requested = relationship_class.strip().upper()
     if requested not in allowed:
-        return []
-    return [edge for edge in edges if classify_edge(edge.edge_type) == requested]
+        return None
+    return requested
 
 
 def _find_directed_path(snapshot: Any, source_node_id: str, target_node_id: str) -> list[Any]:

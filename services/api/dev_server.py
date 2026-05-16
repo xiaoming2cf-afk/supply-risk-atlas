@@ -53,6 +53,69 @@ class Handler(BaseHTTPRequestHandler):
             "/api/v1/graph": lambda: main.route_graph_snapshots(request_id=request_id),
             "/api/v1/graph/snapshots": lambda: main.route_graph_snapshots(request_id=request_id),
             "/api/v1/graph/diff": lambda: main.route_graph_diff(request_id=request_id),
+            "/api/v1/graph/view": lambda: main.route_graph_view(
+                mode=_first(query.get("mode")) or "overview",
+                relationship_class=_first(query.get("relationship_class")),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/focus": lambda: main.route_graph_focus(
+                node_id=_first(query.get("node_id")) or "company:tsmc",
+                depth=_int_or_default(_first(query.get("depth")), 1),
+                relationship_class=_first(query.get("relationship_class")),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/clusters": lambda: main.route_graph_clusters(request_id=request_id),
+            "/api/v1/graph/path-view": lambda: main.route_graph_path_view(
+                source_node_id=_first(query.get("source_node_id")) or "company:tsmc",
+                target_node_id=_first(query.get("target_node_id")) or "product_grade:advanced_logic",
+                request_id=request_id,
+            ),
+            "/api/v1/graph/timeline": lambda: main.route_graph_timeline(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/geo": lambda: main.route_graph_geo(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/matrix": lambda: main.route_graph_matrix(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/layers": lambda: main.route_graph_layers(request_id=request_id),
+            "/api/v1/graph/evidence": lambda: main.route_graph_evidence(
+                source_id=_first(query.get("source_id")),
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/scenario-overlay": lambda: main.route_graph_scenario_overlay(
+                run_id=_first(query.get("run_id")),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/node-catalog": lambda: main.route_graph_node_catalog(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/source-coverage": lambda: main.route_graph_source_coverage(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/supply-relationships": lambda: main.route_graph_supply_relationships(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/demand-relationships": lambda: main.route_graph_demand_relationships(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/production-dependencies": lambda: main.route_graph_production_dependencies(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/graph/supply-demand-balance": lambda: main.route_graph_supply_demand_balance(
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
             "/api/v1/graph/snapshot": lambda: main.route_semiconductor_graph_snapshot(
                 request_id=request_id,
             ),

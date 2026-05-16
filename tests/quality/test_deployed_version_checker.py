@@ -68,3 +68,69 @@ def test_web_commit_visible_rejects_embedded_prefix_inside_longer_hex_token() ->
         '<html><body>9674e6005021aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</body></html>',
         "9674e6005021597182b05aac4700247b89f81464",
     )
+
+
+def test_deployment_status_requires_api_web_proxy_and_html_match() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={"status": "ok"},
+        api_commit="9674e60",
+        web_html_result={"status": "verified"},
+        web_proxy_result={"status": "ok"},
+        web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
+    )
+
+    assert status == "deployed_verified"
+    assert warnings == []
+
+
+def test_deployment_status_reports_stale_mismatch_without_success() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={"status": "ok"},
+        api_commit="8942950",
+        web_html_result={"status": "commit_not_visible"},
+        web_proxy_result={"status": "ok"},
+        web_proxy_commit="8942950",
+    )
+
+    assert status == "deployed_stale_or_unverified"
+    assert "api_commit_mismatch" in warnings
+    assert "web_proxy_commit_mismatch" in warnings
+    assert "web_html_commit_not_visible" in warnings
+
+
+def test_deployment_status_reports_unavailable_when_all_public_probes_fail() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={"status": "failed"},
+        api_commit="unknown",
+        web_html_result={"status": "failed"},
+        web_proxy_result={"status": "failed"},
+        web_proxy_commit="unknown",
+    )
+
+    assert status == "deployed_unavailable"
+    assert warnings == ["api_unavailable", "web_unavailable", "web_proxy_unavailable"]
+
+
+def test_deployment_status_reports_probe_error_for_unknown_expected_commit() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="unknown",
+        api_result={"status": "ok"},
+        api_commit="9674e60",
+        web_html_result={"status": "verified"},
+        web_proxy_result={"status": "ok"},
+        web_proxy_commit="9674e60",
+    )
+
+    assert status == "probe_error"
+    assert warnings == ["expected_commit_unknown"]

@@ -104,7 +104,11 @@ function balanceEndpointData(endpointData: unknown) {
 
 function balanceRows(data: GraphSupplyDemandBalanceData | undefined) {
   return (data?.balance_rows ?? []).filter(
-    (row): row is Record<string, unknown> => isRecord(row) && row.relationship_class === SUPPLY_DEMAND_BALANCE_CLASS,
+    (row): row is Record<string, unknown> =>
+      isRecord(row) &&
+      row.relationship_class === SUPPLY_DEMAND_BALANCE_CLASS &&
+      row.row_type === "aggregate" &&
+      row.not_supply_chain_dependency === true,
   );
 }
 
