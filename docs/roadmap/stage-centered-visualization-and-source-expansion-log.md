@@ -441,3 +441,10 @@
 - A stale Render login page was identified; closing it through browser automation timed out, so no further Render UI action was attempted in that failed page.
 - No credentials, cookies, tokens, private diagnostics, raw payloads, screenshots with secrets, or unrelated personal content were copied into the log or GPT Pro handoff.
 - Deployment remains `deployed_stale_or_unverified`; no deployed-complete claim is made.
+
+### Post-Push Evidence
+
+- Commit `8c04c14` pushed to `origin/main`.
+- GitHub Actions `ci` passed for `8c04c14`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25965269537`.
+- GitHub Actions `Quality Gates` passed for `8c04c14`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25965269558`.
+- `python scripts/check-deployed-version.py --expected-commit 8c04c14 --timeout 20` returned sanitized `stale_or_unverified` with `api_commit_unknown` and Web `HTTPError`; deployment is still not verified.

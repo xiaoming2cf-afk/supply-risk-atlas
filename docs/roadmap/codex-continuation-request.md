@@ -2,13 +2,14 @@
 
 ## Current Status
 
-- Latest pushed commit before the current narrow patch: `9674e60`.
+- Latest pushed commit: `8c04c14`.
 - Branch: `main`.
 - GitHub Actions for recent pushed commits:
   - `8942950`: `ci` and `Quality Gates` passed.
   - `9674e60`: `ci` and `Quality Gates` passed.
+  - `8c04c14`: `ci` and `Quality Gates` passed.
 - Render deployment status: `deployed_stale_or_unverified`.
-  - The most recent deployed API verification seen in this run still reported an older API commit.
+  - `python scripts/check-deployed-version.py --expected-commit 8c04c14 --timeout 20` returned sanitized `stale_or_unverified`.
   - Deployed smoke reached a controlled unavailable state with sanitized endpoint diagnostics.
   - No deployed-complete claim is made until API/Web version evidence matches the latest pushed commit and deployed smoke passes or reports only expected controlled degradation.
 - Local validation already recorded in the roadmap log:
