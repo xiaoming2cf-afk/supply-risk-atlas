@@ -53,6 +53,13 @@ const pageRelevanceExpectations = [
     allowsDenseGraph: false,
   },
   {
+    title: "Global Risk Cockpit",
+    hash: "#global-risk-cockpit",
+    policy: "global-risk-cockpit",
+    required: [],
+    allowsDenseGraph: false,
+  },
+  {
     title: "Entity Risk 360",
     hash: "#company-risk-360",
     policy: "company-risk-360",
@@ -64,6 +71,27 @@ const pageRelevanceExpectations = [
     hash: "#graph-explorer",
     policy: "graph-explorer",
     required: ["relationship_class", "evidence_context_safety"],
+    allowsDenseGraph: true,
+  },
+  {
+    title: "Prediction Center",
+    hash: "#prediction-center",
+    policy: "prediction-center",
+    required: [],
+    allowsDenseGraph: false,
+  },
+  {
+    title: "Path Analysis",
+    hash: "#path-analysis",
+    policy: "path-analysis",
+    required: ["evidence_context_safety"],
+    allowsDenseGraph: true,
+  },
+  {
+    title: "Country Lens",
+    hash: "#country-lens",
+    policy: "country-lens",
+    required: [],
     allowsDenseGraph: true,
   },
   {

@@ -57,19 +57,36 @@ def test_relationship_graph_endpoints_return_bounded_relationship_rows(
     assert data["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
     assert data["source_status"] == "fixture_or_promoted_public_evidence"
     assert all(row["relationship_class"] == expected_class for row in data["relationships"])
+    rendered_relationships = json.dumps(data["relationships"], sort_keys=True)
+    assert "EVIDENCE_CONTEXT" not in rendered_relationships
+    assert "evidence_context_link" not in rendered_relationships
     for row in data["relationships"]:
         for key in (
             "edge_type",
             "source_node_id",
             "target_node_id",
+            "source_id",
+            "target_id",
             "source_refs",
             "evidence_refs",
             "confidence",
             "valid_from",
             "valid_to",
+            "graph_version",
+            "source_manifest_id",
+            "data_mode",
+            "graph_mode",
+            "source_status",
             "calibration_status",
         ):
             assert key in row
+        assert row["source_id"] == row["source_node_id"]
+        assert row["target_id"] == row["target_node_id"]
+        assert row["graph_version"] == data["graph_version"]
+        assert row["source_manifest_id"] == data["source_manifest_id"]
+        assert row["data_mode"] == data["data_mode"]
+        assert row["graph_mode"] == data["graph_mode"]
+        assert row["source_status"] == data["source_status"]
         assert row["relationship_class"] != "EVIDENCE_CONTEXT"
         assert row["edge_type"] != "evidence_context_link"
         assert isinstance(row["source_refs"], list)
@@ -85,6 +102,8 @@ def test_relationship_graph_endpoints_return_bounded_relationship_rows(
         assert all(row.get("demand_proxy_type") for row in data["relationships"])
     if expected_class == "PRODUCTION_DEPENDENCY":
         assert all("criticality" in row and "substitutability" in row for row in data["relationships"])
+        assert all(isinstance(row["criticality"], (int, float)) for row in data["relationships"])
+        assert all(isinstance(row["substitutability"], (int, float)) for row in data["relationships"])
 
 
 def test_supply_relationship_endpoint_includes_concentration_summary(
@@ -115,6 +134,13 @@ def test_supply_demand_balance_endpoint_returns_product_grade_rows(
     assert data["evidence_refs"]
     assert data["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
     assert any(row["demand_edge_count"] >= 1 for row in data["balance_rows"])
+    for row in data["balance_rows"]:
+        assert row["row_type"] == "aggregate"
+        assert row["not_supply_chain_dependency"] is True
+        assert row["source_refs"]
+        assert row["evidence_refs"]
+        assert row["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
+        assert "supply_demand_balance_is_aggregate_not_dependency_edge" in row["warnings"]
 
 
 def test_graph_view_filters_by_relationship_class() -> None:

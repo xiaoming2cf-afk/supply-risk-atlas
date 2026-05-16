@@ -544,3 +544,81 @@
 - Render deployment remains blocked until the user manually completes Render sign-in or provides a safe local Render automation path outside chat.
 - After Render access is available, redeploy API/Web from latest `main`, verify `/api/v1/version`, run deployed endpoint probes, run deployed smoke, and record sanitized evidence.
 - If deployment is deferred, continue with local-only data/API hardening only after recording that decision.
+
+## 2026-05-16 Worker D QA/Security/Product Hardening Audit
+
+### Findings
+
+- Low-readability critical file guards, forbidden geography output guards, raw/private payload scans, unsafe compliance-language tests, and targeted graph/page quality checks passed locally.
+- Current local WIP includes app/API-client read-fallback work and supply-demand aggregate row hardening owned by other workers; this audit did not modify those files.
+- Smallest remaining product-hardening patch: extend `scripts/browser-smoke.mjs` page-relevance expectations to cover every public nav page it already visits, especially Global Risk Cockpit, Prediction Center, Path Analysis, and Country Lens, so dense-graph allowance is smoke-checked outside Graph Explorer as well.
+
+### Commands Run
+
+- `python scripts/check-no-one-line-python.py` - pass
+- `python scripts/check-no-raw-payloads.py` - pass
+- `python -m pytest tests/quality/test_python_source_readability.py tests/quality/test_frontend_source_readability.py tests/quality/test_no_forbidden_geography_labels.py tests/security/test_no_raw_payload_exposure.py tests/security/test_unsafe_compliance_language.py tests/quality/test_graph_context_safety.py tests/quality/test_stage_frontend_artifacts.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py tests/quality/test_deployed_api_transport_fallback.py tests/api/test_supply_demand_graph_endpoints.py tests/api/test_graph_chart_table_endpoints.py -q` - pass, 40 tests
+- `npm.cmd --workspace apps/web run typecheck` - pass
+
+## 2026-05-16 Stage-Centered Data/API Hardening Gate
+
+### Current HEAD
+
+- Local HEAD before this implementation gate: `17b5b92f900d563ef8fec1b7cc74f1238c19caac`.
+- Preserved untracked local files: `apps/web/AGENTS.md` and `apps/web/CLAUDE.md`.
+- `data/runtime/` remains ignored and untracked.
+
+### Gate Result
+
+- Deployed data API access hardening: pass locally. The deployed web client now wires direct public API reads with same-origin proxy fallback while keeping write calls on the configured write API origin.
+- Relationship view failure masking hardening: pass locally. Supply, demand, production dependency, and supply-demand balance views accept only active backend endpoint data for the selected mode and render `unavailable_preview` states otherwise.
+- Relationship evidence binding: pass locally. Supply/demand/production endpoint rows include row-level graph/source/data-mode metadata, refs, warnings, calibration/source status, and evidence-context exclusion. Supply-demand balance rows are explicitly aggregate rows and not dependency edges.
+- Stage source coverage enrichment: pass locally. L0-L11 stages now record source families, fixture/live-disabled defaults, no-raw-source-records policy, and proxy limitations for national/policy/macro, enterprise disclosure, and industry fixture sources.
+- Page relevance smoke hardening: pass locally. Browser smoke now checks relevance policy for Global Risk Cockpit, Prediction Center, Path Analysis, and Country Lens in addition to the existing analytical pages.
+
+### Changed Files
+
+- `apps/web/src/app/App.tsx`
+- `packages/api-client/src/dashboard.ts`
+- `packages/shared-types/src/graph.ts`
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `services/api/services/graph_service.py`
+- `graph_kernel/supply_demand_builder.py`
+- `configs/sources/stage_source_coverage_matrix.yaml`
+- `docs/data/stage-source-coverage-matrix.md`
+- `docs/data/connector-stage-coverage-audit.md`
+- `scripts/browser-smoke.mjs`
+- `tests/api/test_supply_demand_graph_endpoints.py`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+- `tests/sources/test_stage_source_coverage_matrix.py`
+- `tests/sources/test_connector_stage_coverage.py`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py -q` - pass, 2 tests.
+- `npm.cmd --workspace apps/web run typecheck` - pass.
+- `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/graph_invariants/test_supply_demand_relationships.py tests/graph_invariants/test_relationship_class_separation.py -q` - pass, 13 tests.
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` - pass, 4 tests.
+- `python -m pytest tests/sources/test_stage_source_coverage_matrix.py tests/sources/test_connector_stage_coverage.py tests/quality/test_no_forbidden_geography_labels.py -q` - pass, 15 tests.
+- `python -m pytest tests/quality/test_relationship_view_no_authoritative_fallbacks.py tests/quality/test_frontend_source_readability.py tests/quality/test_deployed_api_transport_fallback.py tests/sources/test_stage_source_coverage_matrix.py tests/sources/test_connector_stage_coverage.py tests/api/test_supply_demand_graph_endpoints.py tests/graph_invariants/test_supply_demand_relationships.py tests/graph_invariants/test_relationship_class_separation.py tests/quality/test_no_forbidden_geography_labels.py -q` - pass, 37 tests.
+- `npm.cmd --workspace apps/web run typecheck` - pass.
+- `npm.cmd --workspace apps/web run typecheck:packages` - pass.
+- `npm.cmd --workspace apps/web run build` - pass.
+- `python -m pytest tests/quality -q` - pass, 30 tests.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_EXPECT_MODE=real npm.cmd run smoke:web` - pass, 65 checks.
+
+### Failures And Limitations
+
+- Deployment remains `deployed_stale_or_unverified`; the latest deployed probe before this gate still reported old API commit `13b3ece3e2f41918578a13c573905f1b16b73fab` and no visible Web commit marker.
+- Render redeploy remains blocked by interactive Render sign-in until the user completes sign-in or configures a safe local Render automation path.
+- Data-source coverage is richer and more explicit, but still fixture/promoted-public-evidence only. Live fetch remains disabled by default.
+
+### Computer Use Status
+
+- No new Computer Use action was performed during this local implementation gate.
+- Prior GPT Pro review accepted the CI/browser-smoke stabilization step and made deployment consistency the next priority before further deployed claims.

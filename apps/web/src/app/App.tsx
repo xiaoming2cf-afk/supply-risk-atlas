@@ -87,6 +87,15 @@ function resolveApiWriteBaseUrl(hostname: string | null) {
   return resolveApiBaseUrl(hostname);
 }
 
+function resolveApiReadFallbackBaseUrl(hostname: string | null, primaryBaseUrl: string | undefined) {
+  if (!hostname || !primaryBaseUrl) return undefined;
+  const sameOriginProxyBaseUrl = "/api/v1";
+  if (primaryBaseUrl === sameOriginProxyBaseUrl) return undefined;
+  if (hostname === deploymentTarget) return sameOriginProxyBaseUrl;
+  if (hostname === "127.0.0.1" || hostname === "localhost") return sameOriginProxyBaseUrl;
+  return undefined;
+}
+
 function getHashPage(): DashboardPageId {
   if (typeof window === "undefined") {
     return "system-health-center";
@@ -141,13 +150,17 @@ export function App() {
   const hasResolvedRuntimeHostname = runtimeHostname !== null;
   const configuredApiBaseUrl = hasResolvedRuntimeHostname ? resolveApiBaseUrl(runtimeHostname) : undefined;
   const configuredApiWriteBaseUrl = hasResolvedRuntimeHostname ? resolveApiWriteBaseUrl(runtimeHostname) : undefined;
+  const configuredApiReadFallbackBaseUrl = hasResolvedRuntimeHostname
+    ? resolveApiReadFallbackBaseUrl(runtimeHostname, configuredApiBaseUrl)
+    : undefined;
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
         baseUrl: configuredApiBaseUrl,
+        readFallbackBaseUrl: configuredApiReadFallbackBaseUrl,
         writeBaseUrl: configuredApiWriteBaseUrl
       }),
-    [configuredApiBaseUrl, configuredApiWriteBaseUrl]
+    [configuredApiBaseUrl, configuredApiReadFallbackBaseUrl, configuredApiWriteBaseUrl]
   );
   const t = (value: string) => translateText(value, language);
   const activeResultKey: DashboardPageId =

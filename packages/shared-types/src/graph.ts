@@ -446,6 +446,9 @@ export interface GraphRelationshipData extends GraphViewMetadata {
   relationship_class: string;
   relationships: Array<Record<string, unknown>>;
   supplier_concentration?: Array<Record<string, unknown>>;
+  evidence_refs: Array<Record<string, unknown>>;
+  source_status: string;
+  calibration_status: string;
   limit: number;
   layout_hints: Record<string, unknown>;
 }
@@ -453,6 +456,9 @@ export interface GraphRelationshipData extends GraphViewMetadata {
 export interface GraphSupplyDemandBalanceData extends GraphViewMetadata {
   relationship_class: string;
   balance_rows: Array<Record<string, unknown>>;
+  evidence_refs: Array<Record<string, unknown>>;
+  source_status: string;
+  calibration_status: string;
   limit: number;
   layout_hints: Record<string, unknown>;
 }

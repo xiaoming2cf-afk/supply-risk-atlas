@@ -41,6 +41,8 @@ from services.api.services.common import (
 
 SNAPSHOT_CACHE = SnapshotCache(max_items=8)
 GRAPH_VIEW_VERSION = "semirisk_graph_view_v0.1"
+RELATIONSHIP_CALIBRATION_STATUS = "fixture_or_promoted_calibration_not_validated"
+RELATIONSHIP_SOURCE_STATUS = "fixture_or_promoted_public_evidence"
 OVERVIEW_NODE_CAP = 20
 OVERVIEW_EDGE_CAP = 35
 FOCUS_NODE_CAP = 25
@@ -567,15 +569,20 @@ def route_graph_supply_relationships(
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
     relationship_payloads = _relationship_edge_payloads(snapshot)
-    rows = supply_relationship_rows(relationship_payloads)[: _bounded_limit(limit)]
+    rows = _relationship_endpoint_rows(
+        snapshot,
+        supply_relationship_rows(relationship_payloads),
+        relationship_class=SUPPLY_RELATIONSHIP_CLASS,
+        limit=limit,
+    )
     payload = {
         **_base_view_metadata(snapshot, mode="supply-relationships"),
         "relationship_class": SUPPLY_RELATIONSHIP_CLASS,
         "relationships": rows,
         "supplier_concentration": _supplier_concentration(rows),
         "evidence_refs": _relationship_evidence_refs(rows),
-        "calibration_status": "fixture_or_promoted_calibration_not_validated",
-        "source_status": "fixture_or_promoted_public_evidence",
+        "calibration_status": RELATIONSHIP_CALIBRATION_STATUS,
+        "source_status": RELATIONSHIP_SOURCE_STATUS,
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "supply-relationships",
@@ -597,14 +604,19 @@ def route_graph_demand_relationships(
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
     relationship_payloads = _relationship_edge_payloads(snapshot)
-    rows = demand_relationship_rows(relationship_payloads)[: _bounded_limit(limit)]
+    rows = _relationship_endpoint_rows(
+        snapshot,
+        demand_relationship_rows(relationship_payloads),
+        relationship_class=DEMAND_RELATIONSHIP_CLASS,
+        limit=limit,
+    )
     payload = {
         **_base_view_metadata(snapshot, mode="demand-relationships"),
         "relationship_class": DEMAND_RELATIONSHIP_CLASS,
         "relationships": rows,
         "evidence_refs": _relationship_evidence_refs(rows),
-        "calibration_status": "fixture_or_promoted_calibration_not_validated",
-        "source_status": "fixture_or_promoted_public_evidence",
+        "calibration_status": RELATIONSHIP_CALIBRATION_STATUS,
+        "source_status": RELATIONSHIP_SOURCE_STATUS,
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "demand-relationships",
@@ -626,14 +638,19 @@ def route_graph_production_dependencies(
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
     relationship_payloads = _relationship_edge_payloads(snapshot)
-    rows = production_dependency_rows(relationship_payloads)[: _bounded_limit(limit)]
+    rows = _relationship_endpoint_rows(
+        snapshot,
+        production_dependency_rows(relationship_payloads),
+        relationship_class=PRODUCTION_DEPENDENCY_CLASS,
+        limit=limit,
+    )
     payload = {
         **_base_view_metadata(snapshot, mode="production-dependencies"),
         "relationship_class": PRODUCTION_DEPENDENCY_CLASS,
         "relationships": rows,
         "evidence_refs": _relationship_evidence_refs(rows),
-        "calibration_status": "fixture_or_promoted_calibration_not_validated",
-        "source_status": "fixture_or_promoted_public_evidence",
+        "calibration_status": RELATIONSHIP_CALIBRATION_STATUS,
+        "source_status": RELATIONSHIP_SOURCE_STATUS,
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "production-dependencies",
@@ -667,8 +684,8 @@ def route_graph_supply_demand_balance(
                 *production_dependency_rows(relationship_payloads),
             ]
         ),
-        "calibration_status": "fixture_or_promoted_calibration_not_validated",
-        "source_status": "fixture_or_promoted_public_evidence",
+        "calibration_status": RELATIONSHIP_CALIBRATION_STATUS,
+        "source_status": RELATIONSHIP_SOURCE_STATUS,
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "supply-demand-balance",
@@ -984,6 +1001,83 @@ def _relationship_edge_payload(edge: Any) -> dict[str, Any]:
 
 def _relationship_edge_payloads(snapshot: Any) -> list[dict[str, Any]]:
     return [_relationship_edge_payload(edge) for edge in snapshot.edges]
+
+
+def _relationship_endpoint_rows(
+    snapshot: Any,
+    rows: list[dict[str, Any]],
+    *,
+    relationship_class: str,
+    limit: int | None,
+) -> list[dict[str, Any]]:
+    metadata = _relationship_row_metadata(snapshot)
+    enriched: list[dict[str, Any]] = []
+    for row in rows:
+        if row.get("relationship_class") != relationship_class:
+            continue
+        if _is_evidence_context_relationship(row):
+            continue
+        normalized = {
+            **metadata,
+            **row,
+            "source_id": row.get("source_node_id"),
+            "target_id": row.get("target_node_id"),
+            "source_refs": list(row.get("source_refs") or row.get("evidence_refs") or []),
+            "evidence_refs": list(row.get("evidence_refs") or row.get("source_refs") or []),
+            "warnings": list(row.get("warnings") or []),
+            "calibration_status": row.get("calibration_status")
+            or RELATIONSHIP_CALIBRATION_STATUS,
+        }
+        normalized.setdefault("valid_from", None)
+        normalized.setdefault("valid_to", None)
+        if relationship_class == PRODUCTION_DEPENDENCY_CLASS:
+            normalized["criticality"] = _relationship_score(normalized.get("criticality"))
+            normalized["substitutability"] = _relationship_score(
+                normalized.get("substitutability")
+            )
+        enriched.append(normalized)
+    return enriched[: _bounded_limit(limit)]
+
+
+def _relationship_row_metadata(snapshot: Any) -> dict[str, Any]:
+    graph_mode = getattr(snapshot, "graph_mode", "fixture")
+    data_mode = getattr(snapshot, "data_mode", "fixture")
+    return {
+        "view_version": GRAPH_VIEW_VERSION,
+        "graph_version": snapshot.graph_version,
+        "source_manifest_id": snapshot.source_manifest_id,
+        "as_of_time": snapshot.as_of_time.isoformat(),
+        "data_mode": data_mode,
+        "graph_mode": graph_mode,
+        "source_status": RELATIONSHIP_SOURCE_STATUS,
+    }
+
+
+def _is_evidence_context_relationship(row: dict[str, Any]) -> bool:
+    return (
+        row.get("relationship_class") == EVIDENCE_RELATIONSHIP_CLASS
+        or row.get("edge_type") == "evidence_context_link"
+    )
+
+
+def _relationship_score(value: Any) -> float:
+    if isinstance(value, bool):
+        return 1.0 if value else 0.0
+    if isinstance(value, (int, float)):
+        return max(0.0, min(float(value), 1.0))
+    score_by_label = {
+        "none": 0.0,
+        "no": 0.0,
+        "low": 0.25,
+        "limited": 0.25,
+        "medium": 0.5,
+        "moderate": 0.5,
+        "unknown": 0.5,
+        "high": 0.75,
+        "critical": 1.0,
+        "yes": 1.0,
+    }
+    return score_by_label.get(str(value).strip().lower(), 0.5)
 
 
 def _supplier_concentration(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

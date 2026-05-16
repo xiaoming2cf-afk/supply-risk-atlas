@@ -6,6 +6,15 @@ graph_mode: promoted_public_evidence
 warnings:
   - Stage-source coverage is a public-evidence research map, not a production supply-chain database.
   - Live connector paths remain disabled by default; fixtures and promoted summaries are used for tests and startup.
+defaults:
+  live_fetch_default: disabled
+  fixture_required: true
+  api_visibility_policy: sanitized_summary_and_lineage_only
+  source_payload_policy: no_raw_source_records
+source_family_definitions:
+  national_policy_macro_public: National, multilateral, policy, macro, trade, sanctions, hazard, and logistics public records used as summarized fixture evidence.
+  enterprise_public_disclosure: Public company filings, sanitized disclosure summaries, and reviewed public annual-report uploads used as enterprise evidence.
+  industry_public_fixture: Public industry, market, literature, and event-summary sources promoted through fixtures rather than live fetches.
 stages:
   - stage_id: L0_policy_macro
     stage_name: Policy and macro context
@@ -16,14 +25,19 @@ stages:
     required_data_fields: [policy_id, jurisdiction, effective_date, restricted_item, source_refs, confidence]
     primary_sources: [oecd_semiconductor_value_chain_reports, bis_export_controls_lite, federal_register_export_controls_lite, ofac_sanctions_list_lite]
     secondary_sources: [consolidated_screening_list_lite, world_bank_macro_indicators_lite, gdelt_semiconductor_lite]
+    source_families: [national_policy_macro_public, industry_public_fixture]
     connector_files: [bis_export_controls_lite.py, federal_register_export_controls_lite.py, ofac_sanctions_list_lite.py, consolidated_screening_list_lite.py]
     fixture_files: [bis_export_controls_lite.json, federal_register_export_controls_lite.json, ofac_sanctions_list_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [PolicyMacroGraphView, PolicyRestrictionGraph, ComplianceExposureView]
     charts: [PolicyTimeline, PolicyRestrictionImpactChart, ComplianceRestrictionMatrixChart]
     tables: [PolicyEventTable, ConnectorStatusTable, ComplianceRestrictionTable]
     risk_model_usage: Policy restrictions can affect products, equipment, firms, or process capabilities through production-dependency impact edges.
     simulation_usage: Policy-event shocks are modeled as constrained production-dependency impacts, not as rerouting or evasion guidance.
     source_gaps: [Policy scope and effective dates are fixture/proxy summaries until terms-reviewed source refresh is run.]
+    proxy_limitations: [Macro and policy records are summarized public fixtures; legal effect, scope, and effective-date interpretation remain source-review limited.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -40,14 +54,19 @@ stages:
     required_data_fields: [commodity, reporter, partner, period, trade_value, production_proxy, source_refs, confidence]
     primary_sources: [usgs_mineral_commodity_summaries_lite, un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]
     secondary_sources: [gdelt_semiconductor_lite, eto_cset_advanced_semiconductor_supply_chain]
+    source_families: [national_policy_macro_public, industry_public_fixture]
     connector_files: [usgs_minerals_lite.py, un_comtrade_semiconductor_trade_lite.py, wits_trade_tariff_lite.py, gdelt_semiconductor_lite.py]
     fixture_files: [usgs_minerals_lite.json, un_comtrade_semiconductor_trade_lite.json, wits_trade_tariff_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [MineralDependencyGraphView, MineralDependencyGraph, TradeDependencyGraph]
     charts: [HHIConcentrationChart, TradePartnerConcentrationChart, MineralSupplyHHIChart]
     tables: [CriticalInputTable, TradeFlowTable, MineralInputTable]
     risk_model_usage: Mineral dependency edges identify bottleneck candidates for upstream propagation.
     simulation_usage: Mineral shocks can seed critical-input disruption scenarios with explicit source uncertainty.
     source_gaps: [Mineral-to-semiconductor mapping is a documented proxy and remains not calibrated.]
+    proxy_limitations: [Commodity-to-process mappings and import-reliance shares are fixture proxies, not calibrated production input shares.]
     priority: P0
     current_coverage_status: partial
     source_status: incomplete_fixture_proxy
@@ -64,14 +83,19 @@ stages:
     required_data_fields: [input_id, process_stage, supplier_id, material_category, substitution_proxy, source_refs, confidence]
     primary_sources: [eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite]
     secondary_sources: [sec_edgar_lite, gdelt_semiconductor_lite, company_annual_report_manual_upload]
+    source_families: [industry_public_fixture, national_policy_macro_public, enterprise_public_disclosure]
     connector_files: [eto_supply_chain.py, un_comtrade_semiconductor_trade_lite.py, wits_trade_tariff_lite.py, sec_edgar_lite.py]
     fixture_files: [eto_supply_chain.json, un_comtrade_semiconductor_trade_lite.json, sec_edgar_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [MaterialChemicalDependencyGraphView, MaterialChemicalDependencyGraph]
     charts: [CriticalInputBottleneckChart, SupplierConcentrationHHIChart, MaterialSupplierConcentrationChart]
     tables: [SupplyRelationshipTable, ProductionDependencyTable, MaterialChemicalInputTable]
     risk_model_usage: Material and chemical edges support bottleneck scoring and substitution exposure.
     simulation_usage: Input disruption scenarios use production-dependency edges and supply relationships only.
     source_gaps: [Supplier shares and qualification times are fixture proxies unless disclosed.]
+    proxy_limitations: [Supplier concentration and qualification-time fields are public-summary proxies unless explicitly disclosed in enterprise evidence.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -88,14 +112,19 @@ stages:
     required_data_fields: [company_id, ip_or_tool, relationship_scope, disclosure_period, source_refs, confidence]
     primary_sources: [sec_edgar_lite, company_annual_report_manual_upload, oecd_semiconductor_value_chain_reports]
     secondary_sources: [openalex_crossref_literature_lite, gdelt_semiconductor_lite]
+    source_families: [enterprise_public_disclosure, industry_public_fixture]
     connector_files: [sec_edgar_lite.py, gdelt_semiconductor_lite.py]
     fixture_files: [sec_edgar_lite.json, gdelt_semiconductor_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [DesignIPDependencyGraphView, DesignIPDependencyGraph]
     charts: [RiskComponentStackedBar, StageRiskContributionChart]
     tables: [EvidenceRefsTable, StageEvidenceRefsTable]
     risk_model_usage: Design/IP dependencies inform capability exposure but do not imply undisclosed supplier links.
     simulation_usage: Design/IP shocks are modeled only where evidence-backed dependency edges exist.
     source_gaps: [Non-US annual reports are manual-upload only in this fixture layer.]
+    proxy_limitations: [Private IP, EDA license scope, and non-US disclosures are represented only when public sanitized summaries exist.]
     priority: P1
     current_coverage_status: partial
     source_status: incomplete_fixture_proxy
@@ -112,14 +141,19 @@ stages:
     required_data_fields: [equipment_id, supplier_id, process_stage, restriction_id, source_refs, confidence]
     primary_sources: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite, federal_register_export_controls_lite]
     secondary_sources: [sec_edgar_lite, gdelt_semiconductor_lite]
+    source_families: [industry_public_fixture, national_policy_macro_public, enterprise_public_disclosure]
     connector_files: [eto_supply_chain.py, bis_export_controls_lite.py, federal_register_export_controls_lite.py, sec_edgar_lite.py]
     fixture_files: [eto_supply_chain.json, bis_export_controls_lite.json, sec_edgar_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [EquipmentProcessDependencyGraphView, EquipmentProcessDependencyGraph]
     charts: [PolicyRestrictionImpactChart, CriticalInputBottleneckChart, EquipmentRestrictionTimelineChart]
     tables: [ProductionDependencyTable, PolicyEventTable, EquipmentSupplierTable]
     risk_model_usage: Equipment process dependencies are first-class bottleneck edges for propagation.
     simulation_usage: Equipment supply or restriction shocks can reduce process availability in fixture scenarios.
     source_gaps: [Capacity shares are not production calibrated.]
+    proxy_limitations: [Equipment bottleneck and capacity-share values are public fixture proxies unless disclosed by supplier or policy evidence.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -136,14 +170,19 @@ stages:
     required_data_fields: [fab_id, process_stage, technology_node, hazard_id, region_id, source_refs, confidence]
     primary_sources: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, usgs_earthquake_lite]
     secondary_sources: [gdelt_semiconductor_lite, wsts_historical_billings, sec_edgar_lite]
+    source_families: [industry_public_fixture, enterprise_public_disclosure, national_policy_macro_public]
     connector_files: [eto_supply_chain.py, usgs_earthquake_lite.py, gdelt_semiconductor_lite.py, sec_edgar_lite.py]
     fixture_files: [eto_supply_chain.json, usgs_earthquake_lite.json, gdelt_semiconductor_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [FabProcessGraphView, FabProcessGraph, HazardExposureGraph]
     charts: [HazardExposureByLayerChart, FunctionalityCurveChart, FabHazardExposureChart]
     tables: [HazardEventTable, ProductionDependencyTable, FabProcessDependencyTable]
     risk_model_usage: Fabrication dependency edges drive physical propagation and functionality-loss calculations.
     simulation_usage: Fab and process shocks seed Monte Carlo and reverse-stress paths.
     source_gaps: [Capacity and utilization remain proxy-only.]
+    proxy_limitations: [Fab capacity, utilization, and hazard impact severity are fixture proxies and should not be treated as calibrated facility telemetry.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -160,14 +199,19 @@ stages:
     required_data_fields: [product_grade_id, demand_proxy_type, period, revenue_region, source_refs, confidence]
     primary_sources: [wsts_historical_billings, sec_edgar_lite, company_annual_report_manual_upload]
     secondary_sources: [gdelt_semiconductor_lite, eto_cset_advanced_semiconductor_supply_chain]
+    source_families: [industry_public_fixture, enterprise_public_disclosure]
     connector_files: [wsts_billings.py, sec_edgar_lite.py, gdelt_semiconductor_lite.py]
     fixture_files: [wsts_billings.json, sec_edgar_lite.json, gdelt_semiconductor_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [ProductDemandGraphView, ProductDemandGraph]
     charts: [DownstreamDemandPressureChart, SupplyDemandBalanceChart, ProductDemandPressureChart]
     tables: [ProductDemandTable, DemandRelationshipTable]
     risk_model_usage: Product nodes bridge demand shocks to required process and capacity dependencies.
     simulation_usage: Product demand spikes use demand edges, not supply edges.
     source_gaps: [Product-level demand values are fixture proxies.]
+    proxy_limitations: [Product demand and revenue-region indicators are aggregated fixtures and not product-booking or private order data.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -184,14 +228,19 @@ stages:
     required_data_fields: [packaging_stage_id, provider_id, substrate_id, qualification_proxy, source_refs, confidence]
     primary_sources: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, gdelt_semiconductor_lite]
     secondary_sources: [un_comtrade_semiconductor_trade_lite, sec_edgar_lite]
+    source_families: [industry_public_fixture, enterprise_public_disclosure, national_policy_macro_public]
     connector_files: [eto_supply_chain.py, gdelt_semiconductor_lite.py, un_comtrade_semiconductor_trade_lite.py]
     fixture_files: [eto_supply_chain.json, gdelt_semiconductor_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [PackagingTestingGraphView, PackagingTestingGraph]
     charts: [SupplierConcentrationHHIChart, PackagingCapacityProxyChart]
     tables: [SupplyRelationshipTable, CriticalInputTable, PackagingTestingTable]
     risk_model_usage: Packaging constraints are modeled as service/capacity supply relationships plus process dependencies.
     simulation_usage: Advanced packaging bottlenecks can be selected as critical input shocks.
     source_gaps: [Capacity shares are not production calibrated.]
+    proxy_limitations: [OSAT service evidence is separated from capacity proxy charts; capacity shares are not calibrated without public disclosure.]
     priority: P1
     current_coverage_status: partial
     source_status: incomplete_fixture_proxy
@@ -208,14 +257,19 @@ stages:
     required_data_fields: [facility_id, country_id, region_id, route_id, coordinates, facilities, source_refs, confidence]
     primary_sources: [nga_world_port_index_lite, gdelt_semiconductor_lite, usgs_earthquake_lite]
     secondary_sources: [un_comtrade_semiconductor_trade_lite]
+    source_families: [national_policy_macro_public, industry_public_fixture]
     connector_files: [nga_world_port_index_lite.py, gdelt_semiconductor_lite.py, usgs_earthquake_lite.py, un_comtrade_semiconductor_trade_lite.py]
     fixture_files: [nga_world_port_index_lite.json, gdelt_semiconductor_lite.json, usgs_earthquake_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [LogisticsRouteGraphView, LogisticsRouteGraph, GeoGraph]
     charts: [HazardExposureByLayerChart, LogisticsRouteExposureChart]
     tables: [LogisticsFacilityTable, LogisticsRouteTable]
     risk_model_usage: Logistics route edges are dependency context for disruption propagation only when connected to process or facility nodes.
     simulation_usage: Port and route disruption scenarios affect reachable logistics dependencies.
     source_gaps: [Route volumes and lane shares are not production calibrated.]
+    proxy_limitations: [Facility and route records provide context only; shipment volumes, lane shares, and routing probabilities are absent from fixtures.]
     priority: P1
     current_coverage_status: partial
     source_status: incomplete_fixture_proxy
@@ -232,14 +286,19 @@ stages:
     required_data_fields: [demand_source_id, product_grade_id, sector_id, period, demand_proxy_type, source_refs, confidence]
     primary_sources: [wsts_historical_billings, sec_edgar_lite, gdelt_semiconductor_lite]
     secondary_sources: [company_annual_report_manual_upload]
+    source_families: [industry_public_fixture, enterprise_public_disclosure]
     connector_files: [wsts_billings.py, sec_edgar_lite.py, gdelt_semiconductor_lite.py]
     fixture_files: [wsts_billings.json, sec_edgar_lite.json, gdelt_semiconductor_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [DownstreamDemandGraphView, DemandRelationshipGraph, SupplyDemandBalanceView]
     charts: [DownstreamDemandPressureChart, SupplyDemandBalanceChart, DownstreamDemandMixChart]
     tables: [DemandRelationshipTable, ProductDemandTable]
     risk_model_usage: Demand edges support demand-shock interpretation and are not supplier edges.
     simulation_usage: Demand spikes use demand relationship rows and supply-demand balance proxies.
     source_gaps: [Demand values are proxy summaries.]
+    proxy_limitations: [Sector demand and product-grade pressure are public aggregate proxies, not customer order books.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -256,14 +315,19 @@ stages:
     required_data_fields: [event_id, event_type, affected_node_id, event_time, severity_proxy, source_refs, confidence]
     primary_sources: [gdelt_semiconductor_lite, usgs_earthquake_lite]
     secondary_sources: [sec_edgar_lite, company_annual_report_manual_upload]
+    source_families: [industry_public_fixture, national_policy_macro_public, enterprise_public_disclosure]
     connector_files: [gdelt_semiconductor_lite.py, usgs_earthquake_lite.py, sec_edgar_lite.py]
     fixture_files: [gdelt_semiconductor_lite.json, usgs_earthquake_lite.json, sec_edgar_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [EventTimelineGraphView, EventTimelineGraph, ScenarioOverlayGraph]
     charts: [HazardTimeline, PolicyTimeline, StageRiskContributionChart]
     tables: [HazardEventTable, EvidenceRefsTable, StageEvidenceRefsTable]
     risk_model_usage: Event edges are impact or hazard-exposure edges only when modeled as production dependencies.
     simulation_usage: Event nodes seed scenario overlays and reverse-stress candidate context.
     source_gaps: [News-derived event confidence remains proxy-only.]
+    proxy_limitations: [Event severity, affected-node matching, and confidence are public-summary proxies, not incident telemetry.]
     priority: P1
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence
@@ -280,14 +344,19 @@ stages:
     required_data_fields: [policy_id, restricted_item_id, restricted_entity_id, list_id, source_refs, confidence]
     primary_sources: [bis_export_controls_lite, federal_register_export_controls_lite, ofac_sanctions_list_lite]
     secondary_sources: [consolidated_screening_list_lite, gdelt_semiconductor_lite]
+    source_families: [national_policy_macro_public, industry_public_fixture]
     connector_files: [bis_export_controls_lite.py, federal_register_export_controls_lite.py, ofac_sanctions_list_lite.py, consolidated_screening_list_lite.py]
     fixture_files: [bis_export_controls_lite.json, federal_register_export_controls_lite.json, ofac_sanctions_list_lite.json, consolidated_screening_list_lite.json]
+    live_fetch_default: disabled
+    fixture_required: true
+    source_payload_policy: no_raw_source_records
     graph_views: [ComplianceRiskGraphView, ComplianceRiskGraph]
     charts: [PolicyRestrictionImpactChart, ComplianceRestrictionMatrixChart]
     tables: [PolicyEventTable, ComplianceRestrictionTable]
     risk_model_usage: Compliance edges represent restrictions or evidence context, never evasion or bypass advice.
     simulation_usage: Compliance monitoring interventions can reduce uncertainty but do not recommend circumvention.
     source_gaps: [Legal interpretation is out of scope; records are sanitized source summaries.]
+    proxy_limitations: [Compliance records are sanitized public summaries and registry matches only; no legal interpretation or circumvention guidance is encoded.]
     priority: P0
     current_coverage_status: implemented
     source_status: fixture_promoted_public_evidence

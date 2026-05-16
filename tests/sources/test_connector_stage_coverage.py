@@ -7,6 +7,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 MATRIX_PATH = ROOT / "configs" / "sources" / "stage_source_coverage_matrix.yaml"
+AUDIT_PATH = ROOT / "docs" / "data" / "connector-stage-coverage-audit.md"
 CONNECTOR_ROOT = ROOT / "packages" / "sra_core" / "sra_core" / "ingestion" / "connectors"
 
 REQUIRED_CONNECTORS = {
@@ -23,6 +24,12 @@ REQUIRED_CONNECTORS = {
     "federal_register_export_controls_lite.py",
     "eto_supply_chain.py",
     "wsts_billings.py",
+}
+
+SOURCE_FAMILY_LABELS = {
+    "National/policy/macro public",
+    "Enterprise public disclosure",
+    "Industry public fixture",
 }
 
 
@@ -50,8 +57,19 @@ def test_every_stage_has_two_source_candidates_in_connector_audit() -> None:
 
 
 def test_connector_stage_audit_does_not_claim_production_readiness() -> None:
-    text = (ROOT / "docs" / "data" / "connector-stage-coverage-audit.md").read_text(encoding="utf-8").lower()
+    text = AUDIT_PATH.read_text(encoding="utf-8").lower()
 
     assert "production readiness" not in text
     assert "production-ready" not in text
     assert "disabled by default" in text
+
+
+def test_connector_stage_audit_records_source_families_and_live_disabled() -> None:
+    text = AUDIT_PATH.read_text(encoding="utf-8")
+
+    for label in SOURCE_FAMILY_LABELS:
+        assert label in text
+    for connector in REQUIRED_CONNECTORS:
+        row = next(line for line in text.splitlines() if f"`{connector}`" in line)
+        assert "disabled by default" in row
+        assert any(label in row for label in SOURCE_FAMILY_LABELS), connector

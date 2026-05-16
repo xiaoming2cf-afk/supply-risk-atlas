@@ -98,6 +98,7 @@ export function GraphExplorer({
   const [confidenceMin, setConfidenceMin] = useState(0);
   const [evidenceOnly, setEvidenceOnly] = useState(false);
   const [endpointDetails, setEndpointDetails] = useState<GraphEndpointDetails>({
+    mode,
     source: "fallback",
     status: "fallback",
     message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
@@ -141,6 +142,7 @@ export function GraphExplorer({
     let cancelled = false;
     if (!apiClient) {
       setEndpointDetails({
+        mode,
         source: "fallback",
         status: "fallback",
         message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
@@ -149,11 +151,12 @@ export function GraphExplorer({
     }
 
     const loadEndpointDetails = async () => {
-      setEndpointDetails((current) => ({
-        ...current,
+      setEndpointDetails({
+        mode,
+        source: "backend",
         status: "loading",
         message: "Backend graph view endpoint loading.",
-      }));
+      });
       try {
         const result = await fetchGraphEndpointDetails(apiClient, {
           mode,
@@ -166,6 +169,7 @@ export function GraphExplorer({
       } catch (error) {
         if (cancelled) return;
         setEndpointDetails({
+          mode,
           source: "fallback",
           status: "fallback",
           message: error instanceof Error ? error.message : "Fallback graph payload: backend graph view endpoint unavailable.",
@@ -279,6 +283,10 @@ export function GraphExplorer({
   const selectedPathStepEdgeId =
     view.selectedPathStep?.edgeId ??
     (view.activePath && selectedPathStepIndex > 0 ? view.activePath.edgeSequence[selectedPathStepIndex - 1] : undefined);
+  const endpointDataForMode =
+    endpointDetails.mode === mode && endpointDetails.source === "backend" && endpointDetails.status === "active"
+      ? endpointDetails.data
+      : undefined;
 
   const toggleLayer = (layer: GraphLayerCategory) => {
     setEnabledLayers((current) => {
@@ -486,21 +494,21 @@ export function GraphExplorer({
         />
         <div className="graph-canvas">
           {mode === "supply" ? (
-            <SupplyRelationshipView view={view} endpointData={endpointDetails.data} />
+            <SupplyRelationshipView view={view} endpointData={endpointDataForMode} />
           ) : mode === "demand" ? (
-            <DemandRelationshipView view={view} endpointData={endpointDetails.data} />
+            <DemandRelationshipView view={view} endpointData={endpointDataForMode} />
           ) : mode === "production-dependency" ? (
-            <ProductionDependencyView view={view} endpointData={endpointDetails.data} />
+            <ProductionDependencyView view={view} endpointData={endpointDataForMode} />
           ) : mode === "supply-demand-balance" ? (
-            <SupplyDemandBalanceView view={view} endpointData={endpointDetails.data} />
+            <SupplyDemandBalanceView view={view} endpointData={endpointDataForMode} />
           ) : mode === "matrix" ? (
-            <GraphMatrixView graph={graph} view={view} endpointData={endpointDetails.data} />
+            <GraphMatrixView graph={graph} view={view} endpointData={endpointDataForMode} />
           ) : mode === "evidence" ? (
-            <GraphEvidenceView view={view} endpointData={endpointDetails.data} />
+            <GraphEvidenceView view={view} endpointData={endpointDataForMode} />
           ) : mode === "source-coverage" ? (
-            <GraphSourceCoverageView view={view} endpointData={endpointDetails.data} />
+            <GraphSourceCoverageView view={view} endpointData={endpointDataForMode} />
           ) : mode === "node-catalog" ? (
-            <GraphNodeCatalogView view={view} endpointData={endpointDetails.data} />
+            <GraphNodeCatalogView view={view} endpointData={endpointDataForMode} />
           ) : view.visibleNodes.length > 0 ? (
             <GraphCanvas
               activePathEdgeIds={view.activePathEdgeIds}
@@ -530,7 +538,7 @@ export function GraphExplorer({
           )}
         </div>
         <GraphModeDetailPanel
-          endpointDetails={endpointDetails}
+          endpointData={endpointDataForMode}
           graph={graph}
           metadata={metadata}
           mode={mode}
@@ -605,6 +613,7 @@ type GraphEndpointDetails = {
     | GraphSupplyDemandBalanceData
     | Record<string, unknown>;
   message: string;
+  mode?: GraphViewMode;
   source: "backend" | "fallback";
   status: "active" | "fallback" | "loading";
   diagnostics?: {
@@ -665,12 +674,14 @@ async function fetchGraphEndpointDetails(
     return {
       data: result.data as GraphEndpointDetails["data"],
       message: "Backend graph view endpoint active.",
+      mode: options.mode,
       source: "backend",
       status: "active",
     };
   }
   return {
     message: result.envelope.warnings?.[0] ?? "Fallback graph payload: backend graph view endpoint unavailable.",
+    mode: options.mode,
     source: "fallback",
     status: "fallback",
     diagnostics: diagnosticsForEndpointResult(result),
@@ -713,24 +724,24 @@ function sanitizeEndpointDiagnostic(value: unknown) {
 }
 
 function GraphModeDetailPanel({
-  endpointDetails,
+  endpointData,
   graph,
   metadata,
   mode,
   view,
 }: {
-  endpointDetails: GraphEndpointDetails;
+  endpointData: GraphEndpointDetails["data"];
   graph: GraphExplorerData;
   metadata: GraphVersionMetadata;
   mode: GraphViewMode;
   view: GraphViewModel;
 }) {
   if (mode === "overview") return <GraphOverviewView graph={graph} metadata={metadata} view={view} />;
-  if (mode === "timeline") return <GraphTimelineView graph={graph} endpointData={endpointDetails.data} view={view} />;
-  if (mode === "geo") return <GraphGeoView endpointData={endpointDetails.data} graph={graph} view={view} />;
-  if (mode === "scenario") return <GraphScenarioOverlay endpointData={endpointDetails.data} view={view} />;
-  if (mode === "source-coverage") return <GraphSourceCoverageView endpointData={endpointDetails.data} view={view} />;
-  if (mode === "node-catalog") return <GraphNodeCatalogView endpointData={endpointDetails.data} view={view} />;
+  if (mode === "timeline") return <GraphTimelineView graph={graph} endpointData={endpointData} view={view} />;
+  if (mode === "geo") return <GraphGeoView endpointData={endpointData} graph={graph} view={view} />;
+  if (mode === "scenario") return <GraphScenarioOverlay endpointData={endpointData} view={view} />;
+  if (mode === "source-coverage") return <GraphSourceCoverageView endpointData={endpointData} view={view} />;
+  if (mode === "node-catalog") return <GraphNodeCatalogView endpointData={endpointData} view={view} />;
   if (mode === "path") return <GraphPathView view={view} />;
   if (mode === "focus") return <GraphFocusView view={view} />;
   return null;

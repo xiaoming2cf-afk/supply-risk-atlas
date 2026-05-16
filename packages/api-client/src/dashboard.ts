@@ -208,7 +208,8 @@ async function requestJson<T>(
       : lastError instanceof Error
         ? lastError.message
         : "Dashboard API request failed.";
-  return createUnavailableResult(endpoint, sourceStatus, message, lastError, undefined, transportAttempts);
+  const failedHttpStatus = lastError instanceof DashboardApiHttpError ? lastError.status : undefined;
+  return createUnavailableResult(endpoint, sourceStatus, message, lastError, failedHttpStatus, transportAttempts);
 }
 
 function uniqueBaseUrls(values: Array<string | undefined>): string[] {

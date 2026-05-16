@@ -98,23 +98,33 @@ def supply_demand_balance_rows(edges: Iterable[Mapping[str, Any]]) -> list[dict[
     demand_by_target: dict[str, int] = {}
     supply_by_target: dict[str, int] = {}
     dependency_by_source: dict[str, int] = {}
+    supporting_edges_by_product: dict[str, list[Mapping[str, Any]]] = {}
 
     for edge in groups["demand_edges"]:
         demand_by_target[edge["target_node_id"]] = demand_by_target.get(edge["target_node_id"], 0) + 1
+        supporting_edges_by_product.setdefault(edge["target_node_id"], []).append(edge)
     for edge in groups["supply_edges"]:
         supply_by_target[edge["target_node_id"]] = supply_by_target.get(edge["target_node_id"], 0) + 1
+        supporting_edges_by_product.setdefault(edge["target_node_id"], []).append(edge)
     for edge in groups["production_dependency_edges"]:
         dependency_by_source[edge["source_node_id"]] = dependency_by_source.get(edge["source_node_id"], 0) + 1
+        supporting_edges_by_product.setdefault(edge["source_node_id"], []).append(edge)
 
     product_ids = sorted(set(demand_by_target) | set(supply_by_target) | set(dependency_by_source))
     return [
         {
             "product_grade_id": product_id,
             "relationship_class": "SUPPLY_DEMAND_BALANCE",
+            "row_type": "aggregate",
+            "not_supply_chain_dependency": True,
             "demand_edge_count": demand_by_target.get(product_id, 0),
             "supply_edge_count": supply_by_target.get(product_id, 0),
             "production_dependency_count": dependency_by_source.get(product_id, 0),
             "shortage_proxy": max(0, demand_by_target.get(product_id, 0) - supply_by_target.get(product_id, 0)),
+            "source_refs": _dedupe_source_refs(supporting_edges_by_product.get(product_id, [])),
+            "evidence_refs": _dedupe_source_refs(supporting_edges_by_product.get(product_id, [])),
+            "warnings": ["supply_demand_balance_is_aggregate_not_dependency_edge"],
+            "calibration_status": "fixture_or_promoted_calibration_not_validated",
         }
         for product_id in product_ids
     ]
@@ -131,3 +141,18 @@ def _relationship_row_common(edge: Mapping[str, Any]) -> dict[str, Any]:
         "warnings": [],
         "calibration_status": "fixture_or_promoted_calibration_not_validated",
     }
+
+
+def _dedupe_source_refs(edges: Iterable[Mapping[str, Any]]) -> list[dict[str, str]]:
+    refs: dict[tuple[str, str], dict[str, str]] = {}
+    for edge in edges:
+        for ref in edge.get("source_refs") or []:
+            if not isinstance(ref, Mapping):
+                continue
+            source_id = str(ref.get("source_id") or "unknown")
+            source_record_id = str(ref.get("source_record_id") or "record")
+            refs[(source_id, source_record_id)] = {
+                "source_id": source_id,
+                "source_record_id": source_record_id,
+            }
+    return [refs[key] for key in sorted(refs)]
