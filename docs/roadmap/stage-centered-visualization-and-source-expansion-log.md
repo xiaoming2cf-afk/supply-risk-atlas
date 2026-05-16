@@ -494,3 +494,53 @@
 - GitHub Actions `ci` passed for `99132bd`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966115107`.
 - GitHub Actions `Quality Gates` passed for `99132bd`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966115177`.
 - `python scripts/check-deployed-version.py --expected-commit 99132bd --timeout 20` returned sanitized `stale_or_unverified` with `api_commit_unknown` and Web `HTTPError`; deployment is still not verified.
+
+## 2026-05-16 Crash Recovery And Deployment Handoff
+
+### Current HEAD
+
+- Local HEAD at recovery: `5147d4f0e972428ccef1010ec3d8b7d7a1d31031`.
+- Recent pushed commits:
+  - `99132bd3803073f42a28cbb24cdfbf7dd23345ad` - CI browser smoke launch stabilization.
+  - `5147d4f0e972428ccef1010ec3d8b7d7a1d31031` - browser smoke CI recovery evidence.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+- `data/runtime/` remains ignored and untracked.
+
+### GitHub Evidence
+
+- GitHub Actions `ci` passed for `5147d4f`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966256323`.
+- GitHub Actions `Quality Gates` passed for `5147d4f`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966256330`.
+
+### Recovery Commands
+
+- `python -m pytest tests/quality -q` - pass, 28 tests.
+- `python scripts/check-deployed-version.py --expected-commit 5147d4f --timeout 20` - expected failure with sanitized `stale_or_unverified`.
+
+### Deployment Probe Evidence
+
+- Expected commit: `5147d4f`.
+- Deployed API status: `ok`, but reported old commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- Deployed Web status: `commit_not_visible`; commit marker for `5147d4f` was not visible.
+- Deployment status remains `deployed_stale_or_unverified`.
+- No deployed-complete claim is made.
+
+### GPT Pro Review
+
+- A sanitized GPT Pro review packet was submitted after commit `5147d4f`.
+- GPT Pro accepted the CI/browser-smoke stabilization step.
+- GPT Pro identified deployment consistency as the next priority before further stage-centered data/API enrichment.
+
+### Computer Use Actions
+
+- Computer Use was used only for project-scoped Chrome/GitHub/GPT Pro/Render inspection.
+- Render redeploy could not be completed because automation reached an interactive Render sign-in page.
+- No credentials were typed or submitted.
+- No cookies, tokens, screenshots with secrets, raw payloads, private diagnostics, account details, private operational URLs, or unrelated personal content were copied into repository files or GPT Pro handoff.
+
+### Known Limitations And Next Step
+
+- Render deployment remains blocked until the user manually completes Render sign-in or provides a safe local Render automation path outside chat.
+- After Render access is available, redeploy API/Web from latest `main`, verify `/api/v1/version`, run deployed endpoint probes, run deployed smoke, and record sanitized evidence.
+- If deployment is deferred, continue with local-only data/API hardening only after recording that decision.
