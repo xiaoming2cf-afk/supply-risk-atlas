@@ -10,15 +10,9 @@ export function SupplyDemandBalanceView({
   view: GraphViewModel;
 }) {
   const data = endpointData as GraphSupplyDemandBalanceData | undefined;
-  const rows = Array.isArray(data?.balance_rows)
-    ? data.balance_rows
-    : view.visibleNodes.slice(0, 12).map((node) => ({
-        product_grade_id: node.id,
-        demand_edge_count: 0,
-        supply_edge_count: 0,
-        production_dependency_count: 0,
-        shortage_proxy: 0,
-      }));
+  void view;
+  const rows = Array.isArray(data?.balance_rows) ? data.balance_rows : [];
+  const isEndpointUnavailable = !data;
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
@@ -31,14 +25,16 @@ export function SupplyDemandBalanceView({
           <span>{(data.warnings ?? []).slice(0, 1).join(", ")}</span>
         </div>
       ) : (
-        <p className="inspector-note">Backend balance endpoint unavailable; showing controlled local graph rows.</p>
+        <p className="inspector-note unavailable-preview">
+          Backend balance endpoint unavailable; local graph nodes are excluded from balance charts, tables, exports, reports, and source coverage.
+        </p>
       )}
       <SupplyDemandBalanceChart
-        data={rows.slice(0, 6).map((row) => ({
+        data={!isEndpointUnavailable ? rows.slice(0, 6).map((row) => ({
           label: String((row as Record<string, unknown>).product_grade_id ?? "product"),
           value: Number((row as Record<string, unknown>).shortage_proxy ?? 0),
           secondaryValue: Number((row as Record<string, unknown>).demand_edge_count ?? 0),
-        }))}
+        })) : []}
         metadata={
           data
             ? {
@@ -59,7 +55,15 @@ export function SupplyDemandBalanceView({
           </tr>
         </thead>
         <tbody>
-          {rows.slice(0, 16).map((row, index) => (
+          {isEndpointUnavailable ? (
+            <tr className="unavailable-preview">
+              <td colSpan={4}>Backend supply-demand balance endpoint unavailable; no authoritative balance rows are shown.</td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={4}>No authoritative supply-demand balance rows are available for this selection.</td>
+            </tr>
+          ) : rows.slice(0, 16).map((row, index) => (
             <tr key={String(row.product_grade_id ?? index)}>
               <td>{String(row.product_grade_id ?? "")}</td>
               <td>{String(row.demand_edge_count ?? 0)}</td>

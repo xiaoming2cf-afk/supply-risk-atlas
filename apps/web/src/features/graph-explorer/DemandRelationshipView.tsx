@@ -10,15 +10,9 @@ export function DemandRelationshipView({
   view: GraphViewModel;
 }) {
   const data = endpointData as GraphRelationshipData | undefined;
-  const rows = Array.isArray(data?.relationships)
-    ? data.relationships
-    : view.visibleLinks.slice(0, 12).map((link) => ({
-        edge_id: link.id,
-        demand_source_id: link.source,
-        product_grade_id: link.target,
-        demand_proxy_type: "controlled_unavailable",
-        confidence: link.confidence ?? 0,
-      }));
+  void view;
+  const rows = Array.isArray(data?.relationships) ? data.relationships : [];
+  const isEndpointUnavailable = !data;
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
@@ -26,7 +20,7 @@ export function DemandRelationshipView({
       <p className="inspector-note">Demand rows show downstream source, product grade, and proxy type; demand edges are not supplier edges.</p>
       <RelationshipMetadata data={data} />
       <DownstreamDemandPressureChart
-        data={demandChartData(rows)}
+        data={!isEndpointUnavailable ? demandChartData(rows) : []}
         metadata={metadataForRelationshipData(data)}
       />
       <table className="graph-evidence-table">
@@ -39,7 +33,15 @@ export function DemandRelationshipView({
           </tr>
         </thead>
         <tbody>
-          {rows.slice(0, 16).map((row, index) => {
+          {isEndpointUnavailable ? (
+            <tr className="unavailable-preview">
+              <td colSpan={4}>Backend demand relationship endpoint unavailable; no authoritative demand rows are shown.</td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={4}>No authoritative demand relationship rows are available for this selection.</td>
+            </tr>
+          ) : rows.slice(0, 16).map((row, index) => {
             const item = row as Record<string, unknown>;
             return (
             <tr key={String(item.edge_id ?? index)}>
@@ -57,7 +59,13 @@ export function DemandRelationshipView({
 }
 
 function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
-  if (!data) return <p className="inspector-note">Backend demand endpoint unavailable; showing controlled local graph rows.</p>;
+  if (!data) {
+    return (
+      <p className="inspector-note unavailable-preview">
+        Backend demand endpoint unavailable; local graph links are excluded from demand charts, tables, exports, reports, and source coverage.
+      </p>
+    );
+  }
   return (
     <div className="graph-view-summary">
       <span>{data.graph_mode ?? "fixture"} graph</span>

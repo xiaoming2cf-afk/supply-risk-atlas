@@ -16,6 +16,10 @@ export interface VersionMetadata {
   freshness_status?: "fresh" | "stale" | "partial" | "unavailable";
   source_count?: number;
   source_manifest_ref?: string | null;
+  failed_endpoint?: string | null;
+  retry_hint?: string | null;
+  source_status?: ApiSourceStatus;
+  transport_attempts?: number;
 }
 
 export interface ApiError {

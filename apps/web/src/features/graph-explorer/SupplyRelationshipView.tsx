@@ -10,16 +10,9 @@ export function SupplyRelationshipView({
   view: GraphViewModel;
 }) {
   const data = endpointData as GraphRelationshipData | undefined;
-  const rows = Array.isArray(data?.relationships)
-    ? data.relationships
-    : view.visibleLinks.slice(0, 12).map((link) => ({
-        edge_id: link.id,
-        supplier_id: link.source,
-        supplied_item_id: link.target,
-        buyer_or_stage_id: link.target,
-        confidence: link.confidence ?? 0,
-        source_refs: [link.sourceId ?? "fixture_source"],
-      }));
+  void view;
+  const rows = Array.isArray(data?.relationships) ? data.relationships : [];
+  const isEndpointUnavailable = !data;
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
@@ -27,10 +20,10 @@ export function SupplyRelationshipView({
       <p className="inspector-note">Supplier rows are table-first and show supplied item, source refs, and confidence without rendering a dense graph.</p>
       <RelationshipMetadata data={data} />
       <SupplierConcentrationHHIChart
-        data={(data?.supplier_concentration ?? []).slice(0, 6).map((row) => ({
+        data={!isEndpointUnavailable ? (data?.supplier_concentration ?? []).slice(0, 6).map((row) => ({
           label: String(row.supplier_id ?? "supplier"),
           value: Number(row.hhi_component ?? row.share ?? 0),
-        }))}
+        })) : []}
         metadata={metadataForRelationshipData(data)}
       />
       <table className="graph-evidence-table">
@@ -43,7 +36,15 @@ export function SupplyRelationshipView({
           </tr>
         </thead>
         <tbody>
-          {rows.slice(0, 16).map((row, index) => {
+          {isEndpointUnavailable ? (
+            <tr className="unavailable-preview">
+              <td colSpan={4}>Backend supply relationship endpoint unavailable; no authoritative supply rows are shown.</td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={4}>No authoritative supply relationship rows are available for this selection.</td>
+            </tr>
+          ) : rows.slice(0, 16).map((row, index) => {
             const item = row as Record<string, unknown>;
             return (
             <tr key={String(item.edge_id ?? index)}>
@@ -61,7 +62,13 @@ export function SupplyRelationshipView({
 }
 
 function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
-  if (!data) return <p className="inspector-note">Backend relationship endpoint unavailable; showing controlled local graph rows.</p>;
+  if (!data) {
+    return (
+      <p className="inspector-note unavailable-preview">
+        Backend relationship endpoint unavailable; local graph links are excluded from relationship charts, tables, exports, reports, and source coverage.
+      </p>
+    );
+  }
   return (
     <div className="graph-view-summary">
       <span>{data.graph_mode ?? "fixture"} graph</span>

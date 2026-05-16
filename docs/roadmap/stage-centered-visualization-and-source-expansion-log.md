@@ -276,3 +276,52 @@
 - No raw payload exposure was introduced.
 - No production-use claim was introduced.
 - Deployment and ChatGPT handoff remain pending post-commit Computer Use.
+
+## 2026-05-16 Data API And Relationship Evidence Hardening
+
+### Current HEAD And Worktree Guard
+
+- Starting HEAD: `13b3ece` (`Bound deployed proxy retry attempts`).
+- Preserved local/untracked files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`, `data/runtime/`, and existing `docs/roadmap/codex-continuation-request.md`.
+- Deployment before edits: deployed API `/api/v1/version` reported commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- Known deployed limitation before edits: deployed smoke could still hit transient web-proxy/API warm-up failures even though warmed direct API and proxy endpoint probes returned HTTP 200.
+
+### Gates Completed
+
+- Gate 0 baseline and worktree guard: completed with local API/web stack. Initial local smoke without API returned controlled public-data-unavailable state; rerun with `python -m services.api.dev_server` and documented local API env passed.
+- Gate 1 deployed data API access: browser API client now treats 5xx envelopes from idempotent reads as retryable, retries timeout/network failures only for idempotent reads, avoids retrying non-idempotent writes, and emits sanitized unavailable diagnostics (`failed_endpoint`, `retry_hint`, `transport_attempts`, `source_status`).
+- Gate 2 relationship fallback masking: Supply, Demand, Production Dependency, and Supply-Demand Balance views no longer derive authoritative rows from local visible graph links/nodes when backend endpoints are unavailable. Degraded states are explicit and marked `unavailable-preview`.
+- Gate 3 relationship evidence binding: supply/demand/production relationship rows now include `edge_type`, source/target IDs, source/evidence refs, validity windows, warnings, and calibration status. Relationship endpoints include top-level evidence refs, source status, and calibration status.
+
+### Files Changed
+
+- `packages/shared-types/src/common.ts`
+- `packages/api-client/src/dashboard.ts`
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `graph_kernel/supply_demand_builder.py`
+- `services/api/services/graph_service.py`
+- `tests/api/test_supply_demand_graph_endpoints.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+
+### Commands Run
+
+- `python -m pytest tests/quality -q` - pass, 17 tests before edits; pass, 18 tests after edits
+- `python -m pytest tests/api tests/graph_invariants tests/security -q` - pass before edits
+- `npm.cmd --workspace apps/web run typecheck` - pass
+- `npm.cmd --workspace apps/web run build` - pass
+- `npm.cmd run smoke:web` - initial local run failed because no local API server was running; rerun with local API and web env passed, 61 checks
+- `python -m pytest tests/quality/test_relationship_view_no_authoritative_fallbacks.py tests/api/test_supply_demand_graph_endpoints.py tests/graph_invariants/test_supply_demand_relationships.py tests/graph_invariants/test_relationship_class_separation.py -q` - pass, 14 tests
+
+### Terminology And Safety Evidence
+
+- No raw payload, authorization, API key, or forbidden geography output was introduced in touched endpoint tests.
+- Evidence-context links remain excluded from supply, demand, and production dependency endpoints.
+- Non-idempotent writes remain direct API writes and are not retried through the deployed web proxy path.
+
+### Computer Use And Deployment Status
+
+- Computer Use not yet used for this commit slice.
+- GitHub push, CI verification, Render redeploy, deployed smoke, screenshots, and GPT Pro review are pending after commit.

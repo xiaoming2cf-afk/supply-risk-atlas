@@ -53,7 +53,31 @@ def test_relationship_graph_endpoints_return_bounded_relationship_rows(
     assert data["relationship_class"] == expected_class
     assert len(data["relationships"]) <= 20
     assert data["layout_hints"]["does_not_render_full_graph"] is True
+    assert data["evidence_refs"]
+    assert data["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
+    assert data["source_status"] == "fixture_or_promoted_public_evidence"
     assert all(row["relationship_class"] == expected_class for row in data["relationships"])
+    for row in data["relationships"]:
+        for key in (
+            "edge_type",
+            "source_node_id",
+            "target_node_id",
+            "source_refs",
+            "evidence_refs",
+            "confidence",
+            "valid_from",
+            "valid_to",
+            "calibration_status",
+        ):
+            assert key in row
+        assert row["relationship_class"] != "EVIDENCE_CONTEXT"
+        assert row["edge_type"] != "evidence_context_link"
+    if expected_class == "SUPPLY_RELATIONSHIP":
+        assert all(row.get("supplied_item_id") for row in data["relationships"])
+    if expected_class == "DEMAND_RELATIONSHIP":
+        assert all(row.get("demand_proxy_type") for row in data["relationships"])
+    if expected_class == "PRODUCTION_DEPENDENCY":
+        assert all("criticality" in row and "substitutability" in row for row in data["relationships"])
 
 
 def test_supply_relationship_endpoint_includes_concentration_summary(
@@ -81,6 +105,8 @@ def test_supply_demand_balance_endpoint_returns_product_grade_rows(
     assert data["relationship_class"] == "SUPPLY_DEMAND_BALANCE"
     assert len(data["balance_rows"]) <= 20
     assert data["layout_hints"]["table_only"] is True
+    assert data["evidence_refs"]
+    assert data["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
     assert any(row["demand_edge_count"] >= 1 for row in data["balance_rows"])
 
 

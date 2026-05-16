@@ -566,12 +566,16 @@ def route_graph_supply_relationships(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
-    rows = supply_relationship_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    relationship_payloads = _relationship_edge_payloads(snapshot)
+    rows = supply_relationship_rows(relationship_payloads)[: _bounded_limit(limit)]
     payload = {
         **_base_view_metadata(snapshot, mode="supply-relationships"),
         "relationship_class": SUPPLY_RELATIONSHIP_CLASS,
         "relationships": rows,
         "supplier_concentration": _supplier_concentration(rows),
+        "evidence_refs": _relationship_evidence_refs(rows),
+        "calibration_status": "fixture_or_promoted_calibration_not_validated",
+        "source_status": "fixture_or_promoted_public_evidence",
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "supply-relationships",
@@ -592,11 +596,15 @@ def route_graph_demand_relationships(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
-    rows = demand_relationship_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    relationship_payloads = _relationship_edge_payloads(snapshot)
+    rows = demand_relationship_rows(relationship_payloads)[: _bounded_limit(limit)]
     payload = {
         **_base_view_metadata(snapshot, mode="demand-relationships"),
         "relationship_class": DEMAND_RELATIONSHIP_CLASS,
         "relationships": rows,
+        "evidence_refs": _relationship_evidence_refs(rows),
+        "calibration_status": "fixture_or_promoted_calibration_not_validated",
+        "source_status": "fixture_or_promoted_public_evidence",
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "demand-relationships",
@@ -617,11 +625,15 @@ def route_graph_production_dependencies(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
-    rows = production_dependency_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    relationship_payloads = _relationship_edge_payloads(snapshot)
+    rows = production_dependency_rows(relationship_payloads)[: _bounded_limit(limit)]
     payload = {
         **_base_view_metadata(snapshot, mode="production-dependencies"),
         "relationship_class": PRODUCTION_DEPENDENCY_CLASS,
         "relationships": rows,
+        "evidence_refs": _relationship_evidence_refs(rows),
+        "calibration_status": "fixture_or_promoted_calibration_not_validated",
+        "source_status": "fixture_or_promoted_public_evidence",
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "production-dependencies",
@@ -642,11 +654,21 @@ def route_graph_supply_demand_balance(
     request_id: str | None = None,
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
-    rows = supply_demand_balance_rows(_relationship_edge_payloads(snapshot))[: _bounded_limit(limit)]
+    relationship_payloads = _relationship_edge_payloads(snapshot)
+    rows = supply_demand_balance_rows(relationship_payloads)[: _bounded_limit(limit)]
     payload = {
         **_base_view_metadata(snapshot, mode="supply-demand-balance"),
         "relationship_class": "SUPPLY_DEMAND_BALANCE",
         "balance_rows": rows,
+        "evidence_refs": _relationship_evidence_refs(
+            [
+                *supply_relationship_rows(relationship_payloads),
+                *demand_relationship_rows(relationship_payloads),
+                *production_dependency_rows(relationship_payloads),
+            ]
+        ),
+        "calibration_status": "fixture_or_promoted_calibration_not_validated",
+        "source_status": "fixture_or_promoted_public_evidence",
         "limit": _bounded_limit(limit),
         "layout_hints": {
             "mode": "supply-demand-balance",
@@ -976,6 +998,23 @@ def _supplier_concentration(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         }
         for supplier_id, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
     ][:20]
+
+
+def _relationship_evidence_refs(rows: list[dict[str, Any]]) -> list[dict[str, str]]:
+    refs: dict[tuple[str, str], dict[str, str]] = {}
+    for row in rows:
+        for ref in row.get("evidence_refs") or row.get("source_refs") or []:
+            if isinstance(ref, dict):
+                source_id = str(ref.get("source_id") or "unknown")
+                source_record_id = str(ref.get("source_record_id") or "record")
+            else:
+                source_id, _, source_record_id = str(ref).partition(":")
+                source_record_id = source_record_id or "record"
+            refs[(source_id, source_record_id)] = {
+                "source_id": source_id,
+                "source_record_id": source_record_id,
+            }
+    return [refs[key] for key in sorted(refs)]
 
 
 def _safe_metadata(attributes: dict[str, Any]) -> dict[str, Any]:

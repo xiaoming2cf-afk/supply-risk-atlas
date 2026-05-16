@@ -10,17 +10,9 @@ export function ProductionDependencyView({
   view: GraphViewModel;
 }) {
   const data = endpointData as GraphRelationshipData | undefined;
-  const rows = Array.isArray(data?.relationships)
-    ? data.relationships
-    : view.visibleLinks.slice(0, 12).map((link) => ({
-        edge_id: link.id,
-        dependency_source_id: link.source,
-        dependency_target_id: link.target,
-        dependency_type: link.edgeType ?? "dependency",
-        criticality: "unknown",
-        substitutability: "unknown",
-        bottleneck_flag: false,
-      }));
+  void view;
+  const rows = Array.isArray(data?.relationships) ? data.relationships : [];
+  const isEndpointUnavailable = !data;
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
@@ -28,7 +20,7 @@ export function ProductionDependencyView({
       <p className="inspector-note">Production dependency rows separate required inputs, bottleneck flags, and propagation hints from evidence-context links.</p>
       <RelationshipMetadata data={data} />
       <CriticalInputBottleneckChart
-        data={criticalInputChartData(rows)}
+        data={!isEndpointUnavailable ? criticalInputChartData(rows) : []}
         metadata={metadataForRelationshipData(data)}
       />
       <table className="graph-evidence-table">
@@ -41,7 +33,15 @@ export function ProductionDependencyView({
           </tr>
         </thead>
         <tbody>
-          {rows.slice(0, 16).map((row, index) => (
+          {isEndpointUnavailable ? (
+            <tr className="unavailable-preview">
+              <td colSpan={4}>Backend production dependency endpoint unavailable; no authoritative dependency rows are shown.</td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={4}>No authoritative production dependency rows are available for this selection.</td>
+            </tr>
+          ) : rows.slice(0, 16).map((row, index) => (
             <tr key={String(row.edge_id ?? index)}>
               <td>{String(row.dependency_source_id ?? "")}</td>
               <td>{String(row.dependency_target_id ?? "")}</td>
@@ -56,7 +56,13 @@ export function ProductionDependencyView({
 }
 
 function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
-  if (!data) return <p className="inspector-note">Backend dependency endpoint unavailable; showing controlled local graph rows.</p>;
+  if (!data) {
+    return (
+      <p className="inspector-note unavailable-preview">
+        Backend dependency endpoint unavailable; local graph links are excluded from dependency charts, tables, exports, reports, and source coverage.
+      </p>
+    );
+  }
   return (
     <div className="graph-view-summary">
       <span>{data.graph_mode ?? "fixture"} graph</span>

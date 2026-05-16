@@ -47,6 +47,7 @@ import type {
 
 export interface SupplyRiskApiClientOptions {
   baseUrl?: string;
+  readFallbackBaseUrl?: string;
   writeBaseUrl?: string;
   fetcher?: typeof fetch;
   requestTimeoutMs?: number;
@@ -111,6 +112,7 @@ export interface SupplyRiskDashboardData {
 
 interface RequestJsonOptions {
   fetcher: typeof fetch;
+  readFallbackBaseUrl?: string;
   setEffectiveMode: (mode: ApiMode) => void;
   requestTimeoutMs: number;
 }
@@ -126,47 +128,72 @@ async function requestJson<T>(
 ): Promise<ApiResult<T>> {
   if (!baseUrl) {
     options.setEffectiveMode("real");
-    return createUnavailableResult(endpoint, "unavailable", "No dashboard API base URL configured.");
+    return createUnavailableResult(endpoint, "unavailable", "No dashboard API base URL configured.", undefined, undefined, 0);
   }
 
   let lastError: unknown = undefined;
-  for (let attempt = 1; attempt <= MAX_NETWORK_ATTEMPTS; attempt += 1) {
-    const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
-    const timeoutHandle = controller
-      ? globalThis.setTimeout(() => controller.abort(), options.requestTimeoutMs)
-      : undefined;
+  let transportAttempts = 0;
+  const method = init?.method?.toUpperCase() ?? "GET";
+  const isIdempotentRead = method === "GET" || method === "HEAD";
+  const baseUrls = isIdempotentRead
+    ? uniqueBaseUrls([baseUrl, options.readFallbackBaseUrl])
+    : [baseUrl];
+  const attemptsPerBaseUrl = isIdempotentRead ? MAX_NETWORK_ATTEMPTS : 1;
 
-    try {
-      const headers = new Headers(init?.headers);
-      const method = init?.method?.toUpperCase() ?? "GET";
-      const sendsJsonBody = init?.body !== undefined && method !== "GET" && method !== "HEAD";
-      if (sendsJsonBody && !headers.has("content-type")) headers.set("content-type", "application/json");
-      const response = await options.fetcher(`${baseUrl.replace(/\/$/, "")}${endpoint}`, {
-        ...init,
-        headers,
-        signal: init?.signal ?? controller?.signal,
-      });
-      const payload = await response.json().catch(() => null);
-      if (payload && typeof payload === "object" && "status" in payload && "data" in payload) {
-        options.setEffectiveMode("real");
-        return normalizeApiPayload<T>(payload, response.status, endpoint);
+  for (const currentBaseUrl of baseUrls) {
+    for (let attempt = 1; attempt <= attemptsPerBaseUrl; attempt += 1) {
+      transportAttempts += 1;
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
+      const timeoutHandle = controller
+        ? globalThis.setTimeout(() => controller.abort(), options.requestTimeoutMs)
+        : undefined;
+
+      try {
+        const headers = new Headers(init?.headers);
+        const sendsJsonBody = init?.body !== undefined && method !== "GET" && method !== "HEAD";
+        if (sendsJsonBody && !headers.has("content-type")) headers.set("content-type", "application/json");
+        const response = await options.fetcher(`${currentBaseUrl.replace(/\/$/, "")}${endpoint}`, {
+          ...init,
+          headers,
+          signal: init?.signal ?? controller?.signal,
+        });
+        const payload = await response.json().catch(() => null);
+        const isEnvelope = payload && typeof payload === "object" && "status" in payload && "data" in payload;
+        if (!response.ok) {
+          if (isEnvelope && response.status < 500) {
+            options.setEffectiveMode("real");
+            return normalizeApiPayload<T>(payload, response.status, endpoint);
+          }
+          throw new DashboardApiHttpError(`SupplyRiskAtlas API ${response.status} at ${endpoint}`, response.status, payload);
+        }
+        if (isEnvelope) {
+          options.setEffectiveMode("real");
+          return normalizeApiPayload<T>(payload, response.status, endpoint);
+        }
+        return createUnavailableResult(
+          endpoint,
+          "partial",
+          "API response did not include a metadata envelope.",
+          undefined,
+          response.status,
+          transportAttempts,
+        );
+      } catch (error) {
+        lastError = error;
+        const shouldRetry =
+          isIdempotentRead &&
+          isRetryableTransportError(error) &&
+          (attempt < attemptsPerBaseUrl || currentBaseUrl !== baseUrls[baseUrls.length - 1]);
+        if (!shouldRetry) {
+          break;
+        }
+        await sleep(NETWORK_RETRY_BACKOFF_MS * attempt);
+      } finally {
+        if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
       }
-      if (!response.ok) {
-        throw new DashboardApiHttpError(`SupplyRiskAtlas API ${response.status} at ${endpoint}`, response.status, payload);
-      }
-      return createUnavailableResult(endpoint, "partial", "API response did not include a metadata envelope.", undefined, response.status);
-    } catch (error) {
-      lastError = error;
-      const isRetryableHttpError =
-        error instanceof DashboardApiHttpError &&
-        error.status >= 500 &&
-        error.status < 600;
-      if ((!isRetryableHttpError && error instanceof DashboardApiHttpError) || attempt === MAX_NETWORK_ATTEMPTS) {
-        break;
-      }
-      await sleep(NETWORK_RETRY_BACKOFF_MS * attempt);
-    } finally {
-      if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
+    }
+    if (!isRetryableTransportError(lastError)) {
+      break;
     }
   }
 
@@ -181,7 +208,17 @@ async function requestJson<T>(
       : lastError instanceof Error
         ? lastError.message
         : "Dashboard API request failed.";
-  return createUnavailableResult(endpoint, sourceStatus, message, lastError);
+  return createUnavailableResult(endpoint, sourceStatus, message, lastError, undefined, transportAttempts);
+}
+
+function uniqueBaseUrls(values: Array<string | undefined>): string[] {
+  return Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))));
+}
+
+function isRetryableTransportError(error: unknown) {
+  if (error instanceof DashboardApiHttpError) return error.status >= 500 && error.status < 600;
+  if (typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "AbortError") return true;
+  return error instanceof TypeError || error instanceof Error;
 }
 
 function sleep(ms: number) {
@@ -244,6 +281,7 @@ function createUnavailableResult<T>(
   warning: string,
   cause?: unknown,
   httpStatus?: number,
+  transportAttempts = 1,
 ): ApiResult<T> {
   const now = new Date().toISOString();
   const errors = cause instanceof Error ? [{ code: "dashboard_api_unavailable", message: cause.message }] : [];
@@ -261,6 +299,10 @@ function createUnavailableResult<T>(
       lineage_ref: `api-unavailable://${endpoint.replace(/^\//, "")}`,
       data_mode: "real",
       freshness_status: "unavailable",
+      failed_endpoint: endpoint,
+      retry_hint: "Retry the page request. Idempotent reads use bounded retries for transient 5xx, timeout, or network failures.",
+      source_status: sourceStatus,
+      transport_attempts: transportAttempts,
     },
     warnings: [warning],
     errors,
@@ -301,6 +343,7 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
   };
   const clientOptions = {
     fetcher: options.fetcher ?? ((input, init) => globalThis.fetch(input, init)),
+    readFallbackBaseUrl: options.readFallbackBaseUrl?.trim(),
     requestTimeoutMs: Math.max(1000, options.requestTimeoutMs ?? 60000),
     setEffectiveMode,
   };
