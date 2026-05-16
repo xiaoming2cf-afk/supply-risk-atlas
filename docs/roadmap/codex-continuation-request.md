@@ -42,6 +42,9 @@
   - deployed API commit: `13b3ece3e2f41918578a13c573905f1b16b73fab`
   - deployed Web HTML commit marker: not visible for `9217e12`
   - deployed Web proxy commit: `13b3ece3e2f41918578a13c573905f1b16b73fab`
+- `python scripts/check-deployed-version.py --expected-commit 377d83d --timeout 20` also returned `deployed_stale_or_unverified` with deployed API/Web proxy still reporting `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- `npm.cmd run smoke:web -- --mode=deployed` did not complete in deployed best-effort mode because the stale deployed Entity Risk 360 page still received 502 responses from entity-risk and portfolio endpoints.
+- The deployed smoke failure is a deployment-consistency blocker; local tests and local smoke passed.
 - No deployed-complete claim is made.
 - Render API credentials are not present in the local environment.
 - Render UI redeploy could not be attempted because the Browser runtime reported no active Codex browser pane in this recovery run.

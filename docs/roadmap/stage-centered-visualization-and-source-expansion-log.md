@@ -717,6 +717,9 @@
 - Browser/Computer Use attempt for Render/GPT Pro handoff was blocked because the Browser runtime reported no active Codex browser pane.
 - Render API credentials were not present in the local environment.
 - No Render login credentials were typed, no redeploy was triggered, and no GPT Pro message was sent after `9217e12`.
+- A later probe against latest local HEAD `377d83d` still returned `deployed_stale_or_unverified`; deployed API and Web proxy continued to report old commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- `npm.cmd run smoke:web -- --mode=deployed` did not complete in deployed best-effort mode because the stale deployed Entity Risk 360 page still received 502 responses for entity risk and portfolio endpoints.
+- The deployed smoke failure is attributed to stale/unverified deployment state, not to local test failures.
 
 ### Next-Step Request
 
