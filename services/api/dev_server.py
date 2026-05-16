@@ -124,6 +124,17 @@ class Handler(BaseHTTPRequestHandler):
                 depth=_int_or_default(_first(query.get("depth")), 1),
                 request_id=request_id,
             ),
+            "/api/v1/analytics/charts": lambda: main.route_analytics_charts(
+                chart_id=_first(query.get("chart_id")),
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                request_id=request_id,
+            ),
+            "/api/v1/analytics/tables": lambda: main.route_analytics_tables(
+                table_id=_first(query.get("table_id")),
+                limit=_int_or_default(_first(query.get("limit")), 50),
+                offset=_int_or_default(_first(query.get("offset")), 0),
+                request_id=request_id,
+            ),
             "/api/v1/risk/portfolio": lambda: main.route_semirisk_risk_portfolio(
                 node_type=_first(query.get("node_type")) or "company",
                 limit=_int_or_default(_first(query.get("limit")), 20),
@@ -170,6 +181,34 @@ class Handler(BaseHTTPRequestHandler):
                 self._write(
                     200,
                     main.route_semirisk_entity_risk(entity_id=entity_id, request_id=request_id),
+                )
+                return
+            if parsed.path.startswith("/api/v1/stage-graph/"):
+                self._write(200, _route_stage_graph(parsed.path, query, request_id))
+                return
+            if parsed.path.startswith("/api/v1/analytics/tables/"):
+                table_id = unquote(parsed.path.rsplit("/", 1)[-1])
+                self._write(
+                    200,
+                    main.route_analytics_table(
+                        table_id=table_id,
+                        limit=_int_or_default(_first(query.get("limit")), 50),
+                        offset=_int_or_default(_first(query.get("offset")), 0),
+                        request_id=request_id,
+                    ),
+                )
+                return
+            if parsed.path.startswith("/api/v1/analytics/export/"):
+                table_id = unquote(parsed.path.rsplit("/", 1)[-1])
+                self._write(
+                    200,
+                    main.route_analytics_export(
+                        table_id=table_id,
+                        export_format=_first(query.get("format")) or "json",
+                        limit=_int_or_default(_first(query.get("limit")), 50),
+                        offset=_int_or_default(_first(query.get("offset")), 0),
+                        request_id=request_id,
+                    ),
                 )
                 return
             self._write(404, main.make_error("not_found", f"Route not found: {parsed.path}", request_id=request_id))
@@ -264,6 +303,37 @@ def _int_or_default(value: str | None, default: int) -> int:
         return int(value)
     except ValueError:
         return default
+
+
+def _route_stage_graph(path: str, query: dict[str, list[str]], request_id: str | None) -> dict[str, object]:
+    parts = [unquote(part) for part in path.strip("/").split("/")]
+    stage_index = parts.index("stage-graph") + 1
+    stage_id = parts[stage_index]
+    suffix = parts[stage_index + 1] if len(parts) > stage_index + 1 else ""
+    limit = _int_or_default(_first(query.get("limit")), 18)
+    relationship_class = _first(query.get("relationship_class"))
+    if suffix == "focus":
+        return main.route_stage_graph_focus(
+            stage_id=stage_id,
+            node_id=_first(query.get("node_id")),
+            limit=limit,
+            relationship_class=relationship_class,
+            request_id=request_id,
+        )
+    if suffix == "source-coverage":
+        return main.route_stage_graph_source_coverage(stage_id=stage_id, request_id=request_id)
+    if suffix == "evidence":
+        return main.route_stage_graph_evidence(stage_id=stage_id, limit=limit, request_id=request_id)
+    if suffix == "tables":
+        return main.route_stage_graph_tables(stage_id=stage_id, limit=limit, request_id=request_id)
+    if suffix == "charts":
+        return main.route_stage_graph_charts(stage_id=stage_id, limit=limit, request_id=request_id)
+    return main.route_stage_graph(
+        stage_id=stage_id,
+        limit=limit,
+        relationship_class=relationship_class,
+        request_id=request_id,
+    )
 
 
 def run(host: str = "127.0.0.1", port: int = 8000) -> None:

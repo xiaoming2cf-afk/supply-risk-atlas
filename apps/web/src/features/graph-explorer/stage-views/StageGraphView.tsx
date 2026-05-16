@@ -134,7 +134,10 @@ export function StageGraphView({
   const endpointNodes = rows(endpointData?.nodes).slice(0, 6);
   const endpointEdges = rows(endpointData?.edges).slice(0, 6);
   const sourceCoverage = rows(endpointData?.source_coverage).slice(0, 5);
+  const sourceFamilyCoverage = rows(endpointData?.source_family_coverage).slice(0, 4);
   const evidenceRefs = rows(endpointData?.evidence_refs).slice(0, 5);
+  const sourceGaps = list(endpointData?.source_gaps).slice(0, 3);
+  const proxyLimitations = list(endpointData?.proxy_limitations).slice(0, 3);
   const fallbackNodes: Array<Record<string, unknown>> = view.visibleNodes
     .filter((node) => stage.nodeTypes.includes(node.kind))
     .slice(0, 6)
@@ -193,8 +196,25 @@ export function StageGraphView({
       )}
       <div className="graph-view-summary">
         <span>source coverage: {sourceCoverage.length || "fallback"}</span>
+        <span>source families: {sourceFamilyCoverage.length || "not recorded"}</span>
         <span>evidence refs: {evidenceRefs.length || "fallback"}</span>
       </div>
+      {sourceFamilyCoverage.length ? (
+        <ul className="compact-list">
+          {sourceFamilyCoverage.map((family) => (
+            <li key={String(family.source_family)}>
+              <strong>{String(family.source_family)}</strong>
+              <span>{String(family.source_status ?? "partial")} | sources: {String(family.source_count ?? "n/a")}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {sourceGaps.length || proxyLimitations.length ? (
+        <div className="graph-view-summary">
+          <span>source gaps: {sourceGaps.join("; ") || "none"}</span>
+          <span>proxy limitations: {proxyLimitations.join("; ") || "none"}</span>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -210,4 +230,8 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function rows(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object") : [];
+}
+
+function list(value: unknown): string[] {
+  return Array.isArray(value) ? value.map((item) => String(item)).filter(Boolean) : [];
 }

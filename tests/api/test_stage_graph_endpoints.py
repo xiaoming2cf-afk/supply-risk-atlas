@@ -53,6 +53,13 @@ def _assert_stage_payload(payload: dict[str, object], stage_id: str) -> dict[str
         "graph_mode",
         "warnings",
         "relationship_class_counts",
+        "required_data_fields",
+        "primary_sources",
+        "secondary_sources",
+        "source_families",
+        "source_family_coverage",
+        "source_gaps",
+        "proxy_limitations",
         "source_status",
         "evidence_ref_count",
         "calibration_status",
@@ -98,9 +105,18 @@ def test_stage_graph_endpoint_returns_bounded_stage_data(
     }
     assert data["calibration_status"] == "fixture_proxy_not_calibrated"
     assert isinstance(data["evidence_ref_count"], int)
+    assert data["source_families"]
+    assert data["source_family_coverage"]
+    assert data["source_gaps"]
+    assert data["proxy_limitations"]
     for row in data["source_coverage"]:
         assert row["source_status"] == data["source_status"]
         assert row["calibration_status"] == data["calibration_status"]
+    for row in data["source_family_coverage"]:
+        assert row["source_family"] in data["source_families"]
+        assert row["live_fetch_default"] == "disabled"
+        assert row["fixture_required"] is True
+        assert row["api_visibility_policy"] == "sanitized_summary_and_lineage_only"
 
 
 def test_stage_graph_focus_endpoint_caps_expansion(monkeypatch: pytest.MonkeyPatch) -> None:

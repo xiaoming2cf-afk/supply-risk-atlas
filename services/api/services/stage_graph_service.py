@@ -247,6 +247,13 @@ def _stage_base_payload(snapshot: Any, *, stage: dict[str, Any], mode: str) -> d
         "core_node_types": stage["core_node_types"],
         "core_edge_types": stage["core_edge_types"],
         "relationship_classes": stage["relationship_classes"],
+        "required_data_fields": stage.get("required_data_fields", []),
+        "primary_sources": stage.get("primary_sources", []),
+        "secondary_sources": stage.get("secondary_sources", []),
+        "source_families": stage.get("source_families", []),
+        "source_family_coverage": _stage_source_family_coverage(stage),
+        "source_gaps": stage.get("source_gaps", []),
+        "proxy_limitations": stage.get("proxy_limitations", []),
         "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
         "evidence_ref_count": int(stage.get("evidence_ref_count") or 0),
         "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
@@ -337,6 +344,34 @@ def _stage_source_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:
             "fixture_required": True,
         }
         for source_id in sorted(primary | secondary)
+    ]
+
+
+def _stage_source_family_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:
+    matrix = _matrix()
+    definitions = matrix.get("source_family_definitions", {})
+    families = stage.get("source_families", [])
+    primary_count = len(stage.get("primary_sources", []))
+    secondary_count = len(stage.get("secondary_sources", []))
+    source_count = primary_count + secondary_count
+    return [
+        {
+            "source_family": family,
+            "description": definitions.get(family, "not_recorded"),
+            "stage_id": stage["stage_id"],
+            "source_count": source_count,
+            "primary_source_count": primary_count,
+            "secondary_source_count": secondary_count,
+            "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
+            "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
+            "live_fetch_default": "disabled",
+            "fixture_required": True,
+            "api_visibility_policy": matrix.get("defaults", {}).get(
+                "api_visibility_policy",
+                "sanitized_summary_and_lineage_only",
+            ),
+        }
+        for family in families
     ]
 
 

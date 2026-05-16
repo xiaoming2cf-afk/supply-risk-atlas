@@ -728,3 +728,62 @@
 - Verify `/api/v1/version` reports `9217e12` or a newer commit.
 - Run deployed endpoint probes and `npm run smoke:web -- --mode=deployed`.
 - Send GPT Pro a concise sanitized review packet after deployed verification is available.
+
+## 2026-05-16 Web Commit Marker And Stage Source Visibility Gate
+
+### Current HEAD
+
+- Local HEAD before this gate: `bad60410999b4217bba26c5769b1fe0188bd3b9b`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+- `data/runtime/` remains ignored runtime state and was not staged.
+
+### Gate Result
+
+- Deployment probe now shows API and Web proxy reporting `bad60410999b4217bba26c5769b1fe0188bd3b9b`, but Web HTML still lacks a commit marker, so deployment remains `deployed_stale_or_unverified`.
+- Render UI access remains blocked at the Render sign-in page; no credentials were entered. The failed page was closed before continuing to avoid page buildup.
+- Browser/Computer Use could not open the GPT Pro project after the Render login attempt because the Browser runtime reported no active Codex browser pane.
+- Web build commit marker root cause addressed locally: the Next config now derives `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` from Render/git at build time without requiring a manual Render env var.
+- `render.yaml` deployment trigger comment was updated so both API and Web build filters can observe a deployment-relevant tracked file change.
+- Stage graph API now returns `source_families`, `source_family_coverage`, `source_gaps`, `proxy_limitations`, `primary_sources`, `secondary_sources`, and `required_data_fields` so national, enterprise, and industry evidence coverage is visible at page/API level.
+- Graph Explorer stage views now render source-family coverage, source gaps, and proxy limitations instead of hiding them behind config/docs.
+- Dev server route parity improved for stage graph endpoints, named analytics table endpoints, and analytics export endpoints.
+- Supply-demand balance aggregate rows now include row-level graph/source/data-mode metadata, source status, validity fields, source refs, evidence refs, warnings, and calibration status.
+- Deployed version checker now honors API-reported deployment stale/unavailable readiness fields instead of relying only on external commit probes.
+
+### Files Changed
+
+- `apps/web/next.config.mjs`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `render.yaml`
+- `scripts/check-deployed-version.py`
+- `services/api/dev_server.py`
+- `services/api/services/graph_service.py`
+- `services/api/services/stage_graph_service.py`
+- `tests/api/test_dev_server_graph_routes.py`
+- `tests/api/test_stage_graph_endpoints.py`
+- `tests/api/test_supply_demand_graph_endpoints.py`
+- `tests/quality/test_deployed_version_checker.py`
+
+### Commands Run
+
+- `python scripts/check-deployed-version.py --expected-commit bad60410999b4217bba26c5769b1fe0188bd3b9b --timeout 20` - controlled failure with `deployed_stale_or_unverified`; only blocker was Web HTML commit visibility.
+- `python -m pytest tests/api/test_dev_server_graph_routes.py tests/api/test_stage_graph_endpoints.py tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py tests/quality/test_deployed_version_checker.py -q` - pass, 48 tests.
+- `npm.cmd --workspace apps/web run typecheck` - pass.
+- `npm.cmd --workspace apps/web run typecheck:packages` - pass.
+
+### Computer Use Status
+
+- Render Dashboard was opened with Browser/Computer Use and reached the Render sign-in page.
+- A GitHub login attempt did not enter an authenticated Render dashboard and returned to the Render sign-in page.
+- No credentials, cookies, tokens, OTPs, private account details, screenshots with secrets, raw payloads, private diagnostics, local filesystem paths, or PII were entered or copied.
+- The failed Render login page was closed before continuing.
+- GPT Pro project handoff was attempted next but blocked because the Browser runtime reported no active Codex browser pane.
+
+### Known Limitations
+
+- Deployment cannot be claimed verified until Web HTML exposes the latest commit marker and `scripts/check-deployed-version.py` returns `deployed_verified`.
+- GPT Pro has not reviewed this local gate yet because Browser access to the project conversation failed after the Render login attempt.
+- Live connectors remain disabled by default; stage coverage remains fixture/promoted-public-evidence with explicit proxy limitations.

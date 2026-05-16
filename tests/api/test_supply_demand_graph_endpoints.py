@@ -141,6 +141,9 @@ def test_supply_demand_balance_endpoint_returns_product_grade_rows(
         assert row.get("edge_type") != "evidence_context_link"
         assert row["source_refs"]
         assert row["evidence_refs"]
+        for key in ("graph_version", "source_manifest_id", "data_mode", "graph_mode", "source_status", "valid_from", "valid_to"):
+            assert key in row
+        assert row["source_status"] == "fixture_or_promoted_public_evidence"
         assert row["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
         assert "supply_demand_balance_is_aggregate_not_dependency_edge" in row["warnings"]
     serialized = json.dumps(data, sort_keys=True)

@@ -1,5 +1,5 @@
 services:
-  # Deployment trigger: semantic graph/page relevance verification 2026-05-13.
+  # Deployment trigger: web commit marker and API/Web version closure 2026-05-16.
   - type: web
     name: supply-risk-atlas-api
     runtime: python

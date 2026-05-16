@@ -104,6 +104,38 @@ def test_deployment_status_reports_stale_mismatch_without_success() -> None:
     assert "web_html_commit_not_visible" in warnings
 
 
+def test_deployment_status_honors_api_reported_stale_state() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={"status": "ok", "deployment_stale_or_unverified": True},
+        api_commit="9674e6005021597182b05aac4700247b89f81464",
+        web_html_result={"status": "verified"},
+        web_proxy_result={"status": "ok"},
+        web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
+    )
+
+    assert status == "deployed_stale_or_unverified"
+    assert warnings == ["api_reported_deployment_stale_or_unverified"]
+
+
+def test_deployment_status_honors_api_reported_unavailable_state() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={"status": "ok", "deployment_unavailable": True},
+        api_commit="9674e6005021597182b05aac4700247b89f81464",
+        web_html_result={"status": "verified"},
+        web_proxy_result={"status": "ok"},
+        web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
+    )
+
+    assert status == "deployed_stale_or_unverified"
+    assert warnings == ["api_reported_deployment_unavailable"]
+
+
 def test_deployment_status_reports_unavailable_when_all_public_probes_fail() -> None:
     checker = _load_checker_module()
 

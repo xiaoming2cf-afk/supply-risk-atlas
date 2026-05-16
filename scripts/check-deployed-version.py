@@ -86,6 +86,9 @@ def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
         "git_commit": data.get("git_commit", "unknown"),
         "app_version": data.get("app_version", "unknown"),
         "environment": data.get("environment", "unknown"),
+        "deployment_readiness_state": data.get("deployment_readiness_state", "unknown"),
+        "deployment_stale_or_unverified": bool(data.get("deployment_stale_or_unverified", False)),
+        "deployment_unavailable": bool(data.get("deployment_unavailable", False)),
         "latency_class": latency_class(latency),
     }
 
@@ -152,6 +155,10 @@ def deployment_status(
 
     if api_failed:
         warnings.append("api_unavailable")
+    elif api_result.get("deployment_unavailable"):
+        warnings.append("api_reported_deployment_unavailable")
+    elif api_result.get("deployment_stale_or_unverified"):
+        warnings.append("api_reported_deployment_stale_or_unverified")
     elif not commits_match(expected_commit, api_commit):
         warnings.append("api_commit_mismatch")
 

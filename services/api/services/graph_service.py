@@ -674,7 +674,7 @@ def route_graph_supply_demand_balance(
 ) -> dict[str, Any]:
     snapshot = _build_active_semiconductor_snapshot()
     relationship_payloads = _relationship_edge_payloads(snapshot)
-    rows = supply_demand_balance_rows(relationship_payloads)[: _bounded_limit(limit)]
+    rows = _balance_endpoint_rows(snapshot, supply_demand_balance_rows(relationship_payloads), limit=limit)
     payload = {
         **_base_view_metadata(snapshot, mode="supply-demand-balance"),
         "relationship_class": "SUPPLY_DEMAND_BALANCE",
@@ -1062,6 +1062,34 @@ def _relationship_row_metadata(snapshot: Any) -> dict[str, Any]:
         "graph_mode": graph_mode,
         "source_status": RELATIONSHIP_SOURCE_STATUS,
     }
+
+
+def _balance_endpoint_rows(
+    snapshot: Any,
+    rows: list[dict[str, Any]],
+    *,
+    limit: int | None,
+) -> list[dict[str, Any]]:
+    metadata = _relationship_row_metadata(snapshot)
+    enriched: list[dict[str, Any]] = []
+    for row in rows:
+        if row.get("relationship_class") != "SUPPLY_DEMAND_BALANCE":
+            continue
+        if row.get("row_type") != "aggregate":
+            continue
+        normalized = {
+            **metadata,
+            **row,
+            "source_refs": list(row.get("source_refs") or row.get("evidence_refs") or []),
+            "evidence_refs": list(row.get("evidence_refs") or row.get("source_refs") or []),
+            "warnings": list(row.get("warnings") or []),
+            "source_status": RELATIONSHIP_SOURCE_STATUS,
+            "calibration_status": row.get("calibration_status") or RELATIONSHIP_CALIBRATION_STATUS,
+            "valid_from": row.get("valid_from"),
+            "valid_to": row.get("valid_to"),
+        }
+        enriched.append(normalized)
+    return enriched[: _bounded_limit(limit)]
 
 
 def _is_evidence_context_relationship(row: dict[str, Any]) -> bool:

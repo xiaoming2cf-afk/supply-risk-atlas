@@ -55,3 +55,35 @@ def test_dev_server_exposes_relationship_graph_routes() -> None:
         server.shutdown()
         server.server_close()
         thread.join(timeout=10)
+
+
+def test_dev_server_exposes_stage_graph_and_named_analytics_routes() -> None:
+    port = _free_port()
+    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        base_url = f"http://127.0.0.1:{port}"
+
+        stage_payload = _fetch_json(base_url, "/api/v1/stage-graph/L5_fabrication?limit=5")
+        assert stage_payload["status"] == "success"
+        assert stage_payload["data"]["stage_id"] == "L5_fabrication"
+        assert stage_payload["data"]["source_family_coverage"]
+
+        source_payload = _fetch_json(base_url, "/api/v1/stage-graph/L5_fabrication/source-coverage")
+        assert source_payload["status"] == "success"
+        assert source_payload["data"]["source_coverage"]
+
+        table_payload = _fetch_json(base_url, "/api/v1/analytics/tables/supply-relationships?limit=2")
+        assert table_payload["status"] == "success"
+        assert table_payload["data"]["table_id"] == "supply_relationships"
+
+        export_payload = _fetch_json(base_url, "/api/v1/analytics/export/supply-relationships?format=json&limit=2")
+        assert export_payload["status"] == "success"
+        assert export_payload["data"]["table_id"] == "supply_relationships"
+        rendered = json.dumps(export_payload, sort_keys=True)
+        assert "raw_payload" not in rendered
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=10)
