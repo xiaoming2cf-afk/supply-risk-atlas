@@ -622,3 +622,11 @@
 
 - No new Computer Use action was performed during this local implementation gate.
 - Prior GPT Pro review accepted the CI/browser-smoke stabilization step and made deployment consistency the next priority before further deployed claims.
+
+### Post-Push Evidence
+
+- Commit `623adacf823a417a4b0558010e444430d978f08b` pushed to `origin/main` through SSH after repeated HTTPS connection resets.
+- GitHub Actions `ci` passed for `623adac`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25968271852`.
+- GitHub Actions `Quality Gates` passed for `623adac`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25968271843`.
+- `python scripts/check-deployed-version.py --expected-commit 623adac --timeout 20` returned sanitized `stale_or_unverified`; API and Web probes failed in that run, so deployed success is not claimed.
+- Render redeploy remains blocked by interactive login or missing safe local Render automation credentials.

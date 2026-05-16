@@ -2,21 +2,26 @@
 
 ## Current Status
 
-- Latest pushed commit before this handoff: `5147d4f0e972428ccef1010ec3d8b7d7a1d31031`.
+- Latest pushed implementation commit before this handoff: `623adacf823a417a4b0558010e444430d978f08b`.
 - Branch: `main`.
 - Preserved local files that must not be staged unless the user asks:
   - `apps/web/AGENTS.md`
   - `apps/web/CLAUDE.md`
   - `data/runtime/` remains ignored runtime state.
-- GitHub Actions for the latest pushed commit passed:
-  - `ci`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966256323`
-  - `Quality Gates`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25966256330`
-- Immediate recovery check passed:
-  - `python -m pytest tests/quality -q` - 28 passed.
+- GitHub Actions for the latest pushed implementation commit passed:
+  - `ci`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25968271852`
+  - `Quality Gates`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25968271843`
+- Local validation for the latest implementation commit passed:
+  - `python -m pytest tests/quality -q` - 30 passed.
+  - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` - passed.
+  - `python -m pytest -q` - passed.
+  - `npm.cmd --workspace apps/web run typecheck` - passed.
+  - `npm.cmd --workspace apps/web run typecheck:packages` - passed.
+  - `npm.cmd --workspace apps/web run build` - passed.
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_EXPECT_MODE=real npm.cmd run smoke:web` - passed, 65 checks.
 - Deployment status remains `deployed_stale_or_unverified`.
-  - `python scripts/check-deployed-version.py --expected-commit 5147d4f --timeout 20` returned sanitized `stale_or_unverified`.
-  - The deployed API reported old commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
-  - The deployed Web response did not expose a bounded marker for commit `5147d4f`.
+  - `python scripts/check-deployed-version.py --expected-commit 623adac --timeout 20` returned sanitized `stale_or_unverified`.
+  - The deployed API and Web probes failed in the latest check, so deployed success is not claimed.
   - No deployed-complete claim is made.
 
 ## Computer Use / GPT Pro Handoff Status
@@ -24,6 +29,7 @@
 - Project-scoped Computer Use was used for GitHub/Chrome/GPT Pro review and limited Render inspection.
 - A sanitized GPT Pro review packet was submitted after commit `5147d4f`.
 - GPT Pro accepted the CI/browser-smoke stabilization step and identified deployment consistency as the next priority.
+- The latest implementation commit `623adac` hardens deployed API read fallback, relationship-view backend authority, relationship evidence metadata, stage source coverage, and browser-smoke page relevance checks.
 - Render redeploy is blocked because automation reached an interactive Render sign-in page.
 - No credentials, cookies, tokens, screenshots with secrets, raw payloads, private diagnostics, account details, private operational URLs, or unrelated personal content were copied into the repo log or GPT Pro handoff.
 
