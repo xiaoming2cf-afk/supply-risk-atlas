@@ -22,3 +22,14 @@ def test_relationship_views_do_not_render_graph_derived_authoritative_rows() -> 
             assert snippet not in source, f"{relative_path} still contains {snippet!r}"
         assert "unavailable-preview" in source
         assert "no authoritative" in source.lower()
+        assert "data={!isEndpointUnavailable" in source or "data={!isEndpointUnavailable ?" in source
+
+
+def test_graph_explorer_keeps_diagnostics_separate_from_relationship_rows() -> None:
+    source = (REPO_ROOT / "apps/web/src/features/graph-explorer/GraphExplorer.tsx").read_text(encoding="utf-8")
+
+    assert "diagnosticsForEndpointResult" in source
+    assert "failed_endpoint" in source
+    assert "transport_attempts" in source
+    assert "endpointData={endpointDetails.data}" in source
+    assert "visibleLinks.slice" not in source

@@ -53,6 +53,11 @@ def _assert_stage_payload(payload: dict[str, object], stage_id: str) -> dict[str
         "graph_mode",
         "warnings",
         "relationship_class_counts",
+        "source_status",
+        "evidence_ref_count",
+        "calibration_status",
+        "failure_reason",
+        "required_narrow_patch_if_failed",
     ):
         assert key in data
     rendered = json.dumps(payload, ensure_ascii=False, sort_keys=True).lower()
@@ -61,6 +66,10 @@ def _assert_stage_payload(payload: dict[str, object], stage_id: str) -> dict[str
     assert "filing_body" not in rendered
     assert "authorization" not in rendered
     assert "api_key" not in rendered
+    assert "official" not in rendered
+    assert "production_verified" not in rendered
+    assert "source_status: official" not in rendered
+    assert "production_status: production" not in rendered
     assert "country:" + "tw" not in rendered
     assert "region:" + "tw" not in rendered
     return data
@@ -81,6 +90,17 @@ def test_stage_graph_endpoint_returns_bounded_stage_data(
     assert len(data["edges"]) <= 30
     assert data["layout_hints"]["does_not_render_full_graph"] is True
     assert data["source_coverage"]
+    assert data["source_status"] in {
+        "fixture_promoted_public_evidence",
+        "incomplete_fixture_proxy",
+        "unavailable_controlled",
+        "deferred_registry_only",
+    }
+    assert data["calibration_status"] == "fixture_proxy_not_calibrated"
+    assert isinstance(data["evidence_ref_count"], int)
+    for row in data["source_coverage"]:
+        assert row["source_status"] == data["source_status"]
+        assert row["calibration_status"] == data["calibration_status"]
 
 
 def test_stage_graph_focus_endpoint_caps_expansion(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -368,6 +368,7 @@ function RealDataRequiredPanel({ status, isRefreshing }: { status: DataStatus; i
           <span>{t("Coverage")}: {t(publicCoverageLabel(status.sourceStatus))}</span>
           <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
         </div>
+        <DiagnosticChips status={status} />
       </div>
     </section>
   );
@@ -396,7 +397,22 @@ function DataLineageBanner({ status }: { status: DataStatus }) {
         <span>{t("Updated")}: {formatPublicFreshness(status.freshness)}</span>
         <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
       </div>
+      <DiagnosticChips status={status} />
     </section>
+  );
+}
+
+function DiagnosticChips({ status }: { status: DataStatus }) {
+  const diagnostics = status.diagnostics;
+  if (!diagnostics || Object.keys(diagnostics).length === 0) return null;
+  return (
+    <div className="lineage-chips public-status-chips" aria-label="Sanitized diagnostics">
+      {diagnostics.failedEndpoint ? <span>failed_endpoint: {diagnostics.failedEndpoint}</span> : null}
+      {diagnostics.sourceStatus ? <span>source_status: {diagnostics.sourceStatus}</span> : null}
+      {diagnostics.retryHint ? <span>retry_hint: {diagnostics.retryHint}</span> : null}
+      {diagnostics.transportAttempts !== undefined ? <span>transport_attempts: {diagnostics.transportAttempts}</span> : null}
+      {diagnostics.lastCheckedAt ? <span>last_checked_at: {diagnostics.lastCheckedAt}</span> : null}
+    </div>
   );
 }
 
@@ -411,6 +427,13 @@ interface DataStatus {
   lineage: string;
   requestId: string;
   details: string[];
+  diagnostics?: {
+    failedEndpoint?: string;
+    sourceStatus?: string;
+    retryHint?: string;
+    transportAttempts?: number;
+    lastCheckedAt?: string;
+  };
 }
 
 function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: boolean, error: string | null): DataStatus {
@@ -428,6 +451,10 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
       lineage: "unavailable",
       requestId: "pending",
       details: error ? [error] : [],
+      diagnostics: {
+        sourceStatus: hasApiBaseUrl ? "partial" : "unavailable",
+        lastCheckedAt: new Date().toISOString(),
+      },
     };
   }
 
@@ -475,7 +502,20 @@ function getDataStatus(result: ApiResult<unknown> | undefined, hasApiBaseUrl: bo
     lineage: envelope.source?.lineage_ref ?? envelope.metadata?.lineage_ref ?? "unavailable",
     requestId: envelope.request_id,
     details: [...(envelope.warnings ?? []), ...(envelope.errors ?? []).map((item) => `${item.code}: ${item.message}`)],
+    diagnostics: {
+      failedEndpoint: sanitizeDiagnosticText(envelope.metadata?.failed_endpoint),
+      sourceStatus: sanitizeDiagnosticText(envelope.metadata?.source_status ?? sourceStatus),
+      retryHint: sanitizeDiagnosticText(envelope.metadata?.retry_hint),
+      transportAttempts:
+        typeof envelope.metadata?.transport_attempts === "number" ? envelope.metadata.transport_attempts : undefined,
+      lastCheckedAt: envelope.metadata?.as_of_time ?? result.receivedAt,
+    },
   };
+}
+
+function sanitizeDiagnosticText(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  return value.replace(/https?:\/\/[^\s)]+/gi, "endpoint://redacted").slice(0, 160);
 }
 
 function canRenderPageData(

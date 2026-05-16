@@ -31,6 +31,18 @@ REQUIRED_STAGE_FIELDS = {
     "source_gaps",
     "priority",
     "current_coverage_status",
+    "source_status",
+    "evidence_ref_count",
+    "calibration_status",
+    "failure_reason",
+    "required_narrow_patch_if_failed",
+}
+
+ALLOWED_SOURCE_STATUSES = {
+    "fixture_promoted_public_evidence",
+    "incomplete_fixture_proxy",
+    "unavailable_controlled",
+    "deferred_registry_only",
 }
 
 
@@ -62,6 +74,13 @@ def test_each_stage_has_source_view_chart_and_table_coverage() -> None:
         assert stage["core_edge_types"], stage["stage_id"]
         assert stage["relationship_classes"], stage["stage_id"]
         assert stage["current_coverage_status"] in {"implemented", "partial", "missing", "deferred"}
+        assert stage["source_status"] in ALLOWED_SOURCE_STATUSES, stage["stage_id"]
+        assert isinstance(stage["evidence_ref_count"], int), stage["stage_id"]
+        assert stage["evidence_ref_count"] >= 0, stage["stage_id"]
+        assert "production" not in str(stage["calibration_status"]).lower(), stage["stage_id"]
+        if stage["current_coverage_status"] in {"partial", "missing", "deferred"}:
+            assert stage["failure_reason"] not in {"", "none"}, stage["stage_id"]
+            assert stage["required_narrow_patch_if_failed"] not in {"", "none"}, stage["stage_id"]
 
 
 def test_stage_matrix_records_connector_fixtures_and_gaps() -> None:
@@ -100,5 +119,9 @@ def test_stage_matrix_has_no_forbidden_geography_or_production_claim() -> None:
         "region:" + "Tai" + "wan",
         "production-ready",
         "production ready",
+        "official",
+        "production_verified",
+        "source_status: official",
+        "production_status: production",
     ]
     assert all(token not in rendered for token in forbidden_tokens)

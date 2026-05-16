@@ -257,10 +257,11 @@ def platform_status_payload(
         "deploymentVersionReadiness": {
             "status": "reported" if version["git_commit"] != "unknown" else "not_verified",
             "apiVersion": str(version["app_version"]),
-            "apiGitCommit": str(version["git_commit"]),
+            "apiGitCommit": str(version.get("api_commit") or version["git_commit"]),
             "apiBuildTime": str(version["build_time"]),
             "webVersion": "not_verified",
-            "webGitCommit": "not_verified",
+            "webGitCommit": str(version.get("web_commit") or "not_verified"),
+            "commitMismatch": bool(version.get("commit_mismatch")),
             "environment": str(version["environment"]),
             "warnings": version["warnings"],
         },

@@ -72,6 +72,13 @@ def test_relationship_graph_endpoints_return_bounded_relationship_rows(
             assert key in row
         assert row["relationship_class"] != "EVIDENCE_CONTEXT"
         assert row["edge_type"] != "evidence_context_link"
+        assert isinstance(row["source_refs"], list)
+        assert isinstance(row["evidence_refs"], list)
+        assert isinstance(row["warnings"], list)
+        assert row["calibration_status"] == "fixture_or_promoted_calibration_not_validated"
+        assert row["confidence"] is None or isinstance(row["confidence"], (int, float))
+        assert "valid_from" in row
+        assert "valid_to" in row
     if expected_class == "SUPPLY_RELATIONSHIP":
         assert all(row.get("supplied_item_id") for row in data["relationships"])
     if expected_class == "DEMAND_RELATIONSHIP":

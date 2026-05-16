@@ -26,6 +26,11 @@ stages:
     source_gaps: [Policy scope and effective dates are fixture/proxy summaries until terms-reviewed source refresh is run.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 7
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L1_raw_minerals
     stage_name: Critical minerals and raw materials
     business_question: Which critical minerals and raw materials create upstream concentration or import-reliance exposure?
@@ -45,6 +50,11 @@ stages:
     source_gaps: [Mineral-to-semiconductor mapping is a documented proxy and remains not calibrated.]
     priority: P0
     current_coverage_status: partial
+    source_status: incomplete_fixture_proxy
+    evidence_ref_count: 5
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: Mineral-to-semiconductor dependency uses proxy mappings and lacks calibrated production shares.
+    required_narrow_patch_if_failed: Add documented proxy caveats and source-level evidence counts before using mineral dependencies in charts.
   - stage_id: L2_materials_chemicals
     stage_name: Materials and chemicals
     business_question: Which wafers, chemicals, gases, substrates, masks, and CMP inputs constrain semiconductor production?
@@ -64,6 +74,11 @@ stages:
     source_gaps: [Supplier shares and qualification times are fixture proxies unless disclosed.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 6
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L3_design_eda_ip
     stage_name: Design, EDA, and IP
     business_question: Which design firms, EDA capabilities, and IP blocks create upstream capability dependencies?
@@ -83,6 +98,11 @@ stages:
     source_gaps: [Non-US annual reports are manual-upload only in this fixture layer.]
     priority: P1
     current_coverage_status: partial
+    source_status: incomplete_fixture_proxy
+    evidence_ref_count: 5
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: Non-US disclosure and private IP dependency evidence remains manual-upload or literature-summary only.
+    required_narrow_patch_if_failed: Keep Design/IP edges as evidence-bound context unless a source record supports a dependency class.
   - stage_id: L4_equipment
     stage_name: Equipment
     business_question: Which manufacturing equipment and suppliers create process bottlenecks or policy exposure?
@@ -102,6 +122,11 @@ stages:
     source_gaps: [Capacity shares are not production calibrated.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 5
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L5_fabrication
     stage_name: Fabrication and front-end process
     business_question: Which fabs, foundries, process stages, technology nodes, and hazards drive front-end resilience?
@@ -121,6 +146,11 @@ stages:
     source_gaps: [Capacity and utilization remain proxy-only.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 6
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L6_products
     stage_name: Products and chip types
     business_question: Which product grades and chip types connect demand pressure to upstream capacity and process needs?
@@ -140,6 +170,11 @@ stages:
     source_gaps: [Product-level demand values are fixture proxies.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 5
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L7_packaging_testing
     stage_name: Packaging and testing
     business_question: Which OSAT, advanced packaging, substrate, and test stages constrain finished semiconductor output?
@@ -159,6 +194,11 @@ stages:
     source_gaps: [Capacity shares are not production calibrated.]
     priority: P1
     current_coverage_status: partial
+    source_status: incomplete_fixture_proxy
+    evidence_ref_count: 4
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: Packaging and testing capacity shares are fixture proxies unless disclosed by company reports.
+    required_narrow_patch_if_failed: Separate service relationship evidence from capacity proxy charts when source support is incomplete.
   - stage_id: L8_logistics
     stage_name: Logistics, ports, and routes
     business_question: Which ports, airports, routes, and hazards shape movement and logistics exposure?
@@ -178,6 +218,11 @@ stages:
     source_gaps: [Route volumes and lane shares are not production calibrated.]
     priority: P1
     current_coverage_status: partial
+    source_status: incomplete_fixture_proxy
+    evidence_ref_count: 5
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: Route volumes and lane shares are unavailable in the fixture layer.
+    required_narrow_patch_if_failed: Keep logistics route views aggregate-only and show route-volume gaps in table metadata.
   - stage_id: L9_downstream_demand
     stage_name: Downstream demand
     business_question: Which downstream sectors and demand signals pressure product grades and capacity?
@@ -197,6 +242,11 @@ stages:
     source_gaps: [Demand values are proxy summaries.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 4
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L10_risk_events
     stage_name: Risk events
     business_question: Which hazards, disruptions, market, cyber, factory, or labor events may affect nodes or stages?
@@ -216,6 +266,11 @@ stages:
     source_gaps: [News-derived event confidence remains proxy-only.]
     priority: P1
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 4
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none
   - stage_id: L11_compliance
     stage_name: Compliance, export controls, and sanctions
     business_question: Which restricted items, entities, and policies create compliance exposure in the graph?
@@ -235,3 +290,8 @@ stages:
     source_gaps: [Legal interpretation is out of scope; records are sanitized source summaries.]
     priority: P0
     current_coverage_status: implemented
+    source_status: fixture_promoted_public_evidence
+    evidence_ref_count: 4
+    calibration_status: fixture_proxy_not_calibrated
+    failure_reason: none
+    required_narrow_patch_if_failed: none

@@ -47,7 +47,11 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
           model_version: "unavailable",
           as_of_time: new Date().toISOString(),
           data_mode: "real",
-          freshness_status: "unavailable"
+          freshness_status: "unavailable",
+          failed_endpoint: "proxy://unconfigured",
+          retry_hint: "Check the public API origin configuration and retry the page request.",
+          source_status: "unavailable",
+          transport_attempts: 0
         },
         warnings: ["Public data service is temporarily unavailable."],
         errors: [
@@ -96,7 +100,11 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
           model_version: "unavailable",
           as_of_time: new Date().toISOString(),
           data_mode: "real",
-          freshness_status: "unavailable"
+          freshness_status: "unavailable",
+          failed_endpoint: "proxy://upstream-unreachable",
+          retry_hint: "Retry after Render warm-up. GET and HEAD proxy requests use bounded transient retry attempts.",
+          source_status: "unavailable",
+          transport_attempts: request.method === "GET" || request.method === "HEAD" ? MAX_GET_PROXY_ATTEMPTS : 1
         },
         warnings: ["Public data service is temporarily unavailable."],
         errors: [
@@ -211,7 +219,11 @@ function proxyErrorResponse(code: string, message: string, status: number) {
         model_version: "unavailable",
         as_of_time: new Date().toISOString(),
         data_mode: "real",
-        freshness_status: "unavailable"
+        freshness_status: "unavailable",
+        failed_endpoint: "proxy://invalid-path",
+        retry_hint: "Use a registered public API route and retry the page request.",
+        source_status: "unavailable",
+        transport_attempts: 0
       },
       warnings: [message],
       errors: [{ code, message }],

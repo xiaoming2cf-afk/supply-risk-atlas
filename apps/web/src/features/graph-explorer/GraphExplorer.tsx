@@ -607,6 +607,12 @@ type GraphEndpointDetails = {
   message: string;
   source: "backend" | "fallback";
   status: "active" | "fallback" | "loading";
+  diagnostics?: {
+    failedEndpoint?: string;
+    sourceStatus?: string;
+    retryHint?: string;
+    transportAttempts?: number;
+  };
 };
 
 async function fetchGraphEndpointDetails(
@@ -667,6 +673,7 @@ async function fetchGraphEndpointDetails(
     message: result.envelope.warnings?.[0] ?? "Fallback graph payload: backend graph view endpoint unavailable.",
     source: "fallback",
     status: "fallback",
+    diagnostics: diagnosticsForEndpointResult(result),
   };
 }
 
@@ -675,8 +682,34 @@ function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
     <div className={`graph-endpoint-status is-${details.status}`}>
       <strong>{details.source === "backend" ? "Backend graph view endpoint" : "Fallback graph payload"}</strong>
       <span>{details.message}</span>
+      {details.diagnostics ? (
+        <div className="lineage-chips public-status-chips" aria-label="Graph endpoint diagnostics">
+          {details.diagnostics.failedEndpoint ? <span>failed_endpoint: {details.diagnostics.failedEndpoint}</span> : null}
+          {details.diagnostics.sourceStatus ? <span>source_status: {details.diagnostics.sourceStatus}</span> : null}
+          {details.diagnostics.retryHint ? <span>retry_hint: {details.diagnostics.retryHint}</span> : null}
+          {details.diagnostics.transportAttempts !== undefined ? (
+            <span>transport_attempts: {details.diagnostics.transportAttempts}</span>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function diagnosticsForEndpointResult(result: ApiResult<unknown>): GraphEndpointDetails["diagnostics"] {
+  const metadata = result.envelope.metadata;
+  return {
+    failedEndpoint: sanitizeEndpointDiagnostic(metadata?.failed_endpoint),
+    sourceStatus: sanitizeEndpointDiagnostic(metadata?.source_status ?? result.sourceStatus),
+    retryHint: sanitizeEndpointDiagnostic(metadata?.retry_hint),
+    transportAttempts:
+      typeof metadata?.transport_attempts === "number" ? metadata.transport_attempts : undefined,
+  };
+}
+
+function sanitizeEndpointDiagnostic(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  return value.replace(/https?:\/\/[^\s)]+/gi, "endpoint://redacted").slice(0, 160);
 }
 
 function GraphModeDetailPanel({

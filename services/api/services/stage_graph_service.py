@@ -247,6 +247,11 @@ def _stage_base_payload(snapshot: Any, *, stage: dict[str, Any], mode: str) -> d
         "core_node_types": stage["core_node_types"],
         "core_edge_types": stage["core_edge_types"],
         "relationship_classes": stage["relationship_classes"],
+        "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
+        "evidence_ref_count": int(stage.get("evidence_ref_count") or 0),
+        "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
+        "failure_reason": stage.get("failure_reason", "not_recorded"),
+        "required_narrow_patch_if_failed": stage.get("required_narrow_patch_if_failed", "not_recorded"),
     }
 
 
@@ -325,6 +330,9 @@ def _stage_source_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:
             "stage_id": stage["stage_id"],
             "tier": "primary" if source_id in primary else "secondary",
             "connector_status": "fixture_or_registry",
+            "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
+            "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
+            "failure_reason": stage.get("failure_reason", "not_recorded"),
             "live_fetch_default": "disabled",
             "fixture_required": True,
         }

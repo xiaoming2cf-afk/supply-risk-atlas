@@ -325,3 +325,59 @@
 
 - Computer Use not yet used for this commit slice.
 - GitHub push, CI verification, Render redeploy, deployed smoke, screenshots, and GPT Pro review are pending after commit.
+
+## 2026-05-16 GPT Pro Review And Release Observability Slice
+
+### GPT Pro Review Result
+
+- Sent a sanitized status report for commit `c4609dc29e340dd66944aa6147f3b13181da907f` to the project ChatGPT conversation.
+- GPT Pro returned a staged PASS for local/code/CI evidence, with deployment reservation because Render still served `13b3ece`.
+- Next instruction from GPT Pro: harden version/deployment evidence, controlled degraded-state diagnostics, relationship evidence propagation consistency, stage-centered source coverage auditability, and deployed-smoke evidence without adding fake production data or claiming deployment success.
+
+### Gates Completed
+
+- Gate A baseline guard: current work started from `c4609dc`; preserved existing local/untracked files and did not stage `docs/roadmap/codex-continuation-request.md`, `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`, or `data/runtime/`.
+- Gate B version evidence: API version now exposes sanitized `api_commit`, `web_commit`, `runtime_env`, `source_status`, and `commit_mismatch` while preserving legacy `git_commit`. System Health surfaces commit mismatch without exposing raw env values.
+- Gate C controlled degraded diagnostics: app-level unavailable banners and Graph Explorer endpoint status now render sanitized diagnostics (`failed_endpoint`, `source_status`, `retry_hint`, `transport_attempts`, and app-level `last_checked_at`) without raw upstream URLs. Proxy error envelopes include bounded retry diagnostics.
+- Gate D relationship consistency: relationship endpoint tests now require list-typed `source_refs`/`evidence_refs`, row warnings, calibration status, explicit validity fields, and continued exclusion of `evidence_context_link` rows.
+- Gate E stage-centered source coverage: every L0-L11 stage now records `source_status`, `evidence_ref_count`, `calibration_status`, `failure_reason`, and `required_narrow_patch_if_failed`; partial stages explicitly state source gaps and next narrow fixes.
+- Gate F CI future-proofing: workflow files use `actions/checkout@v5`, `actions/setup-node@v5`, Node 22, and `actions/setup-python@v5`; `quality-gates.yml` still uses `windows-latest`, so the runner migration warning remains a recorded TODO rather than a behavior change in this release slice.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `apps/web/src/app/api/v1/[...path]/route.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `configs/sources/stage_source_coverage_matrix.yaml`
+- `packages/shared-types/src/health.ts`
+- `services/api/services/stage_graph_service.py`
+- `services/api/services/system_health_service.py`
+- `services/api/services/version_service.py`
+- `tests/api/test_stage_graph_endpoints.py`
+- `tests/api/test_supply_demand_graph_endpoints.py`
+- `tests/api/test_version_endpoint.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+- `tests/sources/test_stage_source_coverage_matrix.py`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_version_endpoint.py tests/sources/test_stage_source_coverage_matrix.py tests/api/test_stage_graph_endpoints.py tests/api/test_supply_demand_graph_endpoints.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` - pass, 34 tests
+- `npm.cmd --workspace apps/web run typecheck` - pass
+- `python -m pytest tests/quality -q` - pass, 19 tests
+- `python -m pytest tests/api tests/graph_invariants tests/security -q` - pass
+- `npm.cmd --workspace apps/web run build` - pass
+- `npm.cmd run smoke:web` with local API/Web - pass, 61 checks
+- `python -m pytest -q` - pass
+
+### Deployment Status
+
+- Deployment status remains `deployed_stale_or_unverified` until Render API/Web report the new commit and deployed smoke passes or reaches only a controlled unavailable state with matching version evidence.
+- Previous deployed check showed API `/api/v1/version` still at `13b3ece3e2f41918578a13c573905f1b16b73fab`; no deployment success is claimed here.
+
+### Safety Evidence
+
+- No live fetch behavior was enabled.
+- No raw payload, authorization header, cookie, token, private path, or secret-bearing diagnostics were introduced.
+- Relationship views keep authoritative rows empty when relationship endpoints are unavailable.
+- Evidence-context links remain non-propagating and excluded from supply/demand/production relationship rows.

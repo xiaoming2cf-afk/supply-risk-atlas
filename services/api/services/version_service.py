@@ -41,7 +41,9 @@ def build_version_payload() -> dict[str, Any]:
     if build_time == "unknown":
         warnings.append("build_time_not_verified")
 
+    web_commit = current_web_commit()
     return {
+        "api_commit": git_commit,
         "git_commit": git_commit,
         "build_time": build_time,
         "app_version": APP_VERSION,
@@ -52,6 +54,10 @@ def build_version_payload() -> dict[str, Any]:
         "source_manifest_id": source_manifest_id,
         "graph_version": graph_version,
         "environment": runtime_environment(),
+        "runtime_env": runtime_environment(),
+        "source_status": "partial",
+        "web_commit": web_commit,
+        "commit_mismatch": commit_mismatch(git_commit, web_commit),
         "production_status": "public_evidence_promoted" if graph_mode == "promoted" else "research_fixture",
         "calibration_status": ["fixture_proxy_not_calibrated", "not_financial_loss"],
         "not_production_ready": True,
@@ -76,7 +82,6 @@ def current_git_commit() -> str:
         "GIT_COMMIT",
         "COMMIT_SHA",
         "VERCEL_GIT_COMMIT_SHA",
-        "NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT",
     )
     if configured:
         return _short_or_full_commit(configured)
@@ -104,6 +109,20 @@ def current_build_time() -> str:
     if configured:
         return configured
     return "unknown"
+
+
+def current_web_commit() -> str:
+    configured = _first_env(
+        "SUPPLY_RISK_WEB_COMMIT",
+        "NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT",
+    )
+    return _short_or_full_commit(configured) if configured else "not_verified"
+
+
+def commit_mismatch(api_commit: str, web_commit: str) -> bool:
+    if api_commit in {"unknown", "not_verified"} or web_commit in {"unknown", "not_verified"}:
+        return False
+    return api_commit != web_commit
 
 
 def runtime_environment() -> str:

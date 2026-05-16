@@ -195,6 +195,7 @@ export interface PlatformStatus {
     apiBuildTime?: string;
     webVersion: string;
     webGitCommit?: string;
+    commitMismatch?: boolean;
     environment?: "local" | "render" | "unknown" | string;
     warnings: string[];
   };

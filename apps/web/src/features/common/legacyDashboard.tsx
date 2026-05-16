@@ -4855,6 +4855,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <Field label="api_build_time" value={deploymentReadiness.apiBuildTime ?? "not_verified"} />
           <Field label="web_build_version" value={webGitCommit} />
           <Field label="web_build_time" value={WEB_BUILD_TIME} />
+          <Field label="commit_mismatch" value={deploymentReadiness.commitMismatch ? "true" : "false"} />
           <Field label="deployment_environment" value={deploymentReadiness.environment ?? "unknown"} />
           <Field label="validation_readiness" value={validationReadiness} />
           <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />

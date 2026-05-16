@@ -27,6 +27,7 @@ def test_route_version_returns_sanitized_deployment_metadata(monkeypatch) -> Non
     assert payload["request_id"] == "req_version"
     assert payload["status"] == "success"
     data = payload["data"]
+    assert data["api_commit"] == "abcdef1234567890"
     assert data["git_commit"] == "abcdef1234567890"
     assert data["build_time"] == "2026-05-12T12:00:00Z"
     assert data["app_version"] == "0.1.0"
@@ -34,6 +35,10 @@ def test_route_version_returns_sanitized_deployment_metadata(monkeypatch) -> Non
     assert data["graph_mode"] == "fixture"
     assert data["storage_mode"] == "memory"
     assert data["environment"] == "render"
+    assert data["runtime_env"] == "render"
+    assert data["source_status"] == "partial"
+    assert data["web_commit"] == "not_verified"
+    assert data["commit_mismatch"] is False
     assert data["not_production_ready"] is True
     assert data["graph_version"].startswith("semirisk_kg_v0_1_")
     assert data["source_manifest_id"].startswith("semirisk_fixture_manifest_")
@@ -53,5 +58,20 @@ def test_fastapi_version_endpoint_is_registered(monkeypatch) -> None:
     body = response.json()
     assert body["request_id"] == "req_http_version"
     assert body["data"]["git_commit"] == "fedcba9876543210"
+    assert body["data"]["api_commit"] == "fedcba9876543210"
     assert body["data"]["environment"] in {"local", "render", "unknown"}
     _assert_sanitized_version(body)
+
+
+def test_version_endpoint_reports_commit_mismatch_without_raw_environment(monkeypatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_GIT_COMMIT", "aaaaaaaaaaaaaaa")
+    monkeypatch.setenv("NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT", "bbbbbbbbbbbbbbb")
+    monkeypatch.setenv("SUPPLY_RISK_STORAGE_MODE", "memory")
+
+    payload = main.route_version(request_id="req_version_mismatch")
+    data = payload["data"]
+
+    assert data["api_commit"] == "aaaaaaaaaaaaaaa"
+    assert data["web_commit"] == "bbbbbbbbbbbbbbb"
+    assert data["commit_mismatch"] is True
+    _assert_sanitized_version(payload)
