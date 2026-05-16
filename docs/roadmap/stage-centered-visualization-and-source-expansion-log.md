@@ -704,3 +704,24 @@
 - Render deployment remains unverified and unavailable from automation until project-scoped Render access is restored safely.
 - The latest local implementation still needs to be committed, pushed, and verified in GitHub Actions before any new GPT Pro review packet is sent.
 - The platform remains fixture/proxy/promoted-public-evidence research infrastructure; no deployment success or operational readiness claim is made.
+
+### Post-Push Evidence
+
+- Commit `9217e128db7b7359ee53388d2e2f6fce8abf6380` pushed to `origin/main`.
+- GitHub Actions `ci` passed for `9217e12`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25969818506`.
+- GitHub Actions `Quality Gates` passed for `9217e12`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25969818499`.
+- `python scripts/check-deployed-version.py --expected-commit 9217e12 --timeout 20` returned `deployed_stale_or_unverified`.
+- Deployed API reported old commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- Deployed Web HTML did not expose the `9217e12` commit marker.
+- Deployed Web proxy reported old commit `13b3ece3e2f41918578a13c573905f1b16b73fab`.
+- Browser/Computer Use attempt for Render/GPT Pro handoff was blocked because the Browser runtime reported no active Codex browser pane.
+- Render API credentials were not present in the local environment.
+- No Render login credentials were typed, no redeploy was triggered, and no GPT Pro message was sent after `9217e12`.
+
+### Next-Step Request
+
+- Restore safe project-scoped Browser/Chrome access or provide a safe local Render automation path outside chat.
+- Redeploy Render API and Web from latest `main`.
+- Verify `/api/v1/version` reports `9217e12` or a newer commit.
+- Run deployed endpoint probes and `npm run smoke:web -- --mode=deployed`.
+- Send GPT Pro a concise sanitized review packet after deployed verification is available.
