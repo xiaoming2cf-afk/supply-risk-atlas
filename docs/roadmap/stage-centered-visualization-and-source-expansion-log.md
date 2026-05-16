@@ -448,3 +448,42 @@
 - GitHub Actions `ci` passed for `8c04c14`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25965269537`.
 - GitHub Actions `Quality Gates` passed for `8c04c14`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25965269558`.
 - `python scripts/check-deployed-version.py --expected-commit 8c04c14 --timeout 20` returned sanitized `stale_or_unverified` with `api_commit_unknown` and Web `HTTPError`; deployment is still not verified.
+
+## 2026-05-16 CI Browser Smoke Launch Stabilization
+
+### Current HEAD
+
+- Local HEAD before this narrow patch: `cdc242993b4bd358100683db775989615830aa56`.
+- Preserved untracked local files: `apps/web/AGENTS.md` and `apps/web/CLAUDE.md`.
+- `data/runtime/` remains ignored and untracked.
+
+### Failure Evidence
+
+- Commit `cdc2429` pushed to `origin/main`.
+- GitHub Actions `Quality Gates` passed for `cdc2429`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25965525247`.
+- GitHub Actions `ci` failed for `cdc2429`: `https://github.com/xiaoming2cf-afk/supply-risk-atlas/actions/runs/25965525265`.
+- The failing job was the browser-smoke job. The sanitized failure was `Chrome DevTools did not become ready: fetch failed` before page assertions ran.
+- Local real-API browser smoke continued to pass, so this was treated as CI Chrome launch instability rather than a page relevance or API regression.
+
+### Narrow Patch
+
+- `scripts/browser-smoke.mjs` now uses CI-safe Chrome launch flags:
+  - `--no-sandbox`
+  - `--disable-setuid-sandbox`
+  - `--disable-background-networking`
+  - `--disable-extensions`
+  - `--remote-debugging-address=127.0.0.1`
+- Chrome DevTools startup wait is now configurable through `SUPPLY_RISK_CHROME_READY_MS` and defaults to 30 seconds.
+- The smoke script now reports a bounded `chrome_exited` diagnostic if Chrome exits before DevTools is available.
+- `tests/quality/test_frontend_source_readability.py` now guards the CI-hardened Chrome launch requirements.
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_source_readability.py tests/quality/test_deployed_version_checker.py tests/quality/test_no_tracked_runtime_artifacts.py -q` - pass, 12 tests
+- `npm.cmd --workspace apps/web run typecheck` - pass
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_EXPECT_MODE=real npm.cmd run smoke:web` - pass, 61 checks
+
+### Deployment Status
+
+- Deployment remains `deployed_stale_or_unverified`.
+- No Render deployment success is claimed until the deployed API/Web version endpoint reports the latest commit and deployed smoke passes or returns only controlled, actionable unavailable diagnostics.

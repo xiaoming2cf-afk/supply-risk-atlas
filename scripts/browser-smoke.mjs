@@ -27,6 +27,7 @@ const waitForTimeoutMs = deployedBestEffort
   : expectedMode === "real"
     ? Number(process.env.SUPPLY_RISK_SMOKE_WAIT_MS ?? 60000)
   : 30000;
+const chromeReadyTimeoutMs = Number(process.env.SUPPLY_RISK_CHROME_READY_MS ?? 30000);
 
 const pages = [
   ["System Health Center", "#system-health-center"],
@@ -138,8 +139,13 @@ async function main() {
     "--headless=new",
     "--disable-gpu",
     "--disable-dev-shm-usage",
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-background-networking",
+    "--disable-extensions",
     "--no-first-run",
     "--no-default-browser-check",
+    "--remote-debugging-address=127.0.0.1",
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${profileDir}`,
     "about:blank",
@@ -148,7 +154,7 @@ async function main() {
   const checks = [];
   let client;
   try {
-    await waitForChrome(port);
+    await waitForChrome(port, chrome, chromeReadyTimeoutMs);
     const pageWsUrl = await newPage(port);
     client = new CdpClient(pageWsUrl);
     await client.connect();
@@ -1702,17 +1708,23 @@ async function newPage(port) {
   return target.webSocketDebuggerUrl;
 }
 
-async function waitForChrome(port) {
+async function waitForChrome(port, processHandle, timeoutMs) {
   const startedAt = Date.now();
   let lastError;
-  while (Date.now() - startedAt < 10000) {
+  while (Date.now() - startedAt < timeoutMs) {
+    if (processHandle.exitCode !== null || processHandle.signalCode !== null) {
+      const exitDetail = processHandle.exitCode !== null
+        ? `exit_code=${processHandle.exitCode}`
+        : `signal=${processHandle.signalCode}`;
+      throw new Error(`Chrome DevTools did not become ready: chrome_exited ${exitDetail}`);
+    }
     try {
       const response = await fetch(`http://127.0.0.1:${port}/json/version`);
       if (response.ok) return;
     } catch (error) {
       lastError = error;
     }
-    await sleep(100);
+    await sleep(250);
   }
   throw new Error(`Chrome DevTools did not become ready: ${lastError?.message ?? "timeout"}`);
 }
