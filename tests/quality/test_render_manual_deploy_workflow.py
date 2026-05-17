@@ -26,8 +26,8 @@ def test_render_deploy_workflow_uses_secret_gated_api_path() -> None:
 
     assert "POST" in source
     assert "https://api.render.com/v1/services/${service_id}/deploys" in source
-    assert '"commitId": os.environ["EXPECTED_COMMIT"]' in source
-    assert '"clearCache": os.environ["CLEAR_CACHE"]' in source
+    assert '\\"commitId\\":\\"${EXPECTED_COMMIT}\\"' in source
+    assert '\\"clearCache\\":\\"${CLEAR_CACHE}\\"' in source
     assert "scripts/check-deployed-version.py" in source
     assert "cat ${response_file}" not in source
     assert "cat \"${response_file}\"" not in source

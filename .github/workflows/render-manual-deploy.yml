@@ -70,16 +70,7 @@ jobs:
             local service_name="$1"
             local service_id="$2"
             local payload
-            payload="$(python - <<'PY'
-import json
-import os
-
-print(json.dumps({
-    "clearCache": os.environ["CLEAR_CACHE"],
-    "commitId": os.environ["EXPECTED_COMMIT"],
-}))
-PY
-)"
+            payload="{\"clearCache\":\"${CLEAR_CACHE}\",\"commitId\":\"${EXPECTED_COMMIT}\"}"
             local response_file
             response_file="$(mktemp)"
             local http_code
