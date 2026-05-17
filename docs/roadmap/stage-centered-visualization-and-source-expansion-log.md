@@ -1005,3 +1005,33 @@
 
 - This patch must be committed, pushed, rebuilt by Render Web, and rechecked before deployment can be marked verified.
 - API and Web runtime proxy were aligned at `f2854ea`, but Web static HTML verification remains pending until this patch is deployed.
+
+## 2026-05-17 Render Web Commit Env Priority Fix
+
+### Current HEAD
+
+- Current HEAD before this patch: `c3f245d47f678053fc4aca44024a31498ea58d86`.
+
+### Gate Result
+
+- Render API reported latest commit `c3f245d47f678053fc4aca44024a31498ea58d86`.
+- Web same-origin version proxy reported latest API commit `c3f245d47f678053fc4aca44024a31498ea58d86`.
+- Web static HTML still rendered `data-web-build-commit="fa26bb0..."`.
+- Root cause: `next.config.mjs` preferred `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` over `RENDER_GIT_COMMIT`, so a stale manually configured public env value could override Render's actual Git commit at build time.
+- Fix: `next.config.mjs` now prioritizes `RENDER_GIT_COMMIT`, then `SUPPLY_RISK_GIT_COMMIT`, then the public override, then local `git rev-parse HEAD`.
+
+### Files Changed
+
+- `apps/web/next.config.mjs`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `tests/quality/test_web_commit_marker.py`
+
+### Commands Run
+
+- Public deployed root HTML spot checks showed `fa26bb0` in `data-web-build-commit` despite API/Web proxy commit alignment at `c3f245d`.
+- `python scripts/check-deployed-version.py --expected-commit c3f245d47f678053fc4aca44024a31498ea58d86 --timeout 35 --attempts 3` - controlled failure with only `web_html_commit_not_visible`.
+
+### Known Limitations
+
+- This env-priority patch still needs commit, push, GitHub Actions, Render rebuild, and deployed verification.
+- No production readiness claim is made.

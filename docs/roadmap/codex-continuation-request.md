@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- Latest pushed commit before the Web HTML marker patch: `f2854eaa3bb58d91550bff6748e1393cae67dbf8`.
+- Latest pushed commit before the Render Web env-priority patch: `c3f245d47f678053fc4aca44024a31498ea58d86`.
 - Branch: `main`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
@@ -26,17 +26,18 @@
 - The deployed checker treats public-probe exceptions as sanitized failed attempts instead of surfacing private transport details.
 - Cross-service deployment consistency remains enforced by checking API commit, Web proxy commit, and Web HTML commit marker.
 - The Web layout now emits static HTML metadata for `supply-risk-web-commit` and `supply-risk-web-build-time`; this patch still needs commit/push/deploy verification.
+- `next.config.mjs` now prioritizes `RENDER_GIT_COMMIT` over a stale `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` override for Web build identity.
 - Relationship and stage graph endpoints remain bounded, metadata-complete, and separated by relationship class.
 
 ## Deployment Status
 
 - Current deployment status: `deployed_stale_or_unverified`.
-- Latest deployed API/Web runtime version observed by public probes: `f2854eaa3bb58d91550bff6748e1393cae67dbf8`.
-- Remaining blocker: Web static HTML did not expose the `f2854ea` commit marker before the Web HTML marker patch.
+- Latest deployed API version observed by public probes: `c3f245d47f678053fc4aca44024a31498ea58d86`.
+- Remaining blocker: Web static HTML still rendered an old `data-web-build-commit` value because a stale public Web commit env var overrode Render's Git commit during build.
 - Public deployment probes after Render redeploy showed:
-  - API `/api/v1/version` reported `f2854ea`.
-  - Web same-origin version proxy reported `f2854ea`.
-  - Web HTML did not expose the `f2854ea` commit marker.
+  - API `/api/v1/version` reported `c3f245d`.
+  - Web same-origin version proxy reported `c3f245d`.
+  - Web HTML still rendered `fa26bb0` before the env-priority patch.
 - Relationship and stage endpoint reachability was confirmed during the stale-deployment recovery checks, and public version probes now show the API/Web runtime proxy aligned at `f2854ea`:
   - `/api/v1/graph/supply-relationships?limit=5`
   - `/api/v1/graph/demand-relationships?limit=5`
@@ -60,7 +61,7 @@
 
 Use a safe Render deployment path to redeploy API and Web from latest `main`:
 
-1. Commit and push the Web HTML marker patch.
+1. Commit and push the Render Web env-priority patch.
 2. Wait for GitHub `ci` and `Quality Gates`.
 3. Trigger Web redeploy for `supply-risk-atlas-web` from the marker patch commit.
 4. Trigger API redeploy for `supply-risk-atlas-api` if the API commit is no longer aligned with latest `main`.

@@ -13,9 +13,9 @@ function gitCommit() {
 }
 
 const webCommit = firstDefined(
-  process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT,
   process.env.RENDER_GIT_COMMIT,
   process.env.SUPPLY_RISK_GIT_COMMIT,
+  process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT,
   gitCommit(),
   "not_verified",
 );
