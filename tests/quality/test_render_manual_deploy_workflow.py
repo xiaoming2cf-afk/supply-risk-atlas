@@ -15,6 +15,7 @@ def test_render_deploy_workflow_is_manual_only() -> None:
     assert "push:" not in source
     assert "pull_request:" not in source
     assert "schedule:" not in source
+    assert "ref: ${{ env.EXPECTED_COMMIT }}" not in source
 
 
 def test_render_deploy_workflow_uses_secret_gated_api_path() -> None:

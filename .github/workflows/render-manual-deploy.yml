@@ -28,13 +28,11 @@ jobs:
     name: Trigger Render API and Web deploys
     runs-on: ubuntu-latest
     env:
-      EXPECTED_COMMIT: ${{ inputs.commit_sha != '' && inputs.commit_sha || github.sha }}
+      EXPECTED_COMMIT: ${{ github.event.inputs.commit_sha || github.sha }}
       CLEAR_CACHE: ${{ inputs.clear_cache }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
-        with:
-          ref: ${{ env.EXPECTED_COMMIT }}
 
       - name: Validate requested commit and required secrets
         shell: bash
