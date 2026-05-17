@@ -22,12 +22,17 @@ def main() -> int:
     parser.add_argument("--api-url", default=DEFAULT_API_URL, help="API base URL ending in /api/v1.")
     parser.add_argument("--web-url", default=DEFAULT_WEB_URL, help="Web origin URL.")
     parser.add_argument("--timeout", type=float, default=10.0)
+    parser.add_argument("--attempts", type=int, default=2, help="Bounded attempts per public deployed probe.")
     args = parser.parse_args()
 
     expected_commit = _clean_commit(args.expected_commit or local_git_commit())
-    api_result = fetch_api_version(args.api_url, args.timeout)
-    web_html_result = fetch_web_commit_presence(args.web_url, expected_commit, args.timeout)
-    web_proxy_result = fetch_web_proxy_version(args.web_url, args.timeout)
+    attempts = max(1, min(args.attempts, 5))
+    api_result = retry_probe(lambda: fetch_api_version(args.api_url, args.timeout), attempts=attempts)
+    web_html_result = retry_probe(
+        lambda: fetch_web_commit_presence(args.web_url, expected_commit, args.timeout),
+        attempts=attempts,
+    )
+    web_proxy_result = retry_probe(lambda: fetch_web_proxy_version(args.web_url, args.timeout), attempts=attempts)
     api_commit = _clean_commit(str(api_result.get("git_commit") or "unknown"))
     web_proxy_commit = _clean_commit(str(web_proxy_result.get("git_commit") or "unknown"))
 
@@ -50,6 +55,7 @@ def main() -> int:
             "app_version": api_result.get("app_version", "unknown"),
             "environment": api_result.get("environment", "unknown"),
             "latency_class": api_result.get("latency_class", "failed"),
+            "attempts": api_result.get("attempts", 1),
         },
         "web": {
             "html": web_html_result,
@@ -59,6 +65,7 @@ def main() -> int:
                 "app_version": web_proxy_result.get("app_version", "unknown"),
                 "environment": web_proxy_result.get("environment", "unknown"),
                 "latency_class": web_proxy_result.get("latency_class", "failed"),
+                "attempts": web_proxy_result.get("attempts", 1),
             },
         },
         "warnings": sorted(set(warnings)),
@@ -91,6 +98,18 @@ def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
         "deployment_unavailable": bool(data.get("deployment_unavailable", False)),
         "latency_class": latency_class(latency),
     }
+
+
+def retry_probe(factory, *, attempts: int) -> dict[str, Any]:
+    result: dict[str, Any] = {"status": "failed", "latency_class": "failed"}
+    for attempt in range(1, attempts + 1):
+        result = factory()
+        result["attempts"] = attempt
+        if result.get("status") in {"ok", "verified"}:
+            return result
+        if attempt < attempts:
+            time.sleep(min(3.0, 0.75 * attempt))
+    return result
 
 
 def fetch_web_proxy_version(web_url: str, timeout: float) -> dict[str, Any]:

@@ -6,10 +6,10 @@ import subprocess
 from typing import Any
 from datetime import datetime, timezone
 
-from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.api.envelope import make_envelope
 
 from services.api.services.common import semiconductor_metadata
+from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 from services.api.storage.sqlite_store import configured_storage_mode
 
 
@@ -29,7 +29,7 @@ def build_version_payload() -> dict[str, Any]:
     ]
 
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = fixture_snapshot_for_services()
         graph_version = snapshot.graph_version
         source_manifest_id = snapshot.source_manifest_id
     except Exception as exc:

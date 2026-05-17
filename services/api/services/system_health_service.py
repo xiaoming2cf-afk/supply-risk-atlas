@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from graph_kernel.semiconductor_snapshot import build_semiconductor_fixture_snapshot
 from sra_core.sources import source_registry_readiness
 from sra_core.contracts.semiconductor import DEFAULT_SEMIRISK_AS_OF_TIME
 
@@ -12,6 +11,7 @@ from services.api.services.common import (
     semiconductor_default_time,
     semiconductor_fixture_warnings,
 )
+from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 from services.api.services.version_service import build_version_payload
 
 
@@ -123,7 +123,7 @@ def semiconductor_graph_health_payload() -> dict[str, Any]:
     data_mode = configured_data_mode(graph_mode)
     production_status = production_status_for_mode(graph_mode)
     try:
-        snapshot = build_semiconductor_fixture_snapshot()
+        snapshot = fixture_snapshot_for_services()
     except Exception as exc:
         return {
             "label": "SemiRisk-KG v0.1 fixture graph",

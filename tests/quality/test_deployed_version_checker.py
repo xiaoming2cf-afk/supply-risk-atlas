@@ -166,3 +166,18 @@ def test_deployment_status_reports_probe_error_for_unknown_expected_commit() -> 
 
     assert status == "probe_error"
     assert warnings == ["expected_commit_unknown"]
+
+
+def test_retry_probe_records_attempt_count_and_stops_on_success() -> None:
+    checker = _load_checker_module()
+    responses = iter(
+        [
+            {"status": "failed", "latency_class": "failed"},
+            {"status": "ok", "latency_class": "normal"},
+        ]
+    )
+
+    result = checker.retry_probe(lambda: next(responses), attempts=3)
+
+    assert result["status"] == "ok"
+    assert result["attempts"] == 2

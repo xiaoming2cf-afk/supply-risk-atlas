@@ -26,6 +26,7 @@
 - Graph Explorer stage views display source-family coverage and limitations instead of hiding them in docs.
 - Supply-demand balance rows include graph/source/data-mode metadata, source refs, evidence refs, validity fields, warnings, and calibration status.
 - A follow-up local patch increases idempotent read retry budgets for deployed transient 5xx/timeout windows. POST/write calls remain single-attempt.
+- A second local patch makes `/api/v1/version` and System Health reuse the service-level fixture snapshot cache and adds bounded retry attempts to `scripts/check-deployed-version.py`.
 
 ## Deployment Status
 
@@ -55,8 +56,8 @@
 
 Continue with a narrow release-hardening gate:
 
-1. Re-run local checks after the idempotent retry-budget patch.
-2. Commit and push the retry-budget patch.
+1. Re-run local checks after the version/cache/probe patch.
+2. Commit and push the version/cache/probe patch.
 3. Wait for GitHub `ci` and `Quality Gates`.
 4. Use Render Dashboard or a safe non-chat Render automation path to redeploy API and Web from the latest HEAD.
 5. Verify `python scripts/check-deployed-version.py --expected-commit <latest-head> --timeout 30` returns `deployed_verified`.

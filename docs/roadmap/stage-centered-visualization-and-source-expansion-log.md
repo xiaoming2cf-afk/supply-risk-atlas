@@ -879,3 +879,45 @@
 - Latest HEAD after this patch must still be deployed and verified; no deployed success claim is made.
 - Render UI automation remains unstable in Chrome for repeated latest-commit deployment actions.
 - Entity Risk screenshot capture remains unavailable due browser timeout; public System Health and Graph Explorer screenshots were captured.
+
+## 2026-05-17 Version Probe And API Warm-Up Hardening
+
+### Current HEAD
+
+- Local HEAD before this patch: `6bc50eed20050cdb920583a87a4471d8af221ec1`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+
+### Gate Result
+
+- Current deployed state remains `deployed_stale_or_unverified`: API and Web still report `fa26bb0b468ae058a3ce3e346a56536303463e36` while local HEAD is newer.
+- Direct public probes showed relationship and stage graph endpoints returning HTTP 200 after Render recovered:
+  - `/api/v1/graph/supply-relationships?limit=5`
+  - `/api/v1/graph/demand-relationships?limit=5`
+  - `/api/v1/graph/production-dependencies?limit=5`
+  - `/api/v1/graph/supply-demand-balance?limit=5`
+  - `/api/v1/stage-graph/L5_fabrication?limit=18`
+- `/api/v1/version` remained the slowest public endpoint during cold-start windows.
+- `version_service` and System Health now reuse the service-level fixture snapshot cache instead of rebuilding the fixture graph directly.
+- `scripts/check-deployed-version.py` now uses bounded per-probe retries and records attempt counts so transient Render timeouts do not become false `deployed_unavailable` claims.
+
+### Files Changed
+
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `scripts/check-deployed-version.py`
+- `services/api/services/system_health_service.py`
+- `services/api/services/version_service.py`
+- `tests/quality/test_deployed_version_checker.py`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_version_endpoint.py tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py tests/quality/test_deployed_version_checker.py -q` - pass, 27 tests.
+- `npm.cmd --workspace apps/web run typecheck` - pass.
+- `python scripts/check-deployed-version.py --expected-commit 6bc50eed20050cdb920583a87a4471d8af221ec1 --timeout 20 --attempts 2` - controlled failure with `deployed_stale_or_unverified`; deployed API/Web still reported `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+
+### Known Limitations
+
+- Latest local patch is not deployed yet.
+- Deployment verification remains blocked on Render redeploy consistency, not on local tests.
+- No production readiness, live authoritative data, or source usability claim is made.
