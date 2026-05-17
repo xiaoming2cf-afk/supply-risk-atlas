@@ -47,6 +47,7 @@
   - Web `/api/build-info`: unavailable because the deployed Web build predates that route
 - Local shell did not have `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`, `GITHUB_TOKEN`, or `GH_TOKEN` present.
 - GitHub UI showed the manual workflow as active, but the `Run workflow` panel returned a page loading error in Browser automation. The failed tab was closed before continuing.
+- GPT Pro handoff was attempted with a sanitized status packet, but ChatGPT browser control timed out during send/check. Treat the final GPT Pro review for `57832e6` as unconfirmed.
 
 ## Required Next Action
 
@@ -69,6 +70,8 @@ The acceptable final statuses are:
 
 - `deployed_verified`, or
 - `render_deploy_blocked_missing_safe_deploy_path` with missing secret evidence.
+
+After either status is reached, retry the project-scoped GPT Pro handoff with the same sanitized evidence. Do not paste secrets, raw logs, account screenshots, cookies, tokens, private diagnostics, or raw payloads.
 
 Do not claim deployment completion while the public probes remain stale.
 
