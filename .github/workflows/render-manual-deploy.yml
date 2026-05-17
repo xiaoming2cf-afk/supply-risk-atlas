@@ -1,0 +1,122 @@
+name: Render Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Git commit SHA to deploy. Defaults to the workflow commit."
+        required: false
+        type: string
+      clear_cache:
+        description: "Clear Render build cache before deploy."
+        required: true
+        default: "clear"
+        type: choice
+        options:
+          - clear
+          - do_not_clear
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-manual-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Trigger Render API and Web deploys
+    runs-on: ubuntu-latest
+    env:
+      EXPECTED_COMMIT: ${{ inputs.commit_sha != '' && inputs.commit_sha || github.sha }}
+      CLEAR_CACHE: ${{ inputs.clear_cache }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.EXPECTED_COMMIT }}
+
+      - name: Validate requested commit and required secrets
+        shell: bash
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_API_SERVICE_ID: ${{ secrets.RENDER_API_SERVICE_ID }}
+          RENDER_WEB_SERVICE_ID: ${{ secrets.RENDER_WEB_SERVICE_ID }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${EXPECTED_COMMIT}" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            echo "::error::commit_sha must be a 7-40 character Git SHA."
+            exit 1
+          fi
+          missing=()
+          [[ -n "${RENDER_API_KEY}" ]] || missing+=("RENDER_API_KEY")
+          [[ -n "${RENDER_API_SERVICE_ID}" ]] || missing+=("RENDER_API_SERVICE_ID")
+          [[ -n "${RENDER_WEB_SERVICE_ID}" ]] || missing+=("RENDER_WEB_SERVICE_ID")
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Missing required GitHub Actions secrets: ${missing[*]}"
+            echo "See docs/roadmap/render-deploy-secret-requirements.md for setup guidance."
+            exit 1
+          fi
+          echo "Deploy preflight passed for commit ${EXPECTED_COMMIT:0:12}; clear_cache=${CLEAR_CACHE}."
+
+      - name: Trigger Render deploys
+        shell: bash
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_API_SERVICE_ID: ${{ secrets.RENDER_API_SERVICE_ID }}
+          RENDER_WEB_SERVICE_ID: ${{ secrets.RENDER_WEB_SERVICE_ID }}
+        run: |
+          set -euo pipefail
+
+          trigger_deploy() {
+            local service_name="$1"
+            local service_id="$2"
+            local payload
+            payload="$(python - <<'PY'
+import json
+import os
+
+print(json.dumps({
+    "clearCache": os.environ["CLEAR_CACHE"],
+    "commitId": os.environ["EXPECTED_COMMIT"],
+}))
+PY
+)"
+            local response_file
+            response_file="$(mktemp)"
+            local http_code
+            http_code="$(
+              curl -sS \
+                -o "${response_file}" \
+                -w "%{http_code}" \
+                -X POST "https://api.render.com/v1/services/${service_id}/deploys" \
+                -H "accept: application/json" \
+                -H "content-type: application/json" \
+                -H "authorization: Bearer ${RENDER_API_KEY}" \
+                --data "${payload}"
+            )"
+            rm -f "${response_file}"
+            if [[ "${http_code}" != "201" && "${http_code}" != "202" ]]; then
+              echo "::error::Render deploy trigger failed for ${service_name}; HTTP ${http_code}."
+              exit 1
+            fi
+            echo "Triggered Render deploy for ${service_name}; commit=${EXPECTED_COMMIT:0:12}; clear_cache=${CLEAR_CACHE}."
+          }
+
+          trigger_deploy "supply-risk-atlas-api" "${RENDER_API_SERVICE_ID}"
+          trigger_deploy "supply-risk-atlas-web" "${RENDER_WEB_SERVICE_ID}"
+
+      - name: Wait for public version convergence
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..18}; do
+            if python scripts/check-deployed-version.py --expected-commit "${EXPECTED_COMMIT}" --timeout 20 --attempts 2; then
+              echo "Render public deployment verified for ${EXPECTED_COMMIT:0:12}."
+              exit 0
+            fi
+            echo "Deployment not aligned yet; probe attempt ${attempt}/18."
+            sleep 30
+          done
+          echo "::error::Render deployment did not converge to ${EXPECTED_COMMIT:0:12} within the bounded wait window."
+          exit 1

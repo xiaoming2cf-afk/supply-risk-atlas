@@ -1054,3 +1054,55 @@
 
 - Deployment verification remains pending until public probes show API, Web proxy, and Web HTML all aligned to the trigger commit.
 - No production readiness claim is made.
+
+## 2026-05-17 Render Deployment Closure专项
+
+### Current HEAD
+
+- Current HEAD before this patch: `ed41ab3af0f6d578277f2bcaac7f24f0111abd0c`.
+- GPT Pro review result: prioritize Render Web static HTML, deployment control, and version-consistency closure before further content/API/data-source expansion.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+
+### Gate Result
+
+- Public deployment probe still reported `deployed_stale_or_unverified` before this patch.
+- API and Web same-origin proxy reported `c3f245d47f678053fc4aca44024a31498ea58d86`, not current `ed41ab3`.
+- Web static HTML did not expose the current commit marker.
+- Added a dynamic Web build metadata endpoint so deployed Web identity can be checked without relying only on root HTML.
+- Added a manual-only GitHub Actions workflow for Render API/Web deploys using GitHub secrets and bounded public convergence checks.
+- Added actionable Render secret requirements documentation for the blocked case.
+
+### Files Changed
+
+- `.github/workflows/render-manual-deploy.yml`
+- `apps/web/src/app/api/build-info/route.ts`
+- `docs/roadmap/render-deploy-secret-requirements.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `scripts/check-deployed-version.py`
+- `tests/quality/test_deployed_version_checker.py`
+- `tests/quality/test_render_manual_deploy_workflow.py`
+- `tests/quality/test_web_commit_marker.py`
+
+### Commands Run
+
+- `git status --short; git rev-parse HEAD` - only preserved untracked Web notes were present.
+- `python scripts/check-deployed-version.py --expected-commit ed41ab3af0f6d578277f2bcaac7f24f0111abd0c --timeout 25 --attempts 2` - controlled failure with `deployed_stale_or_unverified`.
+- `python -m pytest tests/quality/test_deployed_version_checker.py tests/quality/test_web_commit_marker.py tests/quality/test_render_manual_deploy_workflow.py -q` - passed after narrowing the raw-payload guard to allow the safety warning `no_raw_payload`.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+
+### Computer Use Actions
+
+- Used authorized Chrome Browser control only for the project-scoped ChatGPT project conversation.
+- Sent a sanitized status report with commit SHAs, tests, deployment state, and limitations.
+- GPT Pro replied that the next round must prioritize Render Web static HTML / deployment control / version consistency closure.
+- No secrets, cookies, tokens, OTPs, private diagnostics, raw payloads, private operational URLs, screenshots with sensitive account data, or PII were copied into repository files or the GPT Pro message.
+
+### Known Limitations
+
+- Deployment cannot be marked aligned until the manual Render workflow runs successfully or Render Dashboard/API access safely triggers API and Web redeploys.
+- If the required GitHub Actions secrets are absent, the actionable status is `render_deploy_blocked_missing_safe_deploy_path`.
+- No content/API/data-source expansion was attempted in this gate by GPT Pro direction.
+- No production readiness claim is made.

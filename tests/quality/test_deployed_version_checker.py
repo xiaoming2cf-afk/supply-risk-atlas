@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from email.message import Message
 from pathlib import Path
 
 
@@ -78,6 +79,8 @@ def test_deployment_status_requires_api_web_proxy_and_html_match() -> None:
         api_result={"status": "ok"},
         api_commit="9674e60",
         web_html_result={"status": "verified"},
+        web_build_result={"status": "ok", "cache_control": "no-store, max-age=0"},
+        web_build_commit="9674e6005021597182b05aac4700247b89f81464",
         web_proxy_result={"status": "ok"},
         web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
     )
@@ -94,12 +97,15 @@ def test_deployment_status_reports_stale_mismatch_without_success() -> None:
         api_result={"status": "ok"},
         api_commit="8942950",
         web_html_result={"status": "commit_not_visible"},
+        web_build_result={"status": "ok", "cache_control": "no-store, max-age=0"},
+        web_build_commit="8942950",
         web_proxy_result={"status": "ok"},
         web_proxy_commit="8942950",
     )
 
     assert status == "deployed_stale_or_unverified"
     assert "api_commit_mismatch" in warnings
+    assert "web_build_info_commit_mismatch" in warnings
     assert "web_proxy_commit_mismatch" in warnings
     assert "web_html_commit_not_visible" in warnings
 
@@ -112,6 +118,8 @@ def test_deployment_status_honors_api_reported_stale_state() -> None:
         api_result={"status": "ok", "deployment_stale_or_unverified": True},
         api_commit="9674e6005021597182b05aac4700247b89f81464",
         web_html_result={"status": "verified"},
+        web_build_result={"status": "ok", "cache_control": "no-store, max-age=0"},
+        web_build_commit="9674e6005021597182b05aac4700247b89f81464",
         web_proxy_result={"status": "ok"},
         web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
     )
@@ -128,6 +136,8 @@ def test_deployment_status_honors_api_reported_unavailable_state() -> None:
         api_result={"status": "ok", "deployment_unavailable": True},
         api_commit="9674e6005021597182b05aac4700247b89f81464",
         web_html_result={"status": "verified"},
+        web_build_result={"status": "ok", "cache_control": "no-store, max-age=0"},
+        web_build_commit="9674e6005021597182b05aac4700247b89f81464",
         web_proxy_result={"status": "ok"},
         web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
     )
@@ -144,12 +154,19 @@ def test_deployment_status_reports_unavailable_when_all_public_probes_fail() -> 
         api_result={"status": "failed"},
         api_commit="unknown",
         web_html_result={"status": "failed"},
+        web_build_result={"status": "failed"},
+        web_build_commit="unknown",
         web_proxy_result={"status": "failed"},
         web_proxy_commit="unknown",
     )
 
     assert status == "deployed_unavailable"
-    assert warnings == ["api_unavailable", "web_unavailable", "web_proxy_unavailable"]
+    assert warnings == [
+        "api_unavailable",
+        "web_unavailable",
+        "web_build_info_unavailable",
+        "web_proxy_unavailable",
+    ]
 
 
 def test_deployment_status_reports_probe_error_for_unknown_expected_commit() -> None:
@@ -160,6 +177,8 @@ def test_deployment_status_reports_probe_error_for_unknown_expected_commit() -> 
         api_result={"status": "ok"},
         api_commit="9674e60",
         web_html_result={"status": "verified"},
+        web_build_result={"status": "ok", "cache_control": "no-store, max-age=0"},
+        web_build_commit="9674e60",
         web_proxy_result={"status": "ok"},
         web_proxy_commit="9674e60",
     )
@@ -209,3 +228,67 @@ def test_retry_probe_sanitizes_factory_exceptions() -> None:
         "latency_class": "failed",
         "attempts": 1,
     }
+
+
+def test_fetch_web_build_info_extracts_sanitized_metadata(monkeypatch) -> None:
+    checker = _load_checker_module()
+
+    class FakeResponse:
+        headers = Message()
+        headers["Cache-Control"] = "no-store, max-age=0"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, _limit: int) -> bytes:
+            return (
+                b'{"status":"success","data":{"web_commit":"9674e6005021597182b05aac4700247b89f81464",'
+                b'"deployment_readiness_state":"web_build_metadata"}}'
+            )
+
+    monkeypatch.setattr(checker, "urlopen", lambda *_args, **_kwargs: FakeResponse())
+
+    result = checker.fetch_web_build_info("https://example.test", 1)
+
+    assert result["status"] == "ok"
+    assert result["web_commit"] == "9674e6005021597182b05aac4700247b89f81464"
+    assert result["deployment_readiness_state"] == "web_build_metadata"
+    assert result["cache_control"] == "no-store, max-age=0"
+
+
+def test_fetch_web_build_info_sanitizes_transport_failure(monkeypatch) -> None:
+    checker = _load_checker_module()
+
+    def failing_urlopen(*_args, **_kwargs):
+        raise OSError("private transport details")
+
+    monkeypatch.setattr(checker, "urlopen", failing_urlopen)
+
+    result = checker.fetch_web_build_info("https://example.test", 1)
+
+    assert result == {
+        "status": "failed",
+        "error": "OSError",
+        "latency_class": "failed",
+    }
+
+
+def test_deployment_status_requires_web_build_info_no_store() -> None:
+    checker = _load_checker_module()
+
+    status, warnings = checker.deployment_status(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={"status": "ok"},
+        api_commit="9674e6005021597182b05aac4700247b89f81464",
+        web_html_result={"status": "verified"},
+        web_build_result={"status": "ok", "cache_control": "public, max-age=3600"},
+        web_build_commit="9674e6005021597182b05aac4700247b89f81464",
+        web_proxy_result={"status": "ok"},
+        web_proxy_commit="9674e6005021597182b05aac4700247b89f81464",
+    )
+
+    assert status == "deployed_stale_or_unverified"
+    assert warnings == ["web_build_info_cache_control_missing"]

@@ -32,8 +32,10 @@ def main() -> int:
         lambda: fetch_web_commit_presence(args.web_url, expected_commit, args.timeout),
         attempts=attempts,
     )
+    web_build_result = retry_probe(lambda: fetch_web_build_info(args.web_url, args.timeout), attempts=attempts)
     web_proxy_result = retry_probe(lambda: fetch_web_proxy_version(args.web_url, args.timeout), attempts=attempts)
     api_commit = _clean_commit(str(api_result.get("git_commit") or "unknown"))
+    web_build_commit = _clean_commit(str(web_build_result.get("web_commit") or "unknown"))
     web_proxy_commit = _clean_commit(str(web_proxy_result.get("git_commit") or "unknown"))
 
     status, warnings = deployment_status(
@@ -41,6 +43,8 @@ def main() -> int:
         api_result=api_result,
         api_commit=api_commit,
         web_html_result=web_html_result,
+        web_build_result=web_build_result,
+        web_build_commit=web_build_commit,
         web_proxy_result=web_proxy_result,
         web_proxy_commit=web_proxy_commit,
     )
@@ -59,6 +63,13 @@ def main() -> int:
         },
         "web": {
             "html": web_html_result,
+            "build_info": {
+                "status": web_build_result.get("status", "failed"),
+                "web_commit": web_build_commit,
+                "deployment_readiness_state": web_build_result.get("deployment_readiness_state", "unknown"),
+                "latency_class": web_build_result.get("latency_class", "failed"),
+                "attempts": web_build_result.get("attempts", 1),
+            },
             "proxy": {
                 "status": web_proxy_result.get("status", "failed"),
                 "git_commit": web_proxy_commit,
@@ -142,6 +153,30 @@ def fetch_web_proxy_version(web_url: str, timeout: float) -> dict[str, Any]:
     }
 
 
+def fetch_web_build_info(web_url: str, timeout: float) -> dict[str, Any]:
+    build_info_url = f"{web_url.rstrip('/')}/api/build-info"
+    started = time.perf_counter()
+    try:
+        with urlopen(Request(build_info_url, headers={"accept": "application/json"}), timeout=timeout) as response:
+            body = json.loads(response.read(250_000).decode("utf-8"))
+            cache_control = response.headers.get("Cache-Control", "")
+    except (OSError, URLError, json.JSONDecodeError, AttributeError) as exc:
+        return {"status": "failed", "error": type(exc).__name__, "latency_class": "failed"}
+    latency = time.perf_counter() - started
+    if not isinstance(body, dict):
+        return {"status": "failed", "error": "InvalidEnvelope", "latency_class": latency_class(latency)}
+    data = body.get("data") if isinstance(body, dict) else {}
+    if not isinstance(data, dict):
+        data = {}
+    return {
+        "status": "ok" if body.get("status") == "success" else "failed",
+        "web_commit": data.get("web_commit", "unknown"),
+        "deployment_readiness_state": data.get("deployment_readiness_state", "unknown"),
+        "cache_control": cache_control,
+        "latency_class": latency_class(latency),
+    }
+
+
 def fetch_web_commit_presence(web_url: str, expected_commit: str, timeout: float) -> dict[str, Any]:
     if expected_commit == "unknown":
         return {"status": "not_verified", "commit_visible": False, "latency_class": "not_checked"}
@@ -166,6 +201,8 @@ def deployment_status(
     api_result: dict[str, Any],
     api_commit: str,
     web_html_result: dict[str, Any],
+    web_build_result: dict[str, Any],
+    web_build_commit: str,
     web_proxy_result: dict[str, Any],
     web_proxy_commit: str,
 ) -> tuple[str, list[str]]:
@@ -175,9 +212,15 @@ def deployment_status(
 
     api_failed = api_result.get("status") != "ok"
     web_html_failed = web_html_result.get("status") == "failed"
+    web_build_failed = web_build_result.get("status") != "ok"
     web_proxy_failed = web_proxy_result.get("status") != "ok"
-    if api_failed and web_html_failed and web_proxy_failed:
-        return "deployed_unavailable", ["api_unavailable", "web_unavailable", "web_proxy_unavailable"]
+    if api_failed and web_html_failed and web_build_failed and web_proxy_failed:
+        return "deployed_unavailable", [
+            "api_unavailable",
+            "web_unavailable",
+            "web_build_info_unavailable",
+            "web_proxy_unavailable",
+        ]
 
     if api_failed:
         warnings.append("api_unavailable")
@@ -192,6 +235,13 @@ def deployment_status(
         warnings.append("web_proxy_unavailable")
     elif not commits_match(expected_commit, web_proxy_commit):
         warnings.append("web_proxy_commit_mismatch")
+
+    if web_build_failed:
+        warnings.append("web_build_info_unavailable")
+    elif not commits_match(expected_commit, web_build_commit):
+        warnings.append("web_build_info_commit_mismatch")
+    elif "no-store" not in str(web_build_result.get("cache_control", "")).lower():
+        warnings.append("web_build_info_cache_control_missing")
 
     if web_html_result.get("status") != "verified":
         warnings.append(f"web_html_{web_html_result.get('status', 'not_verified')}")
