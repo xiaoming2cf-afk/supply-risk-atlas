@@ -2,78 +2,78 @@
 
 ## Current Status
 
-- Latest pushed commit before the Render auto-deploy trigger patch: `a65e7ddd02827a2a278c74906f11427ebacffbb5`.
+- Latest pushed commit: `9841a37f228015c808f8fada715fad698b95de55`.
 - Branch: `main`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
   - `apps/web/CLAUDE.md`
   - `data/runtime/` remains ignored runtime state.
 
-## Local And CI Validation
+## Completed In This Recovery Loop
 
-- `python -m pytest tests/api/test_version_endpoint.py tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py tests/quality/test_deployed_version_checker.py -q` - passed, 27 tests.
+- Added `/api/build-info` for Web build identity with `Cache-Control: no-store`.
+- Extended `scripts/check-deployed-version.py` to verify four public signals:
+  - direct API `/api/v1/version`
+  - Web same-origin `/api/v1/version` proxy
+  - Web root HTML commit marker
+  - Web `/api/build-info`
+- Added `.github/workflows/render-manual-deploy.yml`.
+  - The workflow is `workflow_dispatch` only.
+  - It requires GitHub Actions secrets instead of committing credentials.
+  - It triggers API and Web Render deploys for a requested commit.
+  - It can request Render cache clearing.
+  - It runs bounded public convergence checks after deploy.
+- Added `docs/roadmap/render-deploy-secret-requirements.md` with the exact safe setup requirements.
+- Fixed the initial workflow YAML validation problem and pushed the corrected workflow.
+
+## Validation Evidence
+
+- `python -m pytest tests/quality/test_render_manual_deploy_workflow.py tests/quality/test_deployed_version_checker.py tests/quality/test_web_commit_marker.py -q` - passed.
 - `python -m pytest tests/quality -q` - passed.
-- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `python -m pytest tests/api/test_version_endpoint.py tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py tests/quality/test_deployed_version_checker.py -q` - passed.
 - `npm.cmd --workspace apps/web run typecheck` - passed.
 - `npm.cmd --workspace apps/web run build` - passed.
-- GitHub `ci` passed for `f2854ea`.
-- GitHub `Quality Gates` passed for `f2854ea`.
-
-## What Changed
-
-- `/api/v1/version` and System Health now reuse the service-level fixture snapshot cache instead of rebuilding the semiconductor fixture graph directly.
-- `scripts/check-deployed-version.py` uses bounded per-probe attempts and records attempt counts for API, Web HTML, and Web proxy probes.
-- The deployed checker treats public-probe exceptions as sanitized failed attempts instead of surfacing private transport details.
-- Cross-service deployment consistency remains enforced by checking API commit, Web proxy commit, and Web HTML commit marker.
-- The Web layout now emits static HTML metadata for `supply-risk-web-commit` and `supply-risk-web-build-time`; this patch still needs commit/push/deploy verification.
-- `next.config.mjs` now prioritizes `RENDER_GIT_COMMIT` over a stale `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` override for Web build identity.
-- `render.yaml` now has a comment-only deployment trigger so Render auto-deploy can rebuild both API and Web from latest `main`.
-- Relationship and stage graph endpoints remain bounded, metadata-complete, and separated by relationship class.
+- GitHub `ci` passed for `9841a37f228015c808f8fada715fad698b95de55`.
+- GitHub `Quality Gates` passed for `9841a37f228015c808f8fada715fad698b95de55`.
 
 ## Deployment Status
 
-- Current deployment status: `deployed_stale_or_unverified`.
-- Latest deployed API version observed by public probes before the auto-deploy trigger: `c3f245d47f678053fc4aca44024a31498ea58d86`.
-- Remaining blocker: Web static HTML still rendered an old `data-web-build-commit` value because a stale public Web commit env var overrode Render's Git commit during build.
-- Public deployment probes after Render redeploy showed:
-  - API `/api/v1/version` reported `c3f245d`.
-  - Web same-origin version proxy reported `c3f245d`.
-  - Web HTML still rendered `fa26bb0` before the env-priority patch.
-- Relationship and stage endpoint reachability was confirmed during the stale-deployment recovery checks, and public version probes now show the API/Web runtime proxy aligned at `f2854ea`:
-  - `/api/v1/graph/supply-relationships?limit=5`
-  - `/api/v1/graph/demand-relationships?limit=5`
-  - `/api/v1/graph/production-dependencies?limit=5`
-  - `/api/v1/graph/supply-demand-balance?limit=5`
-  - `/api/v1/stage-graph/L5_fabrication?limit=18`
+- Current status: `deployed_stale_or_unverified`.
+- Latest public probe for expected commit `9841a37f228015c808f8fada715fad698b95de55` reported:
+  - API commit: `c3f245d47f678053fc4aca44024a31498ea58d86`
+  - Web same-origin proxy commit: `c3f245d47f678053fc4aca44024a31498ea58d86`
+  - Web root HTML commit marker: not visible for latest commit
+  - Web `/api/build-info`: unavailable because the deployed Web build predates that route
+- Local shell did not have `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`, `GITHUB_TOKEN`, or `GH_TOKEN` present.
+- GitHub UI showed the manual workflow as active, but the `Run workflow` panel returned a page loading error in Browser automation. The failed tab was closed before continuing.
 
-## Computer Use And GPT Pro Handoff
+## Required Next Action
 
-- Project-scoped Browser/Chrome automation was used for Render Dashboard and the GPT Pro project conversation.
-- Render API redeploy was triggered from the Dashboard and public probes now show API/Web runtime proxy commit `f2854ea`.
-- Render Web Dashboard interaction became unstable while verifying the click flow, but public Web proxy probes show the Web runtime is also serving `f2854ea`.
-- No credentials, cookies, tokens, OTPs, private diagnostics, raw payloads, private operational URLs, or PII were copied into repository files.
-- GPT Pro's current review priorities remain:
-  - do not claim deployment completion until `/api/v1/version`, Web proxy, and Web HTML match latest HEAD;
-  - relationship views must show zero authoritative rows when backend endpoints are unavailable;
-  - source coverage must distinguish fixture, promoted, unavailable, and official support;
-  - exports and reports must not use local graph-derived fallback rows as authoritative relationship facts.
+Run the manual workflow after a reliable GitHub UI/API path is available:
 
-## Required Next Decision
+1. Open GitHub Actions for `Render Manual Deploy`.
+2. Select `Run workflow`.
+3. Use `main`.
+4. Set `commit_sha` to `9841a37f228015c808f8fada715fad698b95de55`.
+5. Set `clear_cache` to `clear`.
+6. Run the workflow.
+7. If the workflow fails because secrets are missing, configure only the secrets listed in `docs/roadmap/render-deploy-secret-requirements.md`.
+8. Re-run:
 
-Use a safe Render deployment path to redeploy API and Web from latest `main`:
+```powershell
+python scripts/check-deployed-version.py --expected-commit 9841a37f228015c808f8fada715fad698b95de55 --timeout 25 --attempts 3
+```
 
-1. Commit and push the Render auto-deploy trigger patch.
-2. Wait for GitHub `ci` and `Quality Gates`.
-3. Trigger Web redeploy for `supply-risk-atlas-web` from the marker patch commit.
-4. Trigger API redeploy for `supply-risk-atlas-api` if the API commit is no longer aligned with latest `main`.
-5. Verify `python scripts/check-deployed-version.py --expected-commit <latest-head> --timeout 30 --attempts 3` returns `deployed_verified`.
-6. Run `npm.cmd run smoke:web -- --mode=deployed`.
-7. If deployed smoke captures transient relationship or stage endpoint failures, keep the degraded state explicit and do not render local graph-derived relationship rows as authoritative facts.
-8. Send GPT Pro a sanitized status packet with commit SHA, CI status, deployed verification result, controlled failures, and screenshots only when they do not expose account data.
+The acceptable final statuses are:
+
+- `deployed_verified`, or
+- `render_deploy_blocked_missing_safe_deploy_path` with missing secret evidence.
+
+Do not claim deployment completion while the public probes remain stale.
 
 ## Constraints For The Next Run
 
-- Preserve existing public pages and API endpoints.
 - Do not enable live connector fetch during import, tests, CI, app startup, or Render startup.
 - Do not expose raw payloads, secrets, cookies, tokens, private diagnostics, local filesystem paths, private operational URLs, or PII.
 - Keep canonical geography terminology: `region:china_taiwan` / `中国台湾`, parent `country:CN` / `中国`.

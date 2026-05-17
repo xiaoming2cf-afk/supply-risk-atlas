@@ -1106,3 +1106,53 @@
 - If the required GitHub Actions secrets are absent, the actionable status is `render_deploy_blocked_missing_safe_deploy_path`.
 - No content/API/data-source expansion was attempted in this gate by GPT Pro direction.
 - No production readiness claim is made.
+
+## 2026-05-17 Render Manual Workflow Validation Fix
+
+### Current HEAD
+
+- Latest pushed commit after workflow syntax fix: `9841a37f228015c808f8fada715fad698b95de55`.
+
+### Gate Result
+
+- Initial manual Render workflow commits produced GitHub workflow validation failures because a bash heredoc inside YAML was not indented as valid YAML.
+- The workflow now uses a validated one-line JSON payload for the Render API request.
+- GitHub `ci` passed for `9841a37f228015c808f8fada715fad698b95de55`.
+- GitHub `Quality Gates` passed for `9841a37f228015c808f8fada715fad698b95de55`.
+- The Render workflow is active and no longer produces a new invalid-workflow push failure on latest HEAD.
+
+### Files Changed
+
+- `.github/workflows/render-manual-deploy.yml`
+- `docs/roadmap/codex-continuation-request.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `tests/quality/test_render_manual_deploy_workflow.py`
+
+### Commands Run
+
+- Local YAML parse check for `.github/workflows/render-manual-deploy.yml` - passed.
+- `python -m pytest tests/quality/test_render_manual_deploy_workflow.py -q` - passed.
+- `python -m pytest tests/quality/test_render_manual_deploy_workflow.py tests/quality/test_deployed_version_checker.py tests/quality/test_web_commit_marker.py -q` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python scripts/check-deployed-version.py --expected-commit 9841a37f228015c808f8fada715fad698b95de55 --timeout 10 --attempts 1` - controlled failure with `deployed_stale_or_unverified`.
+
+### Deployment Status
+
+- Public API and Web same-origin proxy still report `c3f245d47f678053fc4aca44024a31498ea58d86`.
+- Web root HTML still does not expose the latest commit marker.
+- Web `/api/build-info` is unavailable on the deployed site because the currently deployed Web build predates that route.
+- Local shell has no Render or GitHub token environment variables available.
+- GitHub UI displayed the manual workflow as active, but the `Run workflow` panel returned a page loading error in Browser automation. The failed page was closed before continuing.
+- Current actionable status: `render_deploy_blocked_missing_safe_deploy_path_or_reliable_dispatch`.
+
+### Computer Use Actions
+
+- Used authorized Chrome Browser control only for project-scoped GitHub Actions.
+- Closed the failed GitHub workflow page after the loading error, per the user's browser-stability instruction.
+- No credentials, cookies, tokens, OTPs, private diagnostics, raw payloads, private operational URLs, screenshots with sensitive account data, or PII were copied into repository files.
+
+### Known Limitations
+
+- Deployment remains unverified until the manual workflow is dispatched with configured secrets or Render Dashboard/API deploy succeeds.
+- No content/API/data-source expansion was attempted in this gate by GPT Pro direction.
+- No production readiness claim is made.
