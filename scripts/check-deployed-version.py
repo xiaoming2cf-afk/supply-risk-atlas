@@ -103,7 +103,14 @@ def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
 def retry_probe(factory, *, attempts: int) -> dict[str, Any]:
     result: dict[str, Any] = {"status": "failed", "latency_class": "failed"}
     for attempt in range(1, attempts + 1):
-        result = factory()
+        try:
+            result = factory()
+        except Exception as exc:
+            result = {
+                "status": "failed",
+                "error": type(exc).__name__,
+                "latency_class": "failed",
+            }
         result["attempts"] = attempt
         if result.get("status") in {"ok", "verified"}:
             return result

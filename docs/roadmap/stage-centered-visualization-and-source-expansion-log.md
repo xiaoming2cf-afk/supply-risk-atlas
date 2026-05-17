@@ -921,3 +921,47 @@
 - Latest local patch is not deployed yet.
 - Deployment verification remains blocked on Render redeploy consistency, not on local tests.
 - No production readiness, live authoritative data, or source usability claim is made.
+
+## 2026-05-17 Deployment Stale Recovery Check
+
+### Current HEAD
+
+- Current HEAD: `2cac0b9742709b1a26d5263b66214c4b3e274e6e`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+
+### Gate Result
+
+- GitHub `ci` passed for `2cac0b9`.
+- GitHub `Quality Gates` passed for `2cac0b9`.
+- Five bounded public deployment probes still reported `deployed_stale_or_unverified`.
+- The public API and Web proxy continued reporting deployed commit `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+- The Web HTML did not expose the `2cac0b9` commit marker.
+- Relationship and stage graph endpoints were reachable with HTTP 200 during direct checks, but they were still served by the stale deployed commit.
+- `codex-continuation-request.md` was refreshed so the next handoff no longer points to `0d440fe` as latest.
+- The deployed version checker now catches unexpected per-probe exceptions and returns a sanitized failed attempt record.
+
+### Files Changed
+
+- `docs/roadmap/codex-continuation-request.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `scripts/check-deployed-version.py`
+- `tests/quality/test_deployed_version_checker.py`
+
+### Commands Run
+
+- `python scripts/check-deployed-version.py --expected-commit 2cac0b9742709b1a26d5263b66214c4b3e274e6e --timeout 30 --attempts 3` - controlled failure with `deployed_stale_or_unverified`.
+- Five repeated deployment probes over roughly four minutes - controlled failures with stale deployed commit `fa26bb0`.
+- Direct public probes for supply, demand, production-dependency, balance, and L5 stage endpoints - HTTP 200 on stale deployed commit.
+
+### Computer Use Actions
+
+- Browser/Computer Use deployment actions were not repeated in this gate because prior Render Dashboard automation remained unstable and public probes confirmed the deployed services were stale.
+- No credentials, cookies, tokens, OTPs, private diagnostics, raw payloads, private operational URLs, or PII were copied into repository files.
+
+### Known Limitations
+
+- Render API and Web still need a confirmed redeploy from latest `main`.
+- Deployment verification cannot be marked complete until API version, Web proxy, and Web HTML all match the latest commit.
+- The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.

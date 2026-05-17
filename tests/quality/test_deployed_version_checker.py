@@ -181,3 +181,31 @@ def test_retry_probe_records_attempt_count_and_stops_on_success() -> None:
 
     assert result["status"] == "ok"
     assert result["attempts"] == 2
+
+
+def test_retry_probe_reports_exhausted_attempt_count() -> None:
+    checker = _load_checker_module()
+
+    result = checker.retry_probe(
+        lambda: {"status": "failed", "latency_class": "failed"},
+        attempts=3,
+    )
+
+    assert result["status"] == "failed"
+    assert result["attempts"] == 3
+
+
+def test_retry_probe_sanitizes_factory_exceptions() -> None:
+    checker = _load_checker_module()
+
+    def failing_probe() -> dict[str, str]:
+        raise RuntimeError("private transport details")
+
+    result = checker.retry_probe(failing_probe, attempts=1)
+
+    assert result == {
+        "status": "failed",
+        "error": "RuntimeError",
+        "latency_class": "failed",
+        "attempts": 1,
+    }
