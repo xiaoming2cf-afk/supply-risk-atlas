@@ -834,3 +834,48 @@
 - A new API redeploy is required after this patch is committed and pushed so `/api/v1/version` reports the updated readiness semantics.
 - GPT Pro review packet is still pending after this patch commit and deployment verification.
 - The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+
+## 2026-05-16 GPT Pro Review And Deployed Retry Hardening
+
+### Current HEAD
+
+- Local HEAD before this patch: `0d440fefa0872d55ecbe3619ef8e4e3754ce2ccb`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+
+### GPT Pro Review Result
+
+- GPT Pro received the sanitized status packet in the project-scoped conversation.
+- Review priority for the next gate:
+  - do not claim deployment completion unless `/api/v1/version`, Web proxy, and Web HTML match the latest HEAD;
+  - relationship views must keep authoritative rows at zero when backend endpoints are unavailable;
+  - source coverage must keep fixture/promoted/unavailable/official support distinct;
+  - exports and reports must not bypass frontend relationship safety by using local graph-derived fallback rows.
+
+### Gate Result
+
+- Deployed API/Web had been manually aligned to `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+- Latest pushed HEAD `0d440fefa0872d55ecbe3619ef8e4e3754ce2ccb` passed GitHub `ci` and `Quality Gates`, but Render UI automation repeatedly timed out before a latest-commit redeploy could be confirmed.
+- Public deployed probes therefore remained `deployed_stale_or_unverified`.
+- Direct endpoint probes later showed `/graph/supply-relationships` and `/stage-graph/L5_fabrication` returning HTTP 200 again, indicating the deployed 502s were transient Render cold-start/restart windows rather than permanent endpoint absence.
+- Deployed smoke remained best-effort and continued to capture a controlled `unavailable_preview` state when relationship and stage endpoints returned transient 502 during page load.
+- The API client and same-origin proxy read retry budgets were increased for idempotent GET/HEAD requests only. POST/write calls remain single-attempt and direct to avoid retrying non-idempotent actions.
+
+### Files Changed
+
+- `apps/web/src/app/api/v1/[...path]/route.ts`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `packages/api-client/src/dashboard.ts`
+
+### Commands Run
+
+- `python scripts/check-deployed-version.py --expected-commit 0d440fefa0872d55ecbe3619ef8e4e3754ce2ccb --timeout 30` - controlled failure with `deployed_stale_or_unverified`; deployed API/Web still reported `fa26bb0b468ae058a3ce3e346a56536303463e36`.
+- `npm.cmd run smoke:web -- --mode=deployed` - best-effort exit 0; captured transient 502 relationship/stage endpoint unavailable state with no authoritative relationship rows rendered.
+- Direct deployed probes for `/api/v1/version`, `/api/v1/graph/supply-relationships?limit=5`, and `/api/v1/stage-graph/L5_fabrication?limit=18` later returned HTTP 200 against deployed `fa26bb0`.
+
+### Known Limitations
+
+- Latest HEAD after this patch must still be deployed and verified; no deployed success claim is made.
+- Render UI automation remains unstable in Chrome for repeated latest-commit deployment actions.
+- Entity Risk screenshot capture remains unavailable due browser timeout; public System Health and Graph Explorer screenshots were captured.

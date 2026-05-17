@@ -117,8 +117,8 @@ interface RequestJsonOptions {
   requestTimeoutMs: number;
 }
 
-const MAX_NETWORK_ATTEMPTS = 3;
-const NETWORK_RETRY_BACKOFF_MS = 750;
+const MAX_NETWORK_ATTEMPTS = 5;
+const NETWORK_RETRY_BACKOFF_MS = 1500;
 
 async function requestJson<T>(
   baseUrl: string | undefined,
