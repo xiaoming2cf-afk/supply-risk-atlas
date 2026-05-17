@@ -965,3 +965,43 @@
 - Render API and Web still need a confirmed redeploy from latest `main`.
 - Deployment verification cannot be marked complete until API version, Web proxy, and Web HTML all match the latest commit.
 - The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+
+## 2026-05-17 Web HTML Commit Marker Fix
+
+### Current HEAD
+
+- Current HEAD before this patch: `f2854eaa3bb58d91550bff6748e1393cae67dbf8`.
+- Preserved untracked local files:
+  - `apps/web/AGENTS.md`
+  - `apps/web/CLAUDE.md`
+
+### Gate Result
+
+- Render API and Web runtime proxy were manually redeployed from latest `main`.
+- Public deployed probes showed API and Web proxy both reporting `f2854eaa3bb58d91550bff6748e1393cae67dbf8`.
+- Deployment verification still returned `deployed_stale_or_unverified` because Web static HTML did not expose a 12-character or full-length commit marker.
+- Root cause: `data-web-build-commit` was emitted by the client `App` component after hydration, but `scripts/check-deployed-version.py` verifies static HTML before client hydration.
+- The Web layout metadata now emits `supply-risk-web-commit` and `supply-risk-web-build-time` meta tags at build time so deployed static HTML can be verified externally.
+
+### Files Changed
+
+- `apps/web/src/app/layout.tsx`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `tests/quality/test_web_commit_marker.py`
+
+### Commands Run
+
+- `python scripts/check-deployed-version.py --expected-commit f2854eaa3bb58d91550bff6748e1393cae67dbf8 --timeout 35 --attempts 3` - controlled failure with only `web_html_commit_not_visible`.
+- Public HTML spot check - no `f2854ea`, 12-character commit prefix, or `supply-risk-web-commit` marker was present before this patch.
+
+### Computer Use Actions
+
+- Used authorized Chrome Browser control only for project-scoped Render Dashboard.
+- Triggered `Deploy latest commit` for `supply-risk-atlas-api`.
+- Navigated to `supply-risk-atlas-web`; the browser control session timed out while checking whether the Web deploy click completed, so deployment verification was determined by public probes instead of raw dashboard logs.
+- No credentials, cookies, tokens, OTPs, private diagnostics, raw payloads, private operational URLs, or PII were copied into repository files.
+
+### Known Limitations
+
+- This patch must be committed, pushed, rebuilt by Render Web, and rechecked before deployment can be marked verified.
+- API and Web runtime proxy were aligned at `f2854ea`, but Web static HTML verification remains pending until this patch is deployed.

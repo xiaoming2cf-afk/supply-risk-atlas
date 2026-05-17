@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- Latest pushed commit: `2cac0b9742709b1a26d5263b66214c4b3e274e6e`.
+- Latest pushed commit before the Web HTML marker patch: `f2854eaa3bb58d91550bff6748e1393cae67dbf8`.
 - Branch: `main`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
@@ -16,8 +16,8 @@
 - `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
 - `npm.cmd --workspace apps/web run typecheck` - passed.
 - `npm.cmd --workspace apps/web run build` - passed.
-- GitHub `ci` passed for `2cac0b9`.
-- GitHub `Quality Gates` passed for `2cac0b9`.
+- GitHub `ci` passed for `f2854ea`.
+- GitHub `Quality Gates` passed for `f2854ea`.
 
 ## What Changed
 
@@ -25,18 +25,19 @@
 - `scripts/check-deployed-version.py` uses bounded per-probe attempts and records attempt counts for API, Web HTML, and Web proxy probes.
 - The deployed checker treats public-probe exceptions as sanitized failed attempts instead of surfacing private transport details.
 - Cross-service deployment consistency remains enforced by checking API commit, Web proxy commit, and Web HTML commit marker.
+- The Web layout now emits static HTML metadata for `supply-risk-web-commit` and `supply-risk-web-build-time`; this patch still needs commit/push/deploy verification.
 - Relationship and stage graph endpoints remain bounded, metadata-complete, and separated by relationship class.
 
 ## Deployment Status
 
 - Current deployment status: `deployed_stale_or_unverified`.
-- Latest deployed API/Web version observed by public probes: `fa26bb0b468ae058a3ce3e346a56536303463e36`.
-- Latest pushed HEAD requiring deployment: `2cac0b9742709b1a26d5263b66214c4b3e274e6e`.
-- Five consecutive public deployment probes on 2026-05-17 showed:
-  - API `/api/v1/version` responded but reported `fa26bb0`.
-  - Web same-origin version proxy responded but reported `fa26bb0`.
-  - Web HTML did not expose the `2cac0b9` commit marker.
-- Direct public probes showed relationship and stage endpoints returning HTTP 200 while still running the stale deployed commit:
+- Latest deployed API/Web runtime version observed by public probes: `f2854eaa3bb58d91550bff6748e1393cae67dbf8`.
+- Remaining blocker: Web static HTML did not expose the `f2854ea` commit marker before the Web HTML marker patch.
+- Public deployment probes after Render redeploy showed:
+  - API `/api/v1/version` reported `f2854ea`.
+  - Web same-origin version proxy reported `f2854ea`.
+  - Web HTML did not expose the `f2854ea` commit marker.
+- Relationship and stage endpoint reachability was confirmed during the stale-deployment recovery checks, and public version probes now show the API/Web runtime proxy aligned at `f2854ea`:
   - `/api/v1/graph/supply-relationships?limit=5`
   - `/api/v1/graph/demand-relationships?limit=5`
   - `/api/v1/graph/production-dependencies?limit=5`
@@ -45,8 +46,9 @@
 
 ## Computer Use And GPT Pro Handoff
 
-- Project-scoped Browser/Chrome automation was previously used for Render Dashboard and the GPT Pro project conversation.
-- Render redeploy remains blocked by Dashboard automation instability and stale deployed public probes.
+- Project-scoped Browser/Chrome automation was used for Render Dashboard and the GPT Pro project conversation.
+- Render API redeploy was triggered from the Dashboard and public probes now show API/Web runtime proxy commit `f2854ea`.
+- Render Web Dashboard interaction became unstable while verifying the click flow, but public Web proxy probes show the Web runtime is also serving `f2854ea`.
 - No credentials, cookies, tokens, OTPs, private diagnostics, raw payloads, private operational URLs, or PII were copied into repository files.
 - GPT Pro's current review priorities remain:
   - do not claim deployment completion until `/api/v1/version`, Web proxy, and Web HTML match latest HEAD;
@@ -58,12 +60,14 @@
 
 Use a safe Render deployment path to redeploy API and Web from latest `main`:
 
-1. Trigger API redeploy for `supply-risk-atlas-api` from `2cac0b9` or newer.
-2. Trigger Web redeploy for `supply-risk-atlas-web` from `2cac0b9` or newer.
-3. Verify `python scripts/check-deployed-version.py --expected-commit <latest-head> --timeout 30 --attempts 3` returns `deployed_verified`.
-4. Run `npm.cmd run smoke:web -- --mode=deployed`.
-5. If deployed smoke captures transient relationship or stage endpoint failures, keep the degraded state explicit and do not render local graph-derived relationship rows as authoritative facts.
-6. Send GPT Pro a sanitized status packet with commit SHA, CI status, deployed verification result, controlled failures, and screenshots only when they do not expose account data.
+1. Commit and push the Web HTML marker patch.
+2. Wait for GitHub `ci` and `Quality Gates`.
+3. Trigger Web redeploy for `supply-risk-atlas-web` from the marker patch commit.
+4. Trigger API redeploy for `supply-risk-atlas-api` if the API commit is no longer aligned with latest `main`.
+5. Verify `python scripts/check-deployed-version.py --expected-commit <latest-head> --timeout 30 --attempts 3` returns `deployed_verified`.
+6. Run `npm.cmd run smoke:web -- --mode=deployed`.
+7. If deployed smoke captures transient relationship or stage endpoint failures, keep the degraded state explicit and do not render local graph-derived relationship rows as authoritative facts.
+8. Send GPT Pro a sanitized status packet with commit SHA, CI status, deployed verification result, controlled failures, and screenshots only when they do not expose account data.
 
 ## Constraints For The Next Run
 
