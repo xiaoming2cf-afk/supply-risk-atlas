@@ -1035,3 +1035,22 @@
 
 - This env-priority patch still needs commit, push, GitHub Actions, Render rebuild, and deployed verification.
 - No production readiness claim is made.
+
+## 2026-05-17 Render Auto-Deploy Trigger For Web Marker
+
+### Gate Result
+
+- Browser control against Render Dashboard repeatedly timed out while trying to confirm a Web `Clear build cache & deploy` click.
+- Public probes continued to show API at `c3f245d` while Web root HTML still rendered the old `fa26bb0` client build marker.
+- `render.yaml` was updated with a comment-only deployment trigger because both Render services have `autoDeploy: true` and include `render.yaml` in their build filters.
+- Expected effect: Render Git integration should rebuild both API and Web from latest `main` without changing runtime behavior or enabling live connector fetch.
+
+### Files Changed
+
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `render.yaml`
+
+### Known Limitations
+
+- Deployment verification remains pending until public probes show API, Web proxy, and Web HTML all aligned to the trigger commit.
+- No production readiness claim is made.

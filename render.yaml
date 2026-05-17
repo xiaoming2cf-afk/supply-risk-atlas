@@ -1,5 +1,6 @@
 services:
   # Deployment trigger: web commit marker and API/Web version closure 2026-05-16.
+  # Deployment trigger: prefer Render web commit marker 2026-05-17.
   - type: web
     name: supply-risk-atlas-api
     runtime: python

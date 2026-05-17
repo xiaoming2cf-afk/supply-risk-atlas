@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- Latest pushed commit before the Render Web env-priority patch: `c3f245d47f678053fc4aca44024a31498ea58d86`.
+- Latest pushed commit before the Render auto-deploy trigger patch: `a65e7ddd02827a2a278c74906f11427ebacffbb5`.
 - Branch: `main`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
@@ -27,12 +27,13 @@
 - Cross-service deployment consistency remains enforced by checking API commit, Web proxy commit, and Web HTML commit marker.
 - The Web layout now emits static HTML metadata for `supply-risk-web-commit` and `supply-risk-web-build-time`; this patch still needs commit/push/deploy verification.
 - `next.config.mjs` now prioritizes `RENDER_GIT_COMMIT` over a stale `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` override for Web build identity.
+- `render.yaml` now has a comment-only deployment trigger so Render auto-deploy can rebuild both API and Web from latest `main`.
 - Relationship and stage graph endpoints remain bounded, metadata-complete, and separated by relationship class.
 
 ## Deployment Status
 
 - Current deployment status: `deployed_stale_or_unverified`.
-- Latest deployed API version observed by public probes: `c3f245d47f678053fc4aca44024a31498ea58d86`.
+- Latest deployed API version observed by public probes before the auto-deploy trigger: `c3f245d47f678053fc4aca44024a31498ea58d86`.
 - Remaining blocker: Web static HTML still rendered an old `data-web-build-commit` value because a stale public Web commit env var overrode Render's Git commit during build.
 - Public deployment probes after Render redeploy showed:
   - API `/api/v1/version` reported `c3f245d`.
@@ -61,7 +62,7 @@
 
 Use a safe Render deployment path to redeploy API and Web from latest `main`:
 
-1. Commit and push the Render Web env-priority patch.
+1. Commit and push the Render auto-deploy trigger patch.
 2. Wait for GitHub `ci` and `Quality Gates`.
 3. Trigger Web redeploy for `supply-risk-atlas-web` from the marker patch commit.
 4. Trigger API redeploy for `supply-risk-atlas-api` if the API commit is no longer aligned with latest `main`.
