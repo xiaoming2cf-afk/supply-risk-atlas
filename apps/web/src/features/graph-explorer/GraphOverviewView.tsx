@@ -1,4 +1,5 @@
 import type { GraphExplorerData } from "@supply-risk/shared-types";
+import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
 import type { GraphVersionMetadata, GraphViewModel } from "./graphViewModel";
 
 export function GraphOverviewView({
@@ -17,9 +18,14 @@ export function GraphOverviewView({
       <div className="inspector-grid">
         <span>Visible nodes: {view.visibleNodes.length} / 20</span>
         <span>Visible links: {view.visibleLinks.length} / 35</span>
-        <span>graph_version: {metadata.graphVersion}</span>
-        <span>source_manifest_id: {metadata.sourceManifestId}</span>
       </div>
+      <MetadataSummary items={[{ label: "Public evidence mode" }]} />
+      <AuditDetails
+        items={[
+          { label: "graph_version", value: metadata.graphVersion },
+          { label: "source_manifest_id", value: metadata.sourceManifestId },
+        ]}
+      />
       <ul className="evidence-list compact">
         {sourceRows.slice(0, 6).map((row) => (
           <li key={row.source ?? row.kind ?? "source"}>

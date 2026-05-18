@@ -1,3 +1,3 @@
-export function NotProductionReadyBanner({ message = "not_production_ready" }: { message?: string }) {
+export function NotProductionReadyBanner({ message = "Research fixture mode" }: { message?: string }) {
   return <div className="warning-text" data-component="not-production-ready">{message}</div>;
 }

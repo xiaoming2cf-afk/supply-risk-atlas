@@ -557,23 +557,16 @@ async function main() {
     await navigate(client, `${webUrl}#system-health-center`);
     const healthSemiriskTerms = [
       "SemiRisk-KG v0.1 fixture graph",
-      "graphVersion",
-      "sourceManifestId",
       "nodeCount",
       "edgeCount",
       "registryReady",
       "ontologyReady",
       "fixtureGraph",
-      "fixture_graph:not_production_ready",
-      "data_mode",
-      "graph_mode",
       "storage_readiness",
       "connector_readiness",
       "deployment_version_readiness",
-      "api_version",
-      "web_build_version",
-      "calibration_status",
-      "not_production_ready",
+      "Research fixture mode",
+      "Technical diagnostics",
     ];
     const healthState = await waitFor(
       client,
@@ -624,8 +617,8 @@ async function main() {
       "Source coverage by tier",
       "Chain layer coverage",
       "SourceCatalog",
-      "data_mode",
-      "not_production_ready",
+      "Research fixture mode",
+      "Data audit details",
     ];
     checks.push({
       page: "chart/table component controlled states",
@@ -714,14 +707,17 @@ async function main() {
         disallowedMajorSections: relevance.disallowedMajorSections,
         flowNodeCount: relevance.flowNodeCount,
         graphNodeCount: relevance.graphNodeCount,
-        hasVisibleSharedMetadata: relevance.hasVisibleSharedMetadata,
+        hasUserFacingEvidenceStatus: relevance.hasUserFacingEvidenceStatus,
+        hasVisibleDeveloperDiagnostics: relevance.hasVisibleDeveloperDiagnostics,
+        hasClosedAuditDetails: relevance.hasClosedAuditDetails,
         hasDisallowedText: relevance.hasDisallowedText,
         hasDeploymentSuccessClaim: relevance.hasDeploymentSuccessClaim,
         passed:
           relevance.policy === expected.policy &&
           requiredSignals &&
           hasSharedMetadata &&
-          relevance.hasVisibleSharedMetadata &&
+          relevance.hasUserFacingEvidenceStatus &&
+          !relevance.hasVisibleDeveloperDiagnostics &&
           !relevance.hasDisallowedText &&
           !relevance.hasDeploymentSuccessClaim &&
           denseGraphAllowed === expected.allowsDenseGraph &&
@@ -766,11 +762,7 @@ async function main() {
       "source_concentration_hhi",
       "substitution_gap",
       "evidence_refs",
-      "formula_refs",
-      "semirisk_risk_score_likelihood_impact_v0.1",
-      "graph_version",
-      "source_manifest_id",
-      "fixture_graph:not_production_ready",
+      "Research fixture mode",
     ];
     const riskState = await waitFor(
       client,
@@ -787,8 +779,8 @@ async function main() {
     const riskHasScoreEvidence = riskEvidenceTerms.every((term) => riskState.text.includes(term));
     const riskHasControlledDegradedState =
       riskState.text.includes("Entity Risk 360 unavailable") &&
-      riskState.text.includes("failed_endpoint") &&
-      riskState.text.includes("source_status");
+      riskState.text.includes("View diagnostics") &&
+      riskState.text.includes("Source status");
     checks.push({
       page: "Entity Risk 360 Risk Score v0",
       title: riskState.title,
@@ -809,7 +801,7 @@ async function main() {
       "duration_days_distribution",
       "iterations",
       "seed",
-      "fixture_graph:not_production_ready",
+      "Research fixture mode",
     ];
     const shockInitialState = await waitFor(
       client,
@@ -830,19 +822,14 @@ async function main() {
       "p95_loss",
       "cvar_95",
       "time_to_recover_days",
-      "time_to_survive_days",
+      "TIME_TO_SURVIVE_DAYS",
       "loss_mode",
       "resilience_integral_loss",
       "propagation_mode",
       "auto_semiconductor",
-      "formula_refs",
-      "calibration_status",
-      "run_id",
       "seed",
-      "graph_version",
-      "source_manifest_id",
-      "simulation_version",
       "semirisk_forward_mc_v0.1",
+      "Research fixture mode",
     ];
     const shockResultState = await waitFor(
       client,
@@ -851,7 +838,7 @@ async function main() {
         state.title === "Shock Simulator" &&
         (forwardScenarioReady
           ? forwardResultTerms.every((term) => state.text.includes(term))
-          : state.text.includes("Shock Simulator unavailable") && state.text.includes("failed_endpoint")),
+          : state.text.includes("Shock Simulator unavailable") && state.text.includes("View diagnostics")),
     );
     checks.push({
       page: "Shock Simulator forward Monte Carlo v2",
@@ -860,15 +847,14 @@ async function main() {
       hasRunManifest: forwardResultTerms.every((term) => shockResultState.text.includes(term)),
       hasControlledDegradedState:
         shockResultState.text.includes("Shock Simulator unavailable") &&
-        shockResultState.text.includes("failed_endpoint") &&
-        shockResultState.text.includes("source_status"),
+        shockResultState.text.includes("View diagnostics"),
       evidenceExcerpt: textExcerpt(shockResultState.text, forwardResultTerms),
       passed:
         shockResultState.title === "Shock Simulator" &&
         forwardControlTerms.every((term) => shockInitialState.text.includes(term)) &&
         (forwardScenarioReady
           ? forwardResultTerms.every((term) => shockResultState.text.includes(term))
-          : shockResultState.text.includes("Shock Simulator unavailable") && shockResultState.text.includes("failed_endpoint")),
+          : shockResultState.text.includes("Shock Simulator unavailable") && shockResultState.text.includes("View diagnostics")),
     });
 
     await navigate(client, `${webUrl}#reverse-stress-lab`);
@@ -880,7 +866,7 @@ async function main() {
       "beam_width",
       "iterations_per_candidate",
       "seed",
-      "fixture_graph:not_production_ready",
+      "Research fixture mode",
     ];
     const reverseInitialState = await waitFor(
       client,
@@ -900,15 +886,13 @@ async function main() {
       "expected_loss",
       "cvar95",
       "plausibility_cost",
-      "failure_threshold_normalized",
-      "threshold_metric_basis",
+      "FAILURE_THRESHOLD_NORMALIZED",
+      "THRESHOLD_METRIC_BASIS",
       "loss_mode",
       "propagation_mode",
       "baseline_comparison",
-      "run_id",
-      "graph_version",
-      "source_manifest_id",
       "semirisk_reverse_stress_v0.1",
+      "Research fixture mode",
     ];
     const reverseResultState = await waitFor(
       client,
@@ -917,7 +901,7 @@ async function main() {
         state.title === "Reverse Stress Lab" &&
         (reverseScenarioReady
           ? reverseResultTerms.every((term) => state.text.includes(term))
-          : state.text.includes("Reverse Stress Lab unavailable") && state.text.includes("failed_endpoint")),
+          : state.text.includes("Reverse Stress Lab unavailable") && state.text.includes("View diagnostics")),
     );
     checks.push({
       page: "Reverse Stress Lab v1",
@@ -926,15 +910,14 @@ async function main() {
       hasRankedShockSets: reverseResultTerms.every((term) => reverseResultState.text.includes(term)),
       hasControlledDegradedState:
         reverseResultState.text.includes("Reverse Stress Lab unavailable") &&
-        reverseResultState.text.includes("failed_endpoint") &&
-        reverseResultState.text.includes("source_status"),
+        reverseResultState.text.includes("View diagnostics"),
       evidenceExcerpt: textExcerpt(reverseResultState.text, reverseResultTerms),
       passed:
         reverseResultState.title === "Reverse Stress Lab" &&
         reverseControlTerms.every((term) => reverseInitialState.text.includes(term)) &&
         (reverseScenarioReady
           ? reverseResultTerms.every((term) => reverseResultState.text.includes(term))
-          : reverseResultState.text.includes("Reverse Stress Lab unavailable") && reverseResultState.text.includes("failed_endpoint")),
+          : reverseResultState.text.includes("Reverse Stress Lab unavailable") && reverseResultState.text.includes("View diagnostics")),
     });
 
     await navigate(client, `${webUrl}#intervention-optimizer`);
@@ -944,7 +927,7 @@ async function main() {
       "max_actions",
       "risk_aversion_beta",
       "add_alternative_supplier",
-      "fixture_graph:not_production_ready",
+      "Research fixture mode",
     ];
     const optimizerInitialState = await waitFor(
       client,
@@ -966,15 +949,11 @@ async function main() {
       "after_cvar95",
       "cost",
       "resilience_roi",
-      "optimization_context_type",
-      "scenario_count",
-      "before_simulation_run_ids",
-      "after_simulation_run_ids",
+      "OPTIMIZATION_CONTEXT_TYPE",
+      "SCENARIO_COUNT",
       "baseline_comparison",
-      "run_id",
-      "graph_version",
-      "source_manifest_id",
       "semirisk_intervention_optimizer_v0.1",
+      "Research fixture mode",
     ];
     const optimizerResultState = await waitFor(
       client,
@@ -983,7 +962,7 @@ async function main() {
         state.title === "Intervention Optimizer" &&
         (interventionOptimizationReady
           ? optimizerResultTerms.every((term) => state.text.includes(term))
-          : state.text.includes("Intervention Optimizer unavailable") && state.text.includes("failed_endpoint")),
+          : state.text.includes("Intervention Optimizer unavailable") && state.text.includes("View diagnostics")),
     );
     checks.push({
       page: "Intervention Optimizer v1",
@@ -992,15 +971,14 @@ async function main() {
       hasRecommendedActions: optimizerResultTerms.every((term) => optimizerResultState.text.includes(term)),
       hasControlledDegradedState:
         optimizerResultState.text.includes("Intervention Optimizer unavailable") &&
-        optimizerResultState.text.includes("failed_endpoint") &&
-        optimizerResultState.text.includes("source_status"),
+        optimizerResultState.text.includes("View diagnostics"),
       evidenceExcerpt: textExcerpt(optimizerResultState.text, optimizerResultTerms),
       passed:
         optimizerResultState.title === "Intervention Optimizer" &&
         optimizerControlTerms.every((term) => optimizerInitialState.text.includes(term)) &&
         (interventionOptimizationReady
           ? optimizerResultTerms.every((term) => optimizerResultState.text.includes(term))
-          : optimizerResultState.text.includes("Intervention Optimizer unavailable") && optimizerResultState.text.includes("failed_endpoint")),
+          : optimizerResultState.text.includes("Intervention Optimizer unavailable") && optimizerResultState.text.includes("View diagnostics")),
     });
 
     await navigate(client, `${webUrl}#investigation-report`);
@@ -1010,7 +988,7 @@ async function main() {
       "include_entity_risk",
       "Generate JSON report",
       "Export Markdown",
-      "fixture_graph:not_production_ready",
+      "Research fixture mode",
     ];
     const reportInitialState = await waitFor(
       client,
@@ -1026,17 +1004,14 @@ async function main() {
     })()`);
     const reportResultTerms = [
       "report_id",
-      "graph_version",
-      "source_manifest_id",
       "report_version",
       "semirisk_investigation_report_v0.1",
       "raw_payload_excluded",
       "private_diagnostics_excluded",
       "evidence_summary",
       "risk_scoring_method",
-      "formula_refs",
       "Model limitations",
-      "fixture_graph:not_production_ready",
+      "Research fixture mode",
     ];
     const reportResultState = await waitFor(
       client,
@@ -1045,7 +1020,7 @@ async function main() {
         state.title === "Investigation Report" &&
         (investigationReportReady
           ? reportResultTerms.every((term) => state.text.includes(term))
-          : state.text.includes("Investigation Report unavailable") && state.text.includes("failed_endpoint")),
+          : state.text.includes("Investigation Report unavailable") && state.text.includes("View diagnostics")),
     );
     checks.push({
       page: "Investigation Report export v1",
@@ -1054,15 +1029,14 @@ async function main() {
       hasReportExport: reportResultTerms.every((term) => reportResultState.text.includes(term)),
       hasControlledDegradedState:
         reportResultState.text.includes("Investigation Report unavailable") &&
-        reportResultState.text.includes("failed_endpoint") &&
-        reportResultState.text.includes("source_status"),
+        reportResultState.text.includes("View diagnostics"),
       evidenceExcerpt: textExcerpt(reportResultState.text, reportResultTerms),
       passed:
         reportResultState.title === "Investigation Report" &&
         reportControlTerms.every((term) => reportInitialState.text.includes(term)) &&
         (investigationReportReady
           ? reportResultTerms.every((term) => reportResultState.text.includes(term))
-          : reportResultState.text.includes("Investigation Report unavailable") && reportResultState.text.includes("failed_endpoint")),
+          : reportResultState.text.includes("Investigation Report unavailable") && reportResultState.text.includes("View diagnostics")),
     });
 
     if (expectedMode) {
@@ -1680,19 +1654,30 @@ async function pageState(client) {
 async function pageRelevanceState(client) {
   return evaluate(client, `(() => {
     const policy = document.querySelector('[data-page-relevance-policy]');
+    const visibleText = Array.from(document.body?.querySelectorAll('*') ?? [])
+      .filter((element) => {
+        if (element.closest('details:not([open])')) return element.tagName === 'SUMMARY';
+        const style = window.getComputedStyle(element);
+        return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || '1') > 0;
+      })
+      .map((element) => element.textContent ?? '')
+      .join('\\n');
     return {
       title: document.querySelector('h1')?.textContent?.trim() ?? '',
       policy: policy?.dataset?.pageRelevancePolicy ?? '',
       purpose: policy?.dataset?.pagePurpose ?? '',
       allowedMajorSections: (policy?.dataset?.allowedMajorSections ?? '').split('|').filter(Boolean),
       requiredSignals: (policy?.dataset?.requiredSignals ?? '').split('|').filter(Boolean),
+      displayTiers: (policy?.dataset?.displayTiers ?? '').split('|').filter(Boolean),
       disallowedMajorSections: (policy?.dataset?.disallowedMajorSections ?? '').split('|').filter(Boolean),
       allowsDenseGraph: policy?.dataset?.allowsDenseGraph ?? '',
       flowNodeCount: document.querySelectorAll('.react-flow__node').length,
       graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
       text: document.body?.innerText ?? '',
-      hasVisibleSharedMetadata: ['data_mode', 'source_status', 'graph_mode', 'graph_version', 'source_manifest_id', 'not_production_ready']
-        .every((term) => (document.body?.innerText ?? '').includes(term)),
+      visibleText,
+      hasUserFacingEvidenceStatus: /Public evidence mode|Research fixture mode|Partial public data/.test(visibleText),
+      hasVisibleDeveloperDiagnostics: /data_mode:|graph_version:|source_manifest_id:|transport_attempts:|failed_endpoint:|not_production_ready: true/.test(visibleText),
+      hasClosedAuditDetails: document.querySelectorAll('details.audit-details:not([open])').length > 0,
       hasDisallowedText: (policy?.dataset?.disallowedMajorSections ?? '').split('|').filter(Boolean)
         .some((section) => {
           const text = document.body?.innerText ?? '';
@@ -1722,7 +1707,7 @@ async function graphV2State(client) {
       hasRelationshipClassSelector: Boolean(document.querySelector('[data-testid="relationship-class-selector"]')) && text.includes('Relationship class'),
       hasLegend: text.includes('Legend'),
       hasLayerControls: text.includes('Layer controls'),
-      hasFixtureWarning: text.includes('fixture_graph:not_production_ready'),
+      hasFixtureWarning: text.includes('Research fixture mode'),
       hasEvidenceContextSafety: text.includes('This is not a supply-chain dependency edge.'),
       layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
     };

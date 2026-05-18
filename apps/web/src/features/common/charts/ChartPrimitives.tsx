@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AuditDetails, MetadataSummary } from "../AuditDetails";
 
 export interface ChartDatum {
   label: string;
@@ -39,11 +40,21 @@ export function ChartFrame({
       {loading ? <p className="muted">Loading chart data...</p> : children || <p className="muted">{emptyLabel}</p>}
       {degraded ? <p className="warning-text">Data source unavailable or degraded.</p> : null}
       {hasMetadata ? (
-        <p className="metadata-line">
-          {metadata?.graphVersion ? `graph_version=${metadata.graphVersion}` : null}
-          {metadata?.sourceManifestId ? ` source_manifest_id=${metadata.sourceManifestId}` : null}
-          {metadata?.warnings?.length ? ` warnings=${metadata.warnings.length}` : null}
-        </p>
+        <>
+          <MetadataSummary
+            items={[
+              { label: "Public evidence mode", tone: degraded ? "degraded" : "default" },
+              metadata?.warnings?.length ? { label: `${metadata.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
+            ]}
+          />
+          <AuditDetails
+            items={[
+              { label: "graph_version", value: metadata?.graphVersion },
+              { label: "source_manifest_id", value: metadata?.sourceManifestId },
+            ]}
+            warnings={metadata?.warnings}
+          />
+        </>
       ) : null}
     </section>
   );
@@ -152,4 +163,3 @@ function formatValue(value: number) {
   if (Math.abs(value) >= 1000) return value.toLocaleString(undefined, { maximumFractionDigits: 0 });
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
-

@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react";
-import { Field, StatusPill } from "../../app/components";
+import { StatusPill } from "../../app/components";
+import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
 import { graphColorByLevel } from "./graphLayout";
 import type { GraphVersionMetadata } from "./graphViewModel";
 
@@ -17,7 +18,7 @@ export function GraphLegend({ metadata }: { metadata: GraphVersionMetadata }) {
       <div className="section-kicker">Legend</div>
       <div className="graph-warning-banner" role="note">
         <AlertTriangle aria-hidden="true" />
-        <span>fixture_graph:not_production_ready</span>
+        <span>Research fixture mode</span>
       </div>
       <div className="graph-legend-grid">
         {legendLevels.map(([level, label]) => (
@@ -32,25 +33,36 @@ export function GraphLegend({ metadata }: { metadata: GraphVersionMetadata }) {
         </span>
       </div>
       <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
-      <div className="inspector-grid">
-        <Field label="graph_version" value={metadata.graphVersion} />
-        <Field label="source_manifest_id" value={metadata.sourceManifestId} />
-        <Field label="as_of_time" value={metadata.asOfTime} />
-        <Field label="fixture_graph" value={metadata.fixtureGraph ? "true" : "unknown"} />
-      </div>
+      <MetadataSummary items={[{ label: "Public evidence mode" }]} />
+      <AuditDetails
+        items={[
+          { label: "graph_version", value: metadata.graphVersion },
+          { label: "source_manifest_id", value: metadata.sourceManifestId },
+          { label: "as_of_time", value: metadata.asOfTime },
+          { label: "fixture_graph", value: metadata.fixtureGraph ? "true" : "unknown" },
+        ]}
+        warnings={metadata.warnings}
+      />
       <ul className="evidence-list compact">
         {metadata.warnings.length ? (
           metadata.warnings.map((warning) => (
             <li key={warning}>
-              <StatusPill status="degraded" /> {warning}
+              <StatusPill status="degraded" /> {formatPublicWarning(warning)}
             </li>
           ))
         ) : (
           <li>
-            <StatusPill status="degraded" /> fixture_graph:not_production_ready
+            <StatusPill status="degraded" /> Research fixture mode
           </li>
         )}
       </ul>
     </div>
   );
+}
+
+function formatPublicWarning(warning: string) {
+  if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) {
+    return "Research fixture mode";
+  }
+  return warning;
 }

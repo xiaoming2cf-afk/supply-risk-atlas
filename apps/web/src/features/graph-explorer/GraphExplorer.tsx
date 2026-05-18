@@ -17,6 +17,7 @@ import type {
 } from "@supply-risk/shared-types";
 import { Panel } from "../../app/components";
 import { useI18n } from "../../app/i18n";
+import { DiagnosticDetails, MetadataSummary } from "../common/AuditDetails";
 import { GraphBreadcrumbs } from "./GraphBreadcrumbs";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphControls } from "./GraphControls";
@@ -765,14 +766,20 @@ function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
       <strong>{details.source === "backend" ? "Backend graph view endpoint" : "Fallback graph payload"}</strong>
       <span>{details.message}</span>
       {details.diagnostics ? (
-        <div className="lineage-chips public-status-chips" aria-label="Graph endpoint diagnostics">
-          {details.diagnostics.failedEndpoint ? <span>failed_endpoint: {details.diagnostics.failedEndpoint}</span> : null}
-          {details.diagnostics.sourceStatus ? <span>source_status: {details.diagnostics.sourceStatus}</span> : null}
-          {details.diagnostics.retryHint ? <span>retry_hint: {details.diagnostics.retryHint}</span> : null}
-          {details.diagnostics.transportAttempts !== undefined ? (
-            <span>transport_attempts: {details.diagnostics.transportAttempts}</span>
-          ) : null}
-        </div>
+        <MetadataSummary
+          ariaLabel="Graph endpoint diagnostic summary"
+          items={[{ label: "Backend relationship data unavailable; authoritative rows are hidden.", tone: "warning" }]}
+        />
+      ) : null}
+      {details.diagnostics ? (
+        <DiagnosticDetails
+          items={[
+            { label: "failed_endpoint", value: details.diagnostics.failedEndpoint },
+            { label: "source_status", value: details.diagnostics.sourceStatus },
+            { label: "retry_hint", value: details.diagnostics.retryHint },
+            { label: "transport_attempts", value: details.diagnostics.transportAttempts },
+          ]}
+        />
       ) : null}
     </div>
   );

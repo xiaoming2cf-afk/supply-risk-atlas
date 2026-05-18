@@ -27,6 +27,7 @@ import {
   type PageLanguage
 } from "./i18n";
 import { renderPage } from "./pages";
+import { AuditDetails, DiagnosticDetails, MetadataSummary, publicDataModeLabel } from "../features/common/AuditDetails";
 
 const iconByPage: Record<DashboardPageId, typeof Globe2> = {
   "global-risk-cockpit": Globe2,
@@ -384,11 +385,15 @@ function RealDataRequiredPanel({ status, isRefreshing }: { status: DataStatus; i
         </span>
         <h2>{t(isRefreshing ? "Loading public data" : "Data temporarily unavailable")}</h2>
         <p>{t(status.message)}</p>
-        <div className="lineage-chips public-status-chips" aria-label={t("Data status")}>
-          <span>{t("Coverage")}: {t(publicCoverageLabel(status.sourceStatus))}</span>
-          <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
-        </div>
-        <DiagnosticChips status={status} />
+        <MetadataSummary
+          ariaLabel={t("Data status")}
+          items={[
+            { label: `${t("Coverage")}: ${t(publicCoverageLabel(status.sourceStatus))}` },
+            { label: `${t("Source")}: ${publicSourceLabel(status.sourceName)}` },
+            { label: publicDataModeLabel(status.mode, status.sourceStatus), tone: "warning" },
+          ]}
+        />
+        <DataAuditDetails status={status} diagnosticsOnly />
       </div>
     </section>
   );
@@ -412,34 +417,52 @@ function DataLineageBanner({ status }: { status: DataStatus }) {
         </div>
         <p>{t(status.message)}</p>
       </div>
-      <div className="lineage-chips public-status-chips" aria-label={t("Data status")}>
-        <span>{t("Coverage")}: {t(publicCoverageLabel(status.sourceStatus))}</span>
-        <span>{t("Updated")}: {formatPublicFreshness(status.freshness)}</span>
-        <span>{t("Source")}: {publicSourceLabel(status.sourceName)}</span>
-        <span>data_mode: {status.mode}</span>
-        <span>source_status: {status.sourceStatus}</span>
-        <span>graph_mode: {status.graphMode}</span>
-        <span>graph_version: {status.graphVersion}</span>
-        <span>source_manifest_id: {status.sourceManifestId}</span>
-        <span>calibration_status: fixture_proxy_not_calibrated; not_financial_loss</span>
-        <span>not_production_ready: true</span>
-      </div>
-      <DiagnosticChips status={status} />
+      <MetadataSummary
+        ariaLabel={t("Data status")}
+        items={[
+          { label: `${t("Coverage")}: ${t(publicCoverageLabel(status.sourceStatus))}` },
+          { label: `${t("Updated")}: ${formatPublicFreshness(status.freshness)}` },
+          { label: `${t("Source")}: ${publicSourceLabel(status.sourceName)}` },
+          { label: publicDataModeLabel(status.mode, status.sourceStatus), tone: status.tone === "fresh" ? "good" : "warning" },
+        ]}
+      />
+      <DataAuditDetails status={status} />
     </section>
   );
 }
 
-function DiagnosticChips({ status }: { status: DataStatus }) {
+function DataAuditDetails({
+  status,
+  diagnosticsOnly = false,
+}: {
+  status: DataStatus;
+  diagnosticsOnly?: boolean;
+}) {
   const diagnostics = status.diagnostics;
-  if (!diagnostics || Object.keys(diagnostics).length === 0) return null;
+  const auditItems = diagnosticsOnly
+    ? []
+    : [
+        { label: "data_mode", value: status.mode },
+        { label: "source_status", value: status.sourceStatus },
+        { label: "graph_mode", value: status.graphMode },
+        { label: "graph_version", value: status.graphVersion },
+        { label: "source_manifest_id", value: status.sourceManifestId },
+        { label: "calibration_status", value: "fixture_proxy_not_calibrated; not_financial_loss" },
+        { label: "last_checked_at", value: diagnostics?.lastCheckedAt },
+      ];
+  const diagnosticItems = [
+    { label: "failed_endpoint", value: diagnostics?.failedEndpoint },
+    { label: "source_status", value: diagnostics?.sourceStatus },
+    { label: "retry_hint", value: diagnostics?.retryHint },
+    { label: "transport_attempts", value: diagnostics?.transportAttempts },
+  ];
+  const hasDiagnostics = diagnosticItems.some((item) => item.value !== undefined && item.value !== null && item.value !== "");
+  if (diagnosticsOnly && !hasDiagnostics) return null;
   return (
-    <div className="lineage-chips public-status-chips" aria-label="Sanitized diagnostics">
-      {diagnostics.failedEndpoint ? <span>failed_endpoint: {diagnostics.failedEndpoint}</span> : null}
-      {diagnostics.sourceStatus ? <span>source_status: {diagnostics.sourceStatus}</span> : null}
-      {diagnostics.retryHint ? <span>retry_hint: {diagnostics.retryHint}</span> : null}
-      {diagnostics.transportAttempts !== undefined ? <span>transport_attempts: {diagnostics.transportAttempts}</span> : null}
-      {diagnostics.lastCheckedAt ? <span>last_checked_at: {diagnostics.lastCheckedAt}</span> : null}
-    </div>
+    <>
+      {!diagnosticsOnly ? <AuditDetails items={auditItems} warnings={status.details} /> : null}
+      {hasDiagnostics ? <DiagnosticDetails items={diagnosticItems} /> : null}
+    </>
   );
 }
 

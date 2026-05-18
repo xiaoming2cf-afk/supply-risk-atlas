@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AuditDetails, MetadataSummary } from "../AuditDetails";
 
 export interface EvidenceTableProps {
   title?: string;
@@ -50,11 +51,21 @@ export function DataTable({
       ) : null}
       {degraded ? <p className="warning-text">Data source unavailable or degraded.</p> : null}
       {metadata ? (
-        <p className="metadata-line">
-          {metadata.graphVersion ? `graph_version=${metadata.graphVersion}` : null}
-          {metadata.sourceManifestId ? ` source_manifest_id=${metadata.sourceManifestId}` : null}
-          {metadata.warnings?.length ? ` warnings=${metadata.warnings.length}` : null}
-        </p>
+        <>
+          <MetadataSummary
+            items={[
+              { label: "Public evidence mode", tone: degraded ? "degraded" : "default" },
+              metadata.warnings?.length ? { label: `${metadata.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
+            ]}
+          />
+          <AuditDetails
+            items={[
+              { label: "graph_version", value: metadata.graphVersion },
+              { label: "source_manifest_id", value: metadata.sourceManifestId },
+            ]}
+            warnings={metadata.warnings}
+          />
+        </>
       ) : null}
     </section>
   );
@@ -72,4 +83,3 @@ function renderCell(value: unknown): ReactNode {
   if (Array.isArray(value)) return value.slice(0, 3).map(String).join(", ");
   return JSON.stringify(value);
 }
-

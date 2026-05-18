@@ -31,6 +31,7 @@ export function renderPage(pageId: DashboardPageId, props: PageRenderProps) {
       data-page-purpose={policy.purpose}
       data-allowed-major-sections={policy.allowedMajorSections.join("|")}
       data-required-signals={policy.requiredSignals.join("|")}
+      data-display-tiers={policy.displayTiers.join("|")}
       data-disallowed-major-sections={policy.disallowedMajorSections.join("|")}
       data-allows-dense-graph={policy.allowsDenseGraph ? "true" : "false"}
     >

@@ -1,4 +1,5 @@
 import type { GraphRelationshipData } from "@supply-risk/shared-types";
+import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
 import { DownstreamDemandPressureChart } from "../common/charts";
 import type { GraphViewModel } from "./graphViewModel";
 
@@ -39,7 +40,7 @@ export function DemandRelationshipView({
         <tbody>
           {isEndpointUnavailable ? (
             <tr className="unavailable-preview" data-preview-state="unavailable_preview">
-              <td colSpan={6}>unavailable_preview: Backend demand relationship endpoint unavailable; no authoritative demand rows are shown.</td>
+              <td colSpan={6}>Backend relationship data unavailable; authoritative rows are hidden.</td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
@@ -65,21 +66,33 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
   if (!data) {
     return (
       <p className="inspector-note unavailable-preview" data-preview-state="unavailable_preview">
-        unavailable_preview: Backend demand endpoint unavailable; local graph links are excluded from demand charts, tables, exports, reports, and source coverage.
+        Backend relationship data unavailable; authoritative rows are hidden. Local graph links are excluded from demand charts, tables, exports, reports, and source coverage.
       </p>
     );
   }
   const metadata = data as GraphRelationshipData & RelationshipPayloadMetadata;
   return (
     <div className="graph-view-summary">
-      <span>{data.relationship_class}</span>
-      <span>{data.graph_mode ?? "fixture"} graph</span>
-      <span>{data.data_mode ?? "fixture"} data</span>
-      <span>{data.source_manifest_id}</span>
-      <span>{formatCell(metadata.calibration_status)}</span>
-      <span>{formatCell(metadata.source_status)}</span>
-      <span>{formatSourceRefs(metadata.evidence_refs)}</span>
-      <span>{(data.warnings ?? []).slice(0, 1).join(", ")}</span>
+      <MetadataSummary
+        items={[
+          { label: data.relationship_class },
+          { label: "Public evidence mode" },
+          { label: "Source-backed demand" },
+          data.warnings?.length ? { label: `${data.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
+        ]}
+      />
+      <AuditDetails
+        items={[
+          { label: "graph_mode", value: data.graph_mode ?? "fixture" },
+          { label: "data_mode", value: data.data_mode ?? "fixture" },
+          { label: "source_manifest_id", value: data.source_manifest_id },
+          { label: "graph_version", value: data.graph_version },
+          { label: "calibration_status", value: metadata.calibration_status },
+          { label: "source_status", value: metadata.source_status },
+          { label: "evidence_refs", value: metadata.evidence_refs },
+        ]}
+        warnings={data.warnings}
+      />
     </div>
   );
 }

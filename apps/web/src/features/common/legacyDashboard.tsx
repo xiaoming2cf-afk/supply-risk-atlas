@@ -70,6 +70,7 @@ import type {
 import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel } from "@supply-risk/design-system";
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "../../app/components";
 import { useI18n } from "../../app/i18n";
+import { AuditDetails, MetadataSummary } from "./AuditDetails";
 import { EvidenceAuditPanel } from "../evidence-board/EvidenceAuditPanel";
 import {
   CVaRTailChart,
@@ -2050,36 +2051,38 @@ export function CompanyRisk360({
           <>
             <Panel
               title={`${risk.entity.canonical_name} ${t("risk posture")}`}
-              subtitle={`${risk.node_id}; graph ${risk.graph_version}; manifest ${risk.source_manifest_id}.`}
+              subtitle="Selected entity risk score, method, and evidence coverage."
               translateTitle={false}
-              translateSubtitle={false}
               action={<StatusPill status={risk.fixture_graph ? "degraded" : "operational"} />}
             >
               <div className="driver-grid">
                 <ScoreDial score={risk.score} level={risk.level} label="Risk Score v0" />
                 <div className="inspector-grid">
-                  <Field label="selected_entity" value={risk.node_id} />
+                  <Field label="Selected entity" value={risk.node_id} />
                   <Field label="score" value={risk.score.toFixed(2)} />
                   <Field label="level" value={risk.level} />
-                  <Field label="scoring_method" value={risk.scoring_method} />
-                  <Field label="formula_version" value={risk.formula_version} />
-                  <Field label="calibration_status" value={risk.calibration_status} />
+                  <Field label="Scoring method" value={risk.scoring_method} />
                   <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
                   <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
-                  <Field label="vulnerability_modifier" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
-                  <Field label="node_type" value={risk.entity.node_type} />
+                  <Field label="Vulnerability" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
+                  <Field label="Node type" value={risk.entity.node_type} />
                   <Field label="confidence" value={formatPercent(risk.entity.confidence)} />
-                  <Field label="feature_version" value={risk.feature_version} />
-                  <Field label="graph_version" value={risk.graph_version} />
-                  <Field label="source_manifest_id" value={risk.source_manifest_id} />
-                  <Field label="as_of_time" value={formatDateTime(risk.as_of_time)} />
-                  <Field label="fixture_graph" value={risk.fixture_graph ? "true" : "false"} />
-                  <Field label="evidence_refs" value={formatCompactNumber(risk.evidence_refs.length)} />
+                  <Field label="Evidence refs" value={formatCompactNumber(risk.evidence_refs.length)} />
                 </div>
               </div>
-              <p className="row-subtitle" style={{ marginTop: 16 }}>
-                {`selected_entity: ${risk.node_id}; score: ${risk.score.toFixed(2)}; level: ${risk.level}; scoring_method: ${risk.scoring_method}; formula_version: ${risk.formula_version}; calibration_status: ${risk.calibration_status}; likelihood: ${risk.likelihood?.toFixed(4) ?? "unavailable"}; impact: ${risk.impact?.toFixed(4) ?? "unavailable"}; vulnerability_modifier: ${risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"}; feature_version: ${risk.feature_version}; graph_version: ${risk.graph_version}; source_manifest_id: ${risk.source_manifest_id}; fixture_graph: ${String(risk.fixture_graph)}; evidence_refs: ${risk.evidence_refs.length}; formula_refs: ${risk.formula_refs.join(",")}`}
-              </p>
+              <MetadataSummary items={[{ label: risk.fixture_graph ? "Research fixture mode" : "Public evidence mode", tone: risk.fixture_graph ? "warning" : "default" }]} />
+              <AuditDetails
+                items={[
+                  { label: "formula_version", value: risk.formula_version },
+                  { label: "calibration_status", value: risk.calibration_status },
+                  { label: "feature_version", value: risk.feature_version },
+                  { label: "graph_version", value: risk.graph_version },
+                  { label: "source_manifest_id", value: risk.source_manifest_id },
+                  { label: "as_of_time", value: formatDateTime(risk.as_of_time) },
+                  { label: "fixture_graph", value: risk.fixture_graph },
+                  { label: "formula_refs", value: risk.formula_refs },
+                ]}
+              />
             </Panel>
 
             <Panel title="Scoring method and HHI" subtitle="Likelihood, impact, vulnerability, and concentration are shown separately so the proxy score is auditable.">
@@ -2093,9 +2096,7 @@ export function CompanyRisk360({
                 <Field label="source_concentration_level" value={formatUnknownValue(sourceConcentration?.["concentration_level"])} />
                 <Field label="country_concentration_hhi" value={formatUnknownNumber(countryConcentration?.["hhi"])} />
                 <Field label="country_concentration_level" value={formatUnknownValue(countryConcentration?.["concentration_level"])} />
-                <Field label="calibration_status" value={risk.calibration_status} />
                 <Field label="weighting_method" value={risk.weighting_method ?? "unavailable"} />
-                <Field label="fixture_graph" value={risk.fixture_graph ? "true" : "false"} />
               </div>
               <p className="public-data-note">
                 formula_refs {risk.formula_refs.join(",")}; HHI uses fixture/proxy shares on a 0_to_1 scale and is not calibrated for production decisions.
@@ -2103,12 +2104,15 @@ export function CompanyRisk360({
             </Panel>
 
             <Panel title="Risk charts and evidence tables" subtitle="Evidence-bound visual summaries for the selected entity.">
-              <div className="lineage-chips" style={{ marginBottom: 12 }}>
-                <DataModeBadge value={risk.fixture_graph ? "fixture" : "promoted"} />
-                <GraphVersionBadge value={risk.graph_version} />
-                <SourceManifestBadge value={risk.source_manifest_id} />
-                <CalibrationStatusBadge value={risk.calibration_status} />
-              </div>
+              <MetadataSummary items={[{ label: risk.fixture_graph ? "Research fixture mode" : "Public evidence mode", tone: risk.fixture_graph ? "warning" : "default" }]} />
+              <AuditDetails
+                items={[
+                  { label: "data_mode", value: risk.fixture_graph ? "fixture" : "promoted" },
+                  { label: "graph_version", value: risk.graph_version },
+                  { label: "source_manifest_id", value: risk.source_manifest_id },
+                  { label: "calibration_status", value: risk.calibration_status },
+                ]}
+              />
               <div className="driver-grid">
                 <RiskComponentStackedBar
                   data={risk.components.map((component) => ({ label: component.name, value: Number(component.value ?? 0) }))}
@@ -2230,27 +2234,35 @@ export function CompanyRisk360({
               <p>{degradedMessage}</p>
             </div>
             <div className="inspector-grid" style={{ marginTop: 16 }}>
-              <Field label="selected_entity" value={selectedNodeId} />
-              <Field label="failed_endpoint" value={failedRiskEndpoint} />
-              <Field label="source_status" value={riskResult?.sourceStatus ?? "pending"} />
-              <Field label="portfolio_endpoint" value={failedPortfolioEndpoint} />
-              <Field label="portfolio_source_status" value={portfolioResult?.sourceStatus ?? "pending"} />
+              <Field label="Selected entity" value={selectedNodeId} />
+              <Field label="Source status" value={riskResult?.sourceStatus ?? "pending"} />
             </div>
+            <AuditDetails
+              label="View diagnostics"
+              items={[
+                { label: "failed_endpoint", value: failedRiskEndpoint },
+                { label: "portfolio_endpoint", value: failedPortfolioEndpoint },
+                { label: "portfolio_source_status", value: portfolioResult?.sourceStatus ?? "pending" },
+              ]}
+            />
           </Panel>
         )}
 
         <Panel title="Version and freshness" subtitle="Every displayed score is tied to graph, feature, and source manifest metadata.">
-          <div className="inspector-grid">
-            <Field label="graph_version" value={risk?.graph_version ?? portfolio?.graph_version ?? "unavailable"} />
-            <Field label="source_manifest_id" value={risk?.source_manifest_id ?? portfolio?.source_manifest_id ?? "unavailable"} />
-            <Field label="feature_version" value={risk?.feature_version ?? portfolio?.feature_version ?? "unavailable"} />
-            <Field label="fixture_graph" value={risk?.fixture_graph || portfolio?.fixture_graph ? "true" : "unavailable"} />
-          </div>
+          <MetadataSummary items={[{ label: risk?.fixture_graph || portfolio?.fixture_graph ? "Research fixture mode" : "Public evidence mode", tone: risk?.fixture_graph || portfolio?.fixture_graph ? "warning" : "default" }]} />
+          <AuditDetails
+            items={[
+              { label: "graph_version", value: risk?.graph_version ?? portfolio?.graph_version ?? "unavailable" },
+              { label: "source_manifest_id", value: risk?.source_manifest_id ?? portfolio?.source_manifest_id ?? "unavailable" },
+              { label: "feature_version", value: risk?.feature_version ?? portfolio?.feature_version ?? "unavailable" },
+              { label: "fixture_graph", value: risk?.fixture_graph || portfolio?.fixture_graph ? "true" : "unavailable" },
+            ]}
+          />
           <ul className="health-list" style={{ marginTop: 16 }}>
             {Array.from(new Set(warnings.length ? warnings : ["fixture_graph:not_production_ready"])).map((warning) => (
               <li className="data-row" key={warning}>
                 <div className="row-top">
-                  <span className="row-title">{warning}</span>
+                  <span className="row-title">{formatDashboardWarning(warning)}</span>
                   <StatusPill status="degraded" />
                 </div>
               </li>
@@ -2691,7 +2703,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           <Field label="weighting_method" value={input.weighting_method ?? "literature_proxy_not_calibrated"} />
         </div>
         <p className="public-data-note">
-          {t("fixture_graph:not_production_ready")}; {t("No dollar losses are produced without licensed private exposure data.")}
+          {t("Research fixture mode")}. {t("No dollar losses are produced without licensed private exposure data.")}
         </p>
       </Panel>
 
@@ -2737,10 +2749,8 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               run_id: run.run_id,
               created_at: run.created_at,
               status: run.status,
-              graph_version: run.graph_version,
-              source_manifest_id: run.source_manifest_id,
             }))}
-            columns={["run_id", "created_at", "status", "graph_version", "source_manifest_id"]}
+            columns={["run_id", "created_at", "status"]}
             limit={6}
             emptyLabel="No forward scenario runs stored yet."
           />
@@ -2756,26 +2766,28 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                 <MetricTile metric={{ id: "cvar_95", label: "cvar_95", value: result.cvar_95 ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.cvar_95 ?? 0), detail: "average tail loss above p95" }} />
                 <MetricTile metric={{ id: "time_to_recover_days", label: "time_to_recover_days", value: result.time_to_recover_days ?? 0, unit: "d", delta: 0, trend: "flat", level: "guarded", detail: "deterministic fixture estimate" }} />
               </div>
-              <p className="public-data-note">
-                run_id {result.run_id}; seed {result.seed}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; loss_mode {result.loss_mode}; propagation_mode {result.propagation_mode}; formula_refs {result.formula_refs.join(",")}; calibration_status {result.calibration_status}; resilience_integral_loss {result.resilience_integral_loss ?? "unavailable"}; time_to_survive_days {result.time_to_survive_days ?? "unavailable"}
-              </p>
               <div className="field-grid">
-                <Field label="run_id" value={result.run_id} />
                 <Field label="seed" value={result.seed} />
-                <Field label="graph_version" value={result.graph_version} />
-                <Field label="source_manifest_id" value={result.source_manifest_id} />
-                <Field label="simulation_version" value={result.simulation_version} />
                 <Field label="loss_mode" value={result.loss_mode} />
                 <Field label="propagation_mode" value={result.propagation_mode} />
                 <Field label="resilience_integral_loss" value={result.resilience_integral_loss ?? "unavailable"} />
                 <Field label="graph_weighted_loss" value={result.graph_weighted_loss ?? "unavailable"} />
                 <Field label="demand_fulfillment_loss" value={result.demand_fulfillment_loss ?? "unavailable"} />
                 <Field label="capacity_functionality_loss" value={result.capacity_functionality_loss ?? "unavailable"} />
-                <Field label="formula_refs" value={result.formula_refs.join(",")} />
-                <Field label="weighting_method" value={String(result.weight_basis.weighting_method ?? "unavailable")} />
-                <Field label="calibration_status" value={result.calibration_status} />
                 <Field label="time_to_survive_days" value={result.time_to_survive_days ?? "unavailable"} />
               </div>
+              <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+              <AuditDetails
+                items={[
+                  { label: "run_id", value: result.run_id },
+                  { label: "graph_version", value: result.graph_version },
+                  { label: "source_manifest_id", value: result.source_manifest_id },
+                  { label: "simulation_version", value: result.simulation_version },
+                  { label: "formula_refs", value: result.formula_refs },
+                  { label: "weighting_method", value: String(result.weight_basis.weighting_method ?? "unavailable") },
+                  { label: "calibration_status", value: result.calibration_status },
+                ]}
+              />
             </Panel>
             <Panel title="Forward stress charts and run tables" subtitle="Loss distribution, tail risk, functionality, affected nodes, and transmission paths.">
               <div className="driver-grid">
@@ -2823,11 +2835,9 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                     scenario_type: result.scenario_type,
                     loss_mode: result.loss_mode,
                     propagation_mode: result.propagation_mode,
-                    graph_version: result.graph_version,
-                    source_manifest_id: result.source_manifest_id,
                   },
                 ]}
-                columns={["run_id", "scenario_type", "loss_mode", "propagation_mode", "graph_version", "source_manifest_id"]}
+                columns={["run_id", "scenario_type", "loss_mode", "propagation_mode"]}
                 metadata={chartMetadataForScenario(result)}
               />
             </Panel>
@@ -3041,7 +3051,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           <Field label="beam_width_cap" value="20" />
         </div>
         <p className="public-data-note">
-          {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")}; fixture_graph:not_production_ready
+          {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")}. {t("Research fixture mode")}.
         </p>
       </Panel>
 
@@ -3102,11 +3112,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           <>
             <Panel title="ranked_shock_sets" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
               <div className="field-grid">
-                <Field label="run_id" value={result.run_id} />
                 <Field label="seed" value={result.seed} />
-                <Field label="graph_version" value={result.graph_version} />
-                <Field label="source_manifest_id" value={result.source_manifest_id} />
-                <Field label="simulation_version" value={result.simulation_version} />
                 <Field label="failure_threshold_input" value={result.failure_threshold_input} />
                 <Field label="failure_threshold_normalized" value={result.failure_threshold_normalized} />
                 <Field label="threshold_metric_basis" value={result.threshold_metric_basis} />
@@ -3114,9 +3120,16 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
                 <Field label="propagation_mode" value={result.propagation_mode} />
                 <Field label="plausibility_cost" value={result.plausibility_cost ?? "unavailable"} />
               </div>
-              <p className="public-data-note">
-                run_id {result.run_id}; ranked_shock_sets {result.ranked_shock_sets.length}; failure_threshold_input {result.failure_threshold_input}; failure_threshold_normalized {result.failure_threshold_normalized}; threshold_metric_basis {result.threshold_metric_basis}; loss_mode {result.loss_mode}; propagation_mode {result.propagation_mode}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; simulation_version {result.simulation_version}; fixture_graph:not_production_ready
-              </p>
+              <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+              <AuditDetails
+                items={[
+                  { label: "run_id", value: result.run_id },
+                  { label: "ranked_shock_sets", value: result.ranked_shock_sets.length },
+                  { label: "graph_version", value: result.graph_version },
+                  { label: "source_manifest_id", value: result.source_manifest_id },
+                  { label: "simulation_version", value: result.simulation_version },
+                ]}
+              />
             </Panel>
             <Panel title="Reverse stress charts and tables" subtitle="Ranked shock sets, threshold basis, plausibility cost, and affected paths.">
               <div className="driver-grid">
@@ -3362,7 +3375,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           <Field label="budget_basis" value="finite normalized budget units" />
         </div>
         <p className="public-data-note">
-          {t("compliance constraints")}: no illegal workarounds; approved monitoring, qualification, diversification, inventory, and recovery controls only. fixture_graph:not_production_ready
+          {t("compliance constraints")}: no illegal workarounds; approved monitoring, qualification, diversification, inventory, and recovery controls only. {t("Research fixture mode")}.
         </p>
       </Panel>
 
@@ -3430,18 +3443,24 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                 <MetricTile metric={{ id: "cost", label: "cost", value: result.cost, delta: 0, trend: "flat", level: "guarded", detail: `budget ${result.budget}` }} />
                 <MetricTile metric={{ id: "resilience_roi", label: "resilience_roi", value: result.resilience_roi, delta: 0, trend: "flat", level: "guarded", detail: "tail-loss reduction per budget unit" }} />
               </div>
-              <p className="public-data-note">
-                run_id {result.run_id}; graph_version {result.graph_version}; source_manifest_id {result.source_manifest_id}; optimization_version {result.optimization_version}; optimization_context_type {result.optimization_context_type}; scenario_count {result.scenario_count}; before_simulation_run_ids {result.before_simulation_run_ids.join(",")}; after_simulation_run_ids {result.after_simulation_run_ids.join(",")}; heuristic_estimated_after_cvar95 {result.heuristic_estimated_after_cvar95 ?? "unavailable"}; fixture_graph:not_production_ready
-              </p>
               <div className="field-grid">
                 <Field label="optimization_context_type" value={result.optimization_context_type} />
                 <Field label="scenario_count" value={result.scenario_count} />
-                <Field label="baseline_run_ids" value={result.baseline_run_ids.join(",")} />
-                <Field label="before_simulation_run_ids" value={result.before_simulation_run_ids.join(",")} />
-                <Field label="after_simulation_run_ids" value={result.after_simulation_run_ids.join(",")} />
                 <Field label="heuristic_estimated_after_expected_loss" value={result.heuristic_estimated_after_expected_loss ?? "unavailable"} />
                 <Field label="heuristic_estimated_after_cvar95" value={result.heuristic_estimated_after_cvar95 ?? "unavailable"} />
               </div>
+              <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+              <AuditDetails
+                items={[
+                  { label: "run_id", value: result.run_id },
+                  { label: "graph_version", value: result.graph_version },
+                  { label: "source_manifest_id", value: result.source_manifest_id },
+                  { label: "optimization_version", value: result.optimization_version },
+                  { label: "baseline_run_ids", value: result.baseline_run_ids },
+                  { label: "before_simulation_run_ids", value: result.before_simulation_run_ids },
+                  { label: "after_simulation_run_ids", value: result.after_simulation_run_ids },
+                ]}
+              />
             </Panel>
             <Panel title="Optimizer charts and action tables" subtitle="Before/after loss, ROI, simulation run IDs, and recommended controls.">
               <div className="driver-grid">
@@ -3482,13 +3501,12 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                 rows={[
                   {
                     run_id: result.run_id,
-                    before_simulation_run_ids: result.before_simulation_run_ids.join(","),
-                    after_simulation_run_ids: result.after_simulation_run_ids.join(","),
+                    before_run_count: result.before_simulation_run_ids.length,
+                    after_run_count: result.after_simulation_run_ids.length,
                     optimization_context_type: result.optimization_context_type,
-                    source_manifest_id: result.source_manifest_id,
                   },
                 ]}
-                columns={["run_id", "before_simulation_run_ids", "after_simulation_run_ids", "optimization_context_type", "source_manifest_id"]}
+                columns={["run_id", "before_run_count", "after_run_count", "optimization_context_type"]}
                 metadata={chartMetadataForOptimization(result)}
               />
             </Panel>
@@ -3723,7 +3741,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
           </Button>
         </div>
         <p className="public-data-note">
-          fixture_graph:not_production_ready; report_version semirisk_investigation_report_v0.1; approved resilience planning and compliance review only
+          Research fixture mode. Report exports are for resilience planning and compliance review only.
         </p>
       </Panel>
 
@@ -3746,10 +3764,8 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               id: `${row.section ?? "section"}:${index}`,
               section: row.section,
               evidence_ref_count: row.evidence_ref_count,
-              graph_version: result.versions.graph_version,
-              source_manifest_id: result.versions.source_manifest_id,
             })) : []}
-            columns={["section", "evidence_ref_count", "graph_version", "source_manifest_id"]}
+            columns={["section", "evidence_ref_count"]}
             limit={12}
             metadata={result ? {
               graphVersion: result.versions.graph_version,
@@ -3779,22 +3795,28 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               <div className="field-grid">
                 <Field label="report_id" value={result.report_id} />
                 <Field label="format" value={result.format} />
-                <Field label="report_version" value={result.report_version} />
-                <Field label="graph_version" value={result.versions.graph_version} />
-                <Field label="source_manifest_id" value={result.versions.source_manifest_id} />
-                <Field label="feature_version" value={result.versions.feature_version ?? "not included"} />
-                <Field label="simulation_version" value={result.versions.simulation_version ?? "not included"} />
-                <Field label="optimization_version" value={result.versions.optimization_version ?? "not included"} />
                 <Field label="risk_scoring_method" value={String(result.methodology.risk_scoring_method ?? "unavailable")} />
                 <Field label="weighting_method" value={String(result.methodology.weighting_method ?? "unavailable")} />
-                <Field label="calibration_status" value={String(result.methodology.calibration_status ?? "unavailable")} />
                 <Field label="loss_mode" value={String(result.methodology.loss_mode ?? "not included")} />
                 <Field label="propagation_mode" value={String(result.methodology.propagation_mode ?? "not included")} />
-                <Field label="formula_refs" value={result.formula_sources.formula_refs.join(",")} />
-                <Field label="raw_payload_excluded" value={String(result.raw_payload_excluded)} />
-                <Field label="private_diagnostics_excluded" value={String(result.private_diagnostics_excluded)} />
                 <Field label="selected_run_refs" value={(result.selected_run_refs ?? []).map((run) => run.run_id).join(",") || "none"} />
               </div>
+              <MetadataSummary items={[{ label: "Public evidence mode" }]} />
+              <AuditDetails
+                items={[
+                  { label: "report_version", value: result.report_version },
+                  { label: "graph_version", value: result.versions.graph_version },
+                  { label: "source_manifest_id", value: result.versions.source_manifest_id },
+                  { label: "feature_version", value: result.versions.feature_version ?? "not included" },
+                  { label: "simulation_version", value: result.versions.simulation_version ?? "not included" },
+                  { label: "optimization_version", value: result.versions.optimization_version ?? "not included" },
+                  { label: "calibration_status", value: String(result.methodology.calibration_status ?? "unavailable") },
+                  { label: "formula_refs", value: result.formula_sources.formula_refs },
+                  { label: "raw_payload_excluded", value: result.raw_payload_excluded },
+                  { label: "private_diagnostics_excluded", value: result.private_diagnostics_excluded },
+                ]}
+                warnings={result.warnings}
+              />
               <p className="public-data-note">
                 evidence_summary {result.evidence_summary.length}; graph_context {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges; {result.warnings.join(" | ")}
               </p>
@@ -3803,23 +3825,30 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               <div className="field-grid">
                 <Field label="risk_scoring_method" value={String(result.methodology.risk_scoring_method ?? "unavailable")} />
                 <Field label="weighting_method" value={String(result.methodology.weighting_method ?? "unavailable")} />
-                <Field label="calibration_status" value={String(result.methodology.calibration_status ?? "unavailable")} />
                 <Field label="loss_mode" value={String(result.methodology.loss_mode ?? "not included")} />
                 <Field label="propagation_mode" value={String(result.methodology.propagation_mode ?? "not included")} />
-                <Field label="formula_refs" value={result.formula_sources.formula_refs.join(",")} />
-                <Field label="graph_version" value={result.versions.graph_version} />
-                <Field label="source_manifest_id" value={result.versions.source_manifest_id} />
               </div>
+              <AuditDetails
+                items={[
+                  { label: "calibration_status", value: String(result.methodology.calibration_status ?? "unavailable") },
+                  { label: "formula_refs", value: result.formula_sources.formula_refs },
+                  { label: "graph_version", value: result.versions.graph_version },
+                  { label: "source_manifest_id", value: result.versions.source_manifest_id },
+                ]}
+              />
               <p className="public-data-note">
                 {result.formula_sources.source_principle_note}; fixture/proxy methodology only; no production readiness claim.
               </p>
             </Panel>
             <Panel title="Report metadata and evidence table" subtitle="Audited report context, evidence summary, and limitations.">
-              <div className="lineage-chips" style={{ marginBottom: 12 }}>
-                <GraphVersionBadge value={result.versions.graph_version} />
-                <SourceManifestBadge value={result.versions.source_manifest_id} />
-                <CalibrationStatusBadge value={String(result.methodology.calibration_status ?? "unavailable")} />
-              </div>
+              <MetadataSummary items={[{ label: "Public evidence mode" }]} />
+              <AuditDetails
+                items={[
+                  { label: "graph_version", value: result.versions.graph_version },
+                  { label: "source_manifest_id", value: result.versions.source_manifest_id },
+                  { label: "calibration_status", value: String(result.methodology.calibration_status ?? "unavailable") },
+                ]}
+              />
               <div className="driver-grid">
                 <EvidenceCountCard count={result.evidence_summary.length} />
                 <GraphQualityCard status={`${result.graph_context.node_count} nodes / ${result.graph_context.edge_count} edges`} />
@@ -3830,10 +3859,8 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                   id: `${row.section ?? "section"}:${index}`,
                   section: row.section,
                   evidence_ref_count: row.evidence_ref_count,
-                  graph_version: result.versions.graph_version,
-                  source_manifest_id: result.versions.source_manifest_id,
                 }))}
-                columns={["section", "evidence_ref_count", "graph_version", "source_manifest_id"]}
+                columns={["section", "evidence_ref_count"]}
                 limit={12}
                 metadata={{
                   graphVersion: result.versions.graph_version,
@@ -3918,9 +3945,14 @@ function RunHistoryPanel({
                 <span>{run.created_at}</span>
                 <span>{run.status}</span>
               </div>
-              <p className="public-data-note">
-                graph_version {run.graph_version}; source_manifest_id {run.source_manifest_id}; warnings {run.warnings.join(" | ") || "none"}
-              </p>
+              <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+              <AuditDetails
+                items={[
+                  { label: "graph_version", value: run.graph_version },
+                  { label: "source_manifest_id", value: run.source_manifest_id },
+                ]}
+                warnings={run.warnings}
+              />
             </li>
           ))}
         </ul>
@@ -3943,8 +3975,13 @@ function ForwardRunComparePanel({ runs }: { runs: RunReference[] }) {
           <Field label="previous_expected_loss" value={formatRunMetric(previous, "expected_loss")} />
           <Field label="latest_cvar_95" value={formatRunMetric(latest, "cvar_95")} />
           <Field label="previous_cvar_95" value={formatRunMetric(previous, "cvar_95")} />
-          <Field label="graph_version" value={latest.graph_version} />
-          <Field label="source_manifest_id" value={latest.source_manifest_id} />
+          <AuditDetails
+            items={[
+              { label: "graph_version", value: latest.graph_version },
+              { label: "source_manifest_id", value: latest.source_manifest_id },
+            ]}
+            warnings={latest.warnings}
+          />
         </div>
       ) : (
         <div className="empty-state">Run two forward scenarios to compare summaries.</div>
@@ -3965,8 +4002,13 @@ function OptimizerComparePanel({ runs }: { runs: RunReference[] }) {
           <Field label="before_cvar95" value={formatRunMetric(latest, "before_cvar95")} />
           <Field label="after_cvar95" value={formatRunMetric(latest, "after_cvar95")} />
           <Field label="resilience_roi" value={formatRunMetric(latest, "resilience_roi")} />
-          <Field label="graph_version" value={latest.graph_version} />
-          <Field label="source_manifest_id" value={latest.source_manifest_id} />
+          <AuditDetails
+            items={[
+              { label: "graph_version", value: latest.graph_version },
+              { label: "source_manifest_id", value: latest.source_manifest_id },
+            ]}
+            warnings={latest.warnings}
+          />
         </div>
       ) : (
         <div className="empty-state">Run the optimizer to compare before and after summaries.</div>
@@ -3979,6 +4021,13 @@ function formatRunMetric(run: RunReference, key: string) {
   const value = run.summary[key];
   if (typeof value === "number") return Number.isFinite(value) ? value.toFixed(2) : "unavailable";
   return value === undefined || value === null || value === "" ? "unavailable" : String(value);
+}
+
+function formatDashboardWarning(warning: string) {
+  if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) {
+    return "Research fixture mode";
+  }
+  return warning;
 }
 
 function chartMetadataForRisk(risk: SemiriskEntityRiskScore) {
@@ -4522,7 +4571,7 @@ export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData })
             <Field label="model_component" value={activeClaim.method === "graph-inference" ? "path_transmission" : "evidence_weight"} />
             <Field label="claim_source" value={activeClaim.source} />
             <Field label="last_reviewed" value={activeClaim.lastReviewed} />
-            <Field label="fixture_graph" value="fixture_graph:not_production_ready" />
+            <Field label="Evidence mode" value="Research fixture mode" />
           </div>
           <p className="public-data-note">
             Evidence refs are sanitized display identifiers; source payloads, private diagnostics, and unbounded evidence text are not rendered.
@@ -4862,7 +4911,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         </article>
       </div>
 
-      <Panel title="Readiness boundary" subtitle="Fixture readiness is shown separately from production readiness.">
+      <Panel title="Readiness summary" subtitle="Fixture readiness is shown separately from production readiness.">
         <div className="field-grid">
           <Field label="service_readiness" value={serviceSummaryStatus} />
           <Field label="api_readiness" value={platformStatus.apiReadiness} />
@@ -4870,46 +4919,55 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <Field label="source_registry_readiness" value={platformStatus.sourceRegistryReadiness} />
           <Field label="connector_readiness" value={platformStatus.connectorReadiness} />
           <Field label="storage_readiness" value={platformStatus.storageReadiness.status} />
-          <Field label="storage_mode" value={platformStatus.storageReadiness.storageMode} />
-          <Field label="storage_path" value={platformStatus.storageReadiness.pathRedacted ? "redacted" : platformStatus.storageReadiness.path} />
           <Field label="model_readiness" value={platformStatus.modelReadiness} />
           <Field label="deployment_version_readiness" value={platformStatus.deploymentVersionReadiness.status} />
-          <Field label="api_version" value={deploymentReadiness.apiVersion} />
-          <Field label="api_git_commit" value={deploymentReadiness.apiGitCommit ?? "not_verified"} />
-          <Field label="api_build_time" value={deploymentReadiness.apiBuildTime ?? "not_verified"} />
-          <Field label="web_build_version" value={webGitCommit} />
-          <Field label="web_build_time" value={WEB_BUILD_TIME} />
-          <Field label="commit_mismatch" value={deploymentReadiness.commitMismatch ? "true" : "false"} />
           <Field label="deployment_state" value={deploymentReadiness.deploymentState ?? deploymentReadiness.status} />
-          <Field label="deployment_stale_or_unverified" value={deploymentReadiness.staleOrUnverified ? "true" : "false"} />
-          <Field label="deployment_unavailable" value={deploymentReadiness.unavailable ? "true" : "false"} />
-          <Field label="deployment_last_checked_at" value={deploymentReadiness.lastCheckedAt ?? "not_verified"} />
-          <Field label="deployment_environment" value={deploymentReadiness.environment ?? "unknown"} />
           <Field label="validation_readiness" value={validationReadiness} />
-          <Field label="fixture_status" value={health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable"} />
-          <Field label="data_mode" value={platformStatus.dataMode} />
-          <Field label="graph_mode" value={platformStatus.graphMode} />
-          <Field label="production_status" value={platformStatus.productionStatus} />
-          <Field label="not_production_ready" value={platformStatus.notProductionReady ? "true" : "false"} />
-          <Field label="calibration_status" value={calibrationStatus} />
           <Field label="connector_statuses" value={connectorStatusSummary} />
           <Field label="source_statuses" value={sourceStatusSummary} />
-          <Field label="graph_version" value={platformStatus.graphVersion} />
-          <Field label="source_manifest_id" value={platformStatus.sourceManifestId} />
         </div>
+        <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+        <AuditDetails
+          label="Technical diagnostics"
+          items={[
+            { label: "storage_mode", value: platformStatus.storageReadiness.storageMode },
+            { label: "storage_path", value: platformStatus.storageReadiness.pathRedacted ? "redacted" : platformStatus.storageReadiness.path },
+            { label: "api_version", value: deploymentReadiness.apiVersion },
+            { label: "api_git_commit", value: deploymentReadiness.apiGitCommit ?? "not_verified" },
+            { label: "api_build_time", value: deploymentReadiness.apiBuildTime ?? "not_verified" },
+            { label: "web_build_version", value: webGitCommit },
+            { label: "web_build_time", value: WEB_BUILD_TIME },
+            { label: "commit_mismatch", value: deploymentReadiness.commitMismatch },
+            { label: "deployment_stale_or_unverified", value: deploymentReadiness.staleOrUnverified },
+            { label: "deployment_unavailable", value: deploymentReadiness.unavailable },
+            { label: "deployment_last_checked_at", value: deploymentReadiness.lastCheckedAt ?? "not_verified" },
+            { label: "deployment_environment", value: deploymentReadiness.environment ?? "unknown" },
+            { label: "fixture_status", value: health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable" },
+            { label: "data_mode", value: platformStatus.dataMode },
+            { label: "graph_mode", value: platformStatus.graphMode },
+            { label: "production_status", value: platformStatus.productionStatus },
+            { label: "not_production_ready", value: platformStatus.notProductionReady },
+            { label: "calibration_status", value: calibrationStatus },
+            { label: "graph_version", value: platformStatus.graphVersion },
+            { label: "source_manifest_id", value: platformStatus.sourceManifestId },
+          ]}
+        />
         <p className="public-data-note">
-          service, graph, source, connector, storage, model, deployment, and validation readiness are fixture/proxy/promoted-public-evidence readiness signals only; production status remains not_production_ready.
+          service, graph, source, connector, storage, model, deployment, and validation readiness are fixture/proxy/promoted-public-evidence readiness signals only.
         </p>
       </Panel>
 
       <Panel title="Evidence-bound chart and table components" subtitle="Reusable chart/table components render controlled states with source metadata.">
-        <div className="lineage-chips" style={{ marginBottom: 12 }}>
-          <DataModeBadge value={platformStatus.dataMode} />
-          <DataModeBadge label="graph_mode" value={platformStatus.graphMode} />
-          <GraphVersionBadge value={platformStatus.graphVersion} />
-          <SourceManifestBadge value={platformStatus.sourceManifestId} />
-        </div>
-        <NotProductionReadyBanner />
+        <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }, { label: "Public evidence graph" }]} />
+        <AuditDetails
+          label="Technical diagnostics"
+          items={[
+            { label: "data_mode", value: platformStatus.dataMode },
+            { label: "graph_mode", value: platformStatus.graphMode },
+            { label: "graph_version", value: platformStatus.graphVersion },
+            { label: "source_manifest_id", value: platformStatus.sourceManifestId },
+          ]}
+        />
         <div className="driver-grid" style={{ marginTop: 16 }}>
           <SourceFreshnessChart data={sourceFreshnessData} metadata={chartMetadata} />
           <GraphQualityChart data={graphQualityData} metadata={chartMetadata} />
@@ -5018,30 +5076,32 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             {health.semiconductorGraph ? (
               <Panel
                 title="SemiRisk-KG v0.1 fixture graph"
-                subtitle={`${health.semiconductorGraph.sourceManifestId}; graph ${health.semiconductorGraph.graphVersion}; fixture/promoted test graph, not production readiness.`}
-                translateSubtitle={false}
+                subtitle="Fixture/promoted public-evidence graph readiness; not a production readiness claim."
               >
-                <p className="row-subtitle" style={{ marginBottom: 16 }}>
-                  {`registryReady: ${String(health.semiconductorGraph.registryReady)}; ontologyReady: ${String(health.semiconductorGraph.ontologyReady)}; fixtureGraph: ${String(health.semiconductorGraph.fixtureGraph)}; graphVersion: ${health.semiconductorGraph.graphVersion}; sourceManifestId: ${health.semiconductorGraph.sourceManifestId}; nodeCount: ${health.semiconductorGraph.nodeCount}; edgeCount: ${health.semiconductorGraph.edgeCount}`}
-                </p>
                 <div className="inspector-grid" style={{ marginBottom: 16 }}>
                   <Field label="registryReady" value={health.semiconductorGraph.registryReady ? "true" : "false"} />
                   <Field label="ontologyReady" value={health.semiconductorGraph.ontologyReady ? "true" : "false"} />
                   <Field label="fixtureManifestReady" value={health.semiconductorGraph.fixtureManifestReady ? "true" : "false"} />
                   <Field label="fixtureGraph" value={health.semiconductorGraph.fixtureGraph ? "true" : "false"} />
                   <Field label="fixtureGraphReady" value={health.semiconductorGraph.fixtureGraphReady ? "true" : "false"} />
-                  <Field label="data_mode" value={health.semiconductorGraph.dataMode ?? platformStatus.dataMode} />
-                  <Field label="graph_mode" value={health.semiconductorGraph.graphMode ?? platformStatus.graphMode} />
-                  <Field label="production_status" value={health.semiconductorGraph.productionStatus ?? platformStatus.productionStatus} />
-                  <Field label="not_production_ready" value={(health.semiconductorGraph.notProductionReady ?? platformStatus.notProductionReady) ? "true" : "false"} />
-                  <Field label="calibration_status" value={health.semiconductorGraph.calibrationStatus ?? calibrationStatus} />
-                  <Field label="graphVersion" value={health.semiconductorGraph.graphVersion} />
-                  <Field label="sourceManifestId" value={health.semiconductorGraph.sourceManifestId} />
                   <Field label="nodeCount" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />
                   <Field label="edgeCount" value={formatCompactNumber(health.semiconductorGraph.edgeCount)} />
                   <Field label="staleSourceCount" value={health.semiconductorGraph.staleSourceCount} />
                   <Field label="unresolvedEntityCount" value={health.semiconductorGraph.unresolvedEntityCount} />
                 </div>
+                <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+                <AuditDetails
+                  label="Technical diagnostics"
+                  items={[
+                    { label: "data_mode", value: health.semiconductorGraph.dataMode ?? platformStatus.dataMode },
+                    { label: "graph_mode", value: health.semiconductorGraph.graphMode ?? platformStatus.graphMode },
+                    { label: "production_status", value: health.semiconductorGraph.productionStatus ?? platformStatus.productionStatus },
+                    { label: "not_production_ready", value: health.semiconductorGraph.notProductionReady ?? platformStatus.notProductionReady },
+                    { label: "calibration_status", value: health.semiconductorGraph.calibrationStatus ?? calibrationStatus },
+                    { label: "graph_version", value: health.semiconductorGraph.graphVersion },
+                    { label: "source_manifest_id", value: health.semiconductorGraph.sourceManifestId },
+                  ]}
+                />
                 <div className="driver-grid">
                   <div className="table-wrap">
                     <table className="data-table">
@@ -5084,7 +5144,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                   {health.semiconductorGraph.warnings.map((warning) => (
                     <li className="data-row" key={warning}>
                       <div className="row-top">
-                        <span className="row-title">{warning}</span>
+                        <span className="row-title">{formatDashboardWarning(warning)}</span>
                         <StatusPill status={health.semiconductorGraph?.status ?? "degraded"} />
                       </div>
                     </li>
@@ -5098,7 +5158,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               >
                 <div className="empty-state-shell compact">
                   <h3>Fixture graph readiness unavailable</h3>
-                  <p>Expected fields include graph_version, source_manifest_id, node counts, edge counts, registryReady, ontologyReady, and fixtureGraph.</p>
+                  <p>Expected readiness fields include graph metadata, node counts, edge counts, registry readiness, ontology readiness, and fixture graph state.</p>
                 </div>
                 <ul className="health-list" style={{ marginTop: 16 }}>
                   <li className="data-row">

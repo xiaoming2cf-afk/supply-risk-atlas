@@ -1,4 +1,5 @@
 import type { GraphSupplyDemandBalanceData } from "@supply-risk/shared-types";
+import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
 import { SupplyDemandBalanceChart } from "../common/charts";
 import type { GraphViewModel } from "./graphViewModel";
 
@@ -23,18 +24,30 @@ export function SupplyDemandBalanceView({
       <p className="inspector-note">Balance rows compare bounded fixture/promoted demand signals with supply and production-dependency counts.</p>
       {data ? (
         <div className="graph-view-summary">
-          <span>{data.relationship_class}</span>
-          <span>{data.graph_mode ?? "fixture"} graph</span>
-          <span>{data.data_mode ?? "fixture"} data</span>
-          <span>{data.source_manifest_id}</span>
-          <span>{formatCell((data as BalancePayloadMetadata).calibration_status)}</span>
-          <span>{formatCell((data as BalancePayloadMetadata).source_status)}</span>
-          <span>{formatSourceRefs(payloadEvidenceRefs)}</span>
-          <span>{(data.warnings ?? []).slice(0, 1).join(", ")}</span>
+          <MetadataSummary
+            items={[
+              { label: data.relationship_class },
+              { label: "Public evidence mode" },
+              { label: "Source-backed balance" },
+              data.warnings?.length ? { label: `${data.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
+            ]}
+          />
+          <AuditDetails
+            items={[
+              { label: "graph_mode", value: data.graph_mode ?? "fixture" },
+              { label: "data_mode", value: data.data_mode ?? "fixture" },
+              { label: "source_manifest_id", value: data.source_manifest_id },
+              { label: "graph_version", value: data.graph_version },
+              { label: "calibration_status", value: (data as BalancePayloadMetadata).calibration_status },
+              { label: "source_status", value: (data as BalancePayloadMetadata).source_status },
+              { label: "evidence_refs", value: payloadEvidenceRefs },
+            ]}
+            warnings={data.warnings}
+          />
         </div>
       ) : (
         <p className="inspector-note unavailable-preview" data-preview-state="unavailable_preview">
-          unavailable_preview: Backend balance endpoint unavailable; local graph nodes are excluded from balance charts, tables, exports, reports, and source coverage.
+          Backend relationship data unavailable; authoritative rows are hidden. Local graph nodes are excluded from balance charts, tables, exports, reports, and source coverage.
         </p>
       )}
       <SupplyDemandBalanceChart
@@ -67,7 +80,7 @@ export function SupplyDemandBalanceView({
         <tbody>
           {isEndpointUnavailable ? (
             <tr className="unavailable-preview" data-preview-state="unavailable_preview">
-              <td colSpan={6}>unavailable_preview: Backend supply-demand balance endpoint unavailable; no authoritative balance rows are shown.</td>
+              <td colSpan={6}>Backend relationship data unavailable; authoritative rows are hidden.</td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>

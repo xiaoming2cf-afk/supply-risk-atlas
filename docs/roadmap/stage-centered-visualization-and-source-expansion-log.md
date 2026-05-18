@@ -1107,6 +1107,66 @@
 - No content/API/data-source expansion was attempted in this gate by GPT Pro direction.
 - No production readiness claim is made.
 
+## 2026-05-17 Display Declutter And Audit Details Gate
+
+### Current HEAD
+
+- Work started from local HEAD `06c50120449525fac149be9a4de6536b7371cc16`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworked the global data lineage banner so the primary display shows only public coverage, update time, source summary, and a user-facing public evidence / research fixture status.
+- Moved `data_mode`, `graph_mode`, `graph_version`, `source_manifest_id`, calibration metadata, warning details, and endpoint diagnostics into collapsed audit/detail sections.
+- Reworked common chart/table metadata rendering to use compact status badges plus collapsed audit details instead of raw metadata rows.
+- Reworked Graph Explorer relationship views and endpoint diagnostics so unavailable relationship data is described as non-authoritative, with technical diagnostics folded away.
+- Cleaned Entity Risk, Shock Simulator, Reverse Stress, Optimizer, Investigation Report, Evidence Board, and System Health surfaces so primary panels emphasize business conclusions, evidence, and controlled status summaries.
+- API response fields, exports, and report metadata requirements were not changed.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `apps/web/src/app/globals.css`
+- `apps/web/src/app/pages.tsx`
+- `apps/web/src/features/common/AuditDetails.tsx`
+- `apps/web/src/features/common/charts/ChartPrimitives.tsx`
+- `apps/web/src/features/common/data-cards/GraphVersionBadge.tsx`
+- `apps/web/src/features/common/data-cards/NotProductionReadyBanner.tsx`
+- `apps/web/src/features/common/data-cards/SourceManifestBadge.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/common/pageRelevance.ts`
+- `apps/web/src/features/common/tables/DataTable.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `apps/web/src/features/graph-explorer/GraphLegend.tsx`
+- `apps/web/src/features/graph-explorer/GraphOverviewView.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+
+### Commands Run
+
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `npm.cmd run smoke:web` - passed with 63 checks.
+
+### Display And Terminology Evidence
+
+- Primary display no longer renders raw `data_mode:`, `graph_version:`, `source_manifest_id:`, `transport_attempts:`, `failed_endpoint:`, or `not_production_ready: true` chips.
+- Main pages now show user-facing labels such as `Public evidence mode` and `Research fixture mode`.
+- Audit metadata remains available in collapsed `Data audit details` / `Technical diagnostics` sections.
+- Geography normalization remains unchanged; user-facing regional labels continue to use `region:china_taiwan` / `中国台湾`.
+
+### Deployment Status
+
+- No deployment action was attempted in this display-only gate.
+- Render deployment consistency remains blocked by the previously recorded safe-deploy access issue.
+- No production readiness claim is made.
+
 ## 2026-05-17 Render Manual Workflow Validation Fix
 
 ### Current HEAD
