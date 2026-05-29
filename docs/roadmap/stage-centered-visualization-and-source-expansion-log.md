@@ -1505,3 +1505,11 @@
 
 - This gate improves local presentation quality and smoke reliability; it does not update the stale deployed Render services.
 - GPT Pro handoff still requires a stable project-scoped browser/Chrome path.
+
+### Post-Push Evidence
+
+- Implementation commit: `4a10e48766c3aa30eaa3155b7ec0de125ba2c5a6`.
+- GitHub `ci` run `26652907513`: passed.
+- GitHub `Quality Gates` run `26652907468`: passed.
+- Deployed version probe for expected commit `4a10e48766c3aa30eaa3155b7ec0de125ba2c5a6`: `deployed_unavailable`.
+- Render Manual Deploy run `26653298557`: failed preflight before contacting Render because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured as GitHub Actions secrets.
