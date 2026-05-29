@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { RiskLevel, RiskMetric, TrendDirection } from "@supply-risk/shared-types";
 import { formatCompactNumber, riskClassByLevel } from "@supply-risk/design-system";
 import { translateRiskLevel, useI18n } from "./i18n";
+import { formatDisplayLabel } from "../features/common/displayLabels";
 
 type ButtonVariant = "default" | "primary";
 
@@ -88,7 +89,7 @@ export function MetricTile({ metric }: { metric: RiskMetric }) {
   return (
     <article className="metric-tile">
       <div className="metric-head">
-        <p className="metric-label">{metric.label}</p>
+        <p className="metric-label">{formatDisplayLabel(metric.label)}</p>
         <RiskPill level={metric.level} />
       </div>
       <div>
@@ -141,7 +142,7 @@ export function Field({ label, value }: { label: string; value: ReactNode }) {
   const { t } = useI18n();
   return (
     <div className="field">
-      <span className="field-label">{t(label)}</span>
+      <span className="field-label">{t(formatDisplayLabel(label))}</span>
       <span className="field-value">{value}</span>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AuditDetails, MetadataSummary } from "../AuditDetails";
+import { formatDisplayLabel, formatDisplayValue } from "../displayLabels";
 
 export interface EvidenceTableProps {
   title?: string;
@@ -37,7 +38,7 @@ export function DataTable({
         <div className="table-scroll">
           <table>
             <thead>
-              <tr>{visibleColumns.map((column) => <th key={column}>{column}</th>)}</tr>
+              <tr>{visibleColumns.map((column) => <th key={column}>{formatDisplayLabel(column)}</th>)}</tr>
             </thead>
             <tbody>
               {visibleRows.map((row, index) => (
@@ -79,7 +80,7 @@ function inferColumns(rows: Array<Record<string, unknown>>) {
 
 function renderCell(value: unknown): ReactNode {
   if (value === null || value === undefined) return "unavailable";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
-  if (Array.isArray(value)) return value.slice(0, 3).map(String).join(", ");
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
+  if (Array.isArray(value)) return value.slice(0, 3).map(formatDisplayValue).map(String).join(", ");
   return JSON.stringify(value);
 }

@@ -557,14 +557,14 @@ async function main() {
     await navigate(client, `${webUrl}#system-health-center`);
     const healthSemiriskTerms = [
       "SemiRisk-KG v0.1 fixture graph",
-      "nodeCount",
-      "edgeCount",
-      "registryReady",
-      "ontologyReady",
-      "fixtureGraph",
-      "storage_readiness",
-      "connector_readiness",
-      "deployment_version_readiness",
+      "Node count",
+      "Edge count",
+      "Registry ready",
+      "Ontology ready",
+      "Fixture graph",
+      "Storage readiness",
+      "Connector readiness",
+      "Deployment version readiness",
       "Research fixture mode",
       "Technical diagnostics",
     ];
@@ -661,7 +661,7 @@ async function main() {
         page: "Evidence Board visualization integration",
         hash: "#causal-evidence-board",
         title: "Causal Evidence Board",
-        terms: ["Evidence audit table", "Evidence refs", "Source freshness", "EVIDENCE_TO_GRAPH_PATH"],
+        terms: ["Evidence audit table", "Evidence refs", "Source freshness", "Graph path ref"],
       },
     ];
     for (const check of pageVisualizationChecks) {
@@ -753,15 +753,14 @@ async function main() {
     await navigate(client, `${webUrl}#company-risk-360`);
     const riskEvidenceTerms = [
       "company:tsmc",
-      "likelihood_impact_vulnerability_framework",
-      "semirisk_liv_framework_v0.1",
-      "fixture_proxy_not_calibrated",
-      "likelihood",
-      "impact",
-      "vulnerability_modifier",
-      "source_concentration_hhi",
-      "substitution_gap",
-      "evidence_refs",
+      "Likelihood x impact x vulnerability framework",
+      "Research fixture mode",
+      "LIKELIHOOD",
+      "IMPACT",
+      "VULNERABILITY MODIFIER",
+      "SOURCE CONCENTRATION HHI",
+      "Substitution gap",
+      "Evidence refs",
       "Research fixture mode",
     ];
     const riskState = await waitFor(
@@ -795,12 +794,12 @@ async function main() {
     await navigate(client, `${webUrl}#shock-simulator`);
     const forwardControlTerms = [
       "Shock Simulator",
-      "scenario_type",
+      "Scenario type",
       "company:tsmc",
-      "severity_distribution",
-      "duration_days_distribution",
+      "Severity distribution",
+      "Duration distribution",
       "iterations",
-      "seed",
+      "Seed",
       "Research fixture mode",
     ];
     const shockInitialState = await waitFor(
@@ -816,18 +815,18 @@ async function main() {
       runButton?.click();
     })()`);
     const forwardResultTerms = [
-      "expected_loss",
-      "p50_loss",
-      "p90_loss",
-      "p95_loss",
-      "cvar_95",
-      "time_to_recover_days",
-      "TIME_TO_SURVIVE_DAYS",
-      "loss_mode",
-      "resilience_integral_loss",
-      "propagation_mode",
-      "auto_semiconductor",
-      "seed",
+      "Expected loss",
+      "P50 loss",
+      "P90 loss",
+      "P95 loss",
+      "CVaR 95",
+      "Time to recover",
+      "TIME TO SURVIVE",
+      "Loss mode",
+      "Resilience integral loss",
+      "Propagation mode",
+      "Auto semiconductor propagation",
+      "Seed",
       "semirisk_forward_mc_v0.1",
       "Research fixture mode",
     ];
@@ -860,12 +859,12 @@ async function main() {
     await navigate(client, `${webUrl}#reverse-stress-lab`);
     const reverseControlTerms = [
       "Reverse Stress Lab",
-      "target_metric",
-      "failure_threshold",
-      "max_combination_size",
-      "beam_width",
-      "iterations_per_candidate",
-      "seed",
+      "Target metric",
+      "Failure threshold",
+      "Max shock set size",
+      "Beam width",
+      "Iterations per candidate",
+      "Seed",
       "Research fixture mode",
     ];
     const reverseInitialState = await waitFor(
@@ -881,16 +880,16 @@ async function main() {
       runButton?.click();
     })()`);
     const reverseResultTerms = [
-      "ranked_shock_sets",
-      "threshold_met",
-      "expected_loss",
-      "cvar95",
-      "plausibility_cost",
-      "FAILURE_THRESHOLD_NORMALIZED",
-      "THRESHOLD_METRIC_BASIS",
-      "loss_mode",
-      "propagation_mode",
-      "baseline_comparison",
+      "Ranked shock sets",
+      "Threshold met",
+      "Expected loss",
+      "CVaR 95",
+      "Plausibility cost",
+      "NORMALIZED FAILURE THRESHOLD",
+      "THRESHOLD METRIC BASIS",
+      "Loss mode",
+      "Propagation mode",
+      "Baseline comparison",
       "semirisk_reverse_stress_v0.1",
       "Research fixture mode",
     ];
@@ -923,10 +922,10 @@ async function main() {
     await navigate(client, `${webUrl}#intervention-optimizer`);
     const optimizerControlTerms = [
       "Intervention Optimizer",
-      "budget",
-      "max_actions",
-      "risk_aversion_beta",
-      "add_alternative_supplier",
+      "Budget",
+      "Max actions",
+      "Risk aversion beta",
+      "Add alternative supplier",
       "Research fixture mode",
     ];
     const optimizerInitialState = await waitFor(
@@ -942,16 +941,16 @@ async function main() {
       runButton?.click();
     })()`);
     const optimizerResultTerms = [
-      "recommended_actions",
-      "before_expected_loss",
-      "after_expected_loss",
-      "before_cvar95",
-      "after_cvar95",
+      "Recommended actions",
+      "Before expected loss",
+      "After expected loss",
+      "Before CVaR 95",
+      "After CVaR 95",
       "cost",
-      "resilience_roi",
-      "OPTIMIZATION_CONTEXT_TYPE",
-      "SCENARIO_COUNT",
-      "baseline_comparison",
+      "Resilience ROI",
+      "OPTIMIZATION CONTEXT",
+      "SCENARIO COUNT",
+      "Baseline comparison",
       "semirisk_intervention_optimizer_v0.1",
       "Research fixture mode",
     ];
@@ -984,8 +983,8 @@ async function main() {
     await navigate(client, `${webUrl}#investigation-report`);
     const reportControlTerms = [
       "Investigation Report",
-      "entity_id",
-      "include_entity_risk",
+      "Entity",
+      "Include entity risk",
       "Generate JSON report",
       "Export Markdown",
       "Research fixture mode",
@@ -1003,14 +1002,14 @@ async function main() {
       runButton?.click();
     })()`);
     const reportResultTerms = [
-      "report_id",
-      "report_version",
+      "REPORT ID",
+      "REPORT VERSION",
       "semirisk_investigation_report_v0.1",
-      "raw_payload_excluded",
-      "private_diagnostics_excluded",
-      "evidence_summary",
-      "risk_scoring_method",
+      "Raw source payloads and private diagnostics are excluded",
+      "Evidence summary:",
+      "RISK SCORING METHOD",
       "Model limitations",
+      "View export payload",
       "Research fixture mode",
     ];
     const reportResultState = await waitFor(
@@ -1535,11 +1534,12 @@ async function main() {
     console.error(JSON.stringify(report, null, 2));
     if (deployedBestEffort) {
       console.warn(`Browser smoke had ${failures.length} failure(s) in deployed best-effort mode. Report: ${reportPath}`);
-      return;
+      process.exit(0);
     }
     process.exit(1);
   }
   console.log(`Browser smoke passed: ${checks.length} checks. Report: ${reportPath}`);
+  process.exit(0);
 }
 
 async function assertWebServer() {
@@ -1604,7 +1604,11 @@ async function navigate(client, url) {
     (href) => {
       try {
         const current = new URL(String(href));
-        return current.origin === targetUrl.origin && current.pathname === targetUrl.pathname;
+        return (
+          current.origin === targetUrl.origin &&
+          current.pathname === targetUrl.pathname &&
+          (!targetUrl.hash || current.hash === targetUrl.hash)
+        );
       } catch {
         return false;
       }

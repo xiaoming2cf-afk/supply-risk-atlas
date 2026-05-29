@@ -1458,3 +1458,50 @@
 - GitHub `Quality Gates` run `26649529014`: passed.
 - Render Manual Deploy run `26649777624`: failed preflight before contacting Render because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured.
 - Updated `docs/roadmap/codex-continuation-request.md` with the latest safe deployment handoff state and required next action.
+
+## 2026-05-29 Primary Display Label Hardening
+
+### Current HEAD
+
+- Starting HEAD: `e50db696f5d9503951a8af45fbfeb99777405dd3`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added a shared frontend display-label layer so table headers, metric labels, report fields, chart labels, and run labels use user-facing terminology instead of raw snake_case or internal enum strings.
+- Kept graph/source/data-mode metadata available through props, exports, and collapsed audit details; it is not removed from API/report structures.
+- Collapsed the Investigation Report JSON export payload behind audit disclosure so the report page no longer defaults to a large technical payload block.
+- Updated smoke expectations to validate user-facing labels while still checking that raw payloads, private diagnostics, and developer diagnostics are not shown in primary page text.
+- Fixed the browser smoke hash-navigation helper and successful-exit path after a run produced a passing report but left the Node process open.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/app/components.tsx`
+- `apps/web/src/features/common/tables/DataTable.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` - passed with 63 checks; report written to `artifacts/browser-smoke/report.json`.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `python -m pytest -q` - passed.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Render redeploy remains blocked by the previously recorded missing GitHub Actions secrets / unavailable safe Render credential path.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate improves local presentation quality and smoke reliability; it does not update the stale deployed Render services.
+- GPT Pro handoff still requires a stable project-scoped browser/Chrome path.

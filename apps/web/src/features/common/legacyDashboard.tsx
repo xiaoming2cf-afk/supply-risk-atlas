@@ -71,6 +71,7 @@ import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel 
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "../../app/components";
 import { useI18n } from "../../app/i18n";
 import { AuditDetails, MetadataSummary } from "./AuditDetails";
+import { formatDisplayLabel, formatDisplayValue } from "./displayLabels";
 import { EvidenceAuditPanel } from "../evidence-board/EvidenceAuditPanel";
 import {
   CVaRTailChart,
@@ -105,6 +106,7 @@ import {
 } from "./data-cards";
 import {
   ConnectorStatusTable,
+  DataTable,
   EvidenceRefsTable,
   GraphEdgeTable,
   GraphNodeTable,
@@ -2061,7 +2063,7 @@ export function CompanyRisk360({
                   <Field label="Selected entity" value={risk.node_id} />
                   <Field label="score" value={risk.score.toFixed(2)} />
                   <Field label="level" value={risk.level} />
-                  <Field label="Scoring method" value={risk.scoring_method} />
+                  <Field label="Scoring method" value={formatDisplayValue(risk.scoring_method)} />
                   <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
                   <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
                   <Field label="Vulnerability" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
@@ -2087,8 +2089,7 @@ export function CompanyRisk360({
 
             <Panel title="Scoring method and HHI" subtitle="Likelihood, impact, vulnerability, and concentration are shown separately so the proxy score is auditable.">
               <div className="field-grid">
-                <Field label="scoring_method" value={risk.scoring_method} />
-                <Field label="formula_version" value={risk.formula_version} />
+                <Field label="scoring_method" value={formatDisplayValue(risk.scoring_method)} />
                 <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
                 <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
                 <Field label="vulnerability_modifier" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
@@ -2096,11 +2097,17 @@ export function CompanyRisk360({
                 <Field label="source_concentration_level" value={formatUnknownValue(sourceConcentration?.["concentration_level"])} />
                 <Field label="country_concentration_hhi" value={formatUnknownNumber(countryConcentration?.["hhi"])} />
                 <Field label="country_concentration_level" value={formatUnknownValue(countryConcentration?.["concentration_level"])} />
-                <Field label="weighting_method" value={risk.weighting_method ?? "unavailable"} />
+                <Field label="weighting_method" value={formatDisplayValue(risk.weighting_method ?? "unavailable")} />
               </div>
               <p className="public-data-note">
-                formula_refs {risk.formula_refs.join(",")}; HHI uses fixture/proxy shares on a 0_to_1 scale and is not calibrated for production decisions.
+                HHI uses fixture/proxy shares on a 0 to 1 scale and is not calibrated for production decisions.
               </p>
+              <AuditDetails
+                items={[
+                  { label: "formula_version", value: risk.formula_version },
+                  { label: "formula_refs", value: risk.formula_refs },
+                ]}
+              />
             </Panel>
 
             <Panel title="Risk charts and evidence tables" subtitle="Evidence-bound visual summaries for the selected entity.">
@@ -2115,20 +2122,20 @@ export function CompanyRisk360({
               />
               <div className="driver-grid">
                 <RiskComponentStackedBar
-                  data={risk.components.map((component) => ({ label: component.name, value: Number(component.value ?? 0) }))}
+                  data={risk.components.map((component) => ({ label: formatDisplayLabel(component.name), value: Number(component.value ?? 0) }))}
                   metadata={chartMetadataForRisk(risk)}
                 />
                 <HHIConcentrationChart
                   data={[
-                    { label: "source_hhi", value: Number(sourceConcentration?.["hhi"] ?? 0) },
-                    { label: "country_hhi", value: Number(countryConcentration?.["hhi"] ?? 0) },
+                    { label: "Source HHI", value: Number(sourceConcentration?.["hhi"] ?? 0) },
+                    { label: "Country HHI", value: Number(countryConcentration?.["hhi"] ?? 0) },
                   ]}
                   metadata={chartMetadataForRisk(risk)}
                 />
                 <SupplierConcentrationHHIChart
                   data={[
-                    { label: "source_concentration", value: Number(sourceConcentration?.["hhi"] ?? 0) },
-                    { label: "country_concentration", value: Number(countryConcentration?.["hhi"] ?? 0) },
+                    { label: "Source concentration", value: Number(sourceConcentration?.["hhi"] ?? 0) },
+                    { label: "Country concentration", value: Number(countryConcentration?.["hhi"] ?? 0) },
                   ]}
                   metadata={chartMetadataForRisk(risk)}
                 />
@@ -2180,9 +2187,9 @@ export function CompanyRisk360({
                   <tbody>
                     {risk.components.map((component) => (
                       <tr key={component.name}>
-                        <td>{component.name}</td>
+                        <td>{formatDisplayLabel(component.name)}</td>
                         <td>{component.value === null ? "unavailable" : component.value.toFixed(2)}</td>
-                        <td>{component.weight === null ? "not_weighted_sum" : formatPercent(component.weight)}</td>
+                        <td>{component.weight === null ? "Not weighted" : formatPercent(component.weight)}</td>
                         <td>
                           {component.weighted_contribution === null
                             ? "unavailable"
@@ -2196,7 +2203,7 @@ export function CompanyRisk360({
               </div>
             </Panel>
 
-            <Panel title="evidence_refs" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
+            <Panel title="Evidence refs" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
               <div className="table-wrap">
                 <table className="data-table">
                   <thead>
@@ -2310,7 +2317,7 @@ export function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
               >
                 <span>
                   <strong>{prediction.target_id}</strong>
-                  <small>{prediction.mechanism ?? "public_evidence_graph"} / {prediction.horizon}d</small>
+                  <small>{formatDisplayValue(prediction.mechanism ?? "public_evidence_graph")} / {prediction.horizon}d</small>
                 </span>
                 <b>{Math.round(prediction.risk_score * 100)}</b>
               </button>
@@ -2627,38 +2634,38 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
       >
         <div className="form-grid">
           <label className="form-control">
-            <span>{t("scenario_type")}</span>
+            <span>{t("Scenario type")}</span>
             <select value={input.scenario_type} onChange={(event) => setInput((current) => ({ ...current, scenario_type: event.target.value as ForwardScenarioInput["scenario_type"] }))}>
-              <option value="earthquake">earthquake</option>
-              <option value="export_control">export_control</option>
-              <option value="material_shortage">material_shortage</option>
-              <option value="demand_spike">demand_spike</option>
-              <option value="port_disruption">port_disruption</option>
-              <option value="factory_shutdown">factory_shutdown</option>
-              <option value="cyber_incident">cyber_incident</option>
-              <option value="power_outage">power_outage</option>
+              <option value="earthquake">Earthquake</option>
+              <option value="export_control">Export control</option>
+              <option value="material_shortage">Material shortage</option>
+              <option value="demand_spike">Demand spike</option>
+              <option value="port_disruption">Port disruption</option>
+              <option value="factory_shutdown">Factory shutdown</option>
+              <option value="cyber_incident">Cyber incident</option>
+              <option value="power_outage">Power outage</option>
             </select>
           </label>
           <label className="form-control">
-            <span>{t("target")}</span>
+            <span>{t("Target")}</span>
             <select value={input.targets[0]} onChange={(event) => setInput((current) => ({ ...current, targets: [event.target.value] }))}>
               {forwardTargetSuggestions.map((target) => <option key={target} value={target}>{target}</option>)}
             </select>
           </label>
           <label className="form-control">
-            <span>{t("severity_distribution")}</span>
+            <span>{t("Severity distribution")}</span>
             <select value={input.severity_distribution.type} onChange={(event) => updateDistribution("severity_distribution", event.target.value as ForwardScenarioInput["severity_distribution"]["type"])}>
-              <option value="fixed">fixed</option>
-              <option value="triangular">triangular</option>
-              <option value="beta">beta</option>
+              <option value="fixed">Fixed</option>
+              <option value="triangular">Triangular</option>
+              <option value="beta">Beta</option>
             </select>
           </label>
           <label className="form-control">
-            <span>{t("duration_days_distribution")}</span>
+            <span>{t("Duration distribution")}</span>
             <select value={input.duration_days_distribution.type} onChange={(event) => updateDistribution("duration_days_distribution", event.target.value as ForwardScenarioInput["duration_days_distribution"]["type"])}>
-              <option value="fixed">fixed</option>
-              <option value="triangular">triangular</option>
-              <option value="lognormal">lognormal</option>
+              <option value="fixed">Fixed</option>
+              <option value="triangular">Triangular</option>
+              <option value="lognormal">Lognormal</option>
             </select>
           </label>
           <label className="form-control">
@@ -2666,27 +2673,27 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
             <input min="1" max="5000" onChange={(event) => setInput((current) => ({ ...current, iterations: Number(event.target.value) }))} type="number" value={input.iterations} />
           </label>
           <label className="form-control">
-            <span>{t("seed")}</span>
+            <span>{t("Seed")}</span>
             <input onChange={(event) => setInput((current) => ({ ...current, seed: Number(event.target.value) }))} type="number" value={input.seed} />
           </label>
           <label className="form-control">
-            <span>{t("loss_mode")}</span>
+            <span>{t("Loss mode")}</span>
             <select value={input.loss_mode ?? "resilience_integral_loss"} onChange={(event) => setInput((current) => ({ ...current, loss_mode: event.target.value as ForwardScenarioInput["loss_mode"] }))}>
-              <option value="resilience_integral_loss">resilience_integral_loss</option>
-              <option value="graph_weighted_loss">graph_weighted_loss</option>
-              <option value="demand_fulfillment_loss">demand_fulfillment_loss</option>
-              <option value="capacity_functionality_loss">capacity_functionality_loss</option>
-              <option value="affected_mean">affected_mean legacy</option>
+              <option value="resilience_integral_loss">Resilience integral loss</option>
+              <option value="graph_weighted_loss">Graph-weighted loss</option>
+              <option value="demand_fulfillment_loss">Demand fulfillment loss</option>
+              <option value="capacity_functionality_loss">Capacity functionality loss</option>
+              <option value="affected_mean">Affected mean legacy</option>
             </select>
           </label>
           <label className="form-control">
-            <span>{t("propagation_mode")}</span>
+            <span>{t("Propagation mode")}</span>
             <select value={input.propagation_mode ?? "auto_semiconductor"} onChange={(event) => setInput((current) => ({ ...current, propagation_mode: event.target.value as ForwardScenarioInput["propagation_mode"] }))}>
-              <option value="auto_semiconductor">auto_semiconductor</option>
-              <option value="noisy_or">noisy_or</option>
-              <option value="leontief_bottleneck">leontief_bottleneck</option>
-              <option value="additive_cap">additive_cap</option>
-              <option value="max">max legacy</option>
+              <option value="auto_semiconductor">Auto semiconductor propagation</option>
+              <option value="noisy_or">Noisy OR</option>
+              <option value="leontief_bottleneck">Leontief bottleneck</option>
+              <option value="additive_cap">Additive cap</option>
+              <option value="max">Max legacy</option>
             </select>
           </label>
         </div>
@@ -2697,10 +2704,10 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           <Button onClick={() => applyScenarioTemplate("demand_spike_hbm")}>Template HBM demand spike</Button>
         </div>
         <div className="field-grid">
-          <Field label="current_loss_mode" value={input.loss_mode ?? "resilience_integral_loss"} />
-          <Field label="current_propagation_mode" value={input.propagation_mode ?? "auto_semiconductor"} />
-          <Field label="functionality_metric" value={input.functionality_metric ?? "capacity_fulfillment"} />
-          <Field label="weighting_method" value={input.weighting_method ?? "literature_proxy_not_calibrated"} />
+          <Field label="current_loss_mode" value={formatDisplayValue(input.loss_mode ?? "resilience_integral_loss")} />
+          <Field label="current_propagation_mode" value={formatDisplayValue(input.propagation_mode ?? "auto_semiconductor")} />
+          <Field label="functionality_metric" value={formatDisplayValue(input.functionality_metric ?? "capacity_fulfillment")} />
+          <Field label="weighting_method" value={formatDisplayValue(input.weighting_method ?? "literature_proxy_not_calibrated")} />
         </div>
         <p className="public-data-note">
           {t("Research fixture mode")}. {t("No dollar losses are produced without licensed private exposure data.")}
@@ -2729,17 +2736,17 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               emptyLabel="Run a forward scenario to populate the functionality curve."
             />
             <DownstreamDemandPressureChart
-              data={result ? [{ label: "demand_fulfillment_loss", value: Number(result.demand_fulfillment_loss ?? 0) }] : []}
+              data={result ? [{ label: "Demand fulfillment loss", value: Number(result.demand_fulfillment_loss ?? 0) }] : []}
               metadata={result ? chartMetadataForScenario(result) : undefined}
               emptyLabel="Run a forward scenario to populate demand shock evidence."
             />
             <CriticalInputBottleneckChart
-              data={result ? [{ label: "capacity_functionality_loss", value: Number(result.capacity_functionality_loss ?? 0) }] : []}
+              data={result ? [{ label: "Capacity functionality loss", value: Number(result.capacity_functionality_loss ?? 0) }] : []}
               metadata={result ? chartMetadataForScenario(result) : undefined}
               emptyLabel="Run a forward scenario to populate supply disruption evidence."
             />
             <ProductToProcessDependencyChart
-              data={result ? [{ label: "graph_weighted_loss", value: Number(result.graph_weighted_loss ?? 0) }] : []}
+              data={result ? [{ label: "Graph-weighted loss", value: Number(result.graph_weighted_loss ?? 0) }] : []}
               metadata={result ? chartMetadataForScenario(result) : undefined}
               emptyLabel="Run a forward scenario to populate production dependency propagation evidence."
             />
@@ -2768,8 +2775,8 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               </div>
               <div className="field-grid">
                 <Field label="seed" value={result.seed} />
-                <Field label="loss_mode" value={result.loss_mode} />
-                <Field label="propagation_mode" value={result.propagation_mode} />
+                <Field label="loss_mode" value={formatDisplayValue(result.loss_mode)} />
+                <Field label="propagation_mode" value={formatDisplayValue(result.propagation_mode)} />
                 <Field label="resilience_integral_loss" value={result.resilience_integral_loss ?? "unavailable"} />
                 <Field label="graph_weighted_loss" value={result.graph_weighted_loss ?? "unavailable"} />
                 <Field label="demand_fulfillment_loss" value={result.demand_fulfillment_loss ?? "unavailable"} />
@@ -2858,7 +2865,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                 ))}
               </ul>
             </Panel>
-            <Panel title="top_transmission_paths" subtitle="Evidence-backed one-hop transmission paths from the fixture graph.">
+            <Panel title="Transmission paths" subtitle="Evidence-backed one-hop transmission paths from the fixture graph.">
               <ul className="timeline-list">
                 {result.top_transmission_paths.map((path) => (
                   <li className="data-row" key={path.path_id}>
@@ -2999,16 +3006,16 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
       >
         <div className="form-grid">
           <label className="form-control">
-            <span>{t("target_metric")}</span>
+            <span>{t("Target metric")}</span>
             <select value={input.target_metric} onChange={(event) => setInput((current) => ({ ...current, target_metric: event.target.value as ReverseStressInput["target_metric"] }))}>
-              <option value="cvar95_loss">cvar95_loss</option>
-              <option value="capacity_loss">capacity_loss</option>
-              <option value="demand_fulfillment_loss">demand_fulfillment_loss</option>
-              <option value="affected_critical_nodes">affected_critical_nodes</option>
+              <option value="cvar95_loss">CVaR 95 loss</option>
+              <option value="capacity_loss">Capacity loss</option>
+              <option value="demand_fulfillment_loss">Demand fulfillment loss</option>
+              <option value="affected_critical_nodes">Affected critical nodes</option>
             </select>
           </label>
           <label className="form-control">
-            <span>{t("failure_threshold")}</span>
+            <span>{t("Failure threshold")}</span>
             <input min="1" max="100" onChange={(event) => setInput((current) => ({ ...current, failure_threshold: Number(event.target.value) }))} type="number" value={input.failure_threshold} />
           </label>
           <label className="form-control">
@@ -3020,43 +3027,43 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             />
           </label>
           <label className="form-control">
-            <span>{t("max_combination_size")}</span>
+            <span>{t("Max shock set size")}</span>
             <input min="1" max="4" onChange={(event) => setInput((current) => ({ ...current, max_combination_size: Number(event.target.value) }))} type="number" value={input.max_combination_size} />
           </label>
           <label className="form-control">
-            <span>{t("beam_width")}</span>
+            <span>{t("Beam width")}</span>
             <input min="1" max="20" onChange={(event) => setInput((current) => ({ ...current, beam_width: Number(event.target.value) }))} type="number" value={input.beam_width} />
           </label>
           <label className="form-control">
-            <span>{t("iterations_per_candidate")}</span>
+            <span>{t("Iterations per candidate")}</span>
             <input min="1" max="1000" onChange={(event) => setInput((current) => ({ ...current, iterations_per_candidate: Number(event.target.value) }))} type="number" value={input.iterations_per_candidate} />
           </label>
           <label className="form-control">
-            <span>{t("seed")}</span>
+            <span>{t("Seed")}</span>
             <input onChange={(event) => setInput((current) => ({ ...current, seed: Number(event.target.value) }))} type="number" value={input.seed} />
           </label>
           <label className="form-control">
-            <span>{t("loss_mode")}</span>
+            <span>{t("Loss mode")}</span>
             <select value={input.loss_mode ?? "resilience_integral_loss"} onChange={(event) => setInput((current) => ({ ...current, loss_mode: event.target.value as ReverseStressInput["loss_mode"] }))}>
-              <option value="resilience_integral_loss">resilience_integral_loss</option>
-              <option value="graph_weighted_loss">graph_weighted_loss</option>
-              <option value="demand_fulfillment_loss">demand_fulfillment_loss</option>
-              <option value="capacity_functionality_loss">capacity_functionality_loss</option>
+              <option value="resilience_integral_loss">Resilience integral loss</option>
+              <option value="graph_weighted_loss">Graph-weighted loss</option>
+              <option value="demand_fulfillment_loss">Demand fulfillment loss</option>
+              <option value="capacity_functionality_loss">Capacity functionality loss</option>
             </select>
           </label>
           <label className="form-control">
-            <span>{t("propagation_mode")}</span>
+            <span>{t("Propagation mode")}</span>
             <select value={input.propagation_mode ?? "auto_semiconductor"} onChange={(event) => setInput((current) => ({ ...current, propagation_mode: event.target.value as ReverseStressInput["propagation_mode"] }))}>
-              <option value="auto_semiconductor">auto_semiconductor</option>
-              <option value="leontief_bottleneck">leontief_bottleneck</option>
-              <option value="noisy_or">noisy_or</option>
+              <option value="auto_semiconductor">Auto semiconductor propagation</option>
+              <option value="leontief_bottleneck">Leontief bottleneck</option>
+              <option value="noisy_or">Noisy OR</option>
             </select>
           </label>
         </div>
         <div className="field-grid">
           <Field label="normalized_threshold" value={`${Math.max(0, Math.min(100, input.failure_threshold))}/100`} />
-          <Field label="threshold_basis" value={input.target_metric} />
-          <Field label="context_source" value={input.scenario_run ? "forward_scenario" : "default_fixture"} />
+          <Field label="threshold_basis" value={formatDisplayValue(input.target_metric)} />
+          <Field label="context_source" value={input.scenario_run ? "Forward scenario" : "Default fixture"} />
           <Field label="context_run_id" value={input.scenario_run?.run_id ?? "none"} />
           <Field label="max_combination_size_cap" value="4" />
           <Field label="beam_width_cap" value="20" />
@@ -3121,14 +3128,14 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
         </Panel>
         {result ? (
           <>
-            <Panel title="ranked_shock_sets" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
+            <Panel title="Ranked shock sets" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
               <div className="field-grid">
                 <Field label="seed" value={result.seed} />
                 <Field label="failure_threshold_input" value={result.failure_threshold_input} />
                 <Field label="failure_threshold_normalized" value={result.failure_threshold_normalized} />
-                <Field label="threshold_metric_basis" value={result.threshold_metric_basis} />
-                <Field label="loss_mode" value={result.loss_mode} />
-                <Field label="propagation_mode" value={result.propagation_mode} />
+                <Field label="threshold_metric_basis" value={formatDisplayValue(result.threshold_metric_basis)} />
+                <Field label="loss_mode" value={formatDisplayValue(result.loss_mode)} />
+                <Field label="propagation_mode" value={formatDisplayValue(result.propagation_mode)} />
                 <Field label="plausibility_cost" value={result.plausibility_cost ?? "unavailable"} />
               </div>
               <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
@@ -3195,12 +3202,12 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
                     <li className="data-row" key={shockSet.shock_set_id}>
                       <div className="row-top">
                         <span className="row-title">{shockSet.shock_set_id}</span>
-                        <span className="metric-chip">{shockSet.threshold_met ? "threshold_met" : "approaches_threshold"}</span>
+                        <span className="metric-chip">{shockSet.threshold_met ? "Threshold met" : "Near threshold"}</span>
                       </div>
                       <div className="row-meta">
-                        <span>expected_loss {shockSet.expected_loss?.toFixed(2) ?? "unavailable"}</span>
-                        <span>cvar95 {shockSet.cvar95?.toFixed(2) ?? "unavailable"}</span>
-                        <span>plausibility_cost {shockSet.plausibility_cost.toFixed(4)}</span>
+                        <span>Expected loss {shockSet.expected_loss?.toFixed(2) ?? "unavailable"}</span>
+                        <span>CVaR 95 {shockSet.cvar95?.toFixed(2) ?? "unavailable"}</span>
+                        <span>Plausibility cost {shockSet.plausibility_cost.toFixed(4)}</span>
                       </div>
                       <span className="row-subtitle">{shockSet.explanation}</span>
                     </li>
@@ -3210,8 +3217,13 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
                 <div className="empty-state">{t("No ranked shock sets returned.")}</div>
               )}
             </Panel>
-            <Panel title="baseline_comparison" subtitle="Random, highest-criticality, and proposed beam-search baselines.">
-              <pre className="json-preview">{JSON.stringify(result.baseline_comparison, null, 2)}</pre>
+            <Panel title="Baseline comparison" subtitle="Random, highest-criticality, and proposed beam-search baselines.">
+              <DataTable
+                rows={result.baseline_comparison}
+                limit={6}
+                metadata={chartMetadataForReverse(result)}
+                emptyLabel="No baseline comparison rows returned."
+              />
             </Panel>
           </>
         ) : (
@@ -3368,15 +3380,15 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
       >
         <div className="form-grid">
           <label className="form-control">
-            <span>{t("budget")}</span>
+            <span>{t("Budget")}</span>
             <input min="0" onChange={(event) => setInput((current) => ({ ...current, budget: Number(event.target.value) }))} type="number" value={input.budget} />
           </label>
           <label className="form-control">
-            <span>{t("max_actions")}</span>
+            <span>{t("Max actions")}</span>
             <input min="1" max="10" onChange={(event) => setInput((current) => ({ ...current, max_actions: Number(event.target.value) }))} type="number" value={input.max_actions} />
           </label>
           <label className="form-control">
-            <span>{t("risk_aversion_beta")}: {input.risk_aversion_beta.toFixed(2)}</span>
+            <span>{t("Risk aversion beta")}: {input.risk_aversion_beta.toFixed(2)}</span>
             <input min="0" max="1" step="0.05" onChange={(event) => setInput((current) => ({ ...current, risk_aversion_beta: Number(event.target.value) }))} type="range" value={input.risk_aversion_beta} />
           </label>
         </div>
@@ -3384,12 +3396,12 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           {interventionTypes.map((actionType) => (
             <label className="checkbox-control" key={actionType}>
               <input checked={input.allowed_intervention_types.includes(actionType)} onChange={() => toggleActionType(actionType)} type="checkbox" />
-              <span>{actionType}</span>
+              <span>{formatDisplayValue(actionType)}</span>
             </label>
           ))}
         </div>
         <div className="field-grid">
-          <Field label="context_source" value={optimizerContextSource} />
+          <Field label="context_source" value={formatDisplayValue(optimizerContextSource)} />
           <Field label="forward_context_run_id" value={input.scenario_run?.run_id ?? "none"} />
           <Field label="reverse_context_run_id" value={input.reverse_stress_run?.run_id ?? "none"} />
           <Field label="scenario_set_count" value={input.scenario_set?.length ?? 0} />
@@ -3414,11 +3426,11 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           <div className="driver-grid">
             <OptimizerBeforeAfterChart
               data={result ? [
-                { label: "before_expected_loss", value: Number(result.before_expected_loss ?? 0) },
-                { label: "after_expected_loss", value: Number(result.after_expected_loss ?? 0) },
-                { label: "before_cvar95", value: Number(result.before_cvar95 ?? 0) },
-                { label: "after_cvar95", value: Number(result.after_cvar95 ?? 0) },
-                { label: "resilience_roi", value: Number(result.resilience_roi ?? 0) },
+                { label: "Before expected loss", value: Number(result.before_expected_loss ?? 0) },
+                { label: "After expected loss", value: Number(result.after_expected_loss ?? 0) },
+                { label: "Before CVaR 95", value: Number(result.before_cvar95 ?? 0) },
+                { label: "After CVaR 95", value: Number(result.after_cvar95 ?? 0) },
+                { label: "Resilience ROI", value: Number(result.resilience_roi ?? 0) },
               ] : []}
               metadata={result ? chartMetadataForOptimization(result) : undefined}
               emptyLabel="Run the optimizer to populate before/after metrics."
@@ -3456,7 +3468,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
         </Panel>
         {result ? (
           <>
-            <Panel title="recommended_actions" subtitle={`${result.run_id}; ${result.optimization_version}.`} translateSubtitle={false}>
+            <Panel title="Recommended actions" subtitle={`${result.run_id}; ${result.optimization_version}.`} translateSubtitle={false}>
               <div className="metrics-grid">
                 <MetricTile metric={{ id: "before_expected_loss", label: "before_expected_loss", value: result.before_expected_loss ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_expected_loss ?? 0), detail: "baseline normalized loss" }} />
                 <MetricTile metric={{ id: "after_expected_loss", label: "after_expected_loss", value: result.after_expected_loss ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_expected_loss ?? 0), detail: "post-action normalized loss" }} />
@@ -3466,7 +3478,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                 <MetricTile metric={{ id: "resilience_roi", label: "resilience_roi", value: result.resilience_roi, delta: 0, trend: "flat", level: "guarded", detail: "tail-loss reduction per budget unit" }} />
               </div>
               <div className="field-grid">
-                <Field label="optimization_context_type" value={result.optimization_context_type} />
+                <Field label="optimization_context_type" value={formatDisplayValue(result.optimization_context_type)} />
                 <Field label="scenario_count" value={result.scenario_count} />
                 <Field label="heuristic_estimated_after_expected_loss" value={result.heuristic_estimated_after_expected_loss ?? "unavailable"} />
                 <Field label="heuristic_estimated_after_cvar95" value={result.heuristic_estimated_after_cvar95 ?? "unavailable"} />
@@ -3488,11 +3500,11 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
               <div className="driver-grid">
                 <OptimizerBeforeAfterChart
                   data={[
-                    { label: "before_expected_loss", value: Number(result.before_expected_loss ?? 0) },
-                    { label: "after_expected_loss", value: Number(result.after_expected_loss ?? 0) },
-                    { label: "before_cvar95", value: Number(result.before_cvar95 ?? 0) },
-                    { label: "after_cvar95", value: Number(result.after_cvar95 ?? 0) },
-                    { label: "resilience_roi", value: Number(result.resilience_roi ?? 0) },
+                    { label: "Before expected loss", value: Number(result.before_expected_loss ?? 0) },
+                    { label: "After expected loss", value: Number(result.after_expected_loss ?? 0) },
+                    { label: "Before CVaR 95", value: Number(result.before_cvar95 ?? 0) },
+                    { label: "After CVaR 95", value: Number(result.after_cvar95 ?? 0) },
+                    { label: "Resilience ROI", value: Number(result.resilience_roi ?? 0) },
                   ]}
                   metadata={chartMetadataForOptimization(result)}
                 />
@@ -3537,20 +3549,25 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                 {result.recommended_actions.map((action) => (
                   <li className="data-row" key={action.action_id}>
                     <div className="row-top">
-                      <span className="row-title">{action.intervention_type}</span>
+                      <span className="row-title">{formatDisplayValue(action.intervention_type)}</span>
                       <span className="metric-chip">{action.cost}</span>
                     </div>
                     <div className="row-meta">
                       <span>{action.target_id}</span>
-                      <span>expected_effect {action.expected_effect}</span>
+                      <span>Expected effect {action.expected_effect}</span>
                     </div>
                     <span className="row-subtitle">{action.compliance_note}</span>
                   </li>
                 ))}
               </ul>
             </Panel>
-            <Panel title="baseline_comparison" subtitle="Random, highest-risk, cheapest-first, and proposed greedy optimizer.">
-              <pre className="json-preview">{JSON.stringify(result.baseline_comparison, null, 2)}</pre>
+            <Panel title="Baseline comparison" subtitle="Random, highest-risk, cheapest-first, and proposed greedy optimizer.">
+              <DataTable
+                rows={result.baseline_comparison}
+                limit={6}
+                metadata={chartMetadataForOptimization(result)}
+                emptyLabel="No baseline comparison rows returned."
+              />
             </Panel>
           </>
         ) : (
@@ -3700,13 +3717,13 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
       >
         <div className="form-grid">
           <label className="form-control">
-            <span>{t("entity_id")}</span>
+            <span>{t("Entity")}</span>
             <select value={input.entity_id} onChange={(event) => setInput((current) => ({ ...current, entity_id: event.target.value }))}>
               <option value="company:tsmc">company:tsmc</option>
               <option value="company:asml">company:asml</option>
               <option value="company:samsung">company:samsung</option>
               <option value="company:intel">company:intel</option>
-              <option value="company:applied_materials">company:applied_materials</option>
+              <option value="company:applied_materials">Applied Materials</option>
             </select>
           </label>
         </div>
@@ -3717,7 +3734,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               onChange={(event) => setInput((current) => ({ ...current, include_entity_risk: event.target.checked }))}
               type="checkbox"
             />
-            <span>include_entity_risk</span>
+            <span>Include entity risk</span>
           </label>
           <label className="checkbox-control">
             <input
@@ -3725,7 +3742,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               onChange={(event) => setInput((current) => ({ ...current, forward_scenario_payload: event.target.checked ? defaultForwardPayload : null }))}
               type="checkbox"
             />
-            <span>include_forward_stress</span>
+            <span>Include forward stress</span>
           </label>
           <label className="checkbox-control">
             <input
@@ -3733,7 +3750,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               onChange={(event) => setInput((current) => ({ ...current, reverse_stress_payload: event.target.checked ? defaultReversePayload : null }))}
               type="checkbox"
             />
-            <span>include_reverse_stress</span>
+            <span>Include reverse stress</span>
           </label>
           <label className="checkbox-control">
             <input
@@ -3741,7 +3758,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               onChange={(event) => setInput((current) => ({ ...current, optimization_payload: event.target.checked ? defaultOptimizationPayload : null }))}
               type="checkbox"
             />
-            <span>include_intervention_optimization</span>
+            <span>Include intervention optimization</span>
           </label>
         </div>
         <div className="action-group">
@@ -3827,11 +3844,12 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
             >
               <div className="field-grid">
                 <Field label="report_id" value={result.report_id} />
+                <Field label="report_version" value={result.report_version} />
                 <Field label="format" value={result.format} />
-                <Field label="risk_scoring_method" value={String(result.methodology.risk_scoring_method ?? "unavailable")} />
-                <Field label="weighting_method" value={String(result.methodology.weighting_method ?? "unavailable")} />
-                <Field label="loss_mode" value={String(result.methodology.loss_mode ?? "not included")} />
-                <Field label="propagation_mode" value={String(result.methodology.propagation_mode ?? "not included")} />
+                <Field label="risk_scoring_method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
+                <Field label="weighting_method" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
+                <Field label="loss_mode" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
+                <Field label="propagation_mode" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
                 <Field label="selected_run_refs" value={(result.selected_run_refs ?? []).map((run) => run.run_id).join(",") || "none"} />
               </div>
               <MetadataSummary items={[{ label: "Public evidence mode" }]} />
@@ -3851,15 +3869,15 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 warnings={result.warnings}
               />
               <p className="public-data-note">
-                evidence_summary {result.evidence_summary.length}; graph_context {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges; {result.warnings.join(" | ")}
+                Evidence summary: {result.evidence_summary.length}; graph context: {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges. Raw source payloads and private diagnostics are excluded.
               </p>
             </Panel>
             <Panel title="Methodology" subtitle="Report methodology and version metadata are rendered separately from findings.">
               <div className="field-grid">
-                <Field label="risk_scoring_method" value={String(result.methodology.risk_scoring_method ?? "unavailable")} />
-                <Field label="weighting_method" value={String(result.methodology.weighting_method ?? "unavailable")} />
-                <Field label="loss_mode" value={String(result.methodology.loss_mode ?? "not included")} />
-                <Field label="propagation_mode" value={String(result.methodology.propagation_mode ?? "not included")} />
+                <Field label="risk_scoring_method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
+                <Field label="weighting_method" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
+                <Field label="loss_mode" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
+                <Field label="propagation_mode" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
               </div>
               <AuditDetails
                 items={[
@@ -3907,8 +3925,8 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 {result.evidence_summary.map((row, index) => (
                   <li className="data-row" key={`${row.section}-${index}`}>
                     <div className="row-top">
-                      <span className="row-title">{String(row.section ?? "section")}</span>
-                      <span className="metric-chip">evidence_refs {String(row.evidence_ref_count ?? 0)}</span>
+                      <span className="row-title">{formatDisplayLabel(String(row.section ?? "section"))}</span>
+                      <span className="metric-chip">Evidence refs {String(row.evidence_ref_count ?? 0)}</span>
                     </div>
                   </li>
                 ))}
@@ -3918,11 +3936,17 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               </p>
             </Panel>
             <Panel title={result.format === "markdown" ? "Markdown export" : "JSON export"} subtitle="API-visible report payload only; raw source payloads are excluded.">
-              <pre className="json-preview">
-                {result.format === "markdown" && result.markdown
-                  ? result.markdown
-                  : JSON.stringify(result, null, 2)}
-              </pre>
+              <div className="empty-state-shell compact">
+                <h3>Export payload is ready</h3>
+                <p>The full sanitized export is available in the audit disclosure below; it is not shown by default on the report page.</p>
+              </div>
+              <AuditDetails label="View export payload">
+                <pre className="json-preview">
+                  {result.format === "markdown" && result.markdown
+                    ? result.markdown
+                    : JSON.stringify(result, null, 2)}
+                </pre>
+              </AuditDetails>
             </Panel>
           </>
         ) : (
@@ -3976,13 +4000,13 @@ function RunHistoryPanel({
       subtitle="Bounded sanitized run summaries; no raw payloads or private diagnostics."
       action={<Button disabled={isLoading} icon={Clock3} onClick={() => void onRefresh()}>{isLoading ? "Refreshing" : "Refresh runs"}</Button>}
     >
-      {error ? <p className="public-data-note">run_history_unavailable: {error}</p> : null}
+      {error ? <p className="public-data-note">Run history unavailable: {error}</p> : null}
       {uniqueRuns.length ? (
         <ul className="timeline-list">
           {uniqueRuns.map((run) => (
             <li className="data-row" key={run.run_id}>
               <div className="row-top">
-                <span className="row-title">{run.run_type}</span>
+                <span className="row-title">{formatDisplayValue(run.run_type)}</span>
                 <span className="metric-chip">{run.run_id}</span>
               </div>
               <div className="row-meta">
@@ -4068,10 +4092,16 @@ function formatRunMetric(run: RunReference, key: string) {
 }
 
 function formatDashboardWarning(warning: string) {
+  if (warning.includes("semirisk_fixture_metadata")) {
+    return "Fixture graph metadata available";
+  }
+  if (warning.includes("fixture_source_freshness_degraded")) {
+    return "Some fixture source freshness is limited";
+  }
   if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) {
     return "Research fixture mode";
   }
-  return warning;
+  return formatDisplayLabel(warning);
 }
 
 function chartMetadataForRisk(risk: SemiriskEntityRiskScore) {
@@ -4986,7 +5016,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             { label: "deployment_unavailable", value: deploymentReadiness.unavailable },
             { label: "deployment_last_checked_at", value: deploymentReadiness.lastCheckedAt ?? "not_verified" },
             { label: "deployment_environment", value: deploymentReadiness.environment ?? "unknown" },
-            { label: "fixture_status", value: health.semiconductorGraph?.fixtureGraph ? "fixture_graph:true" : "fixture_graph:metadata_unavailable" },
+            { label: "fixture_status", value: health.semiconductorGraph?.fixtureGraph ? "Fixture graph available" : "Fixture graph metadata unavailable" },
             { label: "data_mode", value: platformStatus.dataMode },
             { label: "graph_mode", value: platformStatus.graphMode },
             { label: "production_status", value: platformStatus.productionStatus },
@@ -5158,7 +5188,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <tbody>
                         {Object.entries(health.semiconductorGraph.nodeCountByType).map(([nodeType, count]) => (
                           <tr key={nodeType}>
-                            <td>{nodeType}</td>
+                            <td>{formatDisplayLabel(nodeType)}</td>
                             <td>{formatCompactNumber(count)}</td>
                           </tr>
                         ))}
@@ -5176,7 +5206,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <tbody>
                         {Object.entries(health.semiconductorGraph.edgeCountByType).map(([edgeType, count]) => (
                           <tr key={edgeType}>
-                            <td>{edgeType}</td>
+                            <td>{formatDisplayLabel(edgeType)}</td>
                             <td>{formatCompactNumber(count)}</td>
                           </tr>
                         ))}
@@ -5207,7 +5237,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                 <ul className="health-list" style={{ marginTop: 16 }}>
                   <li className="data-row">
                     <div className="row-top">
-                      <span className="row-title">fixture_graph:metadata_unavailable</span>
+                      <span className="row-title">Fixture graph metadata unavailable</span>
                       <StatusPill status="degraded" />
                     </div>
                   </li>

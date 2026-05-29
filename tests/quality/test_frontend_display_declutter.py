@@ -25,6 +25,7 @@ def test_data_lineage_banner_uses_user_facing_summary_and_collapsed_audit_detail
 def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     table_source = read("apps/web/src/features/common/tables/DataTable.tsx")
     chart_source = read("apps/web/src/features/common/charts/ChartPrimitives.tsx")
+    component_source = read("apps/web/src/app/components.tsx")
 
     for source in (table_source, chart_source):
         assert "AuditDetails" in source
@@ -32,6 +33,47 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
         assert "graph_version=" not in source
         assert "source_manifest_id=" not in source
         assert "metadata-line" not in source
+    assert "formatDisplayLabel(column)" in table_source
+    assert "formatDisplayLabel(metric.label)" in component_source
+    assert "formatDisplayLabel(label)" in component_source
+
+
+def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    forbidden_primary_titles = [
+        'title="top_transmission_paths"',
+        'title="ranked_shock_sets"',
+        'title="recommended_actions"',
+        'title="baseline_comparison"',
+        'title="evidence_refs"',
+    ]
+    forbidden_primary_copy = [
+        ">resilience_integral_loss<",
+        ">graph_weighted_loss<",
+        ">demand_fulfillment_loss<",
+        ">capacity_functionality_loss<",
+        ">auto_semiconductor<",
+        ">leontief_bottleneck<",
+        "not_weighted_sum",
+        "run_history_unavailable:",
+        "fixture_graph:metadata_unavailable",
+        "expected_effect {",
+        "evidence_refs {",
+        "plausibility_cost {",
+        "expected_loss {",
+    ]
+
+    for needle in forbidden_primary_titles + forbidden_primary_copy:
+        assert needle not in source
+    assert "Transmission paths" in source
+    assert "Ranked shock sets" in source
+    assert "Recommended actions" in source
+    assert "Baseline comparison" in source
+    assert "Evidence refs" in source
+    assert "Run history unavailable" in source
+    assert "Fixture graph metadata unavailable" in source
+    assert "Template 中国台湾 earthquake" in source
 
 
 def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> None:
