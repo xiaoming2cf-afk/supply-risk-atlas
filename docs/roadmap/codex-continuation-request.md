@@ -1,5 +1,32 @@
 # Codex Continuation Request
 
+## 2026-05-29 Latest Continuation Update
+
+- Latest commit: `ba5661f4f1e3e0ad0aa5c11b8307ac308081e72f`.
+- Implementation commit for the newest UI cleanup: `4a10e48766c3aa30eaa3155b7ec0de125ba2c5a6`.
+- Branch: `main`.
+- GitHub `ci`: passed for `ba5661f4f1e3e0ad0aa5c11b8307ac308081e72f` in run `26653347876`.
+- GitHub `Quality Gates`: passed for `ba5661f4f1e3e0ad0aa5c11b8307ac308081e72f` in run `26653347883`.
+- Local validation for the implementation commit passed:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_no_forbidden_geography_labels.py -q`
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` with 63 passing checks
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `python -m pytest -q`
+- Latest UI cleanup added user-facing display labels for metrics/tables/charts/report fields and keeps technical graph/source metadata behind audit disclosure instead of default page content.
+- Render deployed version probe for `4a10e48766c3aa30eaa3155b7ec0de125ba2c5a6` returned `deployed_unavailable`.
+- Render Manual Deploy run `26653298557` failed preflight before contacting Render because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured as GitHub Actions secrets.
+- Chrome/Computer Use status:
+  - Chrome tab listing succeeded after one retry.
+  - The project-scoped Render Dashboard tab timed out through the Codex Chrome Extension.
+  - The project GPT Pro URL failed to navigate through the Chrome Extension and the failed agent-created tab was closed.
+  - No secrets, cookies, tokens, account details, raw payloads, private diagnostics, local filesystem paths, or PII were copied or stored.
+- Required next action: configure the safe Render deployment path, then redeploy latest `main` and run deployed version/smoke checks.
+- Safe GPT Pro handoff text to paste manually or retry via Chrome once stable:
+  `请审查当前 Codex 完成结果，并给出下一轮 prompt。Latest commit ba5661f4f1e3e0ad0aa5c11b8307ac308081e72f. CI and Quality Gates passed. Local tests, build, and smoke passed. UI display labels were humanized and audit metadata is folded by default. Render deployment remains blocked because required GitHub Actions Render secrets are missing; Chrome Render/GPT tabs timed out without exposing secrets.`
+
 ## Current Status
 
 - Latest commit: `4b6150f8b2c8425aa56861890707b20c61e2fb05`.
