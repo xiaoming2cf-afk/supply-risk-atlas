@@ -1219,3 +1219,52 @@
 - GPT Pro review for the final `57832e6` status is not confirmed because ChatGPT browser automation timed out.
 - No content/API/data-source expansion was attempted in this gate by GPT Pro direction.
 - No production readiness claim is made.
+
+## 2026-05-29 Display Declutter Push, CI, And Deploy Preflight
+
+### Current HEAD
+
+- Latest pushed commit: `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Pushed the display-declutter commit to `origin/main` after the first ordinary push failed due to GitHub network timeout.
+- GitHub `ci` passed for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- GitHub `Quality Gates` passed for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- Deployed public version probe still reports stale services at `06c50120449525fac149be9a4de6536b7371cc16`.
+- Triggered GitHub Actions run `26643255838` for `Render Manual Deploy` with `commit_sha=c78f32c62c85f965d71e35d6e72dfc8daec72cc0` and `clear_cache=clear`.
+- Render deploy was not triggered because the workflow failed preflight on missing GitHub Actions secrets: `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID`.
+
+### Commands Run
+
+- `git push origin main` - first attempt failed with GitHub 443 network timeout.
+- Elevated `git push origin main` - passed; `c78f32c` pushed to `origin/main`.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --limit 10 --json ...` - latest `ci` and `Quality Gates` discovered.
+- `python scripts/check-deployed-version.py --expected-commit c78f32c62c85f965d71e35d6e72dfc8daec72cc0 --timeout 25 --attempts 2` - controlled failure with `deployed_stale_or_unverified`.
+- `gh workflow run render-manual-deploy.yml --repo xiaoming2cf-afk/supply-risk-atlas --ref main -f commit_sha=c78f32c62c85f965d71e35d6e72dfc8daec72cc0 -f clear_cache=clear` - dispatched run `26643255838`.
+- `gh run view 26643255838 --repo xiaoming2cf-afk/supply-risk-atlas --json status,conclusion,headSha,url,jobs` - failed in preflight.
+- `gh run view 26643255838 --repo xiaoming2cf-afk/supply-risk-atlas --log-failed` - confirmed missing-secret names only.
+
+### Deployment Status
+
+- Public API commit: `06c50120449525fac149be9a4de6536b7371cc16`.
+- Web `/api/build-info` commit: `06c50120449525fac149be9a4de6536b7371cc16`.
+- Web proxy commit: `06c50120449525fac149be9a4de6536b7371cc16`.
+- Web root HTML latest commit marker: not visible.
+- Current actionable status: `render_deploy_blocked_missing_github_actions_secrets`.
+
+### Computer Use Actions
+
+- No browser/Chrome Computer Use was used in this gate.
+- GitHub Actions inspection and workflow dispatch were done through `gh` CLI with sanitized output.
+- No secrets, cookies, tokens, OTPs, raw payloads, private diagnostics, account screenshots, or PII were exposed.
+
+### Known Limitations
+
+- Render deployment cannot proceed until `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are configured as GitHub Actions secrets.
+- GPT Pro handoff was not retried in this gate because deployment remains safely blocked before Render can deploy latest `main`.
+- No production readiness claim is made.

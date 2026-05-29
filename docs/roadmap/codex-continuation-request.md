@@ -2,78 +2,71 @@
 
 ## Current Status
 
-- Latest pushed commit: `9841a37f228015c808f8fada715fad698b95de55`.
+- Latest pushed commit: `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
 - Branch: `main`.
+- GitHub `ci`: passed for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- GitHub `Quality Gates`: passed for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
   - `apps/web/CLAUDE.md`
   - `data/runtime/` remains ignored runtime state.
 
-## Completed In This Recovery Loop
+## Completed In Latest Loop
 
-- Added `/api/build-info` for Web build identity with `Cache-Control: no-store`.
-- Extended `scripts/check-deployed-version.py` to verify four public signals:
-  - direct API `/api/v1/version`
-  - Web same-origin `/api/v1/version` proxy
-  - Web root HTML commit marker
-  - Web `/api/build-info`
-- Added `.github/workflows/render-manual-deploy.yml`.
-  - The workflow is `workflow_dispatch` only.
-  - It requires GitHub Actions secrets instead of committing credentials.
-  - It triggers API and Web Render deploys for a requested commit.
-  - It can request Render cache clearing.
-  - It runs bounded public convergence checks after deploy.
-- Added `docs/roadmap/render-deploy-secret-requirements.md` with the exact safe setup requirements.
-- Fixed the initial workflow YAML validation problem and pushed the corrected workflow.
+- Decluttered the frontend display layer so ordinary pages show concise public-evidence / research-fixture summaries instead of raw engineering metadata.
+- Added `AuditDetails`, `MetadataSummary`, and `DiagnosticDetails` display components.
+- Moved `data_mode`, `graph_mode`, `graph_version`, `source_manifest_id`, calibration details, endpoint diagnostics, and warning details behind collapsed audit sections.
+- Preserved API fields, report/export metadata, no-raw-payload behavior, and canonical geography terminology.
+- Pushed the local commit to GitHub after a network retry with approved elevated `git push`.
 
 ## Validation Evidence
 
-- `python -m pytest tests/quality/test_render_manual_deploy_workflow.py tests/quality/test_deployed_version_checker.py tests/quality/test_web_commit_marker.py -q` - passed.
 - `python -m pytest tests/quality -q` - passed.
-- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
-- `python -m pytest tests/api/test_version_endpoint.py tests/api/test_system_health_semiconductor_graph.py tests/api/test_system_health_storage_sources.py tests/quality/test_deployed_version_checker.py -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
 - `npm.cmd --workspace apps/web run typecheck` - passed.
 - `npm.cmd --workspace apps/web run build` - passed.
-- GitHub `ci` passed for `9841a37f228015c808f8fada715fad698b95de55`.
-- GitHub `Quality Gates` passed for `9841a37f228015c808f8fada715fad698b95de55`.
+- `npm.cmd run smoke:web` - passed with 63 checks.
+- Targeted post-push checks:
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` - passed.
+  - `npm.cmd --workspace apps/web run typecheck` - passed.
 
 ## Deployment Status
 
 - Current status: `deployed_stale_or_unverified`.
-- Latest public probe for expected commit `9841a37f228015c808f8fada715fad698b95de55` reported:
-  - API commit: `c3f245d47f678053fc4aca44024a31498ea58d86`
-  - Web same-origin proxy commit: `c3f245d47f678053fc4aca44024a31498ea58d86`
-  - Web root HTML commit marker: not visible for latest commit
-  - Web `/api/build-info`: unavailable because the deployed Web build predates that route
-- Local shell did not have `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`, `GITHUB_TOKEN`, or `GH_TOKEN` present.
-- GitHub UI showed the manual workflow as active, but the `Run workflow` panel returned a page loading error in Browser automation. The failed tab was closed before continuing.
-- GPT Pro handoff was attempted with a sanitized status packet, but ChatGPT browser control timed out during send/check. Treat the final GPT Pro review for `57832e6` as unconfirmed.
+- Public deployed version probe for expected commit `c78f32c62c85f965d71e35d6e72dfc8daec72cc0` reported:
+  - API commit: `06c50120449525fac149be9a4de6536b7371cc16`
+  - Web `/api/build-info` commit: `06c50120449525fac149be9a4de6536b7371cc16`
+  - Web same-origin proxy commit: `06c50120449525fac149be9a4de6536b7371cc16`
+  - Web root HTML commit marker: latest commit not visible
+- GitHub Actions run `26643255838` attempted the `Render Manual Deploy` workflow for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- The workflow failed in the preflight step before triggering Render deploys because required GitHub Actions secrets are missing:
+  - `RENDER_API_KEY`
+  - `RENDER_API_SERVICE_ID`
+  - `RENDER_WEB_SERVICE_ID`
+- No Render credentials, token values, cookies, private diagnostics, or raw payloads were exposed or stored.
 
 ## Required Next Action
 
-Run the manual workflow after a reliable GitHub UI/API path is available:
+Configure the required GitHub Actions secrets using the guidance in `docs/roadmap/render-deploy-secret-requirements.md`, then re-run the manual workflow:
 
 1. Open GitHub Actions for `Render Manual Deploy`.
 2. Select `Run workflow`.
 3. Use `main`.
-4. Set `commit_sha` to `9841a37f228015c808f8fada715fad698b95de55`.
+4. Set `commit_sha` to `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
 5. Set `clear_cache` to `clear`.
 6. Run the workflow.
-7. If the workflow fails because secrets are missing, configure only the secrets listed in `docs/roadmap/render-deploy-secret-requirements.md`.
-8. Re-run:
+7. Re-run:
 
 ```powershell
-python scripts/check-deployed-version.py --expected-commit 9841a37f228015c808f8fada715fad698b95de55 --timeout 25 --attempts 3
+python scripts/check-deployed-version.py --expected-commit c78f32c62c85f965d71e35d6e72dfc8daec72cc0 --timeout 25 --attempts 3
 ```
 
 The acceptable final statuses are:
 
 - `deployed_verified`, or
-- `render_deploy_blocked_missing_safe_deploy_path` with missing secret evidence.
+- `render_deploy_blocked_missing_safe_deploy_path` with the missing-secret evidence above.
 
-After either status is reached, retry the project-scoped GPT Pro handoff with the same sanitized evidence. Do not paste secrets, raw logs, account screenshots, cookies, tokens, private diagnostics, or raw payloads.
-
-Do not claim deployment completion while the public probes remain stale.
+After deployment is verified or safely blocked, retry the project-scoped GPT Pro handoff with sanitized evidence only. Do not paste secrets, raw logs, account screenshots, cookies, tokens, private diagnostics, or raw payloads.
 
 ## Constraints For The Next Run
 
