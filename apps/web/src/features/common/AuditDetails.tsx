@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState, type ReactNode } from "react";
 
 export type AuditDetailItem = {
   label: string;
@@ -46,34 +48,42 @@ export function AuditDetails({
 }) {
   const visibleItems = (items ?? []).filter((item) => item.value !== undefined && item.value !== null && item.value !== "");
   const visibleWarnings = (warnings ?? []).filter(Boolean);
+  const [expanded, setExpanded] = useState(open);
   if (visibleItems.length === 0 && visibleWarnings.length === 0 && !children) return null;
 
   return (
-    <details className="audit-details" data-display-tier="audit_details" open={open}>
+    <details
+      className="audit-details"
+      data-display-tier="audit_details"
+      open={expanded}
+      onToggle={(event) => setExpanded(event.currentTarget.open)}
+    >
       <summary>{label}</summary>
-      <div className="audit-details-body">
-        {visibleItems.length ? (
-          <dl className="audit-detail-grid">
-            {visibleItems.map((item) => (
-              <div className="audit-detail-row" key={item.label}>
-                <dt>{item.label}</dt>
-                <dd>{formatAuditValue(item.value)}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-        {visibleWarnings.length ? (
-          <div className="audit-warning-list">
-            <strong>Warnings</strong>
-            <ul>
-              {visibleWarnings.slice(0, 8).map((warning) => (
-                <li key={warning}>{warning}</li>
+      {expanded ? (
+        <div className="audit-details-body">
+          {visibleItems.length ? (
+            <dl className="audit-detail-grid">
+              {visibleItems.map((item) => (
+                <div className="audit-detail-row" key={item.label}>
+                  <dt>{item.label}</dt>
+                  <dd>{formatAuditValue(item.value)}</dd>
+                </div>
               ))}
-            </ul>
-          </div>
-        ) : null}
-        {children}
-      </div>
+            </dl>
+          ) : null}
+          {visibleWarnings.length ? (
+            <div className="audit-warning-list">
+              <strong>Warnings</strong>
+              <ul>
+                {visibleWarnings.slice(0, 8).map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {children}
+        </div>
+      ) : null}
     </details>
   );
 }
