@@ -1314,3 +1314,53 @@
 - Deployed API/Web remain stale at commit `06c50120449525fac149be9a4de6536b7371cc16`.
 - GPT Pro handoff was not retried because deployment is still blocked and no sanitized deployed screenshots can be produced from the timed-out Chrome session.
 - No production readiness claim is made.
+
+## 2026-05-29 Audit Metadata DOM Hiding And CI Recovery
+
+### Current HEAD
+
+- Latest implementation commit: `1e506a8da2e110d214d5b37ead43988d34de9481`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Fixed the CI browser-smoke regression introduced by display decluttering.
+- `AuditDetails` now renders audit rows only after the user expands the details section, so ordinary page text no longer includes raw technical metadata such as `data_mode`, `graph_version`, `source_manifest_id`, `transport_attempts`, or warning bodies.
+- Marked `AuditDetails` as a client component because it now uses state for controlled expansion.
+- Added `allowedDevOrigins` for local Next dev smoke origins `127.0.0.1` and `localhost`; this preserves local/CI browser-smoke while not changing production API behavior.
+- GitHub `ci` passed for `1e506a8da2e110d214d5b37ead43988d34de9481`.
+- GitHub `Quality Gates` passed for `1e506a8da2e110d214d5b37ead43988d34de9481`.
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api -q` - passed.
+- `python -m pytest tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd run smoke:web` - passed with 63 checks after restarting the local dev server.
+- `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --limit 6 --json ...` - confirmed `ci` and `Quality Gates` success for `1e506a8da2e110d214d5b37ead43988d34de9481`.
+- `python scripts/check-deployed-version.py --expected-commit 1e506a8da2e110d214d5b37ead43988d34de9481 --timeout 25 --attempts 2` - controlled stale deployment result.
+- `gh workflow run render-manual-deploy.yml --repo xiaoming2cf-afk/supply-risk-atlas --ref main -f commit_sha=1e506a8da2e110d214d5b37ead43988d34de9481 -f clear_cache=clear` - dispatched run `26646684760`.
+- `gh run view 26646684760 --repo xiaoming2cf-afk/supply-risk-atlas --json status,conclusion,headSha,url,jobs` - failed at preflight before triggering Render.
+- `gh run view 26646684760 --repo xiaoming2cf-afk/supply-risk-atlas --log-failed` - confirmed missing secret names only.
+
+### Deployment Status
+
+- Public API commit: `06c50120449525fac149be9a4de6536b7371cc16`.
+- Web `/api/build-info` commit: `06c50120449525fac149be9a4de6536b7371cc16`.
+- Web proxy commit: `06c50120449525fac149be9a4de6536b7371cc16`.
+- Render Manual Deploy run `26646684760` failed preflight because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured as GitHub Actions secrets.
+- Render deploy was not triggered.
+
+### Computer Use Actions
+
+- No additional Render Chrome actions were attempted in this gate because the prior authenticated Render Dashboard tab and fresh retry both timed out through the Chrome extension.
+- No credentials, cookies, tokens, OTPs, account screenshots, private diagnostics, raw payloads, or PII were copied or stored.
+
+### Known Limitations
+
+- Deployed API/Web remain stale at commit `06c50120449525fac149be9a4de6536b7371cc16`.
+- GPT Pro handoff is still pending a stable browser path or a user-provided review message path; no production readiness claim is made.

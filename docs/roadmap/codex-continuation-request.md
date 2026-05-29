@@ -2,10 +2,10 @@
 
 ## Current Status
 
-- Latest pushed commit: `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- Latest implementation commit: `1e506a8da2e110d214d5b37ead43988d34de9481`.
 - Branch: `main`.
-- GitHub `ci`: passed for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
-- GitHub `Quality Gates`: passed for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- GitHub `ci`: passed for `1e506a8da2e110d214d5b37ead43988d34de9481`.
+- GitHub `Quality Gates`: passed for `1e506a8da2e110d214d5b37ead43988d34de9481`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
   - `apps/web/CLAUDE.md`
@@ -19,6 +19,10 @@
 - Preserved API fields, report/export metadata, no-raw-payload behavior, and canonical geography terminology.
 - Pushed the local commit to GitHub after a network retry with approved elevated `git push`.
 - Added docs-only deployment handoff commit `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`; GitHub `ci` and `Quality Gates` passed.
+- Added implementation commit `1e506a8da2e110d214d5b37ead43988d34de9481` to fix the CI browser-smoke display declutter regression:
+  - `AuditDetails` is now an explicit client component.
+  - Closed audit details no longer render technical field rows into the DOM until the user expands the section.
+  - Next dev server allows local smoke origins `127.0.0.1` and `localhost`.
 
 ## Validation Evidence
 
@@ -27,6 +31,8 @@
 - `npm.cmd --workspace apps/web run typecheck` - passed.
 - `npm.cmd --workspace apps/web run build` - passed.
 - `npm.cmd run smoke:web` - passed with 63 checks.
+- `python -m pytest tests/api -q` - passed.
+- `python -m pytest tests/security tests/graph_invariants -q` - passed.
 - Targeted post-push checks:
   - `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` - passed.
   - `npm.cmd --workspace apps/web run typecheck` - passed.
@@ -34,12 +40,13 @@
 ## Deployment Status
 
 - Current status: `deployed_stale_or_unverified`.
-- Public deployed version probe for expected commit `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1` reported:
+- Public deployed version probe for expected commit `1e506a8da2e110d214d5b37ead43988d34de9481` reported:
   - API commit: `06c50120449525fac149be9a4de6536b7371cc16`
   - Web `/api/build-info` commit: `06c50120449525fac149be9a4de6536b7371cc16`
   - Web same-origin proxy commit: `06c50120449525fac149be9a4de6536b7371cc16`
   - Web root HTML commit marker: latest commit not visible
 - GitHub Actions run `26643255838` attempted the `Render Manual Deploy` workflow for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- GitHub Actions run `26646684760` attempted the `Render Manual Deploy` workflow for `1e506a8da2e110d214d5b37ead43988d34de9481`.
 - The workflow failed in the preflight step before triggering Render deploys because required GitHub Actions secrets are missing:
   - `RENDER_API_KEY`
   - `RENDER_API_SERVICE_ID`
@@ -59,13 +66,13 @@ Configure the required GitHub Actions secrets using the guidance in `docs/roadma
 1. Open GitHub Actions for `Render Manual Deploy`.
 2. Select `Run workflow`.
 3. Use `main`.
-4. Set `commit_sha` to `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+4. Set `commit_sha` to `1e506a8da2e110d214d5b37ead43988d34de9481`.
 5. Set `clear_cache` to `clear`.
 6. Run the workflow.
 7. Re-run:
 
 ```powershell
-python scripts/check-deployed-version.py --expected-commit fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1 --timeout 25 --attempts 3
+python scripts/check-deployed-version.py --expected-commit 1e506a8da2e110d214d5b37ead43988d34de9481 --timeout 25 --attempts 3
 ```
 
 The acceptable final statuses are:
