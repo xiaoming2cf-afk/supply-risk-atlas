@@ -2,10 +2,10 @@
 
 ## Current Status
 
-- Latest pushed commit: `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- Latest pushed commit: `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
 - Branch: `main`.
-- GitHub `ci`: passed for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
-- GitHub `Quality Gates`: passed for `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+- GitHub `ci`: passed for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- GitHub `Quality Gates`: passed for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
 - Preserve user-owned local files:
   - `apps/web/AGENTS.md`
   - `apps/web/CLAUDE.md`
@@ -18,6 +18,7 @@
 - Moved `data_mode`, `graph_mode`, `graph_version`, `source_manifest_id`, calibration details, endpoint diagnostics, and warning details behind collapsed audit sections.
 - Preserved API fields, report/export metadata, no-raw-payload behavior, and canonical geography terminology.
 - Pushed the local commit to GitHub after a network retry with approved elevated `git push`.
+- Added docs-only deployment handoff commit `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`; GitHub `ci` and `Quality Gates` passed.
 
 ## Validation Evidence
 
@@ -33,7 +34,7 @@
 ## Deployment Status
 
 - Current status: `deployed_stale_or_unverified`.
-- Public deployed version probe for expected commit `c78f32c62c85f965d71e35d6e72dfc8daec72cc0` reported:
+- Public deployed version probe for expected commit `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1` reported:
   - API commit: `06c50120449525fac149be9a4de6536b7371cc16`
   - Web `/api/build-info` commit: `06c50120449525fac149be9a4de6536b7371cc16`
   - Web same-origin proxy commit: `06c50120449525fac149be9a4de6536b7371cc16`
@@ -44,6 +45,12 @@
   - `RENDER_API_SERVICE_ID`
   - `RENDER_WEB_SERVICE_ID`
 - No Render credentials, token values, cookies, private diagnostics, or raw payloads were exposed or stored.
+- Chrome/Computer Use status:
+  - Render Dashboard opened successfully in the authenticated Chrome profile.
+  - Browser control then timed out when inspecting the Render page.
+  - A fresh Chrome window was opened with user authorization and retried.
+  - The fresh Render Dashboard page also timed out through the extension, so UI redeploy remains blocked by Chrome extension communication stability.
+  - A stale Render tab close was attempted after the first failure, but claiming that tab also timed out; no additional Render UI loop was attempted.
 
 ## Required Next Action
 
@@ -52,13 +59,13 @@ Configure the required GitHub Actions secrets using the guidance in `docs/roadma
 1. Open GitHub Actions for `Render Manual Deploy`.
 2. Select `Run workflow`.
 3. Use `main`.
-4. Set `commit_sha` to `c78f32c62c85f965d71e35d6e72dfc8daec72cc0`.
+4. Set `commit_sha` to `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
 5. Set `clear_cache` to `clear`.
 6. Run the workflow.
 7. Re-run:
 
 ```powershell
-python scripts/check-deployed-version.py --expected-commit c78f32c62c85f965d71e35d6e72dfc8daec72cc0 --timeout 25 --attempts 3
+python scripts/check-deployed-version.py --expected-commit fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1 --timeout 25 --attempts 3
 ```
 
 The acceptable final statuses are:

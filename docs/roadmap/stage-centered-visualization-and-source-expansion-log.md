@@ -1268,3 +1268,49 @@
 - Render deployment cannot proceed until `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are configured as GitHub Actions secrets.
 - GPT Pro handoff was not retried in this gate because deployment remains safely blocked before Render can deploy latest `main`.
 - No production readiness claim is made.
+
+## 2026-05-29 Deployment Handoff Commit And Chrome Retry
+
+### Current HEAD
+
+- Latest pushed commit: `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Committed and pushed the docs-only recovery handoff as `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- GitHub `ci` passed for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- GitHub `Quality Gates` passed for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- Public deployed version probe for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1` still reports stale API/Web commit `06c50120449525fac149be9a4de6536b7371cc16`.
+- Render Manual Deploy remains blocked because GitHub Actions secrets `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured.
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `git diff --check` - passed.
+- `git commit -m "Record Render deploy preflight blocker"` - created `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- `git push origin main` - passed.
+- `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --limit 6 --json ...` - confirmed `ci` and `Quality Gates` success for `fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1`.
+- `python scripts/check-deployed-version.py --expected-commit fa4ba1ed05ea9d0ac33fc98eccc30268c97bdbf1 --timeout 25 --attempts 2` - controlled stale deployment result.
+
+### Computer Use Actions
+
+- Connected to the authenticated Chrome profile through the Codex Chrome Extension.
+- Opened Render Dashboard for project-scoped deployment verification.
+- Browser control timed out while inspecting the Render Dashboard page.
+- Opened a fresh Chrome window with user authorization and retried the Render Dashboard.
+- The fresh Render Dashboard page also timed out through the extension.
+- Attempted to close the stale Render tab after the first failure, but claiming that tab also timed out. To avoid an unbounded loop or browser overload, no further Render UI retries were attempted.
+- No credentials, cookies, tokens, OTPs, account screenshots, private diagnostics, raw payloads, or PII were copied or stored.
+
+### Deployment Status
+
+- Current actionable status: `render_deploy_blocked_missing_github_actions_secrets_and_chrome_extension_timeout`.
+- Required safe path: configure Render deployment GitHub Actions secrets or complete Render redeploy manually in the browser, then rerun deployed version and smoke checks.
+
+### Known Limitations
+
+- Deployed API/Web remain stale at commit `06c50120449525fac149be9a4de6536b7371cc16`.
+- GPT Pro handoff was not retried because deployment is still blocked and no sanitized deployed screenshots can be produced from the timed-out Chrome session.
+- No production readiness claim is made.
