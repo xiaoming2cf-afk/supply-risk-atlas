@@ -2877,9 +2877,20 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
             {failure ? (
               <div className="unavailable-panel">
                 <h3>{t("Shock Simulator unavailable")}</h3>
-                <Field label="failed_endpoint" value={failedEndpoint} />
-                <Field label="source_status" value={sourceStatus} />
-                <p>{failure.envelope.warnings.join(" | ")}</p>
+                <MetadataSummary
+                  items={[
+                    { label: sourceStatus === "unavailable" ? "Data temporarily unavailable" : "Research fixture mode", tone: "degraded" },
+                  ]}
+                />
+                <p>{formatDashboardWarning(failure.envelope.warnings[0] ?? "scenario_unavailable")}</p>
+                <AuditDetails
+                  label="View diagnostics"
+                  items={[
+                    { label: "failed_endpoint", value: failedEndpoint },
+                    { label: "source_status", value: sourceStatus },
+                  ]}
+                  warnings={failure.envelope.warnings}
+                />
               </div>
             ) : (
               <div className="empty-state">{t("No scenario run yet.")}</div>
@@ -3208,9 +3219,20 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             {failure ? (
               <div className="unavailable-panel">
                 <h3>{t("Reverse Stress Lab unavailable")}</h3>
-                <Field label="failed_endpoint" value={failedEndpoint} />
-                <Field label="source_status" value={sourceStatus} />
-                <p>{failure.envelope.warnings.join(" | ")}</p>
+                <MetadataSummary
+                  items={[
+                    { label: sourceStatus === "unavailable" ? "Data temporarily unavailable" : "Research fixture mode", tone: "degraded" },
+                  ]}
+                />
+                <p>{formatDashboardWarning(failure.envelope.warnings[0] ?? "reverse_stress_unavailable")}</p>
+                <AuditDetails
+                  label="View diagnostics"
+                  items={[
+                    { label: "failed_endpoint", value: failedEndpoint },
+                    { label: "source_status", value: sourceStatus },
+                  ]}
+                  warnings={failure.envelope.warnings}
+                />
               </div>
             ) : (
               <div className="empty-state">{t("No reverse stress run yet.")}</div>
@@ -3536,9 +3558,20 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
             {failure ? (
               <div className="unavailable-panel">
                 <h3>{t("Intervention Optimizer unavailable")}</h3>
-                <Field label="failed_endpoint" value={failedEndpoint} />
-                <Field label="source_status" value={sourceStatus} />
-                <p>{failure.envelope.warnings.join(" | ")}</p>
+                <MetadataSummary
+                  items={[
+                    { label: sourceStatus === "unavailable" ? "Data temporarily unavailable" : "Research fixture mode", tone: "degraded" },
+                  ]}
+                />
+                <p>{formatDashboardWarning(failure.envelope.warnings[0] ?? "optimizer_unavailable")}</p>
+                <AuditDetails
+                  label="View diagnostics"
+                  items={[
+                    { label: "failed_endpoint", value: failedEndpoint },
+                    { label: "source_status", value: sourceStatus },
+                  ]}
+                  warnings={failure.envelope.warnings}
+                />
               </div>
             ) : (
               <div className="empty-state">{t("No optimization run yet.")}</div>
@@ -3897,9 +3930,20 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
             {failure ? (
               <div className="unavailable-panel">
                 <h3>{t("Investigation Report unavailable")}</h3>
-                <Field label="failed_endpoint" value={failedEndpoint} />
-                <Field label="source_status" value={sourceStatus} />
-                <p>{failure.envelope.warnings.join(" | ")}</p>
+                <MetadataSummary
+                  items={[
+                    { label: sourceStatus === "unavailable" ? "Data temporarily unavailable" : "Research fixture mode", tone: "degraded" },
+                  ]}
+                />
+                <p>{formatDashboardWarning(failure.envelope.warnings[0] ?? "report_unavailable")}</p>
+                <AuditDetails
+                  label="View diagnostics"
+                  items={[
+                    { label: "failed_endpoint", value: failedEndpoint },
+                    { label: "source_status", value: sourceStatus },
+                  ]}
+                  warnings={failure.envelope.warnings}
+                />
               </div>
             ) : (
               <div className="empty-state">{t("No investigation report generated yet.")}</div>

@@ -1396,3 +1396,57 @@
 
 - GPT Pro review was not completed because the browser control path timed out.
 - Render deployed API/Web remain stale at commit `06c50120449525fac149be9a4de6536b7371cc16`.
+
+## 2026-05-29 Run Page Unavailable-State Declutter
+
+### Current HEAD
+
+- Starting HEAD: `a949a1312269c66b96284742e0a74140a3eb4de7`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Tightened the display declutter policy for unavailable run pages.
+- Shock Simulator, Reverse Stress Lab, Intervention Optimizer, and Investigation Report no longer show `failed_endpoint` or `source_status` as primary page fields.
+- Each unavailable panel now shows a user-facing status summary and keeps endpoint/source diagnostics in collapsed `View diagnostics` audit details.
+- Added a quality test to prevent those endpoint diagnostics from returning to primary page `Field` rows.
+
+### Commands Run
+
+- `git status --short --branch` - confirmed only preserved untracked user files before edits.
+- `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --limit 8 --json ...` - confirmed `ci` and `Quality Gates` success for `a949a1312269c66b96284742e0a74140a3eb4de7`.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd run smoke:web` - first run failed with `ECONNREFUSED 127.0.0.1:3000` because local Web/API servers were not running.
+- Started local API and Web dev servers on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 npm.cmd run smoke:web` - passed with 63 checks.
+- Stopped the local API and Web dev servers after smoke validation.
+- `python scripts/check-deployed-version.py --expected-commit a949a1312269c66b96284742e0a74140a3eb4de7 --timeout 10 --attempts 1` - controlled deployed-unavailable result in this environment.
+
+### Computer Use Actions
+
+- Reconnected to Chrome through the Codex Chrome Extension after one retry.
+- Listed open tabs and identified the project-scoped Render Dashboard tab without inspecting unrelated tab contents.
+- Attempted to claim and read the Render Dashboard tab for deployment verification.
+- The Render tab timed out through the Chrome Extension.
+- Attempted to close the failed Render tab according to the failed-page cleanup rule.
+- Closing the failed tab also timed out, so no additional Render UI loop was attempted.
+- No credentials, cookies, tokens, OTPs, account screenshots, private diagnostics, raw payloads, or PII were copied or stored.
+
+### Deployment Status
+
+- GitHub `ci` and `Quality Gates` are green for the latest pushed commit before this gate.
+- Render deployment remains blocked by unavailable non-interactive credentials and Chrome Extension timeouts.
+- Local environment has no `RENDER_API_KEY`, no Render CLI, and no visible repository Render secrets from `gh secret list`.
+- Deployed version probe currently reports `deployed_unavailable` in this environment.
+
+### Known Limitations
+
+- This gate improves local UI behavior only; it does not claim the deployed Render services were updated.
+- GPT Pro handoff was not retried after the Render timeout because Chrome control remained unstable.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.

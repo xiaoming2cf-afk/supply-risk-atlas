@@ -49,6 +49,18 @@ def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> No
         assert "Backend relationship data unavailable; authoritative rows are hidden." in source
 
 
+def test_run_page_unavailable_states_keep_endpoint_diagnostics_collapsed() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert '<Field label="failed_endpoint"' not in source
+    assert '<Field label="source_status"' not in source
+    assert "Shock Simulator unavailable" in source
+    assert "Reverse Stress Lab unavailable" in source
+    assert "Intervention Optimizer unavailable" in source
+    assert "Investigation Report unavailable" in source
+    assert source.count('label="View diagnostics"') >= 4
+
+
 def test_page_relevance_policy_declares_display_tiers() -> None:
     source = read("apps/web/src/features/common/pageRelevance.ts")
 
