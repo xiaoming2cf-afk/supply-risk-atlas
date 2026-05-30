@@ -61,6 +61,29 @@
   - `apps/web/CLAUDE.md`
   - `data/runtime/` remains ignored runtime state.
 
+## 2026-05-29 Latest Recovery Status
+
+- Latest pushed commit verified locally: `63c931d79a8a21baed33e95d8c234d97a3557aa2`.
+- GitHub `ci` run `26670773172`: passed.
+- GitHub `Quality Gates` run `26670773161`: passed.
+- Deployed version probe for expected commit `63c931d` returned `deployed_stale_or_unverified`.
+- Public deployed API/Web still reported stale commit `06c50120449525fac149be9a4de6536b7371cc16`.
+- Render Manual Deploy run `26670744158` failed before contacting Render because required GitHub Actions secrets are absent: `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID`.
+- Authorized Chrome Render Dashboard attempt timed out; the failed page was closed.
+- Authorized Chrome GPT Pro project handoff attempt timed out; a cleanup attempt also timed out, so no additional browser loop was attempted.
+- No Render credentials, tokens, cookies, private diagnostics, local filesystem paths, raw payloads, or PII were copied into logs or external prompts.
+
+### Required Safe Next Action
+
+Configure a reliable Render deployment path, then redeploy latest `main` and rerun:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit 63c931d79a8a21baed33e95d8c234d97a3557aa2 --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+If the Chrome extension becomes stable, retry only the project-scoped GPT Pro handoff with a sanitized status summary and no screenshots containing account details.
+
 ## Completed In Latest Loop
 
 - Decluttered unavailable run states on the main analytical pages.

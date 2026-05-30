@@ -1574,3 +1574,52 @@
 - GitHub `Quality Gates` run `26670601897`: passed.
 - Deployed version probe for expected commit `e631843`: `deployed_unavailable`.
 - Render Manual Deploy run `26670744158`: failed preflight before contacting Render because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured as GitHub Actions secrets.
+
+## 2026-05-29 System Health Folding Evidence And Deployment Handoff
+
+### Current HEAD
+
+- Starting HEAD: `e6318430700d14f57dbcf7b7c8073922c834eb48`.
+- Evidence/docs commit: `63c931d79a8a21baed33e95d8c234d97a3557aa2`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Recorded the local System Health folding work, local validation evidence, GitHub CI evidence, and the deployment blocker state in the continuation handoff.
+- Rechecked the public deployed version after the docs commit. Public API/Web still report stale commit `06c50120449525fac149be9a4de6536b7371cc16`, not latest `main`.
+- Retried project-scoped Render Dashboard verification through the authorized Chrome path. The Render Dashboard page timed out and the failed page was closed.
+- Retried the project-scoped GPT Pro handoff through Chrome. The project page timed out through the extension; a cleanup attempt to close the failed tab also timed out, so no further browser loop was attempted to avoid accumulating pages.
+
+### Commands Run
+
+- `git rev-parse HEAD` - confirmed `63c931d79a8a21baed33e95d8c234d97a3557aa2`.
+- `git status --short` - only user-owned untracked files were present.
+- `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --branch main --limit 10 --json ...` - confirmed latest CI/Quality Gates status.
+- `python scripts/check-deployed-version.py --expected-commit 63c931d --timeout 20` - failed with `deployed_stale_or_unverified`; deployed API/Web still reported stale commit `06c50120449525fac149be9a4de6536b7371cc16`.
+
+### Post-Push Evidence
+
+- Docs/evidence commit: `63c931d79a8a21baed33e95d8c234d97a3557aa2`.
+- GitHub `ci` run `26670773172`: passed.
+- GitHub `Quality Gates` run `26670773161`: passed.
+- Render Manual Deploy run `26670744158`: failed before contacting Render because required GitHub Actions secrets are absent.
+
+### Computer Use Actions
+
+- Used only project-scoped Chrome pages for Render and GPT Pro handoff attempts.
+- Render Dashboard attempt result: `render_tab_failed_closed`.
+- GPT Pro project attempt result: extension timeout; cleanup attempt also timed out.
+- No Render credentials, tokens, cookies, private diagnostics, local filesystem paths, raw payloads, or PII were copied into logs or external prompts.
+
+### Deployment Status
+
+- Current status: `render_deploy_blocked_missing_github_actions_secrets_and_chrome_extension_timeout`.
+- No Render deployment is claimed for this gate.
+- Latest local/GitHub commit is verified, but deployed API/Web are stale or unverified.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- Render redeploy still requires either the documented GitHub Actions secrets or a reliable authenticated Render Dashboard session.
+- GPT Pro handoff remains pending because the project page timed out through Chrome automation.
