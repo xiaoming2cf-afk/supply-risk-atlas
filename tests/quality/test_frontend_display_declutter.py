@@ -66,6 +66,7 @@ def test_default_table_titles_are_user_facing_not_component_names() -> None:
 
 def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> None:
     source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    display_source = read("apps/web/src/features/common/displayLabels.ts")
 
     forbidden_primary_titles = [
         'title="top_transmission_paths"',
@@ -110,6 +111,30 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert ">Independent exposure spread<" in source
     assert ">Bottleneck-limited spread<" in source
     assert ">Capped cumulative spread<" in source
+    assert '["noisy_or", "Independent exposure spread"]' in display_source
+    assert '["leontief_bottleneck", "Bottleneck-limited spread"]' in display_source
+    assert '["additive_cap", "Capped cumulative spread"]' in display_source
+    assert "ACRONYMS.get(lower)" in display_source
+    assert "capitalize(lower)" in display_source
+    assert "${result.run_id}; ${result.simulation_version}" not in source
+    assert "${result.run_id}; ${result.optimization_version}" not in source
+    assert "simulation run IDs, and recommended controls" not in source
+    assert "path_id: path.path_id" not in source
+    assert "label: shockSet.shock_set_id" not in source
+    assert "shock_set_id: shockSet.shock_set_id" not in source
+    assert '<span className="row-title">{path.path_id}</span>' not in source
+    assert '<span className="row-title">{shockSet.shock_set_id}</span>' not in source
+    assert "formatInlineDisplayText(path.explanation)" in source
+    assert "formatInlineDisplayText(shockSet.explanation)" in source
+    assert "formatInlineDisplayText(topShockSet?.explanation ?? result.explanation)" in source
+    assert "label: action.action_id" not in source
+    assert "action_id: action.action_id" not in source
+    assert "target_id: action.target_id" not in source
+    assert 'title="Before/after simulation run IDs"' not in source
+    assert 'title="Simulation run counts"' in source
+    assert "formatNodeDisplayRef(action.target_id)" in source
+    assert '"semirisk_reverse_stress_v0.1"' not in read("scripts/browser-smoke.mjs")
+    assert '"semirisk_intervention_optimizer_v0.1"' not in read("scripts/browser-smoke.mjs")
 
 
 def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> None:

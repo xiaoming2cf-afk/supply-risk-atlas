@@ -2764,7 +2764,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
         </Panel>
         {result ? (
           <>
-            <Panel title="Forward stress results" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
+            <Panel title="Forward stress results" subtitle="Latest run summary with audit details collapsed.">
               <div className="metrics-grid">
                 <MetricTile metric={{ id: "expected_loss", label: "expected_loss", value: result.expected_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.expected_loss ?? 0), detail: "normalized loss score" }} />
                 <MetricTile metric={{ id: "p50_loss", label: "p50_loss", value: result.p50_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p50_loss ?? 0), detail: "median normalized loss" }} />
@@ -2824,14 +2824,13 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               />
               <GraphEdgeTable
                 title="Top transmission paths table"
-                rows={result.top_transmission_paths.map((path) => ({
-                  path_id: path.path_id,
-                  nodes: path.node_sequence.join(" -> "),
-                  edges: path.edge_sequence.length,
+                rows={result.top_transmission_paths.map((path, index) => ({
+                  path: `Path ${index + 1}`,
+                  hops: path.edge_sequence.length,
                   loss_contribution: path.loss_contribution,
                   evidence_refs: path.evidence_refs.length,
                 }))}
-                columns={["path_id", "nodes", "edges", "loss_contribution", "evidence_refs"]}
+                columns={["path", "hops", "loss_contribution", "evidence_refs"]}
                 limit={8}
                 metadata={chartMetadataForScenario(result)}
               />
@@ -2867,13 +2866,17 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
             </Panel>
             <Panel title="Transmission paths" subtitle="Evidence-backed one-hop transmission paths from the fixture graph.">
               <ul className="timeline-list">
-                {result.top_transmission_paths.map((path) => (
+                {result.top_transmission_paths.map((path, index) => (
                   <li className="data-row" key={path.path_id}>
                     <div className="row-top">
-                      <span className="row-title">{path.path_id}</span>
+                      <span className="row-title">Path {index + 1}</span>
                       <span className="metric-chip">{path.loss_contribution.toFixed(2)}</span>
                     </div>
-                    <span className="row-subtitle">{path.explanation}</span>
+                    <div className="row-meta">
+                      <span>{path.edge_sequence.length} hop(s)</span>
+                      <span>{path.evidence_refs.length} evidence ref(s)</span>
+                    </div>
+                    <span className="row-subtitle">{formatInlineDisplayText(path.explanation)}</span>
                   </li>
                 ))}
               </ul>
@@ -3085,8 +3088,8 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           <div className="driver-grid">
             <DependencyHeatmap
               title="Top shock set path chart"
-              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet) => ({
-                label: shockSet.shock_set_id,
+              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet, index) => ({
+                label: `Shock set ${index + 1}`,
                 value: Number(shockSet.cvar95 ?? shockSet.expected_loss ?? 0),
               })) : []}
               metadata={result ? chartMetadataForReverse(result) : undefined}
@@ -3094,8 +3097,8 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             />
             <CVaRTailChart
               title="Plausibility cost breakdown"
-              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet) => ({
-                label: shockSet.shock_set_id,
+              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet, index) => ({
+                label: `Shock set ${index + 1}`,
                 value: shockSet.plausibility_cost,
               })) : []}
               metadata={result ? chartMetadataForReverse(result) : undefined}
@@ -3103,8 +3106,8 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             />
             <CriticalInputBottleneckChart
               title="Critical input shock set explanation"
-              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet) => ({
-                label: shockSet.shock_set_id,
+              data={result ? result.ranked_shock_sets.slice(0, 8).map((shockSet, index) => ({
+                label: `Shock set ${index + 1}`,
                 value: shockSet.shocks.length,
               })) : []}
               metadata={result ? chartMetadataForReverse(result) : undefined}
@@ -3113,14 +3116,14 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           </div>
           <ReverseStressResultTable
             title="Ranked shock sets table"
-            rows={result ? result.ranked_shock_sets.map((shockSet) => ({
-              shock_set_id: shockSet.shock_set_id,
+            rows={result ? result.ranked_shock_sets.map((shockSet, index) => ({
+              shock_set: `Shock set ${index + 1}`,
               threshold_met: shockSet.threshold_met,
               expected_loss: shockSet.expected_loss,
               cvar95: shockSet.cvar95,
               plausibility_cost: shockSet.plausibility_cost,
             })) : []}
-            columns={["shock_set_id", "threshold_met", "expected_loss", "cvar95", "plausibility_cost"]}
+            columns={["shock_set", "threshold_met", "expected_loss", "cvar95", "plausibility_cost"]}
             limit={8}
             metadata={result ? chartMetadataForReverse(result) : undefined}
             emptyLabel="No reverse stress result is available yet."
@@ -3128,7 +3131,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
         </Panel>
         {result ? (
           <>
-            <Panel title="Ranked shock sets" subtitle={`${result.run_id}; ${result.simulation_version}.`} translateSubtitle={false}>
+            <Panel title="Ranked shock sets" subtitle="Latest reverse stress summary with audit details collapsed.">
               <div className="field-grid">
                 <Field label="seed" value={result.seed} />
                 <Field label="failure_threshold_input" value={result.failure_threshold_input} />
@@ -3153,16 +3156,16 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
               <div className="driver-grid">
                 <DependencyHeatmap
                   title="Top shock set path chart"
-                  data={result.ranked_shock_sets.slice(0, 8).map((shockSet) => ({
-                    label: shockSet.shock_set_id,
+                  data={result.ranked_shock_sets.slice(0, 8).map((shockSet, index) => ({
+                    label: `Shock set ${index + 1}`,
                     value: Number(shockSet.cvar95 ?? shockSet.expected_loss ?? 0),
                   }))}
                   metadata={chartMetadataForReverse(result)}
                 />
                 <CVaRTailChart
                   title="Plausibility cost breakdown"
-                  data={result.ranked_shock_sets.slice(0, 8).map((shockSet) => ({
-                    label: shockSet.shock_set_id,
+                  data={result.ranked_shock_sets.slice(0, 8).map((shockSet, index) => ({
+                    label: `Shock set ${index + 1}`,
                     value: shockSet.plausibility_cost,
                   }))}
                   metadata={chartMetadataForReverse(result)}
@@ -3170,38 +3173,38 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
               </div>
               <ReverseStressResultTable
                 title="Ranked shock sets table"
-                rows={result.ranked_shock_sets.map((shockSet) => ({
-                  shock_set_id: shockSet.shock_set_id,
+                rows={result.ranked_shock_sets.map((shockSet, index) => ({
+                  shock_set: `Shock set ${index + 1}`,
                   threshold_met: shockSet.threshold_met,
                   expected_loss: shockSet.expected_loss,
                   cvar95: shockSet.cvar95,
                   plausibility_cost: shockSet.plausibility_cost,
                 }))}
-                columns={["shock_set_id", "threshold_met", "expected_loss", "cvar95", "plausibility_cost"]}
+                columns={["shock_set", "threshold_met", "expected_loss", "cvar95", "plausibility_cost"]}
                 limit={8}
                 metadata={chartMetadataForReverse(result)}
               />
               <GraphEdgeTable
                 title="Top shock set paths table"
-                rows={(topShockSet?.affected_paths ?? result.affected_paths).slice(0, 8).map((path) => ({
-                  path_id: path.path_id,
+                rows={(topShockSet?.affected_paths ?? result.affected_paths).slice(0, 8).map((path, index) => ({
+                  path: `Path ${index + 1}`,
                   loss_contribution: path.loss_contribution,
                   node_count: path.node_sequence.length,
                   edge_count: path.edge_sequence.length,
                   evidence_refs: path.evidence_refs.length,
                 }))}
-                columns={["path_id", "loss_contribution", "node_count", "edge_count", "evidence_refs"]}
+                columns={["path", "loss_contribution", "node_count", "edge_count", "evidence_refs"]}
                 limit={8}
                 metadata={chartMetadataForReverse(result)}
               />
             </Panel>
-            <Panel title="Top shock set" subtitle={topShockSet?.explanation ?? result.explanation} translateSubtitle={false}>
+            <Panel title="Top shock set" subtitle={formatInlineDisplayText(topShockSet?.explanation ?? result.explanation)} translateSubtitle={false}>
               {topShockSet ? (
                 <ul className="timeline-list">
-                  {result.ranked_shock_sets.map((shockSet) => (
+                  {result.ranked_shock_sets.map((shockSet, index) => (
                     <li className="data-row" key={shockSet.shock_set_id}>
                       <div className="row-top">
-                        <span className="row-title">{shockSet.shock_set_id}</span>
+                        <span className="row-title">Shock set {index + 1}</span>
                         <span className="metric-chip">{shockSet.threshold_met ? "Threshold met" : "Near threshold"}</span>
                       </div>
                       <div className="row-meta">
@@ -3209,7 +3212,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
                         <span>CVaR 95 {shockSet.cvar95?.toFixed(2) ?? "unavailable"}</span>
                         <span>Plausibility cost {shockSet.plausibility_cost.toFixed(4)}</span>
                       </div>
-                      <span className="row-subtitle">{shockSet.explanation}</span>
+                      <span className="row-subtitle">{formatInlineDisplayText(shockSet.explanation)}</span>
                     </li>
                   ))}
                 </ul>
@@ -3437,8 +3440,8 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
             />
             <RiskRankingBarChart
               title="Action expected effect"
-              data={result ? result.recommended_actions.map((action) => ({
-                label: action.action_id,
+              data={result ? result.recommended_actions.map((action, index) => ({
+                label: `Action ${index + 1}`,
                 value: Number(action.expected_loss_reduction ?? 0),
               })) : []}
               metadata={result ? chartMetadataForOptimization(result) : undefined}
@@ -3452,15 +3455,15 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
             />
           </div>
           <OptimizerActionTable
-            rows={result ? result.recommended_actions.map((action) => ({
-              action_id: action.action_id,
+            rows={result ? result.recommended_actions.map((action, index) => ({
+              action: `Action ${index + 1}`,
               intervention_type: action.intervention_type,
-              target_id: action.target_id,
+              target: formatNodeDisplayRef(action.target_id),
               cost: action.cost,
               expected_effect: action.expected_effect,
               compliance_note: action.compliance_note,
             })) : []}
-            columns={["action_id", "intervention_type", "target_id", "cost", "expected_effect", "compliance_note"]}
+            columns={["action", "intervention_type", "target", "cost", "expected_effect", "compliance_note"]}
             limit={8}
             metadata={result ? chartMetadataForOptimization(result) : undefined}
             emptyLabel="No optimizer actions available yet."
@@ -3468,7 +3471,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
         </Panel>
         {result ? (
           <>
-            <Panel title="Recommended actions" subtitle={`${result.run_id}; ${result.optimization_version}.`} translateSubtitle={false}>
+            <Panel title="Recommended actions" subtitle="Latest optimization summary with audit details collapsed.">
               <div className="metrics-grid">
                 <MetricTile metric={{ id: "before_expected_loss", label: "before_expected_loss", value: result.before_expected_loss ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_expected_loss ?? 0), detail: "baseline normalized loss" }} />
                 <MetricTile metric={{ id: "after_expected_loss", label: "after_expected_loss", value: result.after_expected_loss ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_expected_loss ?? 0), detail: "post-action normalized loss" }} />
@@ -3496,7 +3499,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                 ]}
               />
             </Panel>
-            <Panel title="Optimizer charts and action tables" subtitle="Before/after loss, ROI, simulation run IDs, and recommended controls.">
+            <Panel title="Optimizer charts and action tables" subtitle="Before/after loss, ROI, and recommended controls.">
               <div className="driver-grid">
                 <OptimizerBeforeAfterChart
                   data={[
@@ -3510,50 +3513,49 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                 />
                 <RiskRankingBarChart
                   title="Action expected effect"
-                  data={result.recommended_actions.map((action) => ({
-                    label: action.action_id,
+                  data={result.recommended_actions.map((action, index) => ({
+                    label: `Action ${index + 1}`,
                     value: Number(action.expected_loss_reduction ?? 0),
                   }))}
                   metadata={chartMetadataForOptimization(result)}
                 />
               </div>
               <OptimizerActionTable
-                rows={result.recommended_actions.map((action) => ({
-                  action_id: action.action_id,
+                rows={result.recommended_actions.map((action, index) => ({
+                  action: `Action ${index + 1}`,
                   intervention_type: action.intervention_type,
-                  target_id: action.target_id,
+                  target: formatNodeDisplayRef(action.target_id),
                   cost: action.cost,
                   expected_effect: action.expected_effect,
                   compliance_note: action.compliance_note,
                 }))}
-                columns={["action_id", "intervention_type", "target_id", "cost", "expected_effect", "compliance_note"]}
+                columns={["action", "intervention_type", "target", "cost", "expected_effect", "compliance_note"]}
                 limit={8}
                 metadata={chartMetadataForOptimization(result)}
               />
               <ScenarioRunTable
-                title="Before/after simulation run IDs"
+                title="Simulation run counts"
                 rows={[
                   {
-                    run_id: result.run_id,
                     before_run_count: result.before_simulation_run_ids.length,
                     after_run_count: result.after_simulation_run_ids.length,
                     optimization_context_type: result.optimization_context_type,
                   },
                 ]}
-                columns={["run_id", "before_run_count", "after_run_count", "optimization_context_type"]}
+                columns={["before_run_count", "after_run_count", "optimization_context_type"]}
                 metadata={chartMetadataForOptimization(result)}
               />
             </Panel>
             <Panel title="Action plan" subtitle="Every recommendation includes target, cost, expected effect, constraints, and evidence.">
               <ul className="timeline-list">
-                {result.recommended_actions.map((action) => (
+                {result.recommended_actions.map((action, index) => (
                   <li className="data-row" key={action.action_id}>
                     <div className="row-top">
-                      <span className="row-title">{formatDisplayValue(action.intervention_type)}</span>
+                      <span className="row-title">Action {index + 1}: {formatDisplayValue(action.intervention_type)}</span>
                       <span className="metric-chip">{action.cost}</span>
                     </div>
                     <div className="row-meta">
-                      <span>{action.target_id}</span>
+                      <span>{formatNodeDisplayRef(action.target_id)}</span>
                       <span>Expected effect {action.expected_effect}</span>
                     </div>
                     <span className="row-subtitle">{action.compliance_note}</span>
@@ -4102,6 +4104,28 @@ function formatDashboardWarning(warning: string) {
     return "Research fixture mode";
   }
   return formatDisplayLabel(warning);
+}
+
+function formatInlineDisplayText(value: string) {
+  const replacements: Array<[RegExp, string]> = [
+    [/\bloss_mode=/g, "loss mode "],
+    [/\bpropagation_mode=/g, "propagation mode "],
+    [/\bresilience_integral_loss\b/g, "resilience integral loss"],
+    [/\bauto_semiconductor\b/g, "auto semiconductor propagation"],
+    [/\badditive_cap\b/g, "capped cumulative spread"],
+    [/\bleontief_bottleneck\b/g, "bottleneck-limited spread"],
+    [/\bnoisy_or\b/g, "independent exposure spread"],
+    [/\bparticipates_in\b/g, "participates in"],
+    [/\broutes_through\b/g, "routes through"],
+    [/\bimpacted_by\b/g, "impacted by"],
+    [/\brestricted_by\b/g, "restricted by"],
+  ];
+  return replacements.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), value);
+}
+
+function formatNodeDisplayRef(value: string) {
+  const tail = value.includes(":") ? value.split(":").pop() ?? value : value;
+  return formatDisplayLabel(tail);
 }
 
 function chartMetadataForRisk(risk: SemiriskEntityRiskScore) {

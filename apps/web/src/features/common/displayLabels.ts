@@ -3,6 +3,7 @@ const ACRONYMS = new Map<string, string>([
   ["cvar", "CVaR"],
   ["cvar95", "CVaR 95"],
   ["eda", "EDA"],
+  ["euv", "EUV"],
   ["hhi", "HHI"],
   ["id", "ID"],
   ["ip", "IP"],
@@ -25,6 +26,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["baseline_comparison", "Baseline comparison"],
   ["baseline_run_ids", "Baseline run IDs"],
   ["beam_width", "Beam width"],
+  ["additive_cap", "Capped cumulative spread"],
   ["auto_semiconductor", "Auto semiconductor propagation"],
   ["before_cvar95", "Before CVaR 95"],
   ["before_expected_loss", "Before expected loss"],
@@ -84,6 +86,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["latest_expected_loss", "Latest expected loss"],
   ["latest_run_id", "Latest run ID"],
   ["likelihood_impact_vulnerability_framework", "Likelihood x impact x vulnerability framework"],
+  ["leontief_bottleneck", "Bottleneck-limited spread"],
   ["literature_proxy_not_calibrated", "Literature proxy not calibrated"],
   ["loss_contribution", "Loss contribution"],
   ["loss_mode", "Loss mode"],
@@ -94,6 +97,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["nodeCount", "Node count"],
   ["node_id", "Node ID"],
   ["node_type", "Node type"],
+  ["noisy_or", "Independent exposure spread"],
   ["normalized_threshold", "Normalized threshold"],
   ["optimization_context_type", "Optimization context"],
   ["optimization_version", "Optimization version"],
@@ -160,7 +164,13 @@ export function formatDisplayLabel(label: string) {
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
 
-  if (normalized === trimmed && !trimmed.includes(" ")) return trimmed;
+  if (normalized === trimmed && !trimmed.includes(" ")) {
+    const lower = trimmed.toLowerCase();
+    const acronym = ACRONYMS.get(lower);
+    if (acronym) return acronym;
+    if (/^[a-z][a-z0-9]*$/.test(trimmed)) return capitalize(lower);
+    return trimmed;
+  }
 
   return normalized
     .split(/\s+/)

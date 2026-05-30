@@ -1901,3 +1901,48 @@
 
 - This gate improves local form copy only; it does not change the underlying simulation algorithms or deployed Render state.
 - Local Next dev startup still emitted a non-blocking cache persistence permission warning; smoke passed and no product behavior regression was observed.
+
+## 2026-05-30 Run Result ID Declutter
+
+### Current HEAD
+
+- Starting HEAD: `c0aeac7d8d00fb98095252eb73ac0cd26bbbf533`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Forward stress transmission lists no longer show raw `path:edge:...` identifiers as primary row titles.
+- Reverse stress charts and tables no longer use raw `shock_set_id` values as chart labels or primary table labels.
+- Optimizer charts and tables no longer use raw `action_id`, `target_id`, or run IDs as default display labels.
+- Result subtitles no longer expose run IDs or model version strings; these remain in collapsed audit details.
+- Inline scenario explanations now translate internal tokens such as `loss_mode=resilience_integral_loss`, `propagation_mode=auto_semiconductor`, `additive_cap`, and `leontief_bottleneck` into user-facing language.
+- Simple table headers now capitalize through `formatDisplayLabel`, so generic columns such as `path`, `method`, and `cvar95` render as display labels.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks after updating smoke expectations for collapsed model version details.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'Noisy OR|Leontief bottleneck|Additive cap|Affected mean legacy|Max legacy|semirisk_fixture_metadata|graphVersion=|sourceManifestId=|\[object Object\]|path:edge:|action:increase_inventory_buffer|semirisk_reverse_stress_v0.1|semirisk_intervention_optimizer_v0.1'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the missing Render secrets or manual Render redeploy path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- Raw IDs are still preserved in API payloads, audit details, and export data for traceability; this gate changes only default page presentation.
+- Local Next dev startup may still emit a non-blocking cache persistence permission warning; smoke passed and no product behavior regression was observed.

@@ -827,8 +827,9 @@ async function main() {
       "Resilience integral loss",
       "Propagation mode",
       "Auto semiconductor propagation",
+      "Independent exposure spread",
+      "Bottleneck-limited spread",
       "Seed",
-      "semirisk_forward_mc_v0.1",
       "Research fixture mode",
     ];
     const shockResultState = await waitFor(
@@ -891,7 +892,8 @@ async function main() {
       "Loss mode",
       "Propagation mode",
       "Baseline comparison",
-      "semirisk_reverse_stress_v0.1",
+      "Bottleneck-limited spread",
+      "Independent exposure spread",
       "Research fixture mode",
     ];
     const reverseResultState = await waitFor(
@@ -952,7 +954,7 @@ async function main() {
       "OPTIMIZATION CONTEXT",
       "SCENARIO COUNT",
       "Baseline comparison",
-      "semirisk_intervention_optimizer_v0.1",
+      "Simulation run counts",
       "Research fixture mode",
     ];
     const optimizerResultState = await waitFor(
