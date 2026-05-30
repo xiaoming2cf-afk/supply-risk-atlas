@@ -1566,3 +1566,11 @@
 
 - This gate improves local page clarity and local API/proxy stability; deployed Render services still require the safe deployment path to be restored.
 - GPT Pro handoff still requires a stable project-scoped browser/Chrome path.
+
+### Post-Push Evidence
+
+- Implementation commit: `e6318430700d14f57dbcf7b7c8073922c834eb48`.
+- GitHub `ci` run `26670601896`: passed.
+- GitHub `Quality Gates` run `26670601897`: passed.
+- Deployed version probe for expected commit `e631843`: `deployed_unavailable`.
+- Render Manual Deploy run `26670744158`: failed preflight before contacting Render because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured as GitHub Actions secrets.

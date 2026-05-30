@@ -1,5 +1,28 @@
 # Codex Continuation Request
 
+## 2026-05-29 System Health Folding Update
+
+- Latest implementation commit: `e6318430700d14f57dbcf7b7c8073922c834eb48`.
+- Branch: `main`.
+- GitHub `ci`: passed for `e6318430700d14f57dbcf7b7c8073922c834eb48` in run `26670601896`.
+- GitHub `Quality Gates`: passed for `e6318430700d14f57dbcf7b7c8073922c834eb48` in run `26670601897`.
+- Local validation passed:
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_no_forbidden_geography_labels.py -q`
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` with 63 passing checks
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest -q`
+- Product hardening completed in this update:
+  - System Health now keeps readiness and coverage summaries visible while folding heavy source registry rows, graph type counts, data catalog, entity resolution, evidence lineage, and runtime logs behind audit details.
+  - Local browser reads prefer same-origin `/api/v1` on localhost to avoid direct API CORS retry delays.
+  - Next proxy upstream timeout is bounded at 30 seconds; POST/write proxy calls still use one upstream attempt and are not retried.
+- Deployment status:
+  - Deployed version probe for `e631843` returned `deployed_unavailable`.
+  - Render Manual Deploy run `26670744158` failed before contacting Render because required GitHub Actions secrets are absent: `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`.
+- Required next action remains: configure a safe Render deployment path, then redeploy latest `main` and run deployed version/smoke checks.
+
 ## 2026-05-29 Latest Continuation Update
 
 - Latest commit: `ba5661f4f1e3e0ad0aa5c11b8307ac308081e72f`.
