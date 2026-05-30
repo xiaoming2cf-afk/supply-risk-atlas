@@ -1,5 +1,51 @@
 # Codex Continuation Request
 
+## 2026-05-30 Inspector Source Label Declutter And Deployment Handoff
+
+- Latest pushed commit: `f2a5a6f31f11d26c541993d2a456148c21509a59`.
+- Branch: `main`.
+- Commit purpose: finish another presentation-layer declutter pass so Graph Explorer inspector, stage graph views, and System Health audit tables render user-facing source/node/evidence labels instead of raw IDs in primary UI.
+- GitHub `ci`: passed for `f2a5a6f31f11d26c541993d2a456148c21509a59` in run `26682052822`.
+- GitHub `Quality Gates`: passed for `f2a5a6f31f11d26c541993d2a456148c21509a59` in run `26682052813`.
+- Local validation passed:
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web` with local API/Web, 63 checks.
+- Browser smoke report scan found no primary-page matches for:
+  - `data_mode:`
+  - `graph_version:`
+  - `source_manifest_id:`
+  - `transport_attempts:`
+  - `failed_endpoint:`
+  - `not_production_ready: true`
+  - `company:tsmc`
+  - raw public source IDs
+  - `evidence_context_link`
+  - raw relationship class constants.
+- Deployment probe:
+  - `python scripts/check-deployed-version.py --expected-commit f2a5a6f --timeout 10 --attempts 1`
+  - Result: `deployed_unavailable`.
+  - API, Web build-info, Web proxy, and Web HTML were unavailable in this automation run.
+- Render / Computer Use status:
+  - No Render redeploy is claimed for this update.
+  - Previous project-scoped Render Dashboard access timed out through the browser automation path.
+  - Previous GPT Pro project access reached a login page rather than a usable project prompt box.
+  - No credentials, cookies, tokens, account details, raw payloads, private diagnostics, local filesystem paths, or PII were copied, entered, stored, screenshotted, or sent.
+
+### Required Safe Next Action
+
+Restore a safe deployment path for commit `f2a5a6f31f11d26c541993d2a456148c21509a59`: either complete Render login manually in the browser or configure a non-chat Render API/MCP path. Then redeploy API/Web from latest `main`, verify `/api/v1/version`, and run:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit f2a5a6f --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+After deployment is current, send GPT Pro only a sanitized status summary and screenshots that do not expose account details, secrets, private URLs, cookies, tokens, raw payloads, local filesystem paths, or PII.
+
 ## 2026-05-30 Latest Page Declutter And Deployment Handoff
 
 - Latest pushed commit: `eb5e9afbb7bb7ab575d45c16c641858b04926690`.
