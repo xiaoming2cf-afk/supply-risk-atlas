@@ -44,25 +44,28 @@ export function GraphLegend({ metadata }: { metadata: GraphVersionMetadata }) {
         warnings={metadata.warnings}
       />
       <ul className="evidence-list compact">
-        {metadata.warnings.length ? (
-          metadata.warnings.map((warning) => (
-            <li key={warning}>
-              <StatusPill status="degraded" /> {formatPublicWarning(warning)}
-            </li>
-          ))
-        ) : (
-          <li>
-            <StatusPill status="degraded" /> Research fixture mode
+        {visibleWarningLabels(metadata.warnings).map((label) => (
+          <li key={label}>
+            <StatusPill status="degraded" /> {label}
           </li>
-        )}
+        ))}
       </ul>
     </div>
   );
 }
 
+function visibleWarningLabels(warnings: string[]) {
+  const labels = warnings.map(formatPublicWarning);
+  if (labels.length === 0) labels.push("Research fixture mode");
+  return Array.from(new Set(labels));
+}
+
 function formatPublicWarning(warning: string) {
-  if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) {
-    return "Research fixture mode";
+  if (warning.includes("semirisk_fixture_metadata")) return "Fixture graph metadata available";
+  if (warning.includes("fixture_source_freshness_degraded")) return "Some fixture source freshness is limited";
+  if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) return "Research fixture mode";
+  if (warning.includes("relationship_endpoint_unavailable")) {
+    return "Backend relationship data unavailable; authoritative rows are hidden.";
   }
-  return warning;
+  return "Public evidence warning";
 }

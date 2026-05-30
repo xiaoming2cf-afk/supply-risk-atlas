@@ -1725,3 +1725,45 @@
 
 - This gate improves local Graph Explorer and table display quality only; it does not resolve the Render credential/Chrome extension deployment blocker.
 - GPT Pro handoff remains pending a stable project-scoped Chrome path.
+
+## 2026-05-29 Graph Legend Warning Declutter
+
+### Current HEAD
+
+- Starting HEAD: `d3e10d6fba82a494ccfd43a99f4cb1bdd71b0cea`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Graph Explorer legend no longer renders raw metadata warnings such as `semirisk_fixture_metadata: graphVersion=...; sourceManifestId=...` in the primary visible warning list.
+- Detailed warning strings remain available through collapsed `Data audit details`.
+- Primary warning rows are now deduplicated user-facing labels: `Research fixture mode`, `Fixture graph metadata available`, `Some fixture source freshness is limited`, or a generic public evidence warning.
+- Added a quality guard to prevent `GraphLegend` from directly mapping raw metadata warnings back into primary page text.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphLegend.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'semirisk_fixture_metadata|graphVersion=|sourceManifestId=|\[object Object\]'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the documented Render deployment path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate improves local Graph Explorer warning readability only; it does not resolve the Render credential/Chrome extension deployment blocker.
+- GPT Pro handoff remains pending a stable project-scoped Chrome path.

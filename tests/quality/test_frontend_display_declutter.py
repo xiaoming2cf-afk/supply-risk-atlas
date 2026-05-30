@@ -185,3 +185,14 @@ def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
         assert needle not in source
     assert "L0 Policy / macro" in source
     assert "L11 Compliance" in source
+
+
+def test_graph_legend_does_not_render_raw_warning_metadata_in_primary_list() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphLegend.tsx")
+
+    assert "visibleWarningLabels(metadata.warnings)" in source
+    assert "metadata.warnings.map((warning)" not in source
+    assert 'return warning' not in source
+    assert 'return "Public evidence warning"' in source
+    assert "semirisk_fixture_metadata" in source
+    assert "Fixture graph metadata available" in source
