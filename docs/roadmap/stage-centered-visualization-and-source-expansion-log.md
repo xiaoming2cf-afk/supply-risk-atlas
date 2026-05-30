@@ -2464,7 +2464,8 @@
 - Deployed smoke then exposed an intermittent browser write-path failure: Entity Risk reads could pass, but Shock Simulator POST could still show `Failed to fetch` in headless Chrome.
 - Direct deployed API POST probes succeeded, and manual Chrome verification on the deployed Shock Simulator page produced Expected/P50/CVaR results, so the remaining failure was isolated to deployed browser write transport stability under smoke load.
 - Updated deployed Web write base to use the same-origin `/api/v1` proxy. The proxy forwards POST with a single upstream attempt, so non-idempotent writes are still not retried through fallback paths.
-- Reduced deployed browser startup pressure by changing the initial dashboard hydration requests from all-at-once to sequential execution, so active page risk/simulation requests are less likely to be trapped behind a Render free-tier connection queue during smoke.
+- Reduced deployed browser startup pressure by changing dashboard hydration from all-at-once full-dashboard loading to page-scoped sequential requests. Entity Risk now loads only its entity overview plus its risk endpoints, graph pages load graph/path data, and simulation/report pages load only the global metadata they need.
+- Merged page-scoped dashboard results instead of replacing the full result map, preventing late responses from a previous page from clearing the current page's active metadata state during smoke navigation.
 - Kept all API envelopes, report metadata, source refs, graph/source/data-mode metadata, and no-raw-payload guarantees unchanged.
 
 ### Files Changed

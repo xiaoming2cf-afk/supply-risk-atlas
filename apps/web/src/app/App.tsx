@@ -129,6 +129,31 @@ async function runDashboardRequestsSequentially(requests: DashboardRequest[]): P
   return settledResults;
 }
 
+function dashboardRequestsForPage(pageId: DashboardPageId, apiClient: ReturnType<typeof createSupplyRiskApiClient>): DashboardRequest[] {
+  if (pageId === "system-health-center") {
+    return [["system-health-center", () => apiClient.getSystemHealthCenter() as Promise<ApiResult<unknown>>]];
+  }
+  if (pageId === "global-risk-cockpit") {
+    return [["global-risk-cockpit", () => apiClient.getGlobalRiskCockpit() as Promise<ApiResult<unknown>>]];
+  }
+  if (pageId === "graph-explorer" || pageId === "path-analysis" || pageId === "country-lens") {
+    return [
+      ["graph-explorer", () => apiClient.getGraphExplorer() as Promise<ApiResult<unknown>>],
+      ["path-explainer", () => apiClient.getPathExplainer() as Promise<ApiResult<unknown>>],
+    ];
+  }
+  if (pageId === "company-risk-360") {
+    return [["company-risk-360", () => apiClient.getCompanyRisk360() as Promise<ApiResult<unknown>>]];
+  }
+  if (pageId === "prediction-center") {
+    return [["prediction-center", () => apiClient.getPredictionCenter() as Promise<ApiResult<unknown>>]];
+  }
+  if (pageId === "causal-evidence-board") {
+    return [["causal-evidence-board", () => apiClient.getCausalEvidenceBoard() as Promise<ApiResult<unknown>>]];
+  }
+  return [["global-risk-cockpit", () => apiClient.getGlobalRiskCockpit() as Promise<ApiResult<unknown>>]];
+}
+
 function useHashPage() {
   const [pageId, setPageIdState] = useState<DashboardPageId>("system-health-center");
 
@@ -213,18 +238,10 @@ export function App() {
     }
   };
 
-  const refreshData = useCallback(async () => {
+  const refreshData = useCallback(async (targetPageId: DashboardPageId) => {
     setIsRefreshing(true);
     setError(null);
-    const requests: DashboardRequest[] = [
-      ["system-health-center", () => apiClient.getSystemHealthCenter() as Promise<ApiResult<unknown>>],
-      ["global-risk-cockpit", () => apiClient.getGlobalRiskCockpit() as Promise<ApiResult<unknown>>],
-      ["graph-explorer", () => apiClient.getGraphExplorer() as Promise<ApiResult<unknown>>],
-      ["company-risk-360", () => apiClient.getCompanyRisk360() as Promise<ApiResult<unknown>>],
-      ["prediction-center", () => apiClient.getPredictionCenter() as Promise<ApiResult<unknown>>],
-      ["path-explainer", () => apiClient.getPathExplainer() as Promise<ApiResult<unknown>>],
-      ["causal-evidence-board", () => apiClient.getCausalEvidenceBoard() as Promise<ApiResult<unknown>>]
-    ];
+    const requests = dashboardRequestsForPage(targetPageId, apiClient);
 
     try {
       const settledResults = await runDashboardRequestsSequentially(requests);
@@ -254,7 +271,7 @@ export function App() {
       const causalEvidenceBoardResult =
         nextResults["causal-evidence-board"] as ApiResult<SupplyRiskDashboardData["causalEvidenceBoard"]> | undefined;
 
-      setDashboardResults(nextResults);
+      setDashboardResults((current) => ({ ...current, ...nextResults }));
       setData((current) => {
         const nextData: DashboardDataState = { ...(current ?? {}) };
         if (hasVerifiedHealthResult(systemHealthCenterResult)) nextData.systemHealthCenter = systemHealthCenterResult.data;
@@ -288,8 +305,8 @@ export function App() {
 
   useEffect(() => {
     if (!hasResolvedRuntimeHostname) return;
-    void refreshData();
-  }, [configuredApiBaseUrl, hasResolvedRuntimeHostname, refreshData]);
+    void refreshData(pageId);
+  }, [configuredApiBaseUrl, hasResolvedRuntimeHostname, pageId, refreshData]);
 
   useEffect(() => {
     document.documentElement.lang = language === "zh" ? "zh-CN" : language;
@@ -374,7 +391,7 @@ export function App() {
             <p className="page-description">{error ? t(error) : activePage.description}</p>
           </div>
           <div className="top-actions">
-            <Button disabled={isRefreshing} icon={RefreshCw} onClick={() => void refreshData()} variant="primary">
+            <Button disabled={isRefreshing} icon={RefreshCw} onClick={() => void refreshData(pageId)} variant="primary">
               {isRefreshing ? "Refreshing" : "Refresh"}
             </Button>
           </div>

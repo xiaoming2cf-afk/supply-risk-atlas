@@ -21,6 +21,9 @@ def test_deployed_web_wires_same_origin_read_and_write_paths_without_post_retrie
     assert "writeBaseUrl: configuredApiWriteBaseUrl" in source
     assert "requestTimeoutMs: configuredApiRequestTimeoutMs" in source
     assert "runDashboardRequestsSequentially" in source
+    assert "dashboardRequestsForPage" in source
+    assert "void refreshData(pageId)" in source
+    assert "setDashboardResults((current) => ({ ...current, ...nextResults }))" in source
     assert "Promise.allSettled" not in source
 
 
