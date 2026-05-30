@@ -2683,7 +2683,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               <option value="graph_weighted_loss">Graph-weighted loss</option>
               <option value="demand_fulfillment_loss">Demand fulfillment loss</option>
               <option value="capacity_functionality_loss">Capacity functionality loss</option>
-              <option value="affected_mean">Affected mean legacy</option>
+              <option value="affected_mean">Affected mean</option>
             </select>
           </label>
           <label className="form-control">
@@ -2693,7 +2693,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               <option value="noisy_or">Noisy OR</option>
               <option value="leontief_bottleneck">Leontief bottleneck</option>
               <option value="additive_cap">Additive cap</option>
-              <option value="max">Max legacy</option>
+              <option value="max">Maximum propagation</option>
             </select>
           </label>
         </div>

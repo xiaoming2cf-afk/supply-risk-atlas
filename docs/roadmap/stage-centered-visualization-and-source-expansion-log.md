@@ -1767,3 +1767,47 @@
 
 - This gate improves local Graph Explorer warning readability only; it does not resolve the Render credential/Chrome extension deployment blocker.
 - GPT Pro handoff remains pending a stable project-scoped Chrome path.
+
+## 2026-05-29 Scenario Option Label Declutter
+
+### Current HEAD
+
+- Starting HEAD: `91428abcfdc4dde2f4c8a9abfbfe4387ba8b561b`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Shock Simulator no longer exposes legacy implementation wording in the visible loss/propagation option labels.
+- `Affected mean legacy` now renders as `Affected mean`.
+- `Max legacy` now renders as `Maximum propagation`.
+- Added a frontend display quality guard so the legacy labels cannot return to primary user-facing page copy.
+- Browser smoke report was checked for old legacy labels and previously cleaned raw metadata/diagnostic strings.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed after rerun with a longer timeout; the first run reached 100% output but was cut off by the command timeout.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'Affected mean legacy|Max legacy|semirisk_fixture_metadata|graphVersion=|sourceManifestId=|\[object Object\]|transport_attempts:|failed_endpoint:'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the documented Render deployment path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate only removes two remaining user-visible legacy labels from the local Shock Simulator UI.
+- Local Next dev startup still emitted a non-blocking cache persistence permission warning; smoke passed and no product behavior regression was observed.
+- GPT Pro handoff and Render redeploy remain pending a stable project-scoped Chrome/Render path.
