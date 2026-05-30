@@ -2630,3 +2630,43 @@
 
 - Render free-tier throttling can still exhaust all bounded read attempts; pages must continue to show controlled degraded diagnostics rather than fabricate entity risk rows.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Risk Endpoint Fixture Cache Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `e626cf6bc5872edf09546df7a984cb955c8c5856`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` and `Quality Gates` passed for `e626cf6`.
+- Render API/Web were redeployed from `e626cf6`, and the full commit version probe reported `deployed_verified`.
+- Deployed smoke still observed Entity Risk degradation under repeated smoke reads because `/risk/entities` and `/risk/portfolio` could time out after exhausting bounded transport attempts.
+- Added API-side in-process LRU caching for deterministic fixture risk entity and portfolio payloads. Cached payloads are deep-copied before envelope creation so request handlers cannot mutate the cached source.
+- This reduces repeated CPU/query pressure on Render without adding live fetch, production data, raw payload exposure, or production-readiness claims.
+
+### Files Changed
+
+- `services/api/services/risk_service.py`
+- `tests/api/test_semirisk_risk_score.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_semirisk_risk_score.py tests/quality/test_deployed_api_transport_fallback.py -q` - passed, 8 tests.
+- `python -m pytest tests/quality -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- This risk endpoint cache patch is local until committed, pushed, and redeployed.
+
+### Known Limitations
+
+- The cache covers deterministic fixture/promoted risk score payloads only. It is not production telemetry and does not enable live connector fetch.
+- Render free-tier throttling can still happen during cold start or concurrent smoke loops; the UI keeps controlled degraded states with diagnostics.

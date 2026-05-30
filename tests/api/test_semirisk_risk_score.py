@@ -9,6 +9,7 @@ import pytest
 
 from services.api import main
 from services.api.dev_server import Handler
+from services.api.services import risk_service
 
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
@@ -82,6 +83,25 @@ def test_semirisk_portfolio_route_is_ranked_and_fixture_labeled() -> None:
     assert payload["data"]["feature_version"] == "semirisk_risk_score_likelihood_impact_v0.1"
     assert all(row["scoring_method"] == "likelihood_impact_vulnerability_framework" for row in scores)
     _assert_no_raw_payload(payload)
+
+
+def test_semirisk_risk_routes_reuse_cached_fixture_scores_without_mutating_payloads() -> None:
+    risk_service._cached_entity_risk_payload.cache_clear()
+    risk_service._cached_risk_portfolio_payload.cache_clear()
+
+    first = main.route_semirisk_entity_risk("company:tsmc", request_id="req_first")
+    first["data"]["score"] = -1
+    second = main.route_semirisk_entity_risk("company:tsmc", request_id="req_second")
+    portfolio_first = main.route_semirisk_risk_portfolio(node_type="company", limit=3)
+    portfolio_first["data"]["scores"][0]["score"] = -1
+    portfolio_second = main.route_semirisk_risk_portfolio(node_type="company", limit=3)
+
+    assert second["data"]["score"] >= 0
+    assert portfolio_second["data"]["scores"][0]["score"] >= 0
+    assert risk_service._cached_entity_risk_payload.cache_info().hits >= 1
+    assert risk_service._cached_risk_portfolio_payload.cache_info().hits >= 1
+    _assert_no_raw_payload(second)
+    _assert_no_raw_payload(portfolio_second)
 
 
 def test_semirisk_missing_entity_is_controlled_error() -> None:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+from functools import lru_cache
 from typing import Any
 
 from ml.risk_scoring.semirisk_score import (
@@ -12,6 +14,19 @@ from ml.risk_scoring.semirisk_score import (
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from services.api.services.common import semiconductor_metadata
 from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
+
+
+@lru_cache(maxsize=128)
+def _cached_entity_risk_payload(entity_id: str) -> dict[str, Any]:
+    snapshot = fixture_snapshot_for_services()
+    return score_semirisk_entity(entity_id, snapshot=snapshot)
+
+
+@lru_cache(maxsize=64)
+def _cached_risk_portfolio_payload(node_type_key: str, limit: int) -> dict[str, Any]:
+    snapshot = fixture_snapshot_for_services()
+    node_type = None if node_type_key == "__all__" else node_type_key
+    return rank_risk_portfolio(snapshot=snapshot, node_type=node_type, limit=limit)
 
 
 def route_semirisk_entity_risk(
@@ -29,7 +44,7 @@ def route_semirisk_entity_risk(
             warnings=[f"fixture_graph_build_failed:{type(exc).__name__}"],
         )
     try:
-        payload = score_semirisk_entity(entity_id, snapshot=snapshot)
+        payload = deepcopy(_cached_entity_risk_payload(entity_id))
     except RiskScoreUnavailable as exc:
         return make_error_envelope(
             "semirisk_risk_score_unavailable",
@@ -57,7 +72,8 @@ def route_semirisk_risk_portfolio(
 ) -> dict[str, Any]:
     try:
         snapshot = fixture_snapshot_for_services()
-        payload = rank_risk_portfolio(snapshot=snapshot, node_type=node_type, limit=limit)
+        node_type_key = node_type or "__all__"
+        payload = deepcopy(_cached_risk_portfolio_payload(node_type_key, limit))
     except Exception as exc:
         return make_error_envelope(
             "semirisk_risk_portfolio_unavailable",
