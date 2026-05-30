@@ -72,6 +72,9 @@ function resolveApiBaseUrl(hostname: string | null) {
   if (hostname === "127.0.0.1" || hostname === "localhost") {
     return "/api/v1";
   }
+  if (hostname === deploymentTarget) {
+    return "/api/v1";
+  }
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
   if (configured) {
     return configured;
@@ -100,7 +103,7 @@ function resolveApiReadFallbackBaseUrl(hostname: string | null, primaryBaseUrl: 
 }
 
 function resolveApiRequestTimeoutMs(hostname: string | null) {
-  if (hostname === deploymentTarget) return 25000;
+  if (hostname === deploymentTarget) return 45000;
   return 60000;
 }
 

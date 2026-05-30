@@ -9,11 +9,11 @@ CLIENT_SOURCE = REPO_ROOT / "packages" / "api-client" / "src" / "dashboard.ts"
 def test_deployed_web_wires_same_origin_read_fallback_without_changing_write_base() -> None:
     source = APP_SOURCE.read_text(encoding="utf-8")
 
+    assert "if (hostname === deploymentTarget) {\n    return \"/api/v1\";\n  }" in source
     assert "function resolveApiReadFallbackBaseUrl" in source
     assert 'const sameOriginProxyBaseUrl = "/api/v1";' in source
-    assert "if (hostname === deploymentTarget) return sameOriginProxyBaseUrl;" in source
     assert "function resolveApiRequestTimeoutMs" in source
-    assert "if (hostname === deploymentTarget) return 25000;" in source
+    assert "if (hostname === deploymentTarget) return 45000;" in source
     assert "readFallbackBaseUrl: configuredApiReadFallbackBaseUrl" in source
     assert "writeBaseUrl: configuredApiWriteBaseUrl" in source
     assert "requestTimeoutMs: configuredApiRequestTimeoutMs" in source

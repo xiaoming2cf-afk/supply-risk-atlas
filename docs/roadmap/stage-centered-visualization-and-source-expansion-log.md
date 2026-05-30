@@ -2366,3 +2366,44 @@
 
 - Render cold-start behavior can still be variable; the UI remains bounded and diagnostic-bearing instead of fabricating scores.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Deployed Same-Origin Read Path Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `69f1381cb1de4c09df9aae350437f4c650fc4954`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Deployed browser reads now use the same-origin Web `/api/v1` proxy as the primary read path, avoiding headless/deployed-browser direct API stalls that left Entity Risk in a pending state.
+- Deployed write calls remain direct to `https://supply-risk-atlas-api.onrender.com/api/v1` and still do not retry non-idempotent writes through the proxy.
+- Deployed browser request timeout is now 45 seconds so the Web proxy can complete its bounded upstream warm-up retries before the browser aborts the read.
+- The API client still keeps bounded retries, sanitized diagnostics, and no raw payload exposure.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- This stabilization is local until committed, pushed, and redeployed after this section.
+- Previous deployed smoke for `69f1381` still showed Entity Risk timing out on direct API reads after 25 seconds, which motivated the same-origin primary read path.
+
+### Known Limitations
+
+- The same-origin proxy still depends on the Render API service; cold starts can degrade temporarily, but they now go through a single bounded retry policy with user-facing diagnostics.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
