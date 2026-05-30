@@ -1667,6 +1667,14 @@
 - Public deployed API/Web remain stale or unverified until the documented Render deployment path is restored.
 - The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
 
+### Post-Push Evidence
+
+- Implementation commit: `cce30c21749101f439ae51c59fa9050ddf81a0f1`.
+- GitHub `ci` run `26671602820`: passed.
+- GitHub `Quality Gates` run `26671602832`: passed.
+- Deployed version probe for expected commit `cce30c2`: `deployed_stale_or_unverified`.
+- Public Web build metadata and Web proxy still reported stale commit `06c50120449525fac149be9a4de6536b7371cc16`; API probe was unavailable during this check.
+
 ### Known Limitations
 
 - This gate improves local UI clarity only; it does not resolve the Render credential/Chrome extension deployment blocker.
