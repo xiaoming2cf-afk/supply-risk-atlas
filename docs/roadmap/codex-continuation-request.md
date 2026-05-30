@@ -1,5 +1,60 @@
 # Codex Continuation Request
 
+## 2026-05-30 Latest Page Declutter And Deployment Handoff
+
+- Latest pushed commit: `eb5e9afbb7bb7ab575d45c16c641858b04926690`.
+- Branch: `main`.
+- Commit purpose: declutter primary page identifiers and move internal IDs/version strings from main page content into collapsed audit details.
+- GitHub `ci`: passed for `eb5e9afbb7bb7ab575d45c16c641858b04926690` in run `26680179244`.
+- GitHub `Quality Gates`: passed for `eb5e9afbb7bb7ab575d45c16c641858b04926690` in run `26680179245`.
+- Local validation passed:
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web` with local API/Web.
+- Browser smoke report scan found no primary-page matches for:
+  - `run_id:`
+  - `company:tsmc`
+  - `graphVersion=`
+  - `sourceManifestId=`
+  - `semirisk_investigation_report_v0.1`
+  - `semirisk_reverse_stress_v0.1`
+  - `semirisk_intervention_optimizer_v0.1`
+  - `[object Object]`
+  - `path:edge:`
+  - `action:increase_inventory_buffer`
+  - `data_mode:`
+  - `graph_version:`
+  - `source_manifest_id:`
+  - `transport_attempts:`
+  - `failed_endpoint:`
+  - `not_production_ready: true`
+- Deployment probe:
+  - `python scripts/check-deployed-version.py --expected-commit eb5e9afbb7bb7ab575d45c16c641858b04926690 --timeout 5 --attempts 1`
+  - Result: `deployed_stale_or_unverified`.
+  - API, Web build-info, and Web proxy still reported stale commit `06c50120449525fac149be9a4de6536b7371cc16`.
+  - Web HTML did not expose the expected commit.
+- Render status:
+  - No Render redeploy is claimed for this update.
+  - Previous Render Manual Deploy workflow failed before contacting Render because required GitHub Actions secrets were absent: `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`.
+  - No secrets, cookies, token values, private diagnostics, raw payloads, local filesystem paths, or PII were copied into this document.
+- Computer Use / GPT Pro status:
+  - No new Chrome/Computer Use action was completed in this update.
+  - Previous project-scoped Render/GPT Pro Chrome attempts timed out through the extension; retry only when Chrome control is stable, and close failed pages after one failed attempt.
+
+### Required Safe Next Action
+
+Configure or complete a safe Render deployment path for `eb5e9afbb7bb7ab575d45c16c641858b04926690`, then rerun:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit eb5e9afbb7bb7ab575d45c16c641858b04926690 --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+After deployed API/Web report the latest commit, send GPT Pro a sanitized status summary and project-page screenshots only if they do not expose account details, secrets, private URLs, cookies, tokens, raw payloads, or PII.
+
 ## 2026-05-29 System Health Folding Update
 
 - Latest implementation commit: `e6318430700d14f57dbcf7b7c8073922c834eb48`.
