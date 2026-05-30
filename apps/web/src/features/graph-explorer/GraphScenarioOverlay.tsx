@@ -1,4 +1,5 @@
 import type { GraphScenarioOverlayData } from "@supply-risk/shared-types";
+import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphScenarioOverlay({
@@ -15,9 +16,14 @@ export function GraphScenarioOverlay({
       <div className="section-kicker">Scenario overlay mode</div>
       <p className="inspector-note">Scenario overlay renders only a selected run. It never displays all runs by default.</p>
       <div className="inspector-grid">
-        <span>run_id: {overlay?.run_id ?? "none_selected"}</span>
+        <span>Selected run: {overlay?.run_id ? "available" : "none selected"}</span>
         <span>affected nodes: {affectedNodes.length || view.visibleNodes.length}</span>
       </div>
+      <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+      <AuditDetails
+        items={[{ label: "run_id", value: overlay?.run_id }]}
+        warnings={overlay?.warnings}
+      />
     </div>
   );
 }

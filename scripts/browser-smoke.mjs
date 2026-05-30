@@ -753,7 +753,7 @@ async function main() {
 
     await navigate(client, `${webUrl}#company-risk-360`);
     const riskEvidenceTerms = [
-      "company:tsmc",
+      "TSMC",
       "Likelihood x impact x vulnerability framework",
       "Research fixture mode",
       "LIKELIHOOD",
@@ -1005,9 +1005,7 @@ async function main() {
       runButton?.click();
     })()`);
     const reportResultTerms = [
-      "REPORT ID",
-      "REPORT VERSION",
-      "semirisk_investigation_report_v0.1",
+      "Copy report reference",
       "Raw source payloads and private diagnostics are excluded",
       "Evidence summary:",
       "RISK SCORING METHOD",

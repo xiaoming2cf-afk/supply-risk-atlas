@@ -2031,7 +2031,7 @@ export function CompanyRisk360({
                   <div>
                     <span className="row-title">{entity.canonical_name}</span>
                     <span className="row-subtitle">
-                      {entity.node_id} / {entity.node_type}
+                      {formatDisplayLabel(entity.node_type)}
                     </span>
                   </div>
                   <RiskPill level={entity.level} />
@@ -2060,7 +2060,7 @@ export function CompanyRisk360({
               <div className="driver-grid">
                 <ScoreDial score={risk.score} level={risk.level} label="Risk Score v0" />
                 <div className="inspector-grid">
-                  <Field label="Selected entity" value={risk.node_id} />
+                  <Field label="Selected entity" value={risk.entity.canonical_name} />
                   <Field label="score" value={risk.score.toFixed(2)} />
                   <Field label="level" value={risk.level} />
                   <Field label="Scoring method" value={formatDisplayValue(risk.scoring_method)} />
@@ -2161,12 +2161,12 @@ export function CompanyRisk360({
               />
               <RiskRankingTable
                 rows={visibleScores.map((score) => ({
-                  node_id: score.node_id,
-                  name: score.canonical_name,
+                  entity: score.canonical_name,
+                  type: formatDisplayLabel(score.node_type),
                   score: score.score,
                   level: score.level,
                 }))}
-                columns={["node_id", "name", "score", "level"]}
+                columns={["entity", "type", "score", "level"]}
                 limit={8}
                 metadata={chartMetadataForRisk(risk)}
               />
@@ -2302,7 +2302,6 @@ export function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
     <div className="prediction-center-layout">
       <Panel title="Forecast queue" subtitle="Public-evidence graph ensemble, sorted by risk and confidence." className="prediction-queue-panel">
         <div className="inspector-grid prediction-summary-grid">
-          <Field label="Model" value={center.modelVersion} />
           <Field label="Form" value={center.predictionForm} />
           <Field label="High confidence" value={center.highConfidenceCount} />
           <Field label="Saturated scores" value={center.saturatedScoreCount} />
@@ -2316,7 +2315,7 @@ export function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
                 type="button"
               >
                 <span>
-                  <strong>{prediction.target_id}</strong>
+                  <strong>{formatNodeDisplayRef(prediction.target_id)}</strong>
                   <small>{formatDisplayValue(prediction.mechanism ?? "public_evidence_graph")} / {prediction.horizon}d</small>
                 </span>
                 <b>{Math.round(prediction.risk_score * 100)}</b>
@@ -2335,8 +2334,8 @@ export function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
           <div className="prediction-workbench">
             <ScoreDial score={Math.round(selectedPrediction.risk_score * 100)} level={selectedLevel} label="Risk score" />
             <div className="inspector-grid">
-              <Field label="Target" value={selectedPrediction.target_id} />
-              <Field label="Mechanism" value={selectedPrediction.mechanism ?? "public_evidence_graph"} />
+              <Field label="Target" value={formatNodeDisplayRef(selectedPrediction.target_id)} />
+              <Field label="Mechanism" value={formatDisplayValue(selectedPrediction.mechanism ?? "public_evidence_graph")} />
               <Field label="Horizon" value={`${selectedPrediction.horizon} days`} />
               <Field
                 label="Confidence band"
@@ -2351,6 +2350,13 @@ export function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
               <Field label="Scenario checks" value={selectedPrediction.sensitivity_diagnostics?.length ?? 0} />
             </div>
           </div>
+          <AuditDetails
+            items={[
+              { label: "model_version", value: center.modelVersion },
+              { label: "prediction_id", value: selectedPrediction.prediction_id },
+              { label: "target_id", value: selectedPrediction.target_id },
+            ]}
+          />
         </Panel>
 
         <Panel title="Score mechanism" subtitle="Weighted components explain why the forecast moved.">
@@ -2752,12 +2758,12 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
             />
           </div>
           <ScenarioRunTable
-            rows={runHistory.forwardRuns.map((run) => ({
-              run_id: run.run_id,
+            rows={runHistory.forwardRuns.map((run, index) => ({
+              run: formatRunDisplayName(run, index),
               created_at: run.created_at,
               status: run.status,
             }))}
-            columns={["run_id", "created_at", "status"]}
+            columns={["run", "created_at", "status"]}
             limit={6}
             emptyLabel="No forward scenario runs stored yet."
           />
@@ -2812,13 +2818,12 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               <GraphNodeTable
                 title="Affected nodes table"
                 rows={result.affected_nodes.map((node) => ({
-                  node_id: node.node_id,
                   label: node.label,
                   node_type: node.node_type,
                   loss_score: node.loss_score,
                   evidence_refs: node.evidence_refs.length,
                 }))}
-                columns={["node_id", "label", "node_type", "loss_score", "evidence_refs"]}
+                columns={["label", "node_type", "loss_score", "evidence_refs"]}
                 limit={8}
                 metadata={chartMetadataForScenario(result)}
               />
@@ -2837,13 +2842,13 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
               <ScenarioRunTable
                 rows={[
                   {
-                    run_id: result.run_id,
+                    run: "Current forward run",
                     scenario_type: result.scenario_type,
                     loss_mode: result.loss_mode,
                     propagation_mode: result.propagation_mode,
                   },
                 ]}
-                columns={["run_id", "scenario_type", "loss_mode", "propagation_mode"]}
+                columns={["run", "scenario_type", "loss_mode", "propagation_mode"]}
                 metadata={chartMetadataForScenario(result)}
               />
             </Panel>
@@ -2853,7 +2858,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                   <li className="data-row" key={node.node_id}>
                     <div className="row-top">
                       <span className="row-title">{node.label}</span>
-                      <span className="metric-chip">{node.node_id}</span>
+                      <span className="metric-chip">{formatDisplayLabel(node.node_type)}</span>
                     </div>
                     <div className="row-meta">
                       <span>{node.node_type}</span>
@@ -3067,7 +3072,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           <Field label="normalized_threshold" value={`${Math.max(0, Math.min(100, input.failure_threshold))}/100`} />
           <Field label="threshold_basis" value={formatDisplayValue(input.target_metric)} />
           <Field label="context_source" value={input.scenario_run ? "Forward scenario" : "Default fixture"} />
-          <Field label="context_run_id" value={input.scenario_run?.run_id ?? "none"} />
+          <Field label="context_status" value={input.scenario_run ? "Forward scenario selected" : "No prior run selected"} />
           <Field label="max_combination_size_cap" value="4" />
           <Field label="beam_width_cap" value="20" />
         </div>
@@ -3405,8 +3410,8 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
         </div>
         <div className="field-grid">
           <Field label="context_source" value={formatDisplayValue(optimizerContextSource)} />
-          <Field label="forward_context_run_id" value={input.scenario_run?.run_id ?? "none"} />
-          <Field label="reverse_context_run_id" value={input.reverse_stress_run?.run_id ?? "none"} />
+          <Field label="forward_context" value={input.scenario_run ? "Forward scenario selected" : "No forward scenario selected"} />
+          <Field label="reverse_context" value={input.reverse_stress_run ? "Reverse stress selected" : "No reverse stress selected"} />
           <Field label="scenario_set_count" value={input.scenario_set?.length ?? 0} />
           <Field label="max_actions_cap" value="10" />
           <Field label="budget_basis" value="finite normalized budget units" />
@@ -3840,23 +3845,23 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                     if (typeof navigator !== "undefined" && navigator.clipboard) void navigator.clipboard.writeText(result.report_id);
                   }}
                 >
-                  Copy report id
+                  Copy report reference
                 </Button>
               }
             >
               <div className="field-grid">
-                <Field label="report_id" value={result.report_id} />
-                <Field label="report_version" value={result.report_version} />
                 <Field label="format" value={result.format} />
                 <Field label="risk_scoring_method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
                 <Field label="weighting_method" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
                 <Field label="loss_mode" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
                 <Field label="propagation_mode" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
-                <Field label="selected_run_refs" value={(result.selected_run_refs ?? []).map((run) => run.run_id).join(",") || "none"} />
+                <Field label="selected_runs" value={(result.selected_run_refs ?? []).length || "none"} />
               </div>
               <MetadataSummary items={[{ label: "Public evidence mode" }]} />
               <AuditDetails
                 items={[
+                  { label: "report_id", value: result.report_id },
+                  { label: "selected_run_refs", value: (result.selected_run_refs ?? []).map((run) => run.run_id) },
                   { label: "report_version", value: result.report_version },
                   { label: "graph_version", value: result.versions.graph_version },
                   { label: "source_manifest_id", value: result.versions.source_manifest_id },
@@ -4009,15 +4014,16 @@ function RunHistoryPanel({
             <li className="data-row" key={run.run_id}>
               <div className="row-top">
                 <span className="row-title">{formatDisplayValue(run.run_type)}</span>
-                <span className="metric-chip">{run.run_id}</span>
+                <span className="metric-chip">{formatDisplayValue(run.status)}</span>
               </div>
               <div className="row-meta">
                 <span>{run.created_at}</span>
-                <span>{run.status}</span>
+                <span>{run.summary ? `${Object.keys(run.summary).length} summary metrics` : "No summary metrics"}</span>
               </div>
               <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
               <AuditDetails
                 items={[
+                  { label: "run_id", value: run.run_id },
                   { label: "graph_version", value: run.graph_version },
                   { label: "source_manifest_id", value: run.source_manifest_id },
                 ]}
@@ -4039,14 +4045,16 @@ function ForwardRunComparePanel({ runs }: { runs: RunReference[] }) {
     <Panel title="Forward run compare" subtitle="Latest two sanitized forward scenario summaries.">
       {latest && previous ? (
         <div className="field-grid">
-          <Field label="latest_run_id" value={latest.run_id} />
-          <Field label="previous_run_id" value={previous.run_id} />
+          <Field label="latest_run" value={latest.created_at} />
+          <Field label="previous_run" value={previous.created_at} />
           <Field label="latest_expected_loss" value={formatRunMetric(latest, "expected_loss")} />
           <Field label="previous_expected_loss" value={formatRunMetric(previous, "expected_loss")} />
           <Field label="latest_cvar_95" value={formatRunMetric(latest, "cvar_95")} />
           <Field label="previous_cvar_95" value={formatRunMetric(previous, "cvar_95")} />
           <AuditDetails
             items={[
+              { label: "latest_run_id", value: latest.run_id },
+              { label: "previous_run_id", value: previous.run_id },
               { label: "graph_version", value: latest.graph_version },
               { label: "source_manifest_id", value: latest.source_manifest_id },
             ]}
@@ -4066,7 +4074,7 @@ function OptimizerComparePanel({ runs }: { runs: RunReference[] }) {
     <Panel title="Optimizer before/after compare" subtitle="Sanitized optimizer summary from the latest run.">
       {latest ? (
         <div className="field-grid">
-          <Field label="run_id" value={latest.run_id} />
+          <Field label="latest_run" value={latest.created_at} />
           <Field label="before_expected_loss" value={formatRunMetric(latest, "before_expected_loss")} />
           <Field label="after_expected_loss" value={formatRunMetric(latest, "after_expected_loss")} />
           <Field label="before_cvar95" value={formatRunMetric(latest, "before_cvar95")} />
@@ -4074,6 +4082,7 @@ function OptimizerComparePanel({ runs }: { runs: RunReference[] }) {
           <Field label="resilience_roi" value={formatRunMetric(latest, "resilience_roi")} />
           <AuditDetails
             items={[
+              { label: "run_id", value: latest.run_id },
               { label: "graph_version", value: latest.graph_version },
               { label: "source_manifest_id", value: latest.source_manifest_id },
             ]}
@@ -4091,6 +4100,10 @@ function formatRunMetric(run: RunReference, key: string) {
   const value = run.summary[key];
   if (typeof value === "number") return Number.isFinite(value) ? value.toFixed(2) : "unavailable";
   return value === undefined || value === null || value === "" ? "unavailable" : String(value);
+}
+
+function formatRunDisplayName(run: RunReference, index: number) {
+  return `${formatDisplayValue(run.run_type)} ${index + 1}`;
 }
 
 function formatDashboardWarning(warning: string) {

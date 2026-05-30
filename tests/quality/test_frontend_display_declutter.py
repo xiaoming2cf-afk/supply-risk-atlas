@@ -130,11 +130,31 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "label: action.action_id" not in source
     assert "action_id: action.action_id" not in source
     assert "target_id: action.target_id" not in source
+    assert "{entity.node_id} / {entity.node_type}" not in source
+    assert '<Field label="Selected entity" value={risk.node_id}' not in source
+    assert 'columns={["node_id", "label", "node_type", "loss_score", "evidence_refs"]}' not in source
+    assert 'columns={["run_id", "created_at", "status"]}' not in source
+    assert 'columns={["run_id", "scenario_type", "loss_mode", "propagation_mode"]}' not in source
+    assert '<Field label="context_run_id"' not in source
+    assert '<Field label="forward_context_run_id"' not in source
+    assert '<Field label="reverse_context_run_id"' not in source
+    assert '<Field label="selected_run_refs"' not in source
+    assert '<Field label="report_version"' not in source
+    assert '<Field label="latest_run_id"' not in source
+    assert '<Field label="previous_run_id"' not in source
+    assert '<Field label="run_id"' not in source
     assert 'title="Before/after simulation run IDs"' not in source
     assert 'title="Simulation run counts"' in source
     assert "formatNodeDisplayRef(action.target_id)" in source
+    assert "formatRunDisplayName(run, index)" in source
+    assert "formatNodeDisplayRef(prediction.target_id)" in source
     assert '"semirisk_reverse_stress_v0.1"' not in read("scripts/browser-smoke.mjs")
     assert '"semirisk_intervention_optimizer_v0.1"' not in read("scripts/browser-smoke.mjs")
+    assert '"semirisk_investigation_report_v0.1"' not in read("scripts/browser-smoke.mjs")
+
+    overlay_source = read("apps/web/src/features/graph-explorer/GraphScenarioOverlay.tsx")
+    assert "<span>run_id:" not in overlay_source
+    assert 'label: "run_id", value: overlay?.run_id' in overlay_source
 
 
 def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> None:

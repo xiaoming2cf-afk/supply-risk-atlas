@@ -1946,3 +1946,53 @@
 
 - Raw IDs are still preserved in API payloads, audit details, and export data for traceability; this gate changes only default page presentation.
 - Local Next dev startup may still emit a non-blocking cache persistence permission warning; smoke passed and no product behavior regression was observed.
+
+## 2026-05-30 Primary Page Identifier Declutter
+
+### Current HEAD
+
+- Starting HEAD: `dcad2287c2074bffa1a3e38fe8870d0df8932bb5`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Entity Risk 360 now shows entity names and node types instead of raw `company:*` node IDs in the primary watchlist, score panel, and ranking table.
+- Prediction Center now shows formatted target names in the queue/workbench; prediction IDs, target IDs, and model version remain in collapsed audit details.
+- Forward Shock Simulator no longer displays run IDs in run history, run tables, affected-node chips, or compare panels.
+- Reverse Stress Lab and Intervention Optimizer no longer display context run IDs as primary fields; selected context is summarized in user-facing language.
+- Investigation Report no longer shows report IDs, report version strings, or selected run refs in the primary summary; they remain available in audit details and exports.
+- Graph scenario overlay now says whether a selected run is available instead of rendering `run_id:` in the panel.
+- Audit detail labels are formatted for readability while preserving the underlying metadata values.
+
+### Files Changed
+
+- `apps/web/src/features/common/AuditDetails.tsx`
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/graph-explorer/GraphScenarioOverlay.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed after updating the Entity Risk smoke expectation from raw `company:tsmc` to `TSMC`.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'run_id:|company:tsmc|graphVersion=|sourceManifestId=|semirisk_investigation_report_v0.1|semirisk_reverse_stress_v0.1|semirisk_intervention_optimizer_v0.1|\[object Object\]|path:edge:|action:increase_inventory_buffer|data_mode:|graph_version:|source_manifest_id:|transport_attempts:|failed_endpoint:|not_production_ready: true'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the missing Render secrets or a stable manual Render redeploy path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- IDs and version fields remain intentionally present in API responses, exported reports, and collapsed audit details for traceability.
+- Browser smoke does not assert every possible table cell value; it now guards the main page text against the highest-noise raw identifiers and diagnostics.
+- Local Next dev startup still emitted a non-blocking cache persistence permission warning; smoke passed.

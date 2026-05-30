@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { formatDisplayLabel, formatDisplayValue } from "./displayLabels";
 
 export type AuditDetailItem = {
   label: string;
@@ -65,7 +66,7 @@ export function AuditDetails({
             <dl className="audit-detail-grid">
               {visibleItems.map((item) => (
                 <div className="audit-detail-row" key={item.label}>
-                  <dt>{item.label}</dt>
+                  <dt>{formatDisplayLabel(item.label)}</dt>
                   <dd>{formatAuditValue(item.value)}</dd>
                 </div>
               ))}
@@ -110,12 +111,12 @@ export function publicDataModeLabel(mode?: string | null, sourceStatus?: string 
 
 function formatAuditValue(value: unknown) {
   if (Array.isArray(value)) {
-    const values = value.map(String).filter(Boolean);
+    const values = value.map((item) => String(formatDisplayValue(String(item)))).filter(Boolean);
     return values.length ? values.slice(0, 6).join(", ") : "none";
   }
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") return Number.isFinite(value) ? String(value) : "unavailable";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return String(formatDisplayValue(value));
   if (typeof value === "object") return "structured metadata";
   return String(value);
 }
