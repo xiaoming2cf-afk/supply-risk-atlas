@@ -52,6 +52,7 @@ def test_browser_smoke_chrome_launch_is_ci_hardened() -> None:
     source = SMOKE_SCRIPT.read_text(encoding="utf-8")
 
     assert "SUPPLY_RISK_CHROME_READY_MS" in source
+    assert "SUPPLY_RISK_CHROME_READY_MS ?? 60000" in source
     assert '"--no-sandbox"' in source
     assert '"--disable-setuid-sandbox"' in source
     assert '"--remote-debugging-address=127.0.0.1"' in source

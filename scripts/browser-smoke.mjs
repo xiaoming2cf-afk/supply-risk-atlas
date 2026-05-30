@@ -27,7 +27,7 @@ const waitForTimeoutMs = deployedBestEffort
   : expectedMode === "real"
     ? Number(process.env.SUPPLY_RISK_SMOKE_WAIT_MS ?? 60000)
   : 30000;
-const chromeReadyTimeoutMs = Number(process.env.SUPPLY_RISK_CHROME_READY_MS ?? 30000);
+const chromeReadyTimeoutMs = Number(process.env.SUPPLY_RISK_CHROME_READY_MS ?? 60000);
 
 const pages = [
   ["System Health Center", "#system-health-center"],

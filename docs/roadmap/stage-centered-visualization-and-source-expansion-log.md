@@ -2764,6 +2764,7 @@
 - Deployed browser smoke then exposed a write-path issue: Shock Simulator POST from the deployed browser showed `Failed to fetch` while the same-origin Web proxy POST to `/api/v1/scenarios/forward` succeeded with the fixture envelope.
 - Updated deployed Web write base URL to use the same-origin `/api/v1` proxy as the primary write path. POST requests remain single-attempt; non-idempotent writes are not retried through fallback paths.
 - Fixed deployed smoke Entity Risk mode detection to use `deployedBestEffort` rather than `expectedMode === "deployed"`, and made its controlled source-status assertion case-insensitive.
+- After the first `4f4a21c` CI attempt, GitHub browser-smoke failed before app checks because Chrome DevTools was not ready inside the default 30-second startup window. Increased the default `SUPPLY_RISK_CHROME_READY_MS` fallback to 60 seconds while preserving environment override.
 
 ### Files Changed
 
