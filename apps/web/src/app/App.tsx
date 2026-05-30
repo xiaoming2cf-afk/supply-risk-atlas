@@ -67,6 +67,8 @@ const publicDashboardPages = dashboardPages.filter((page) => publicPageIds.has(p
 
 type DashboardResultMap = Partial<Record<DashboardPageId, ApiResult<unknown>>>;
 type DashboardDataState = Partial<SupplyRiskDashboardData>;
+type DashboardRequest = readonly [DashboardPageId, () => Promise<ApiResult<unknown>>];
+type DashboardSettledResult = PromiseSettledResult<readonly [DashboardPageId, ApiResult<unknown>]>;
 
 function resolveApiBaseUrl(hostname: string | null) {
   if (hostname === "127.0.0.1" || hostname === "localhost") {
@@ -113,6 +115,18 @@ function getHashPage(): DashboardPageId {
   }
   const hash = window.location.hash.replace("#", "");
   return publicDashboardPages.some((page) => page.id === hash) ? (hash as DashboardPageId) : "system-health-center";
+}
+
+async function runDashboardRequestsSequentially(requests: DashboardRequest[]): Promise<DashboardSettledResult[]> {
+  const settledResults: DashboardSettledResult[] = [];
+  for (const [requestPageId, requestFactory] of requests) {
+    try {
+      settledResults.push({ status: "fulfilled", value: [requestPageId, await requestFactory()] as const });
+    } catch (reason) {
+      settledResults.push({ status: "rejected", reason });
+    }
+  }
+  return settledResults;
 }
 
 function useHashPage() {
@@ -202,20 +216,18 @@ export function App() {
   const refreshData = useCallback(async () => {
     setIsRefreshing(true);
     setError(null);
-    const requests: Array<[DashboardPageId, Promise<ApiResult<unknown>>]> = [
-      ["system-health-center", apiClient.getSystemHealthCenter() as Promise<ApiResult<unknown>>],
-      ["global-risk-cockpit", apiClient.getGlobalRiskCockpit() as Promise<ApiResult<unknown>>],
-      ["graph-explorer", apiClient.getGraphExplorer() as Promise<ApiResult<unknown>>],
-      ["company-risk-360", apiClient.getCompanyRisk360() as Promise<ApiResult<unknown>>],
-      ["prediction-center", apiClient.getPredictionCenter() as Promise<ApiResult<unknown>>],
-      ["path-explainer", apiClient.getPathExplainer() as Promise<ApiResult<unknown>>],
-      ["causal-evidence-board", apiClient.getCausalEvidenceBoard() as Promise<ApiResult<unknown>>]
+    const requests: DashboardRequest[] = [
+      ["system-health-center", () => apiClient.getSystemHealthCenter() as Promise<ApiResult<unknown>>],
+      ["global-risk-cockpit", () => apiClient.getGlobalRiskCockpit() as Promise<ApiResult<unknown>>],
+      ["graph-explorer", () => apiClient.getGraphExplorer() as Promise<ApiResult<unknown>>],
+      ["company-risk-360", () => apiClient.getCompanyRisk360() as Promise<ApiResult<unknown>>],
+      ["prediction-center", () => apiClient.getPredictionCenter() as Promise<ApiResult<unknown>>],
+      ["path-explainer", () => apiClient.getPathExplainer() as Promise<ApiResult<unknown>>],
+      ["causal-evidence-board", () => apiClient.getCausalEvidenceBoard() as Promise<ApiResult<unknown>>]
     ];
 
     try {
-      const settledResults = await Promise.allSettled(
-        requests.map(async ([requestPageId, request]) => [requestPageId, await request] as const)
-      );
+      const settledResults = await runDashboardRequestsSequentially(requests);
 
       const nextResults: DashboardResultMap = {};
       let rejectedCount = 0;

@@ -20,6 +20,8 @@ def test_deployed_web_wires_same_origin_read_and_write_paths_without_post_retrie
     assert "readFallbackBaseUrl: configuredApiReadFallbackBaseUrl" in source
     assert "writeBaseUrl: configuredApiWriteBaseUrl" in source
     assert "requestTimeoutMs: configuredApiRequestTimeoutMs" in source
+    assert "runDashboardRequestsSequentially" in source
+    assert "Promise.allSettled" not in source
 
 
 def test_dashboard_client_retries_only_idempotent_reads_and_reports_http_status() -> None:
