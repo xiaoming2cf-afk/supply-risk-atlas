@@ -286,8 +286,9 @@ async function main() {
       passed: expectedMode === "real" ? semiriskSystemHealthReady && semiriskGraphReady && relationshipEndpointsReady && semiriskRiskReady && forwardScenarioReady && reverseScenarioReady && interventionOptimizationReady && investigationReportReady : true,
     });
 
+    await navigate(client, webUrl);
     for (const [page, hash] of pages) {
-      await navigate(client, `${webUrl}${hash}`);
+      await switchHashPage(client, hash);
       const result = await waitFor(client, () => pageState(client), (state) => state.title === page);
       checks.push({
         page,
@@ -1639,6 +1640,28 @@ async function navigate(client, url) {
     }
   }
   throw new Error(`Browser failed to load application page at ${url}. Last state: ${JSON.stringify(lastState)}`);
+}
+
+async function switchHashPage(client, hash) {
+  await waitFor(
+    client,
+    () => pageState(client),
+    (state) => !isBrowserLoadErrorState(state) && state.navCount === pages.length,
+    30000,
+  );
+  await evaluate(client, `(() => {
+    const expectedHash = ${JSON.stringify(hash)};
+    if (window.location.hash !== expectedHash) {
+      window.location.hash = expectedHash;
+    }
+    const pageId = expectedHash.replace(/^#/, "");
+    document.querySelector('[data-page-id="' + pageId + '"]')?.click();
+  })()`);
+  await waitFor(client, () => evaluate(client, "window.location.hash"), (currentHash) => currentHash === hash, 10000);
+  const state = await waitFor(client, () => pageState(client), (currentState) => currentState.title.length > 0, 30000);
+  if (isBrowserLoadErrorState(state)) {
+    throw new Error(`Browser failed to switch SPA page to ${hash}. Last state: ${JSON.stringify(state)}`);
+  }
 }
 
 async function canReuseLoadedAppPage(client, url) {

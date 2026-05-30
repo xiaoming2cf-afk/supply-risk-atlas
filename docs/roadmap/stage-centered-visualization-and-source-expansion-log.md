@@ -2509,6 +2509,8 @@
 - Updated `scripts/browser-smoke.mjs` to poll Web readiness, recognize browser load-error pages, retry bounded navigation, and fail with a clear final page state only after repeated load errors.
 - After the first pushed fix, GitHub `ci / browser-smoke` still failed on the final hash route because repeated full `Page.navigate` calls against the same SPA path could still land on a transient Chrome load-error page.
 - Updated the smoke navigator again so it reuses an already loaded app shell for same-path hash page checks and only performs a full browser navigation when the current document is missing or already degraded.
+- After the second pushed fix, GitHub `ci / browser-smoke` still failed on the same final hash route. The page matrix now loads the app shell once and switches pages through the SPA hash/nav controls, eliminating repeated full navigations from the basic public-page inventory pass.
+- Local smoke initially caught a `pushState` hash synchronization issue in the new SPA page switcher; the switcher now uses native `window.location.hash` assignment and keeps full navigation out of the page matrix.
 - Added a quality assertion so the smoke script keeps this CI hardening behavior.
 
 ### Files Changed
@@ -2531,6 +2533,11 @@
   - `node --check scripts/browser-smoke.mjs` - passed.
   - `python -m pytest tests/quality/test_frontend_source_readability.py -q` - passed, 5 tests.
   - `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+  - `python -m pytest tests/quality -q` - passed.
+- After changing the SPA page switcher to native hash assignment:
+  - `node --check scripts/browser-smoke.mjs` - passed.
+  - `python -m pytest tests/quality/test_frontend_source_readability.py -q` - passed, 5 tests.
   - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
   - `python -m pytest tests/quality -q` - passed.
 

@@ -64,6 +64,7 @@ def test_browser_smoke_retries_transient_chrome_load_errors() -> None:
 
     assert "waitForWebServerReady(60000)" in source
     assert "canReuseLoadedAppPage" in source
+    assert "switchHashPage" in source
     assert "isBrowserLoadErrorState" in source
     assert "This page couldn\\u2019t load" in source
     assert '"Page.reload"' in source
