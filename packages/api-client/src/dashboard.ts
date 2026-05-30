@@ -118,7 +118,7 @@ interface RequestJsonOptions {
 }
 
 const MAX_NETWORK_ATTEMPTS = 3;
-const MAX_PRIMARY_READ_ATTEMPTS_WITH_FALLBACK = 2;
+const MAX_PRIMARY_READ_ATTEMPTS_WITH_FALLBACK = 1;
 const NETWORK_RETRY_BACKOFF_MS = 750;
 
 async function requestJson<T>(

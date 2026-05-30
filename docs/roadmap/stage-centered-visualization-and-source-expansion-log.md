@@ -2324,3 +2324,45 @@
 
 - The transport tightening is local until this follow-up commit is pushed and Render redeploys again.
 - The static HTML shell still does not carry the commit marker used by `scripts/check-deployed-version.py`, so that script can remain conservative even when API/build-info/proxy commit values match.
+
+## 2026-05-30 Deployed API Cold-Start Timeout Tuning
+
+### Current HEAD
+
+- Starting HEAD: `cbf74dbf35600a5a9ebe2a87c1055399dcf841e3`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Follow-up deployed smoke showed the 12-second deployed browser timeout was too aggressive after a Render restart: Entity Risk could abort otherwise valid Risk Score v0 reads during warm-up.
+- Updated browser read strategy so a configured fallback path causes the direct public API origin to be tried once, not repeatedly, before moving to fallback.
+- Increased deployed browser request timeout to 25 seconds to avoid premature aborts while still bounding slow Render cold-start reads.
+- POST/write calls still use the direct API write base and are not retried through the same-origin proxy.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `packages/api-client/src/dashboard.ts`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- This tuning is local until committed, pushed, and redeployed after this section.
+- Previous deployed probe for `cbf74db` confirmed API, Web build-info, and Web proxy commit values matched, but best-effort deployed smoke still showed Entity Risk timing out at 12 seconds during warm-up.
+
+### Known Limitations
+
+- Render cold-start behavior can still be variable; the UI remains bounded and diagnostic-bearing instead of fabricating scores.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.

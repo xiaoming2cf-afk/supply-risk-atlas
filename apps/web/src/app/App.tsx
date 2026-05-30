@@ -100,7 +100,7 @@ function resolveApiReadFallbackBaseUrl(hostname: string | null, primaryBaseUrl: 
 }
 
 function resolveApiRequestTimeoutMs(hostname: string | null) {
-  if (hostname === deploymentTarget) return 12000;
+  if (hostname === deploymentTarget) return 25000;
   return 60000;
 }
 
