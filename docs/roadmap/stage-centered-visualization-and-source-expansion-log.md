@@ -2407,3 +2407,45 @@
 
 - The same-origin proxy still depends on the Render API service; cold starts can degrade temporarily, but they now go through a single bounded retry policy with user-facing diagnostics.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Web Build Info Commit Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `1783e72f224af46585db9ae3a89502a6b180cd5c`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Render Web showed the latest deploy live, but `/api/build-info` could still report an older `NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT` value when that public environment value was stale.
+- Updated Web build metadata priority so Render/Git/current checkout commit beats stale public override values.
+- Updated `/api/build-info` to resolve runtime commit from `RENDER_GIT_COMMIT`, then `SUPPLY_RISK_GIT_COMMIT`, then the sanitized public fallback.
+- Kept cache control as `no-store` and did not expose raw payloads, secrets, local paths, cookies, or private diagnostics.
+
+### Files Changed
+
+- `apps/web/next.config.mjs`
+- `apps/web/src/app/api/build-info/route.ts`
+- `tests/quality/test_web_commit_marker.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_web_commit_marker.py tests/quality/test_deployed_version_checker.py tests/quality/test_deployed_api_transport_fallback.py -q` - passed, 23 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed after rerun with a longer timeout; the first 3-minute run timed out without an assertion failure.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- This stabilization is local until committed, pushed, and redeployed.
+- Previous deployed state after commit `1783e72` had API and Web proxy at the expected commit; Web build-info still reported `69f1381`, which this patch addresses.
+
+### Known Limitations
+
+- Static HTML commit visibility depends on the value embedded at Web build time; this patch ensures stale public overrides no longer take priority over Render/Git/current checkout commit sources.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.

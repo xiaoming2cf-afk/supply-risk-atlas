@@ -22,9 +22,11 @@ def test_render_git_commit_takes_priority_over_stale_public_env_override() -> No
     source = NEXT_CONFIG_PATH.read_text(encoding="utf-8")
 
     render_index = source.index("process.env.RENDER_GIT_COMMIT")
+    git_index = source.index("gitCommit()")
     public_index = source.index("process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT")
 
     assert render_index < public_index
+    assert git_index < public_index
 
 
 def test_web_build_info_route_is_dynamic_and_no_store() -> None:
@@ -35,5 +37,8 @@ def test_web_build_info_route_is_dynamic_and_no_store() -> None:
     assert '"Cache-Control"' in source
     assert "no-store" in source
     assert "NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT" in source
+    assert "RENDER_GIT_COMMIT" in source
+    assert "SUPPLY_RISK_GIT_COMMIT" in source
+    assert source.index("RENDER_GIT_COMMIT") < source.index("NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT")
     assert "cleanMode" in source
     assert "raw_payload" not in source.lower().replace("no_raw_payload", "")

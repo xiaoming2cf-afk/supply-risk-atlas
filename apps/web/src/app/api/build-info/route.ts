@@ -26,12 +26,20 @@ function cleanMode(value: string | undefined, fallback: string): string {
   return candidate.replace(/[^0-9A-Za-z:._-]/g, "_");
 }
 
+function resolveWebCommit(): string {
+  return cleanCommit(
+    process.env.RENDER_GIT_COMMIT ??
+      process.env.SUPPLY_RISK_GIT_COMMIT ??
+      process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT
+  );
+}
+
 export function GET() {
   return NextResponse.json(
     {
       status: "success",
       data: {
-        web_commit: cleanCommit(process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT),
+        web_commit: resolveWebCommit(),
         web_build_time: cleanBuildTime(process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME),
         data_mode: cleanMode(process.env.SUPPLY_RISK_DATA_MODE, "fixture"),
         graph_mode: cleanMode(process.env.SUPPLY_RISK_FIXTURE_GRAPH_MODE, "semirisk_fixture_v0.1"),
