@@ -272,3 +272,63 @@ npm.cmd run smoke:web -- --mode=deployed
 ```
 
 After deployment is aligned, send GPT Pro the sanitized commit/test/deployment summary and screenshots from project pages only.
+
+## Latest Deployment And GPT Pro Handoff Update - 2026-05-30
+
+This section supersedes the earlier commit-specific deployment requests above.
+
+### Latest Local/GitHub State
+
+- Latest pushed commit: `22358ed` (`Declutter graph table labels`).
+- Commit purpose: reduce primary-page noise in graph tables, relationship views, source coverage, evidence refs, chart labels, and metadata summary badges.
+- GitHub `ci`: passed for run `26681380776`.
+- GitHub `Quality Gates`: passed for run `26681380775`.
+- Local validation passed:
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web`
+- Local browser-smoke passed with 63 checks.
+- Local DOM evidence:
+  - System Health top status shows `Coverage: Limited`, updated time, `Source: Public evidence graph`, and `Public evidence mode`.
+  - System Health primary text did not expose `data_mode:`, `graph_version:`, `source_manifest_id:`, `transport_attempts:`, `failed_endpoint:`, or `not_production_ready: true`.
+  - Graph Explorer had the stage selector and did not expose raw source-family IDs or raw relationship-class strings in the inspected primary text.
+
+### Deployment State
+
+- Deployed API/Web are currently unavailable or unverified from this environment.
+- `python scripts/check-deployed-version.py --expected-commit 22358ed --timeout 5 --attempts 1` returned `deployed_unavailable`.
+- Probe warnings: `api_unavailable`, `web_build_info_unavailable`, `web_proxy_unavailable`, `web_unavailable`.
+- No Render deployment is claimed for `22358ed`.
+- The previously identified non-interactive Render deploy blockers still apply unless the secrets have been restored:
+  - `RENDER_API_KEY`
+  - `RENDER_API_SERVICE_ID`
+  - `RENDER_WEB_SERVICE_ID`
+- No secret values, tokens, cookies, credentials, private diagnostics, or raw payloads were read or stored.
+
+### Computer Use / GPT Pro State
+
+- In-app browser automation connected after one retry.
+- Project-scoped local page checks were completed through the browser DOM.
+- A screenshot attempt for the local System Health page timed out; no repeated screenshot loop was attempted.
+- Opening the provided GPT Pro project URL in the in-app browser reached the ChatGPT login page and no prompt input was available.
+- The GPT login page was closed after the failed handoff attempt.
+- GPT Pro review remains blocked until a logged-in, controllable browser surface is available or the sanitized status is pasted manually.
+
+### Required Next Action
+
+To complete deployment verification safely, use one of these paths:
+
+1. Restore the three Render GitHub Actions secrets listed above, then rerun `Render Manual Deploy` on `main` with:
+   - `commit_sha=22358ed`
+   - `clear_cache=clear`
+2. Or complete Render API/Web redeploy manually in the Render Dashboard, then run:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit 22358ed --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+For GPT Pro review, paste the sanitized summary from the latest section of `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md` plus this handoff section. Do not paste secrets, cookies, raw logs, private URLs, raw payloads, or local filesystem diagnostics.
