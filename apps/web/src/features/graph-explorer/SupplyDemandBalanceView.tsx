@@ -1,6 +1,7 @@
 import type { GraphSupplyDemandBalanceData } from "@supply-risk/shared-types";
 import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
 import { SupplyDemandBalanceChart } from "../common/charts";
+import { formatDisplayValue, formatNodeDisplayRef, formatSourceDisplayRef } from "../common/displayLabels";
 import type { GraphViewModel } from "./graphViewModel";
 
 const SUPPLY_DEMAND_BALANCE_CLASS = "SUPPLY_DEMAND_BALANCE";
@@ -131,11 +132,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function formatCell(value: unknown) {
   if (value === null || value === undefined || value === "") return "n/a";
-  return String(value);
+  if (typeof value === "string") {
+    return formatNodeDisplayRef(value) || String(formatDisplayValue(value));
+  }
+  return String(formatDisplayValue(value));
 }
 
 function formatSourceRefs(value: unknown) {
   if (!Array.isArray(value)) return "n/a";
-  const refs = value.map((item) => String(item)).filter(Boolean);
+  const refs = value.map((item) => formatSourceRef(item)).filter(Boolean);
   return refs.length > 0 ? refs.slice(0, 3).join(", ") : "n/a";
+}
+
+function formatSourceRef(value: unknown) {
+  if (typeof value === "string") return formatSourceDisplayRef(value) || String(formatDisplayValue(value));
+  if (typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+    const source = typeof record.source_id === "string" ? record.source_id : undefined;
+    return formatSourceDisplayRef(source) || "Public evidence source";
+  }
+  return "";
 }

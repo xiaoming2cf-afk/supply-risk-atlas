@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AuditDetails, MetadataSummary } from "../AuditDetails";
+import { formatDisplayLabel, formatDisplayValue, formatNodeDisplayRef, formatSourceDisplayRef } from "../displayLabels";
 
 export interface ChartDatum {
   label: string;
@@ -36,7 +37,7 @@ export function ChartFrame({
   const hasMetadata = metadata?.graphVersion || metadata?.sourceManifestId || metadata?.warnings?.length;
   return (
     <section className="chart-frame" data-component="evidence-chart">
-      {title ? <h3>{title}</h3> : null}
+      {title ? <h3>{formatDisplayLabel(title)}</h3> : null}
       {loading ? <p className="muted">Loading chart data...</p> : children || <p className="muted">{emptyLabel}</p>}
       {degraded ? <p className="warning-text">Data source unavailable or degraded.</p> : null}
       {hasMetadata ? (
@@ -69,7 +70,7 @@ export function BarChart(props: BasicChartProps) {
         <div className="bar-chart" role="list">
           {data.map((item, index) => (
             <div className="bar-row" key={`${item.label}-${index}`} role="listitem">
-              <span className="bar-label">{item.label}</span>
+              <span className="bar-label">{formatChartLabel(item.label)}</span>
               <span className="bar-track">
                 <span
                   className="bar-fill"
@@ -98,7 +99,7 @@ export function StackedBarChart(props: BasicChartProps) {
           {data.map((item, index) => (
             <span
               key={`${item.label}-${index}`}
-              title={`${item.label}: ${formatValue(item.value)}`}
+              title={`${formatChartLabel(item.label)}: ${formatValue(item.value)}`}
               style={{
                 width: `${(Math.max(0, item.value) / total) * 100}%`,
                 background: item.color ?? palette[index % palette.length],
@@ -147,10 +148,10 @@ export function HeatmapChart(props: BasicChartProps) {
           {data.map((item, index) => (
             <span
               key={`${item.label}-${index}`}
-              title={`${item.label}: ${formatValue(item.value)}`}
+              title={`${formatChartLabel(item.label)}: ${formatValue(item.value)}`}
               style={{ opacity: 0.25 + 0.75 * (Math.abs(item.value) / max) }}
             >
-              {item.label}
+              {formatChartLabel(item.label)}
             </span>
           ))}
         </div>
@@ -162,4 +163,8 @@ export function HeatmapChart(props: BasicChartProps) {
 function formatValue(value: number) {
   if (Math.abs(value) >= 1000) return value.toLocaleString(undefined, { maximumFractionDigits: 0 });
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function formatChartLabel(label: string) {
+  return formatNodeDisplayRef(label) || formatSourceDisplayRef(label) || String(formatDisplayValue(label));
 }

@@ -1,4 +1,5 @@
 import type { GraphNodeCatalogData } from "@supply-risk/shared-types";
+import { formatDisplayLabel, formatDisplayValue, formatNodeDisplayRef, formatSourceDisplayRef } from "../common/displayLabels";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphNodeCatalogView({
@@ -34,12 +35,12 @@ export function GraphNodeCatalogView({
         <tbody>
           {rows.slice(0, 16).map((row, index) => (
             <tr key={String((row as Record<string, unknown>).node_id ?? index)}>
-              <td>{String((row as Record<string, unknown>).label ?? (row as Record<string, unknown>).node_id ?? "")}</td>
-              <td>{String((row as Record<string, unknown>).layer ?? "")}</td>
-              <td>{String((row as Record<string, unknown>).node_type ?? "")}</td>
+              <td>{formatNodeCell(row as Record<string, unknown>)}</td>
+              <td>{String(formatDisplayValue(String((row as Record<string, unknown>).layer ?? "")))}</td>
+              <td>{formatDisplayLabel(String((row as Record<string, unknown>).node_type ?? ""))}</td>
               <td>
                 {Array.isArray((row as Record<string, unknown>).source_candidates)
-                  ? ((row as { source_candidates: unknown[] }).source_candidates ?? []).slice(0, 3).join(", ")
+                  ? ((row as { source_candidates: unknown[] }).source_candidates ?? []).slice(0, 3).map(formatSourceCandidate).join(", ")
                   : "source candidate unavailable"}
               </td>
             </tr>
@@ -48,4 +49,15 @@ export function GraphNodeCatalogView({
       </table>
     </div>
   );
+}
+
+function formatNodeCell(row: Record<string, unknown>) {
+  const nodeId = typeof row.node_id === "string" ? row.node_id : "";
+  const label = typeof row.label === "string" ? row.label : "";
+  return label || formatNodeDisplayRef(nodeId) || "Catalog node";
+}
+
+function formatSourceCandidate(value: unknown) {
+  if (typeof value !== "string") return "Public evidence source";
+  return formatSourceDisplayRef(value) || String(formatDisplayValue(value));
 }

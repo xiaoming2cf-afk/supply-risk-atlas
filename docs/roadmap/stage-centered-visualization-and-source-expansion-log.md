@@ -2040,3 +2040,56 @@
 
 - Stage source coverage remains fixture/promoted-public-evidence with documented proxy limitations.
 - Full source IDs are still present in API responses, source coverage tables, and audit/export paths for traceability.
+
+## 2026-05-30 Primary Table And Graph Label Declutter
+
+### Current HEAD
+
+- Starting HEAD: `197ba5432c9f953b61ee4fc7bdf67a5f599ea6f0`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added shared UI display helpers for node refs, source refs, stage IDs, relationship classes, and edge types.
+- Metadata summary badges now format labels before rendering and no longer collapse to empty text when the label contains a colon.
+- Common chart and table primitives format raw node/source identifiers into user-facing labels while preserving API/export/audit values.
+- Graph Explorer relationship views now display suppliers, products, dependencies, regions, and source refs with user-facing labels rather than raw IDs.
+- Graph Explorer node catalog, evidence, and source coverage views now format source candidates and evidence refs in primary UI.
+- Audit details still contain graph/source/data-mode metadata and warnings; raw IDs remain available in API payloads and exports.
+
+### Files Changed
+
+- `apps/web/src/features/common/AuditDetails.tsx`
+- `apps/web/src/features/common/charts/ChartPrimitives.tsx`
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/tables/DataTable.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/GraphEvidenceView.tsx`
+- `apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx`
+- `apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed after rerunning with a longer timeout; the first combined run timed out without failure output.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks after fixing empty metadata summary badges.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'data_mode:|graph_version:|source_manifest_id:|transport_attempts:|failed_endpoint:|not_production_ready: true|company:tsmc|national_policy_macro_public|enterprise_public_disclosure|industry_public_fixture|sec_edgar_lite|gdelt_semiconductor_lite|un_comtrade_semiconductor_trade_lite|evidence_context_link|SUPPLY_RELATIONSHIP|DEMAND_RELATIONSHIP|PRODUCTION_DEPENDENCY'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this local gate.
+- Public deployed API/Web remain stale or unverified until Render redeploy access is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- Primary UI is cleaner, but source IDs and node IDs are intentionally still present in API responses, collapsed audit details, and exported evidence for traceability.
+- Browser smoke validates representative pages and high-noise identifiers; it does not inspect every possible table row from every endpoint.

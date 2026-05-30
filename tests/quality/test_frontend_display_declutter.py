@@ -26,6 +26,7 @@ def test_data_lineage_banner_uses_user_facing_summary_and_collapsed_audit_detail
 def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     table_source = read("apps/web/src/features/common/tables/DataTable.tsx")
     chart_source = read("apps/web/src/features/common/charts/ChartPrimitives.tsx")
+    display_source = read("apps/web/src/features/common/displayLabels.ts")
     component_source = read("apps/web/src/app/components.tsx")
     source_catalog_source = read("apps/web/src/features/common/tables/SourceCatalogTable.tsx")
     connector_status_source = read("apps/web/src/features/common/tables/ConnectorStatusTable.tsx")
@@ -42,6 +43,11 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     assert "JSON.stringify(value)" not in table_source
     assert "renderArrayCell(value)" in table_source
     assert ".map(formatDisplayValue).map(String)" not in table_source
+    assert "formatNodeDisplayRef" in table_source
+    assert "formatSourceDisplayRef" in table_source
+    assert "formatChartLabel(item.label)" in chart_source
+    assert '["sec_edgar_lite", "SEC EDGAR public filings"]' in display_source
+    assert '["region:china_taiwan", "中国台湾"]' in display_source
     assert "formatDisplayLabel(metric.label)" in component_source
     assert "formatDisplayLabel(label)" in component_source
     assert "formatDisplayValue(value)" in component_source
@@ -170,6 +176,20 @@ def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> No
         assert 'data-preview-state="unavailable_preview"' in source
         assert "unavailable_preview:" not in source
         assert "Backend relationship data unavailable; authoritative rows are hidden." in source
+        assert "formatNodeDisplayRef" in source
+        assert "formatSourceDisplayRef" in source
+
+
+def test_graph_explorer_tables_format_source_and_node_ids_for_primary_ui() -> None:
+    source_coverage = read("apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx")
+    evidence_view = read("apps/web/src/features/graph-explorer/GraphEvidenceView.tsx")
+    node_catalog = read("apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx")
+
+    assert "formatSourceCell(row.source_id" in source_coverage
+    assert '{String(row.source_id ?? "source_ref")}' not in source_coverage
+    assert "formatEvidenceRef" in evidence_view
+    assert "formatNodeCell" in node_catalog
+    assert "formatSourceCandidate" in node_catalog
 
 
 def test_run_page_unavailable_states_keep_endpoint_diagnostics_collapsed() -> None:

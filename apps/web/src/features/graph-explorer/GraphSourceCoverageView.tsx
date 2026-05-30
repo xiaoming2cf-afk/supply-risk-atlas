@@ -1,4 +1,5 @@
 import type { GraphSourceCoverageData } from "@supply-risk/shared-types";
+import { formatDisplayValue, formatSourceDisplayRef } from "../common/displayLabels";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphSourceCoverageView({
@@ -37,7 +38,7 @@ export function GraphSourceCoverageView({
         <tbody>
           {rows.slice(0, 16).map((row, index) => (
             <tr key={String(row.source_id ?? index)}>
-              <td>{String(row.source_id ?? "source_ref")}</td>
+              <td>{formatSourceCell(row.source_id ?? "source_ref")}</td>
               <td>
                 {String(
                   (row as Record<string, unknown>).reference_count ??
@@ -60,4 +61,9 @@ function fallbackRows(view: GraphViewModel) {
     counts.set(source, (counts.get(source) ?? 0) + 1);
   }
   return [...counts.entries()].map(([source_id, reference_count]) => ({ source_id, reference_count }));
+}
+
+function formatSourceCell(value: unknown) {
+  if (typeof value !== "string") return "Public evidence source";
+  return formatSourceDisplayRef(value) || String(formatDisplayValue(value));
 }

@@ -27,7 +27,7 @@ export function MetadataSummary({
     <div className="metadata-summary" aria-label={ariaLabel} data-display-tier="supporting">
       {visibleItems.map((item) => (
         <span className={`metadata-summary-badge is-${item.tone ?? "default"}`} key={item.label}>
-          {item.label}
+          {String(formatDisplayValue(item.label))}
         </span>
       ))}
     </div>

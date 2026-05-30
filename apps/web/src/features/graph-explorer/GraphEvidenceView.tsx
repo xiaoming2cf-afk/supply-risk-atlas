@@ -1,4 +1,5 @@
 import type { GraphEvidenceData, GraphLink } from "@supply-risk/shared-types";
+import { formatDisplayValue, formatSourceDisplayRef } from "../common/displayLabels";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphEvidenceView({
@@ -27,9 +28,9 @@ export function GraphEvidenceView({
         <tbody>
           {evidenceRows.slice(0, 12).map((row, index) => (
             <tr key={String((row as Record<string, unknown>).edge_id ?? (row as Record<string, unknown>).id ?? index)}>
-              <td>{String((row as Record<string, unknown>).source_id ?? (row as Record<string, unknown>).edge_id ?? "evidence_ref")}</td>
+              <td>{formatEvidenceRef((row as Record<string, unknown>).source_id ?? (row as Record<string, unknown>).edge_id)}</td>
               <td>
-                {String((row as Record<string, unknown>).edge_type ?? "evidence-context link")}
+                {String(formatDisplayValue(String((row as Record<string, unknown>).edge_type ?? "evidence-context link")))}
                 {Boolean((row as Record<string, unknown>).not_supply_chain_dependency) ? " / not supply-chain dependency" : ""}
               </td>
               <td>{Number((row as Record<string, unknown>).confidence ?? 0).toFixed(2)}</td>
@@ -39,6 +40,11 @@ export function GraphEvidenceView({
       </table>
     </div>
   );
+}
+
+function formatEvidenceRef(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return "Evidence source";
+  return formatSourceDisplayRef(value) || String(formatDisplayValue(value));
 }
 
 function evidenceRowsFromLinks(links: GraphLink[]) {

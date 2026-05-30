@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { AuditDetails, MetadataSummary } from "../AuditDetails";
-import { formatDisplayLabel, formatDisplayValue } from "../displayLabels";
+import { formatDisplayLabel, formatDisplayValue, formatNodeDisplayRef, formatSourceDisplayRef } from "../displayLabels";
 
 export interface EvidenceTableProps {
   title?: string;
@@ -80,7 +80,8 @@ function inferColumns(rows: Array<Record<string, unknown>>) {
 
 function renderCell(value: unknown): ReactNode {
   if (value === null || value === undefined) return "unavailable";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
+  if (typeof value === "string") return formatPrimaryValue(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
   if (Array.isArray(value)) return renderArrayCell(value);
   return "Structured metadata";
 }
@@ -94,7 +95,8 @@ function renderArrayCell(values: unknown[]) {
 
 function renderArrayItem(value: unknown) {
   if (value === null || value === undefined) return "";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
+  if (typeof value === "string") return formatPrimaryValue(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
   if (!Array.isArray(value) && typeof value === "object") {
     const record = value as Record<string, unknown>;
     const id =
@@ -107,9 +109,13 @@ function renderArrayItem(value: unknown) {
       record.label ??
       record.name;
     const source = record.source_id ?? record.source;
-    if (source && id) return `${String(formatDisplayValue(String(source)))}:${String(formatDisplayValue(String(id)))}`;
-    if (id) return String(formatDisplayValue(String(id)));
-    if (source) return String(formatDisplayValue(String(source)));
+    if (source && id) return `${formatPrimaryValue(String(source))} evidence`;
+    if (id) return formatPrimaryValue(String(id));
+    if (source) return formatPrimaryValue(String(source));
   }
   return "Structured metadata";
+}
+
+function formatPrimaryValue(value: string) {
+  return formatNodeDisplayRef(value) || formatSourceDisplayRef(value) || String(formatDisplayValue(value));
 }
