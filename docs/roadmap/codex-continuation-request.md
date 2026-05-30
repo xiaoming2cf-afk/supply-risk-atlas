@@ -412,3 +412,66 @@ npm.cmd run smoke:web -- --mode=deployed
 ```
 
 For GPT Pro review, paste the sanitized summary from the latest section of `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md` plus this handoff section. Do not paste secrets, cookies, raw logs, private URLs, raw payloads, or local filesystem diagnostics.
+
+## Latest Display Noise Handoff Update - 2026-05-30
+
+This section supersedes earlier commit-specific deployment requests above.
+
+### Latest Local/GitHub State
+
+- Latest pushed commit: `ca5b52f` (`Reduce chart table audit noise`).
+- Commit purpose: keep chart/table metadata available but stop repeating audit disclosures under normal primary-page chart/table states; convert internal warning/calibration tokens into user-facing research fixture/public evidence wording.
+- GitHub `ci`: passed for run `26683068085`.
+- GitHub `Quality Gates`: passed for run `26683068080`.
+- Local validation passed:
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - 13 tests passed.
+  - `npm.cmd --workspace apps/web run typecheck` - passed.
+  - `python -m pytest tests/quality -q` - passed.
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed after rerun with a longer timeout.
+  - `npm.cmd --workspace apps/web run build` - passed.
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- Browser-smoke report scan found no primary-page matches for:
+  - `data_mode:`
+  - `graph_version:`
+  - `source_manifest_id:`
+  - `transport_attempts:`
+  - `failed_endpoint:`
+  - `not_production_ready: true`
+  - `fixture_proxy_not_calibrated; not_financial_loss`
+  - `relationship_endpoint_unavailable`
+  - `semirisk_fixture_metadata`
+
+### Deployment State
+
+- Deployed API/Web are still stale or unverified.
+- `python scripts/check-deployed-version.py --expected-commit ca5b52f --timeout 20 --attempts 1` returned `deployed_stale_or_unverified`.
+- Probe evidence:
+  - API version endpoint unavailable.
+  - Web build-info unavailable.
+  - Web HTML probe failed.
+  - Web proxy responded with old commit `06c50120449525fac149be9a4de6536b7371cc16`.
+- No Render deployment is claimed for `ca5b52f`.
+
+### Computer Use / GPT Pro State
+
+- Project-scoped in-app browser attempt reached the Render login page at `https://dashboard.render.com/login`.
+- The failed Render page was closed according to the one-failure cleanup rule.
+- After closing the failed Render page, the browser automation surface timed out while attaching to a new page, so GPT Pro project handoff could not be completed safely from automation in this cycle.
+- No credentials, secrets, cookies, tokens, private account details, raw payloads, or private diagnostics were entered, read, copied, stored, screenshotted, or sent.
+
+### Required Next Action
+
+To complete deployment verification safely, use one of these paths:
+
+1. Restore or configure a safe Render deployment path, preferably the existing GitHub Actions secrets:
+   - `RENDER_API_KEY`
+   - `RENDER_API_SERVICE_ID`
+   - `RENDER_WEB_SERVICE_ID`
+2. Or manually complete Render login/redeploy in the browser, then run:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit ca5b52f --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+For GPT Pro review, paste the sanitized latest commit/test/deployment summary from this section and `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`. Do not paste secrets, cookies, raw logs, private URLs, raw payloads, or local filesystem diagnostics.
