@@ -2746,3 +2746,60 @@
 ### Known Limitations
 
 - Deployed smoke remains best-effort because Render free-tier services can throttle repeated automated reads. The app keeps controlled degraded states instead of fabricated data.
+
+## 2026-05-30 Deployed Write API Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `f87245eace76cc8019a7dd9eaa821610bb8f0f3d`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` and `Quality Gates` passed for `f87245e`.
+- Render API service `supply-risk-atlas-api` and Web service `supply-risk-atlas-web` were manually redeployed from `f87245e`; both showed `Live`.
+- Version probe for `f87245e` returned `deployed_verified` for API, Web build metadata, Web HTML, and Web proxy.
+- Direct deployed endpoint probes returned HTTP 200 for `/version`, `/health`, `/risk/entities/company%3Atsmc`, `/graph/supply-relationships`, and `/analytics/tables/supply-relationships`.
+- Deployed browser smoke then exposed a write-path issue: Shock Simulator POST from the deployed browser showed `Failed to fetch` while the same-origin Web proxy POST to `/api/v1/scenarios/forward` succeeded with the fixture envelope.
+- Updated deployed Web write base URL to use the same-origin `/api/v1` proxy as the primary write path. POST requests remain single-attempt; non-idempotent writes are not retried through fallback paths.
+- Fixed deployed smoke Entity Risk mode detection to use `deployedBestEffort` rather than `expectedMode === "deployed"`, and made its controlled source-status assertion case-insensitive.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `tests/quality/test_frontend_source_readability.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python scripts/check-deployed-version.py --expected-commit f87245eace76cc8019a7dd9eaa821610bb8f0f3d --timeout 25 --attempts 3` - passed, `deployed_verified`.
+- `npm.cmd run smoke:web -- --mode=deployed` - returned best-effort exit 0 but recorded Shock Simulator `Failed to fetch` before the write-path patch.
+- Direct API and Web proxy endpoint probes - passed for read endpoints; Web proxy POST to `/api/v1/scenarios/forward` passed after warm-up.
+- `node --check scripts/browser-smoke.mjs` - passed.
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_source_readability.py -q` - passed, 8 tests.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/security tests/graph_invariants -q` - passed.
+- API tests were split by file after the aggregate command exceeded the local timeout; every API file passed individually.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `npm.cmd run smoke:web` - passed with 63 checks.
+- `python -m pytest tests/geo tests/contract tests/sources tests/model tests/simulation tests/optimization tests/reports -q` - passed.
+
+### Computer Use Actions
+
+- Used project-scoped Chrome tabs for Render API/Web deploy verification only.
+- No credentials, cookies, tokens, account settings, or private diagnostics were copied into logs.
+- Failed/stale deployed smoke pages were not kept as additional browser tabs.
+
+### Deployment Status
+
+- Runtime deployment is currently live for `f87245e`.
+- The write-path patch is local pending commit, push, CI, Render redeploy, and deployed smoke verification.
+
+### Known Limitations
+
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready.
+- Render free-tier cold starts and rate limiting can still require warm-up; unavailable states remain controlled and diagnostic-only.

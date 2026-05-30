@@ -91,7 +91,7 @@ function resolveApiWriteBaseUrl(hostname: string | null) {
     return configured;
   }
   if (hostname === deploymentTarget) {
-    return deployedPublicApiBaseUrl;
+    return "/api/v1";
   }
   return resolveApiBaseUrl(hostname);
 }

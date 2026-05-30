@@ -75,9 +75,9 @@ def test_browser_smoke_retries_transient_chrome_load_errors() -> None:
 def test_deployed_smoke_accepts_only_controlled_entity_risk_degradation() -> None:
     source = SMOKE_SCRIPT.read_text(encoding="utf-8")
 
-    assert 'expectedMode === "deployed" || !semiriskRiskReady' in source
+    assert "deployedBestEffort || !semiriskRiskReady" in source
     assert 'smokeMode === "deployed"' in source
     assert "hasControlledEntityRiskDegradation" in source
     assert "riskHasControlledDegradedState" in source
     assert "View diagnostics" in source
-    assert "Source status" in source
+    assert 'includes("source status")' in source

@@ -784,15 +784,16 @@ async function main() {
         state.title === "Entity Risk 360" &&
         (
           riskEvidenceTerms.every((term) => state.text.includes(term)) ||
-          ((expectedMode === "deployed" || !semiriskRiskReady) &&
+          ((deployedBestEffort || !semiriskRiskReady) &&
             (state.text.includes("Entity Risk 360 unavailable") || state.text.includes("Risk score unavailable")))
         ),
     );
     const riskHasScoreEvidence = riskEvidenceTerms.every((term) => riskState.text.includes(term));
+    const riskStateTextLower = riskState.text.toLowerCase();
     const riskHasControlledDegradedState =
       riskState.text.includes("Entity Risk 360 unavailable") &&
       riskState.text.includes("View diagnostics") &&
-      riskState.text.includes("Source status");
+      riskStateTextLower.includes("source status");
     checks.push({
       page: "Entity Risk 360 Risk Score v0",
       title: riskState.title,
@@ -801,7 +802,7 @@ async function main() {
       evidenceExcerpt: textExcerpt(riskState.text, riskEvidenceTerms),
       passed:
         riskState.title === "Entity Risk 360" &&
-        (riskHasScoreEvidence || ((expectedMode === "deployed" || !semiriskRiskReady) && riskHasControlledDegradedState)),
+        (riskHasScoreEvidence || ((deployedBestEffort || !semiriskRiskReady) && riskHasControlledDegradedState)),
     });
 
     await navigate(client, `${webUrl}#shock-simulator`);

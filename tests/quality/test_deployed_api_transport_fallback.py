@@ -13,7 +13,7 @@ def test_deployed_web_prefers_public_api_with_same_origin_read_fallback() -> Non
     assert "if (hostname === deploymentTarget) {\n    return deployedPublicApiBaseUrl;\n  }" in source
     assert "function resolveApiWriteBaseUrl" in source
     assert "NEXT_PUBLIC_SUPPLY_RISK_API_WRITE_URL" in source
-    assert "if (hostname === deploymentTarget) {\n    return deployedPublicApiBaseUrl;\n  }\n  return resolveApiBaseUrl(hostname);" in source
+    assert 'if (hostname === deploymentTarget) {\n    return "/api/v1";\n  }\n  return resolveApiBaseUrl(hostname);' in source
     assert "function resolveApiReadFallbackBaseUrl" in source
     assert 'const sameOriginProxyBaseUrl = "/api/v1";' in source
     assert "if (hostname === deploymentTarget) return sameOriginProxyBaseUrl;" in source
