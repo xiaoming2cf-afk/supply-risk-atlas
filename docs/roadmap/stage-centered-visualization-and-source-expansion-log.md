@@ -2507,6 +2507,8 @@
 - GitHub `Quality Gates` passed for `ef5ce88`, but `ci / browser-smoke` failed twice in the local real-API smoke job with a transient Chrome error page titled `This page couldn\u2019t load`.
 - The failure occurred before page-specific assertions and after local API/Web startup, so the next fix targets smoke navigation readiness rather than weakening application checks.
 - Updated `scripts/browser-smoke.mjs` to poll Web readiness, recognize browser load-error pages, retry bounded navigation, and fail with a clear final page state only after repeated load errors.
+- After the first pushed fix, GitHub `ci / browser-smoke` still failed on the final hash route because repeated full `Page.navigate` calls against the same SPA path could still land on a transient Chrome load-error page.
+- Updated the smoke navigator again so it reuses an already loaded app shell for same-path hash page checks and only performs a full browser navigation when the current document is missing or already degraded.
 - Added a quality assertion so the smoke script keeps this CI hardening behavior.
 
 ### Files Changed
@@ -2525,6 +2527,12 @@
 - `npm.cmd --workspace apps/web run build` - passed.
 - Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
 - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- After GitHub `ci` failed once more on the final hash route, reran targeted checks after the same-path hash navigation patch:
+  - `node --check scripts/browser-smoke.mjs` - passed.
+  - `python -m pytest tests/quality/test_frontend_source_readability.py -q` - passed, 5 tests.
+  - `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+  - `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+  - `python -m pytest tests/quality -q` - passed.
 
 ### Deployment Status
 

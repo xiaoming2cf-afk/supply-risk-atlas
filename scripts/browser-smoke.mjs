@@ -1617,8 +1617,18 @@ async function navigate(client, url) {
       await waitForWebServerReady(15000);
       await sleep(750 * attempt);
     }
-    await client.send("Page.navigate", { url });
-    await waitForLocation(client, url);
+    if (!(await canReuseLoadedAppPage(client, url))) {
+      await client.send("Page.navigate", { url });
+      await waitForLocation(client, url);
+      lastState = await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
+      if (isBrowserLoadErrorState(lastState)) {
+        if (attempt < maxAttempts) {
+          await client.send("Page.reload", { ignoreCache: true });
+          continue;
+        }
+        break;
+      }
+    }
     await applyHashNavigation(client, url);
     lastState = await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
     if (!isBrowserLoadErrorState(lastState)) {
@@ -1629,6 +1639,22 @@ async function navigate(client, url) {
     }
   }
   throw new Error(`Browser failed to load application page at ${url}. Last state: ${JSON.stringify(lastState)}`);
+}
+
+async function canReuseLoadedAppPage(client, url) {
+  const targetUrl = new URL(url);
+  try {
+    const [href, state] = await Promise.all([evaluate(client, "window.location.href"), pageState(client)]);
+    const current = new URL(String(href));
+    return (
+      current.origin === targetUrl.origin &&
+      current.pathname === targetUrl.pathname &&
+      !isBrowserLoadErrorState(state) &&
+      state.navCount > 0
+    );
+  } catch {
+    return false;
+  }
 }
 
 async function waitForLocation(client, url) {
