@@ -163,3 +163,57 @@ Fallback path:
 - Evidence-context links remain non-dependency inspection links.
 - Keep supply, demand, production dependency, and evidence-context relationship classes separated.
 - The platform remains fixture/proxy/promoted-public-evidence research infrastructure, not production-ready.
+
+## Latest Deployment Handoff Update - 2026-05-29
+
+This section supersedes earlier commit-specific deployment requests above.
+
+### Latest Local/GitHub State
+
+- Latest pushed commit: `313c9ba627e77d0ebf739affa55b4894770be227`.
+- Commit purpose: clean remaining user-visible legacy option labels in Shock Simulator.
+- GitHub `ci`: passed for `313c9ba627e77d0ebf739affa55b4894770be227`.
+- GitHub `Quality Gates`: passed for `313c9ba627e77d0ebf739affa55b4894770be227`.
+- Local validation passed:
+  - `python -m pytest tests/quality/test_frontend_display_declutter.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `npm.cmd --workspace apps/web run build`
+  - `npm.cmd run smoke:web` with local API/Web, 63 checks.
+
+### Deployment State
+
+- Deployed API/Web are still stale or unverified.
+- Deployed version probe for `313c9ba627e77d0ebf739affa55b4894770be227` returned `deployed_stale_or_unverified`.
+- Probe evidence: API and Web proxy reported old commit `06c50120449525fac149be9a4de6536b7371cc16`; Web HTML probe failed.
+- GitHub Render Manual Deploy run `26673268538` failed in preflight before contacting Render.
+- Missing GitHub Actions secrets:
+  - `RENDER_API_KEY`
+  - `RENDER_API_SERVICE_ID`
+  - `RENDER_WEB_SERVICE_ID`
+- No secret values, tokens, cookies, or private diagnostics were read or stored.
+
+### Computer Use / Chrome State
+
+- Chrome extension connection succeeded once for project-scoped tab discovery.
+- Opening the Render Dashboard through Chrome timed out.
+- A follow-up attempt to close project-scoped Render Dashboard tabs through the extension also timed out.
+- No further Render UI actions were attempted to avoid opening or accumulating failed pages.
+- GPT Pro handoff remains blocked by unstable Chrome control; no unrelated tabs were inspected.
+
+### Required Next Action
+
+To complete deployment verification safely, use one of these paths:
+
+1. Configure the three Render GitHub Actions secrets listed above, then rerun `Render Manual Deploy` on `main` with:
+   - `commit_sha=313c9ba627e77d0ebf739affa55b4894770be227`
+   - `clear_cache=clear`
+2. Or complete Render API/Web redeploy manually in the Render Dashboard, then run:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit 313c9ba627e77d0ebf739affa55b4894770be227 --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+After deployment is aligned, send GPT Pro the sanitized commit/test/deployment summary and screenshots from project pages only.

@@ -1811,3 +1811,49 @@
 - This gate only removes two remaining user-visible legacy labels from the local Shock Simulator UI.
 - Local Next dev startup still emitted a non-blocking cache persistence permission warning; smoke passed and no product behavior regression was observed.
 - GPT Pro handoff and Render redeploy remain pending a stable project-scoped Chrome/Render path.
+
+## 2026-05-29 Deployment Attempt After Scenario Label Declutter
+
+### Current HEAD
+
+- Latest pushed HEAD: `313c9ba627e77d0ebf739affa55b4894770be227`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` passed for `313c9ba627e77d0ebf739affa55b4894770be227` in run `26673063065`.
+- GitHub `Quality Gates` passed for `313c9ba627e77d0ebf739affa55b4894770be227` in run `26673063056`.
+- Deployed version probe still reports stale or unverified public deployment state.
+- GitHub Render Manual Deploy was triggered for the latest commit with cache clear in run `26673268538`.
+- Render Manual Deploy failed before contacting Render because repository secrets are not configured.
+- Chrome/Computer Use handoff remains blocked by extension timeouts on project-scoped Render Dashboard pages.
+
+### Commands Run
+
+- `gh run list --repo xiaoming2cf-afk/supply-risk-atlas --branch main --limit 4` - latest `ci` and `Quality Gates` passed.
+- `python scripts/check-deployed-version.py --expected-commit 313c9ba --timeout 30` - returned `deployed_stale_or_unverified`.
+- `gh workflow run render-manual-deploy.yml --repo xiaoming2cf-afk/supply-risk-atlas --ref main -f commit_sha=313c9ba627e77d0ebf739affa55b4894770be227 -f clear_cache=clear` - dispatched run `26673268538`.
+- `gh run view 26673268538 --repo xiaoming2cf-afk/supply-risk-atlas --log-failed` - preflight reported missing Render deployment secrets.
+
+### Deployment Status
+
+- Current status: `blocked_missing_render_github_actions_secrets_and_chrome_extension_timeout`.
+- Public API/Web still report old commit `06c50120449525fac149be9a4de6536b7371cc16` through version probes.
+- Required GitHub Actions secrets are missing: `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`.
+- No Render credentials, token values, cookies, private diagnostics, or raw payloads were exposed or stored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Computer Use Actions
+
+- Chrome extension connection succeeded once for project-scoped tab discovery.
+- Opening Render Dashboard in Chrome timed out.
+- Attempting to close project-scoped Render Dashboard tabs through the extension also timed out.
+- No unrelated tabs were inspected.
+- GPT Pro handoff was not completed because Chrome control was unstable.
+
+### Next-Step Request
+
+- Configure the missing Render GitHub Actions secrets or complete Render redeploy manually in the Dashboard.
+- Then verify `313c9ba627e77d0ebf739affa55b4894770be227` with `python scripts/check-deployed-version.py --expected-commit 313c9ba627e77d0ebf739affa55b4894770be227 --timeout 25 --attempts 3` and `npm.cmd run smoke:web -- --mode=deployed`.
+- After deployment aligns, send GPT Pro only a sanitized project status and screenshots from project pages.
