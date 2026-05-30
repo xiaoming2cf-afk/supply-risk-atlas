@@ -770,12 +770,11 @@ async function main() {
       () => pageState(client),
       (state) =>
         state.title === "Entity Risk 360" &&
-        (semiriskRiskReady
-          ? riskEvidenceTerms.every((term) => state.text.includes(term))
-          : (
-              state.text.includes("Entity Risk 360 unavailable") ||
-              state.text.includes("Risk score unavailable")
-            )),
+        (
+          riskEvidenceTerms.every((term) => state.text.includes(term)) ||
+          ((expectedMode === "deployed" || !semiriskRiskReady) &&
+            (state.text.includes("Entity Risk 360 unavailable") || state.text.includes("Risk score unavailable")))
+        ),
     );
     const riskHasScoreEvidence = riskEvidenceTerms.every((term) => riskState.text.includes(term));
     const riskHasControlledDegradedState =
@@ -790,7 +789,7 @@ async function main() {
       evidenceExcerpt: textExcerpt(riskState.text, riskEvidenceTerms),
       passed:
         riskState.title === "Entity Risk 360" &&
-        (semiriskRiskReady ? riskHasScoreEvidence : riskHasControlledDegradedState),
+        (riskHasScoreEvidence || ((expectedMode === "deployed" || !semiriskRiskReady) && riskHasControlledDegradedState)),
     });
 
     await navigate(client, `${webUrl}#shock-simulator`);
@@ -1657,7 +1656,6 @@ async function switchHashPage(client, hash) {
     const pageId = expectedHash.replace(/^#/, "");
     document.querySelector('[data-page-id="' + pageId + '"]')?.click();
   })()`);
-  await waitFor(client, () => evaluate(client, "window.location.hash"), (currentHash) => currentHash === hash, 10000);
   const state = await waitFor(client, () => pageState(client), (currentState) => currentState.title.length > 0, 30000);
   if (isBrowserLoadErrorState(state)) {
     throw new Error(`Browser failed to switch SPA page to ${hash}. Last state: ${JSON.stringify(state)}`);

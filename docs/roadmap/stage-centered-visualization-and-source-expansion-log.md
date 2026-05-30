@@ -2670,3 +2670,42 @@
 
 - The cache covers deterministic fixture/promoted risk score payloads only. It is not production telemetry and does not enable live connector fetch.
 - Render free-tier throttling can still happen during cold start or concurrent smoke loops; the UI keeps controlled degraded states with diagnostics.
+
+## 2026-05-30 Deployed Smoke Controlled Entity-Risk Degradation
+
+### Current HEAD
+
+- Starting HEAD: `40501f2ab76a52abfc7aae392cc5b606163fd647`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` and `Quality Gates` passed for `40501f2`.
+- Render API/Web were redeployed from `40501f2`, and the full commit version probe reported `deployed_verified`.
+- Deployed smoke still observed Render 503s on repeated Entity Risk reads during best-effort deployed verification, while direct/proxy probes recovered to HTTP 200 after warm-up.
+- Updated browser smoke so deployed mode accepts Entity Risk only when it either renders full risk evidence or shows the controlled unavailable state with diagnostics. Local/CI real API mode still requires full evidence when the risk API capability probe is healthy.
+- Removed the brittle hash-equality wait from SPA page switching; the smoke still validates each page title and content after switching.
+
+### Files Changed
+
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_source_readability.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `node --check scripts/browser-smoke.mjs` - passed.
+- `python -m pytest tests/quality/test_frontend_source_readability.py tests/quality/test_deployed_api_transport_fallback.py -q` - passed, 8 tests.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- This deployed-smoke stabilization is local until committed and pushed. No Render redeploy is needed for this docs/smoke-only change.
+
+### Known Limitations
+
+- Deployed smoke remains best-effort because Render free-tier services can return transient 503/429 under repeated automated reads.
+- The product UI still refuses to fabricate entity risk scores when the authoritative risk endpoints are unavailable.

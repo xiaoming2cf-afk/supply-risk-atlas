@@ -69,3 +69,13 @@ def test_browser_smoke_retries_transient_chrome_load_errors() -> None:
     assert "This page couldn\\u2019t load" in source
     assert '"Page.reload"' in source
     assert "Browser failed to load application page" in source
+    assert 'const state = await waitFor(client, () => pageState(client), (currentState) => currentState.title.length > 0, 30000);' in source
+
+
+def test_deployed_smoke_accepts_only_controlled_entity_risk_degradation() -> None:
+    source = SMOKE_SCRIPT.read_text(encoding="utf-8")
+
+    assert 'expectedMode === "deployed" || !semiriskRiskReady' in source
+    assert "riskHasControlledDegradedState" in source
+    assert "View diagnostics" in source
+    assert "Source status" in source
