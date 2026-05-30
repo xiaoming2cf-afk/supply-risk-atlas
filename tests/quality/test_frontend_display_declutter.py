@@ -34,6 +34,7 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     for source in (table_source, chart_source):
         assert "AuditDetails" in source
         assert "MetadataSummary" in source
+        assert "hasAuditSignal" in source
         assert "graph_version=" not in source
         assert "source_manifest_id=" not in source
         assert "metadata-line" not in source
@@ -273,10 +274,24 @@ def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
 
 def test_graph_legend_does_not_render_raw_warning_metadata_in_primary_list() -> None:
     source = read("apps/web/src/features/graph-explorer/GraphLegend.tsx")
+    audit_source = read("apps/web/src/features/common/AuditDetails.tsx")
 
     assert "visibleWarningLabels(metadata.warnings)" in source
     assert "metadata.warnings.map((warning)" not in source
     assert 'return warning' not in source
-    assert 'return "Public evidence warning"' in source
-    assert "semirisk_fixture_metadata" in source
-    assert "Fixture graph metadata available" in source
+    assert "formatPublicWarning" in source
+    assert 'return "Public evidence warning"' not in source
+    assert 'return String(formatDisplayValue(warning))' in audit_source
+    assert "semirisk_fixture_metadata" in audit_source
+    assert "Fixture graph metadata available" in audit_source
+
+
+def test_audit_details_formats_internal_tokens_before_rendering() -> None:
+    source = read("apps/web/src/features/common/AuditDetails.tsx")
+
+    assert "formatPublicWarning(warning)" in source
+    assert 'return "Research fixture mode"' in source
+    assert 'return "Research fixture calibration"' in source
+    assert 'return value ? "yes" : "no"' in source
+    assert "{warning}</li>" not in source
+    assert "fixture_proxy_not_calibrated; not_financial_loss" not in source

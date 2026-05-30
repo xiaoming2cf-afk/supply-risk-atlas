@@ -29,6 +29,7 @@ export function DataTable({
 }: EvidenceTableProps) {
   const visibleRows = rows.slice(0, Math.max(1, limit));
   const visibleColumns = columns ?? inferColumns(visibleRows);
+  const hasAuditSignal = Boolean(degraded || metadata?.warnings?.length);
   return (
     <section className="table-frame" data-component="evidence-table">
       {title ? <h3>{formatDisplayLabel(title)}</h3> : null}
@@ -59,13 +60,15 @@ export function DataTable({
               metadata.warnings?.length ? { label: `${metadata.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
             ]}
           />
-          <AuditDetails
-            items={[
-              { label: "graph_version", value: metadata.graphVersion },
-              { label: "source_manifest_id", value: metadata.sourceManifestId },
-            ]}
-            warnings={metadata.warnings}
-          />
+          {hasAuditSignal ? (
+            <AuditDetails
+              items={[
+                { label: "graph_version", value: metadata.graphVersion },
+                { label: "source_manifest_id", value: metadata.sourceManifestId },
+              ]}
+              warnings={metadata.warnings}
+            />
+          ) : null}
         </>
       ) : null}
     </section>

@@ -35,6 +35,7 @@ export function ChartFrame({
   children,
 }: BasicChartProps & { children?: ReactNode }) {
   const hasMetadata = metadata?.graphVersion || metadata?.sourceManifestId || metadata?.warnings?.length;
+  const hasAuditSignal = Boolean(degraded || metadata?.warnings?.length);
   return (
     <section className="chart-frame" data-component="evidence-chart">
       {title ? <h3>{formatDisplayLabel(title)}</h3> : null}
@@ -48,13 +49,15 @@ export function ChartFrame({
               metadata?.warnings?.length ? { label: `${metadata.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
             ]}
           />
-          <AuditDetails
-            items={[
-              { label: "graph_version", value: metadata?.graphVersion },
-              { label: "source_manifest_id", value: metadata?.sourceManifestId },
-            ]}
-            warnings={metadata?.warnings}
-          />
+          {hasAuditSignal ? (
+            <AuditDetails
+              items={[
+                { label: "graph_version", value: metadata?.graphVersion },
+                { label: "source_manifest_id", value: metadata?.sourceManifestId },
+              ]}
+              warnings={metadata?.warnings}
+            />
+          ) : null}
         </>
       ) : null}
     </section>

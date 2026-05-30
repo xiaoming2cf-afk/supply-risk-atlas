@@ -67,7 +67,7 @@ export function AuditDetails({
               {visibleItems.map((item) => (
                 <div className="audit-detail-row" key={item.label}>
                   <dt>{formatDisplayLabel(item.label)}</dt>
-                  <dd>{formatAuditValue(item.value)}</dd>
+                  <dd>{formatAuditValue(item.value, item.label)}</dd>
                 </div>
               ))}
             </dl>
@@ -77,7 +77,7 @@ export function AuditDetails({
               <strong>Warnings</strong>
               <ul>
                 {visibleWarnings.slice(0, 8).map((warning) => (
-                  <li key={warning}>{warning}</li>
+                  <li key={warning}>{formatPublicWarning(warning)}</li>
                 ))}
               </ul>
             </div>
@@ -109,12 +109,28 @@ export function publicDataModeLabel(mode?: string | null, sourceStatus?: string 
   return "Public evidence mode";
 }
 
-function formatAuditValue(value: unknown) {
+export function formatPublicWarning(warning: string) {
+  if (warning.includes("relationship_endpoint_unavailable")) {
+    return "Backend relationship data unavailable; authoritative rows are hidden.";
+  }
+  if (warning.includes("semirisk_fixture_metadata")) return "Fixture graph metadata available";
+  if (warning.includes("fixture_source_freshness_degraded")) return "Some public fixture source freshness is limited";
+  if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) return "Research fixture mode";
+  if (warning.includes("raw_payload_excluded")) return "Raw source payloads are excluded from the UI";
+  if (warning.includes("private_diagnostics_excluded")) return "Private diagnostics are excluded";
+  return String(formatDisplayValue(warning));
+}
+
+function formatAuditValue(value: unknown, label?: string) {
+  if (label === "not_production_ready" && value === true) return "Research fixture mode";
+  if (label === "calibration_status" && typeof value === "string" && value.includes("fixture_proxy_not_calibrated")) {
+    return "Research fixture calibration";
+  }
   if (Array.isArray(value)) {
     const values = value.map((item) => String(formatDisplayValue(String(item)))).filter(Boolean);
     return values.length ? values.slice(0, 6).join(", ") : "none";
   }
-  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "boolean") return value ? "yes" : "no";
   if (typeof value === "number") return Number.isFinite(value) ? String(value) : "unavailable";
   if (typeof value === "string") return String(formatDisplayValue(value));
   if (typeof value === "object") return "structured metadata";

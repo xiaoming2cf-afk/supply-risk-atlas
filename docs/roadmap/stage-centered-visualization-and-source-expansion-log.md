@@ -2177,3 +2177,50 @@
 
 - Stage coverage still uses fixture/promoted public evidence and documented proxies; it does not claim calibrated production telemetry.
 - Stage-specific tables improve API semantics but remain bounded summaries; detailed raw source records remain unavailable by design.
+
+## 2026-05-30 Display Noise Reduction Follow-Up
+
+### Current HEAD
+
+- Starting HEAD: `908ede3aee6d9835623464da20589c8f13ab4a6a`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Common audit details now format internal warning tokens before rendering them in expandable audit sections.
+- `not_production_ready=true` and fixture calibration audit values are converted to user-facing research/fixture language when shown.
+- Common chart/table frames still keep metadata props and export/API compatibility, but default pages only show the audit disclosure for degraded or warning states instead of repeating technical audit controls under every normal chart/table.
+- Graph Explorer legend now uses the shared public-warning formatter so evidence-context and fixture warnings remain consistent with the rest of the product.
+- Browser smoke confirmed primary page text does not expose raw `data_mode:`, `graph_version:`, `source_manifest_id:`, `transport_attempts:`, `failed_endpoint:`, `not_production_ready: true`, `relationship_endpoint_unavailable`, or fixture calibration tokens.
+
+### Files Changed
+
+- `apps/web/src/features/common/AuditDetails.tsx`
+- `apps/web/src/features/common/charts/ChartPrimitives.tsx`
+- `apps/web/src/features/common/tables/DataTable.tsx`
+- `apps/web/src/features/graph-explorer/GraphLegend.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed, 13 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - initial 184-second runner timeout with no assertion output, rerun with longer timeout passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'data_mode:|graph_version:|source_manifest_id:|transport_attempts:|failed_endpoint:|not_production_ready: true|fixture_proxy_not_calibrated; not_financial_loss|relationship_endpoint_unavailable|semirisk_fixture_metadata'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this local UI declutter follow-up.
+- Latest deployed API/Web remain unavailable or unverified until Render access is restored through a safe project-scoped path.
+- Computer Use actions for this gate: none.
+
+### Known Limitations
+
+- Audit metadata remains available in APIs, exports, reports, and expandable audit details where needed for traceability.
+- This gate improves default display quality; it does not add new source telemetry or claim production readiness.

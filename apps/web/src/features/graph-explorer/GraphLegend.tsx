@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { StatusPill } from "../../app/components";
-import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
+import { AuditDetails, formatPublicWarning, MetadataSummary } from "../common/AuditDetails";
 import { graphColorByLevel } from "./graphLayout";
 import type { GraphVersionMetadata } from "./graphViewModel";
 
@@ -58,14 +58,4 @@ function visibleWarningLabels(warnings: string[]) {
   const labels = warnings.map(formatPublicWarning);
   if (labels.length === 0) labels.push("Research fixture mode");
   return Array.from(new Set(labels));
-}
-
-function formatPublicWarning(warning: string) {
-  if (warning.includes("semirisk_fixture_metadata")) return "Fixture graph metadata available";
-  if (warning.includes("fixture_source_freshness_degraded")) return "Some fixture source freshness is limited";
-  if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) return "Research fixture mode";
-  if (warning.includes("relationship_endpoint_unavailable")) {
-    return "Backend relationship data unavailable; authoritative rows are hidden.";
-  }
-  return "Public evidence warning";
 }
