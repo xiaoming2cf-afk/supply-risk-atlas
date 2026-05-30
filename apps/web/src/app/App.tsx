@@ -87,8 +87,8 @@ function resolveApiWriteBaseUrl(hostname: string | null) {
   if (configured) {
     return configured;
   }
-  if (hostname === "supply-risk-atlas-web.onrender.com") {
-    return "https://supply-risk-atlas-api.onrender.com/api/v1";
+  if (hostname === deploymentTarget) {
+    return "/api/v1";
   }
   return resolveApiBaseUrl(hostname);
 }

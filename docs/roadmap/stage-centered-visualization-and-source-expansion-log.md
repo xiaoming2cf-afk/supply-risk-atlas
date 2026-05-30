@@ -2449,3 +2449,45 @@
 
 - Static HTML commit visibility depends on the value embedded at Web build time; this patch ensures stale public overrides no longer take priority over Render/Git/current checkout commit sources.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Deployed Write Path Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `1136535be7f3f825e63868a8727b9997a947fac1`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Render deploy for `1136535` reached live on API and Web, and `scripts/check-deployed-version.py` reported `deployed_verified` with no warnings.
+- Deployed smoke then exposed an intermittent browser write-path failure: Entity Risk reads could pass, but Shock Simulator POST could still show `Failed to fetch` in headless Chrome.
+- Direct deployed API POST probes succeeded, and manual Chrome verification on the deployed Shock Simulator page produced Expected/P50/CVaR results, so the remaining failure was isolated to deployed browser write transport stability under smoke load.
+- Updated deployed Web write base to use the same-origin `/api/v1` proxy. The proxy forwards POST with a single upstream attempt, so non-idempotent writes are still not retried through fallback paths.
+- Kept all API envelopes, report metadata, source refs, graph/source/data-mode metadata, and no-raw-payload guarantees unchanged.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- Previous deployed commit `1136535` is verified live.
+- This write-path stabilization is local until committed, pushed, and redeployed.
+
+### Known Limitations
+
+- Render free-tier cold starts and short-lived 429s on auxiliary run-history reads can still occur under repeated smoke loops; user-facing pages must show controlled diagnostics instead of fabricated data.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
