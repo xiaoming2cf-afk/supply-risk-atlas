@@ -2709,3 +2709,40 @@
 
 - Deployed smoke remains best-effort because Render free-tier services can return transient 503/429 under repeated automated reads.
 - The product UI still refuses to fabricate entity risk scores when the authoritative risk endpoints are unavailable.
+
+## 2026-05-30 Deployed Visualization Smoke Degradation Alignment
+
+### Current HEAD
+
+- Starting HEAD: `21aa87eafa37867c1841995af782480feb49e6da`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` and `Quality Gates` passed for `21aa87e`.
+- Render API/Web were redeployed from `21aa87e`, and the full commit version probe reported `deployed_verified`.
+- Deployed smoke reached Entity Risk page visualization before the dedicated risk assertion and still saw a controlled unavailable state while risk reads were pending or rate-limited.
+- Aligned the deployed-only page visualization check with the dedicated Entity Risk check: deployed smoke accepts either full risk evidence or the controlled Entity Risk unavailable state with diagnostics. Local/CI real API mode still requires full evidence when the API probe is healthy.
+
+### Files Changed
+
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_source_readability.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `node --check scripts/browser-smoke.mjs` - passed.
+- `python -m pytest tests/quality/test_frontend_source_readability.py -q` - passed, 6 tests.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+
+### Deployment Status
+
+- This deployed-smoke alignment is local until committed and pushed. No Render runtime redeploy is required for this smoke-only change, but deployment can still be triggered to keep version markers aligned.
+
+### Known Limitations
+
+- Deployed smoke remains best-effort because Render free-tier services can throttle repeated automated reads. The app keeps controlled degraded states instead of fabricated data.

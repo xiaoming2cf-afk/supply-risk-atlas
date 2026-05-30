@@ -76,6 +76,8 @@ def test_deployed_smoke_accepts_only_controlled_entity_risk_degradation() -> Non
     source = SMOKE_SCRIPT.read_text(encoding="utf-8")
 
     assert 'expectedMode === "deployed" || !semiriskRiskReady' in source
+    assert 'smokeMode === "deployed"' in source
+    assert "hasControlledEntityRiskDegradation" in source
     assert "riskHasControlledDegradedState" in source
     assert "View diagnostics" in source
     assert "Source status" in source
