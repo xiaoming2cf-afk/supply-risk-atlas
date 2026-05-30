@@ -117,8 +117,9 @@ interface RequestJsonOptions {
   requestTimeoutMs: number;
 }
 
-const MAX_NETWORK_ATTEMPTS = 5;
-const NETWORK_RETRY_BACKOFF_MS = 1500;
+const MAX_NETWORK_ATTEMPTS = 3;
+const MAX_PRIMARY_READ_ATTEMPTS_WITH_FALLBACK = 2;
+const NETWORK_RETRY_BACKOFF_MS = 750;
 
 async function requestJson<T>(
   baseUrl: string | undefined,
@@ -138,10 +139,10 @@ async function requestJson<T>(
   const baseUrls = isIdempotentRead
     ? uniqueBaseUrls([baseUrl, options.readFallbackBaseUrl])
     : [baseUrl];
-  const attemptsPerBaseUrl = isIdempotentRead ? MAX_NETWORK_ATTEMPTS : 1;
-
-  for (const currentBaseUrl of baseUrls) {
-    for (let attempt = 1; attempt <= attemptsPerBaseUrl; attempt += 1) {
+  for (let baseUrlIndex = 0; baseUrlIndex < baseUrls.length; baseUrlIndex += 1) {
+    const currentBaseUrl = baseUrls[baseUrlIndex];
+    const attemptsForCurrentBaseUrl = attemptsForBaseUrl(baseUrlIndex, baseUrls.length, isIdempotentRead);
+    for (let attempt = 1; attempt <= attemptsForCurrentBaseUrl; attempt += 1) {
       transportAttempts += 1;
       const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
       const timeoutHandle = controller
@@ -183,7 +184,7 @@ async function requestJson<T>(
         const shouldRetry =
           isIdempotentRead &&
           isRetryableTransportError(error) &&
-          (attempt < attemptsPerBaseUrl || currentBaseUrl !== baseUrls[baseUrls.length - 1]);
+          attempt < attemptsForCurrentBaseUrl;
         if (!shouldRetry) {
           break;
         }
@@ -214,6 +215,12 @@ async function requestJson<T>(
 
 function uniqueBaseUrls(values: Array<string | undefined>): string[] {
   return Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))));
+}
+
+function attemptsForBaseUrl(baseUrlIndex: number, baseUrlCount: number, isIdempotentRead: boolean) {
+  if (!isIdempotentRead) return 1;
+  if (baseUrlCount > 1 && baseUrlIndex === 0) return MAX_PRIMARY_READ_ATTEMPTS_WITH_FALLBACK;
+  return MAX_NETWORK_ATTEMPTS;
 }
 
 function isRetryableTransportError(error: unknown) {

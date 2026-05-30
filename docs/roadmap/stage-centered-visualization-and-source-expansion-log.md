@@ -2272,3 +2272,55 @@
 
 - Added sources are registry/fixture/promoted public-evidence candidates; live connectors remain disabled by default.
 - Stage source coverage is broader and clearer, but still identifies proxy limitations and does not claim production telemetry.
+
+## 2026-05-30 Deployed API Fallback Tightening
+
+### Current HEAD
+
+- Starting HEAD: `3b62c52db40129e82183d26fd15a31fed3482586`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Browser reads now spend fewer attempts on the direct API origin when a same-origin read fallback is configured, so Render cold-start 5xx/timeouts can move to the Web proxy path faster.
+- Deployed Web runtime now uses a shorter request timeout for browser data reads while keeping POST/write calls on the direct API write base; non-idempotent writes are still not retried through the proxy.
+- Unavailable envelopes still carry `failed_endpoint`, `retry_hint`, `transport_attempts`, source status, and graph/source/data-mode metadata.
+- This keeps direct public API as the preferred deployed read origin when it is healthy, while reducing the chance that Entity Risk remains in a stale pending/degraded UI after a transient API restart.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `packages/api-client/src/dashboard.ts`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- Render API deploy `dep-d8ddkiurnols73983hng` for `supply-risk-atlas-api` reached live at commit `3b62c52db40129e82183d26fd15a31fed3482586`.
+- Render Web deploy `dep-d8ddkrcp3tds73fg3060` for `supply-risk-atlas-web` reached live at commit `3b62c52db40129e82183d26fd15a31fed3482586`.
+- Public version probe showed API, Web build-info, and Web proxy at `3b62c52`; conservative script status remained `deployed_stale_or_unverified` only because the static HTML shell does not expose the commit string.
+- Deployed endpoint probes returned 200 for `/api/v1/version`, `/api/v1/health`, `/api/v1/risk/entities/company%3Atsmc`, and `/api/v1/stage-graph/L5_fabrication` after Render warm-up.
+- `npm.cmd run smoke:web -- --mode=deployed` exited 0 in best-effort mode but initially observed Entity Risk in pending/degraded state during API warm-up; after waiting, Chrome page state showed the TSMC risk score and evidence tables rendered.
+
+### Computer Use Actions
+
+- Used Chrome extension browser only for project-scoped Render dashboard verification.
+- Triggered `Deploy latest commit` for `supply-risk-atlas-api` and `supply-risk-atlas-web`.
+- Recorded only sanitized service names, deploy IDs, commit SHA, and live/build state.
+- No credentials, cookies, tokens, private URLs, raw logs, or account secrets were copied into docs or chat.
+
+### Known Limitations
+
+- The transport tightening is local until this follow-up commit is pushed and Render redeploys again.
+- The static HTML shell still does not carry the commit marker used by `scripts/check-deployed-version.py`, so that script can remain conservative even when API/build-info/proxy commit values match.

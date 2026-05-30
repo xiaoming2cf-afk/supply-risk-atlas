@@ -99,6 +99,11 @@ function resolveApiReadFallbackBaseUrl(hostname: string | null, primaryBaseUrl: 
   return undefined;
 }
 
+function resolveApiRequestTimeoutMs(hostname: string | null) {
+  if (hostname === deploymentTarget) return 12000;
+  return 60000;
+}
+
 function getHashPage(): DashboardPageId {
   if (typeof window === "undefined") {
     return "system-health-center";
@@ -156,14 +161,16 @@ export function App() {
   const configuredApiReadFallbackBaseUrl = hasResolvedRuntimeHostname
     ? resolveApiReadFallbackBaseUrl(runtimeHostname, configuredApiBaseUrl)
     : undefined;
+  const configuredApiRequestTimeoutMs = hasResolvedRuntimeHostname ? resolveApiRequestTimeoutMs(runtimeHostname) : 60000;
   const apiClient = useMemo(
     () =>
       createSupplyRiskApiClient({
         baseUrl: configuredApiBaseUrl,
         readFallbackBaseUrl: configuredApiReadFallbackBaseUrl,
-        writeBaseUrl: configuredApiWriteBaseUrl
+        writeBaseUrl: configuredApiWriteBaseUrl,
+        requestTimeoutMs: configuredApiRequestTimeoutMs,
       }),
-    [configuredApiBaseUrl, configuredApiReadFallbackBaseUrl, configuredApiWriteBaseUrl]
+    [configuredApiBaseUrl, configuredApiReadFallbackBaseUrl, configuredApiWriteBaseUrl, configuredApiRequestTimeoutMs]
   );
   const t = (value: string) => translateText(value, language);
   const activeResultKey: DashboardPageId =

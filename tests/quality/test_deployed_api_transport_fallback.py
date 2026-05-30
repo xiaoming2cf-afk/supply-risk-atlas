@@ -12,15 +12,20 @@ def test_deployed_web_wires_same_origin_read_fallback_without_changing_write_bas
     assert "function resolveApiReadFallbackBaseUrl" in source
     assert 'const sameOriginProxyBaseUrl = "/api/v1";' in source
     assert "if (hostname === deploymentTarget) return sameOriginProxyBaseUrl;" in source
+    assert "function resolveApiRequestTimeoutMs" in source
+    assert "if (hostname === deploymentTarget) return 12000;" in source
     assert "readFallbackBaseUrl: configuredApiReadFallbackBaseUrl" in source
     assert "writeBaseUrl: configuredApiWriteBaseUrl" in source
+    assert "requestTimeoutMs: configuredApiRequestTimeoutMs" in source
 
 
 def test_dashboard_client_retries_only_idempotent_reads_and_reports_http_status() -> None:
     source = CLIENT_SOURCE.read_text(encoding="utf-8")
 
     assert "const isIdempotentRead = method === \"GET\" || method === \"HEAD\";" in source
-    assert "const attemptsPerBaseUrl = isIdempotentRead ? MAX_NETWORK_ATTEMPTS : 1;" in source
+    assert "const MAX_PRIMARY_READ_ATTEMPTS_WITH_FALLBACK = 2;" in source
+    assert "function attemptsForBaseUrl" in source
+    assert "attemptsForBaseUrl(baseUrlIndex, baseUrls.length, isIdempotentRead)" in source
     assert "uniqueBaseUrls([baseUrl, options.readFallbackBaseUrl])" in source
     assert "lastError instanceof DashboardApiHttpError ? lastError.status : undefined" in source
     assert "transport_attempts: transportAttempts" in source
