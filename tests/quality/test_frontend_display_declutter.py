@@ -90,6 +90,9 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
         "expected_loss {",
         ">Affected mean legacy<",
         ">Max legacy<",
+        ">Noisy OR<",
+        ">Leontief bottleneck<",
+        ">Additive cap<",
     ]
 
     for needle in forbidden_primary_titles + forbidden_primary_copy:
@@ -104,6 +107,9 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Template 中国台湾 earthquake" in source
     assert ">Affected mean<" in source
     assert ">Maximum propagation<" in source
+    assert ">Independent exposure spread<" in source
+    assert ">Bottleneck-limited spread<" in source
+    assert ">Capped cumulative spread<" in source
 
 
 def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> None:

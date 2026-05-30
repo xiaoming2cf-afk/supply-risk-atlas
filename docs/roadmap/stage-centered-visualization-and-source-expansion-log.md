@@ -1857,3 +1857,47 @@
 - Configure the missing Render GitHub Actions secrets or complete Render redeploy manually in the Dashboard.
 - Then verify `313c9ba627e77d0ebf739affa55b4894770be227` with `python scripts/check-deployed-version.py --expected-commit 313c9ba627e77d0ebf739affa55b4894770be227 --timeout 25 --attempts 3` and `npm.cmd run smoke:web -- --mode=deployed`.
 - After deployment aligns, send GPT Pro only a sanitized project status and screenshots from project pages.
+
+## 2026-05-30 Propagation Option Label Declutter
+
+### Current HEAD
+
+- Starting HEAD: `458f0070393e17f3e1dbbb2920195789b40c0aa3`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Shock Simulator and Reverse Stress Lab no longer expose model-internal propagation names as the visible option text.
+- `Noisy OR` now renders as `Independent exposure spread`.
+- `Leontief bottleneck` now renders as `Bottleneck-limited spread`.
+- `Additive cap` now renders as `Capped cumulative spread`.
+- Underlying API/model enum values remain unchanged, preserving backwards compatibility and report metadata.
+- Added a frontend display quality guard to prevent the model-internal option labels from returning to primary page copy.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'Noisy OR|Leontief bottleneck|Additive cap|Affected mean legacy|Max legacy|semirisk_fixture_metadata|graphVersion=|sourceManifestId=|\[object Object\]'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the missing Render secrets or manual Render redeploy path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate improves local form copy only; it does not change the underlying simulation algorithms or deployed Render state.
+- Local Next dev startup still emitted a non-blocking cache persistence permission warning; smoke passed and no product behavior regression was observed.

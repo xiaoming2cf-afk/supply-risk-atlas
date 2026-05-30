@@ -2690,9 +2690,9 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
             <span>{t("Propagation mode")}</span>
             <select value={input.propagation_mode ?? "auto_semiconductor"} onChange={(event) => setInput((current) => ({ ...current, propagation_mode: event.target.value as ForwardScenarioInput["propagation_mode"] }))}>
               <option value="auto_semiconductor">Auto semiconductor propagation</option>
-              <option value="noisy_or">Noisy OR</option>
-              <option value="leontief_bottleneck">Leontief bottleneck</option>
-              <option value="additive_cap">Additive cap</option>
+              <option value="noisy_or">Independent exposure spread</option>
+              <option value="leontief_bottleneck">Bottleneck-limited spread</option>
+              <option value="additive_cap">Capped cumulative spread</option>
               <option value="max">Maximum propagation</option>
             </select>
           </label>
@@ -3055,8 +3055,8 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             <span>{t("Propagation mode")}</span>
             <select value={input.propagation_mode ?? "auto_semiconductor"} onChange={(event) => setInput((current) => ({ ...current, propagation_mode: event.target.value as ReverseStressInput["propagation_mode"] }))}>
               <option value="auto_semiconductor">Auto semiconductor propagation</option>
-              <option value="leontief_bottleneck">Leontief bottleneck</option>
-              <option value="noisy_or">Noisy OR</option>
+              <option value="leontief_bottleneck">Bottleneck-limited spread</option>
+              <option value="noisy_or">Independent exposure spread</option>
             </select>
           </label>
         </div>
