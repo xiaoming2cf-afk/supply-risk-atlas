@@ -115,7 +115,7 @@ stages:
     required_data_fields: [company_id, ip_or_tool, relationship_scope, disclosure_period, source_refs, confidence]
     primary_sources: [sec_edgar_lite, company_annual_report_manual_upload, oecd_semiconductor_value_chain_reports]
     secondary_sources: [openalex_crossref_literature_lite, gdelt_semiconductor_lite]
-    source_families: [enterprise_public_disclosure, industry_public_fixture]
+    source_families: [enterprise_public_disclosure, industry_public_fixture, national_policy_macro_public]
     connector_files: [sec_edgar_lite.py, gdelt_semiconductor_lite.py]
     fixture_files: [sec_edgar_lite.json, gdelt_semiconductor_lite.json]
     live_fetch_default: disabled

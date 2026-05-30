@@ -1343,6 +1343,11 @@ def _table_payloads(snapshot: Any) -> dict[str, list[dict[str, Any]]]:
     nodes = [_node_view(node) for node in snapshot.nodes]
     edges = [_edge_view(edge) for edge in snapshot.edges]
     evidence = _evidence_rows(snapshot, limit=500)
+    source_counts = Counter(
+        source_id
+        for edge in snapshot.edges
+        for source_id in source_ref_ids(edge.provenance_refs)
+    )
     relationship_payloads = _relationship_edge_payloads(snapshot)
     supply_rows = supply_relationship_rows(relationship_payloads)
     demand_rows = demand_relationship_rows(relationship_payloads)
@@ -1378,6 +1383,33 @@ def _table_payloads(snapshot: Any) -> dict[str, list[dict[str, Any]]]:
             row for row in production_rows if row.get("bottleneck_flag") is True
         ],
         "supply_demand_balance": balance_rows,
+        "stage_node_catalog": nodes,
+        "stage_source_coverage": [
+            {"source_id": source_id, "evidence_count": count, "source_status": "fixture_promoted_public_evidence"}
+            for source_id, count in sorted(source_counts.items())
+        ],
+        "stage_evidence_refs": evidence,
+        "mineral_inputs": [
+            node for node in nodes if node["kind"] in {"critical_mineral", "raw_material", "commodity"}
+        ],
+        "material_chemical_inputs": [
+            node for node in nodes if node["kind"] in {"material", "chemical", "raw_material", "critical_mineral"}
+        ],
+        "equipment_suppliers": [
+            node for node in nodes if node["kind"] in {"equipment", "company"}
+        ],
+        "fab_process_dependencies": production_rows,
+        "packaging_testing": [
+            row
+            for row in [*supply_rows, *production_rows]
+            if row.get("edge_type") in {"packaged_by", "tested_by", "provides_service", "requires", "depends_on"}
+        ],
+        "logistics_routes": [
+            edge for edge in edges if edge["edge_type"] in {"routes_through", "logistics_route_edge", "exposed_to_hazard"}
+        ],
+        "compliance_restrictions": [
+            edge for edge in edges if edge["edge_type"] in {"restricted_by", "policy_restriction_edge", "sanctions_screening_event"}
+        ],
     }
 
 

@@ -331,17 +331,31 @@ def _stage_clusters(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _stage_source_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:
     primary = set(stage.get("primary_sources", []))
     secondary = set(stage.get("secondary_sources", []))
+    node_types = list(stage.get("core_node_types", []))
+    edge_types = list(stage.get("core_edge_types", []))
+    relationship_classes = list(stage.get("relationship_classes", []))
     return [
         {
             "source_id": source_id,
             "stage_id": stage["stage_id"],
             "tier": "primary" if source_id in primary else "secondary",
+            "source_family": _source_family_for_source(source_id, stage),
+            "source_scope": _source_scope_for_source(source_id),
+            "supports_node_types": node_types,
+            "supports_edge_types": edge_types,
+            "supports_relationship_classes": relationship_classes,
+            "coverage_summary": _source_coverage_summary(source_id, stage),
             "connector_status": "fixture_or_registry",
             "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
             "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
             "failure_reason": stage.get("failure_reason", "not_recorded"),
             "live_fetch_default": "disabled",
             "fixture_required": True,
+            "fixture_policy": "fixture_required_live_disabled",
+            "api_visibility_policy": _matrix().get("defaults", {}).get(
+                "api_visibility_policy",
+                "sanitized_summary_and_lineage_only",
+            ),
         }
         for source_id in sorted(primary | secondary)
     ]
@@ -466,13 +480,66 @@ def _table_id_for_name(component_name: str) -> str:
         "ConnectorStatusTable": "connector_status",
         "CriticalInputTable": "production_dependencies",
         "DemandRelationshipTable": "demand_relationships",
+        "EquipmentSupplierTable": "equipment_suppliers",
         "EvidenceRefsTable": "evidence_refs",
+        "FabProcessDependencyTable": "fab_process_dependencies",
         "HazardEventTable": "hazard_events",
         "LogisticsFacilityTable": "logistics_facilities",
+        "LogisticsRouteTable": "logistics_routes",
+        "MaterialChemicalInputTable": "material_chemical_inputs",
+        "MineralInputTable": "mineral_inputs",
+        "PackagingTestingTable": "packaging_testing",
         "PolicyEventTable": "policy_events",
         "ProductDemandTable": "product_demand",
         "ProductionDependencyTable": "production_dependencies",
+        "ComplianceRestrictionTable": "compliance_restrictions",
+        "StageEvidenceRefsTable": "stage_evidence_refs",
+        "StageNodeCatalogTable": "stage_node_catalog",
+        "StageSourceCoverageTable": "stage_source_coverage",
         "SupplyRelationshipTable": "supply_relationships",
         "TradeFlowTable": "trade_flows",
     }
     return mapping.get(component_name, "graph_nodes")
+
+
+def _source_family_for_source(source_id: str, stage: dict[str, Any]) -> str:
+    families = list(stage.get("source_families", []))
+    if source_id.startswith(("sec_edgar", "company_annual_report")):
+        return "enterprise_public_disclosure"
+    if source_id.startswith(("eto_", "wsts_", "gdelt_", "openalex_")):
+        return "industry_public_fixture"
+    if source_id.startswith(
+        (
+            "oecd_",
+            "world_bank_",
+            "bis_",
+            "federal_register_",
+            "ofac_",
+            "consolidated_screening_",
+            "usgs_",
+            "un_comtrade_",
+            "wits_",
+            "nga_",
+        )
+    ):
+        return "national_policy_macro_public"
+    return families[0] if families else "industry_public_fixture"
+
+
+def _source_scope_for_source(source_id: str) -> str:
+    family = _source_family_for_source(source_id, {"source_families": []})
+    if family == "national_policy_macro_public":
+        return "National, multilateral, policy, macro, trade, hazard, sanctions, or logistics public evidence."
+    if family == "enterprise_public_disclosure":
+        return "Enterprise public filings or reviewed annual-report summaries."
+    return "Industry, market, literature, or event-summary fixture evidence."
+
+
+def _source_coverage_summary(source_id: str, stage: dict[str, Any]) -> str:
+    family = _source_family_for_source(source_id, stage)
+    relationship_classes = ", ".join(stage.get("relationship_classes", []))
+    if family == "national_policy_macro_public":
+        return f"Public national or multilateral source supporting {stage['stage_id']} node and edge context for {relationship_classes}."
+    if family == "enterprise_public_disclosure":
+        return f"Company disclosure source supporting enterprise evidence and relationship context for {stage['stage_id']}."
+    return f"Industry or event fixture source supporting public-evidence context for {stage['stage_id']}."

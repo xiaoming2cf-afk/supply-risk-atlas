@@ -2138,3 +2138,42 @@
 
 - Some raw IDs remain intentionally available in collapsed audit details, API responses, reports, and exports for traceability.
 - This gate improves default presentation quality; it does not change the deployed Render blocker or claim production readiness.
+
+## 2026-05-30 Stage Table And Source Coverage API Hardening
+
+### Current HEAD
+
+- Starting HEAD: `bf729d4c0a7c2a2fca7efc8f6fb0af17a912f96c`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Stage graph source coverage rows now include source family, source scope, supported node types, supported edge types, supported relationship classes, coverage summary, fixture policy, and API visibility policy.
+- Stage table endpoints no longer fall back to generic graph node rows for stage-specific tables such as mineral inputs, material/chemical inputs, equipment suppliers, fab process dependencies, packaging/testing, logistics routes, compliance restrictions, stage node catalog, stage source coverage, and stage evidence refs.
+- L3 Design/EDA/IP source family coverage was corrected to include national/multilateral public evidence because OECD reports are a primary source for that stage.
+- Existing bounded metadata, fixture/public-evidence labels, no-live-fetch posture, no raw payload exposure, and geography normalization requirements are preserved.
+
+### Files Changed
+
+- `configs/sources/stage_source_coverage_matrix.yaml`
+- `docs/data/stage-source-coverage-matrix.md`
+- `services/api/services/graph_service.py`
+- `services/api/services/stage_graph_service.py`
+- `tests/api/test_stage_graph_endpoints.py`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_stage_graph_endpoints.py tests/sources/test_stage_source_coverage_matrix.py -q` - passed, 29 tests.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+
+### Deployment Status
+
+- No Render deployment is claimed for this local API hardening gate.
+- Deployed API/Web were already recorded as unavailable for the latest implementation path; redeploy remains blocked until a safe Render access path is restored.
+
+### Known Limitations
+
+- Stage coverage still uses fixture/promoted public evidence and documented proxies; it does not claim calibrated production telemetry.
+- Stage-specific tables improve API semantics but remain bounded summaries; detailed raw source records remain unavailable by design.

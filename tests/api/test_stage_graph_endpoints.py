@@ -112,6 +112,14 @@ def test_stage_graph_endpoint_returns_bounded_stage_data(
     for row in data["source_coverage"]:
         assert row["source_status"] == data["source_status"]
         assert row["calibration_status"] == data["calibration_status"]
+        assert row["source_family"] in data["source_families"]
+        assert row["source_scope"]
+        assert row["supports_node_types"] == data["core_node_types"]
+        assert row["supports_edge_types"] == data["core_edge_types"]
+        assert row["supports_relationship_classes"] == data["relationship_classes"]
+        assert row["coverage_summary"]
+        assert row["fixture_policy"] == "fixture_required_live_disabled"
+        assert row["api_visibility_policy"] == "sanitized_summary_and_lineage_only"
     for row in data["source_family_coverage"]:
         assert row["source_family"] in data["source_families"]
         assert row["live_fetch_default"] == "disabled"
@@ -163,3 +171,26 @@ def test_stage_graph_support_endpoints_return_sanitized_metadata(
     assert "raw_payload" not in rendered
     assert "country:" + "tw" not in rendered
     assert "region:" + "tw" not in rendered
+
+
+def test_stage_graph_tables_use_stage_specific_payloads(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_GRAPH_MODE", "promoted")
+
+    minerals = _client().get("/api/v1/stage-graph/L1_raw_minerals/tables").json()["data"]["tables"]
+    equipment = _client().get("/api/v1/stage-graph/L4_equipment/tables").json()["data"]["tables"]
+    logistics = _client().get("/api/v1/stage-graph/L8_logistics/tables").json()["data"]["tables"]
+
+    assert "MineralInputTable" in minerals
+    assert minerals["MineralInputTable"]
+    assert all(row["kind"] in {"critical_mineral", "raw_material", "commodity"} for row in minerals["MineralInputTable"])
+
+    assert "EquipmentSupplierTable" in equipment
+    assert equipment["EquipmentSupplierTable"]
+    assert all(row["kind"] in {"equipment", "company"} for row in equipment["EquipmentSupplierTable"])
+
+    assert "LogisticsRouteTable" in logistics
+    assert logistics["LogisticsRouteTable"]
+    assert all(
+        row["edge_type"] in {"routes_through", "logistics_route_edge", "exposed_to_hazard"}
+        for row in logistics["LogisticsRouteTable"]
+    )
