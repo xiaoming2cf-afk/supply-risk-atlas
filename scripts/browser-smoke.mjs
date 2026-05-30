@@ -616,7 +616,8 @@ async function main() {
       "Graph quality",
       "Source coverage by tier",
       "Chain layer coverage",
-      "SourceCatalog",
+      "Source catalog",
+      "Connector status",
       "Research fixture mode",
       "Data audit details",
     ];
@@ -1606,8 +1607,7 @@ async function navigate(client, url) {
         const current = new URL(String(href));
         return (
           current.origin === targetUrl.origin &&
-          current.pathname === targetUrl.pathname &&
-          (!targetUrl.hash || current.hash === targetUrl.hash)
+          current.pathname === targetUrl.pathname
         );
       } catch {
         return false;
@@ -1632,6 +1632,12 @@ async function navigate(client, url) {
       document.querySelector('[data-page-id="' + pageId + '"]')?.click();
     })()`);
     await sleep(100);
+    await waitFor(
+      client,
+      () => evaluate(client, "window.location.hash"),
+      (hash) => hash === expectedHash,
+      10000,
+    );
   }
   await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
 }

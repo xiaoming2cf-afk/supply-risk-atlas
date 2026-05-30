@@ -26,6 +26,8 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     table_source = read("apps/web/src/features/common/tables/DataTable.tsx")
     chart_source = read("apps/web/src/features/common/charts/ChartPrimitives.tsx")
     component_source = read("apps/web/src/app/components.tsx")
+    source_catalog_source = read("apps/web/src/features/common/tables/SourceCatalogTable.tsx")
+    connector_status_source = read("apps/web/src/features/common/tables/ConnectorStatusTable.tsx")
 
     for source in (table_source, chart_source):
         assert "AuditDetails" in source
@@ -36,6 +38,11 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     assert "formatDisplayLabel(column)" in table_source
     assert "formatDisplayLabel(metric.label)" in component_source
     assert "formatDisplayLabel(label)" in component_source
+    assert "formatDisplayValue(value)" in component_source
+    assert '"SourceCatalog"' not in source_catalog_source
+    assert '"ConnectorStatus"' not in connector_status_source
+    assert '"Source catalog"' in source_catalog_source
+    assert '"Connector status"' in connector_status_source
 
 
 def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> None:
@@ -101,6 +108,24 @@ def test_run_page_unavailable_states_keep_endpoint_diagnostics_collapsed() -> No
     assert "Intervention Optimizer unavailable" in source
     assert "Investigation Report unavailable" in source
     assert source.count('label="View diagnostics"') >= 4
+
+
+def test_system_health_heavy_inventory_sections_are_collapsed() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    expected_disclosures = [
+        'label="Source registry details"',
+        'label="Node, edge, and warning details"',
+        'label="Data catalog details"',
+        'label="Entity resolution details"',
+        'label="Evidence lineage details"',
+        'label="Runtime event details"',
+    ]
+
+    for needle in expected_disclosures:
+        assert needle in source
+    assert 'title="Source catalog"' in source
+    assert 'title="Connector status"' in source
 
 
 def test_page_relevance_policy_declares_display_tiers() -> None:

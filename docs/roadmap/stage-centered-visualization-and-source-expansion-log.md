@@ -1513,3 +1513,56 @@
 - GitHub `Quality Gates` run `26652907468`: passed.
 - Deployed version probe for expected commit `4a10e48766c3aa30eaa3155b7ec0de125ba2c5a6`: `deployed_unavailable`.
 - Render Manual Deploy run `26653298557`: failed preflight before contacting Render because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured as GitHub Actions secrets.
+
+## 2026-05-29 System Health Detail Folding And Local API Stability
+
+### Current HEAD
+
+- Starting HEAD: `9ff222c8ba633f9cf016fcbc83f6556804265921`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Continued the demo-first display cleanup on System Health.
+- Kept readiness, source coverage, graph quality, connector/source status, and fixture/public-evidence badges visible.
+- Moved heavy source registry rows, graph node/edge type counts, data catalog inventories, entity-resolution breakdowns, evidence-lineage records, and runtime log lines behind explicit audit/detail disclosures.
+- Renamed default source/connector table titles from implementation-style `SourceCatalog` / `ConnectorStatus` to user-facing `Source catalog` / `Connector status`.
+- Local browser reads now prefer the same-origin `/api/v1` proxy on `localhost` / `127.0.0.1`, avoiding direct-origin CORS retry delays during local smoke.
+- Increased the bounded Next proxy upstream timeout from 15 seconds to 30 seconds; POST/write requests still use one upstream attempt and are not retried through the proxy.
+- Fixed the smoke hash navigation helper so same-document hash routes are explicitly verified without blocking on `Page.navigate` hash behavior.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `apps/web/src/app/api/v1/[...path]/route.ts`
+- `apps/web/src/app/components.tsx`
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/common/tables/ConnectorStatusTable.tsx`
+- `apps/web/src/features/common/tables/SourceCatalogTable.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+
+### Commands Run
+
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- Started local API on `127.0.0.1:8000` and local Web on `localhost:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest -q` - passed.
+- Stopped local API/Web dev servers after validation.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Render remains blocked by the previously recorded missing GitHub Actions secrets / unavailable safe Render credential path.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate improves local page clarity and local API/proxy stability; deployed Render services still require the safe deployment path to be restored.
+- GPT Pro handoff still requires a stable project-scoped browser/Chrome path.

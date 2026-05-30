@@ -69,12 +69,12 @@ type DashboardResultMap = Partial<Record<DashboardPageId, ApiResult<unknown>>>;
 type DashboardDataState = Partial<SupplyRiskDashboardData>;
 
 function resolveApiBaseUrl(hostname: string | null) {
+  if (hostname === "127.0.0.1" || hostname === "localhost") {
+    return "/api/v1";
+  }
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
   if (configured) {
     return configured;
-  }
-  if (hostname === "127.0.0.1" || hostname === "localhost") {
-    return "/api/v1";
   }
   return "/api/v1";
 }

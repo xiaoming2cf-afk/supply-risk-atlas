@@ -4930,10 +4930,10 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
       license: source.license,
     }));
   const connectorStatusSummary = Object.entries(platformStatus.connectorStatusCounts)
-    .map(([status, count]) => `${status}:${count}`)
+    .map(([status, count]) => `${formatDisplayValue(status)}: ${count}`)
     .join("; ") || "unavailable";
   const sourceStatusSummary = Object.entries(platformStatus.sourceStatusCounts)
-    .map(([status, count]) => `${status}:${count}`)
+    .map(([status, count]) => `${formatDisplayValue(status)}: ${count}`)
     .join("; ") || "unavailable";
   const calibrationStatus = Array.isArray(platformStatus.calibrationStatus)
     ? platformStatus.calibrationStatus.join(";")
@@ -5062,12 +5062,14 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <EvidenceCountCard count={health.evidenceLineage.rawRecordCount + health.evidenceLineage.goldEdgeEventCount} />
         </div>
         <SourceCatalogTable
+          title="Source catalog"
           rows={sourceCatalogRows}
           columns={["id", "status", "records", "license"]}
           limit={6}
           metadata={chartMetadata}
         />
         <ConnectorStatusTable
+          title="Connector status"
           rows={connectorStatusRows}
           columns={["id", "connector_status", "source_status", "source_tier", "license"]}
           limit={6}
@@ -5126,25 +5128,27 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               <Field label="Data nodes" value={health.sourceRegistry.dataNodeCount ?? 0} />
               <Field label="Promoted" value={health.sourceRegistry.promotedGraph?.status ?? "partial"} />
             </div>
-            <ul className="health-list">
-              {health.sourceRegistry.sources.map((source) => (
-                <li className="data-row" key={source.id}>
-                  <div className="row-top">
-                    <div>
-                      <span className="row-title">{source.name}</span>
-                      <span className="row-subtitle">{source.license}</span>
+            <AuditDetails label="Source registry details">
+              <ul className="health-list">
+                {health.sourceRegistry.sources.map((source) => (
+                  <li className="data-row" key={source.id}>
+                    <div className="row-top">
+                      <div>
+                        <span className="row-title">{source.name}</span>
+                        <span className="row-subtitle">{source.license}</span>
+                      </div>
+                      <StatusPill status={source.status} />
                     </div>
-                    <StatusPill status={source.status} />
-                  </div>
-                  <div className="row-meta">
-                    <span>{source.updateFrequency}</span>
-                    <span>{t(`${source.recordCount} records`)}</span>
-                    <span>{t(`${source.maxStaleMinutes} m SLA`)}</span>
-                    <span>{source.checksum.slice(0, 10)}</span>
-                  </div>
-                </li>
-              ))}
+                    <div className="row-meta">
+                      <span>{source.updateFrequency}</span>
+                      <span>{t(`${source.recordCount} records`)}</span>
+                      <span>{t(`${source.maxStaleMinutes} m SLA`)}</span>
+                      <span>{source.checksum.slice(0, 10)}</span>
+                    </div>
+                  </li>
+                ))}
               </ul>
+            </AuditDetails>
             </Panel>
 
             {health.semiconductorGraph ? (
@@ -5176,54 +5180,56 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                     { label: "source_manifest_id", value: health.semiconductorGraph.sourceManifestId },
                   ]}
                 />
-                <div className="driver-grid">
-                  <div className="table-wrap">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>{t("Node type")}</th>
-                          <th>{t("Count")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(health.semiconductorGraph.nodeCountByType).map(([nodeType, count]) => (
-                          <tr key={nodeType}>
-                            <td>{formatDisplayLabel(nodeType)}</td>
-                            <td>{formatCompactNumber(count)}</td>
+                <AuditDetails label="Node, edge, and warning details">
+                  <div className="driver-grid">
+                    <div className="table-wrap">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>{t("Node type")}</th>
+                            <th>{t("Count")}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="table-wrap">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>{t("Edge type")}</th>
-                          <th>{t("Count")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(health.semiconductorGraph.edgeCountByType).map(([edgeType, count]) => (
-                          <tr key={edgeType}>
-                            <td>{formatDisplayLabel(edgeType)}</td>
-                            <td>{formatCompactNumber(count)}</td>
+                        </thead>
+                        <tbody>
+                          {Object.entries(health.semiconductorGraph.nodeCountByType).map(([nodeType, count]) => (
+                            <tr key={nodeType}>
+                              <td>{formatDisplayLabel(nodeType)}</td>
+                              <td>{formatCompactNumber(count)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="table-wrap">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>{t("Edge type")}</th>
+                            <th>{t("Count")}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {Object.entries(health.semiconductorGraph.edgeCountByType).map(([edgeType, count]) => (
+                            <tr key={edgeType}>
+                              <td>{formatDisplayLabel(edgeType)}</td>
+                              <td>{formatCompactNumber(count)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-                <ul className="health-list" style={{ marginTop: 16 }}>
-                  {health.semiconductorGraph.warnings.map((warning) => (
-                    <li className="data-row" key={warning}>
-                      <div className="row-top">
-                        <span className="row-title">{formatDashboardWarning(warning)}</span>
-                        <StatusPill status={health.semiconductorGraph?.status ?? "degraded"} />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                  <ul className="health-list" style={{ marginTop: 16 }}>
+                    {health.semiconductorGraph.warnings.map((warning) => (
+                      <li className="data-row" key={warning}>
+                        <div className="row-top">
+                          <span className="row-title">{formatDashboardWarning(warning)}</span>
+                          <StatusPill status={health.semiconductorGraph?.status ?? "degraded"} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </AuditDetails>
               </Panel>
             ) : (
               <Panel
@@ -5250,60 +5256,67 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               title="Data node catalog"
               subtitle={`${health.dataCatalog.totalDataNodes} governed data nodes across source, dataset, indicator, license, release, field, and series classes.`}
             >
-              <div className="driver-grid">
-                <div className="table-wrap">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>{t("Data node type")}</th>
-                        <th>{t("Count")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {health.dataCatalog.byType.map((row) => (
-                        <tr key={row.entityType}>
-                          <td>{row.entityType}</td>
-                          <td>{formatCompactNumber(row.count)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="table-wrap">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>{t("Source")}</th>
-                        <th>{t("Data nodes")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {health.dataCatalog.bySource.map((row) => (
-                        <tr key={row.sourceId}>
-                          <td>{row.sourceId}</td>
-                          <td>{formatCompactNumber(row.count)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="inspector-grid" style={{ marginBottom: 16 }}>
+                <Field label="Data nodes" value={formatCompactNumber(health.dataCatalog.totalDataNodes)} />
+                <Field label="Source count" value={health.dataCatalog.bySource.length} />
+                <Field label="Catalog promoted" value={health.dataCatalog.promoted ? "yes" : "review"} />
               </div>
-              <ul className="health-list" style={{ marginTop: 16 }}>
-                {health.dataCatalog.licensePolicies.slice(0, 6).map((license) => (
-                  <li className="data-row" key={license.id}>
-                    <div className="row-top">
-                      <div>
-                        <span className="row-title">{license.name}</span>
-                        <span className="row-subtitle">{license.sourceIds.join(" / ")}</span>
+              <AuditDetails label="Data catalog details">
+                <div className="driver-grid">
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>{t("Data node type")}</th>
+                          <th>{t("Count")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {health.dataCatalog.byType.map((row) => (
+                          <tr key={row.entityType}>
+                            <td>{formatDisplayLabel(row.entityType)}</td>
+                            <td>{formatCompactNumber(row.count)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>{t("Source")}</th>
+                          <th>{t("Data nodes")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {health.dataCatalog.bySource.map((row) => (
+                          <tr key={row.sourceId}>
+                            <td>{row.sourceId}</td>
+                            <td>{formatCompactNumber(row.count)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <ul className="health-list" style={{ marginTop: 16 }}>
+                  {health.dataCatalog.licensePolicies.slice(0, 6).map((license) => (
+                    <li className="data-row" key={license.id}>
+                      <div className="row-top">
+                        <div>
+                          <span className="row-title">{license.name}</span>
+                          <span className="row-subtitle">{license.sourceIds.join(" / ")}</span>
+                        </div>
+                        <StatusPill status={health.dataCatalog?.promoted ? "operational" : "degraded"} />
                       </div>
-                      <StatusPill status={health.dataCatalog?.promoted ? "operational" : "degraded"} />
-                    </div>
-                    <div className="row-meta">
-                      <span>{license.licenseUrl || "license URL unavailable"}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                      <div className="row-meta">
+                        <span>{license.licenseUrl || "license URL unavailable"}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </AuditDetails>
             </Panel>
           ) : null}
 
@@ -5311,31 +5324,38 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             title="Entity resolution"
             subtitle={`${health.entityResolution.totalEntities} silver entities; ${formatPercent(health.entityResolution.averageConfidence)} average confidence.`}
           >
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{t("Entity type")}</th>
-                    <th>{t("Count")}</th>
-                    <th>{t("Source")}</th>
-                    <th>{t("Entities")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {health.entityResolution.byEntityType.map((row, index) => {
-                    const sourceRow = health.entityResolution.bySource[index];
-                    return (
-                      <tr key={row.entityType}>
-                        <td>{row.entityType}</td>
-                        <td>{formatCompactNumber(row.count)}</td>
-                        <td>{sourceRow?.sourceId ?? "n/a"}</td>
-                        <td>{formatCompactNumber(sourceRow?.entityCount ?? 0)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="inspector-grid" style={{ marginBottom: 16 }}>
+              <Field label="Silver entities" value={formatCompactNumber(health.entityResolution.totalEntities)} />
+              <Field label="Average confidence" value={formatPercent(health.entityResolution.averageConfidence)} />
+              <Field label="Entity types" value={health.entityResolution.byEntityType.length} />
             </div>
+            <AuditDetails label="Entity resolution details">
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>{t("Entity type")}</th>
+                      <th>{t("Count")}</th>
+                      <th>{t("Source")}</th>
+                      <th>{t("Entities")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {health.entityResolution.byEntityType.map((row, index) => {
+                      const sourceRow = health.entityResolution.bySource[index];
+                      return (
+                        <tr key={row.entityType}>
+                          <td>{formatDisplayLabel(row.entityType)}</td>
+                          <td>{formatCompactNumber(row.count)}</td>
+                          <td>{sourceRow?.sourceId ?? "n/a"}</td>
+                          <td>{formatCompactNumber(sourceRow?.entityCount ?? 0)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </AuditDetails>
           </Panel>
 
           <Panel
@@ -5349,32 +5369,34 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               <Field label="Gold edges" value={health.evidenceLineage.goldEdgeEventCount} />
               <Field label="Checksum" value={health.evidenceLineage.checksum.slice(0, 12)} />
             </div>
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{t("Source")}</th>
-                    <th>{t("Raw record")}</th>
-                    <th>{t("Silver events")}</th>
-                    <th>{t("Gold edges")}</th>
-                    <th>{t("Targets")}</th>
-                    <th>{t("Confidence")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {health.evidenceLineage.records.slice(0, 8).map((record) => (
-                    <tr key={record.id}>
-                      <td>{record.sourceName}</td>
-                      <td>{record.sourceRecordId}</td>
-                      <td>{record.silverEventIds.length}</td>
-                      <td>{record.goldEdgeEventIds.length}</td>
-                      <td>{record.targetEntities.slice(0, 3).join(" / ")}</td>
-                      <td>{formatPercent(record.confidence)}</td>
+            <AuditDetails label="Evidence lineage details">
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>{t("Source")}</th>
+                      <th>{t("Raw record")}</th>
+                      <th>{t("Silver events")}</th>
+                      <th>{t("Gold edges")}</th>
+                      <th>{t("Targets")}</th>
+                      <th>{t("Confidence")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {health.evidenceLineage.records.slice(0, 8).map((record) => (
+                      <tr key={record.id}>
+                        <td>{record.sourceName}</td>
+                        <td>{record.sourceRecordId}</td>
+                        <td>{record.silverEventIds.length}</td>
+                        <td>{record.goldEdgeEventIds.length}</td>
+                        <td>{record.targetEntities.slice(0, 3).join(" / ")}</td>
+                        <td>{formatPercent(record.confidence)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </AuditDetails>
           </Panel>
 
           <Panel
@@ -5382,11 +5404,16 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             subtitle="Recent platform events."
             action={<IconButton icon={TerminalSquare} label="Open terminal log" />}
           >
-            <pre className="terminal-log">
-              {health.logs.map((line) => (
-                <code key={line}>{line}</code>
-              ))}
-            </pre>
+            <p className="public-data-note">
+              {health.logs.length} recent platform event(s) are available for audit review.
+            </p>
+            <AuditDetails label="Runtime event details">
+              <pre className="terminal-log">
+                {health.logs.map((line) => (
+                  <code key={line}>{line}</code>
+                ))}
+              </pre>
+            </AuditDetails>
           </Panel>
         </div>
       </div>

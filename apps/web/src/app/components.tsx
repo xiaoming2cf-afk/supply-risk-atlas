@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { RiskLevel, RiskMetric, TrendDirection } from "@supply-risk/shared-types";
 import { formatCompactNumber, riskClassByLevel } from "@supply-risk/design-system";
 import { translateRiskLevel, useI18n } from "./i18n";
-import { formatDisplayLabel } from "../features/common/displayLabels";
+import { formatDisplayLabel, formatDisplayValue } from "../features/common/displayLabels";
 
 type ButtonVariant = "default" | "primary";
 
@@ -140,10 +140,11 @@ export function ScoreDial({ score, level, label }: { score: number; level: RiskL
 
 export function Field({ label, value }: { label: string; value: ReactNode }) {
   const { t } = useI18n();
+  const displayValue = typeof value === "string" ? formatDisplayValue(value) : value;
   return (
     <div className="field">
       <span className="field-label">{t(formatDisplayLabel(label))}</span>
-      <span className="field-value">{value}</span>
+      <span className="field-value">{displayValue}</span>
     </div>
   );
 }
