@@ -365,28 +365,50 @@ def _stage_source_family_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]
     matrix = _matrix()
     definitions = matrix.get("source_family_definitions", {})
     families = stage.get("source_families", [])
-    primary_count = len(stage.get("primary_sources", []))
-    secondary_count = len(stage.get("secondary_sources", []))
-    source_count = primary_count + secondary_count
+    primary_sources = list(stage.get("primary_sources", []))
+    secondary_sources = list(stage.get("secondary_sources", []))
     return [
-        {
-            "source_family": family,
-            "description": definitions.get(family, "not_recorded"),
-            "stage_id": stage["stage_id"],
-            "source_count": source_count,
-            "primary_source_count": primary_count,
-            "secondary_source_count": secondary_count,
-            "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
-            "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
-            "live_fetch_default": "disabled",
-            "fixture_required": True,
-            "api_visibility_policy": matrix.get("defaults", {}).get(
+        _stage_source_family_row(
+            family=family,
+            stage=stage,
+            definitions=definitions,
+            primary_sources=primary_sources,
+            secondary_sources=secondary_sources,
+            api_visibility_policy=matrix.get("defaults", {}).get(
                 "api_visibility_policy",
                 "sanitized_summary_and_lineage_only",
             ),
-        }
+        )
         for family in families
     ]
+
+
+def _stage_source_family_row(
+    *,
+    family: str,
+    stage: dict[str, Any],
+    definitions: dict[str, Any],
+    primary_sources: list[str],
+    secondary_sources: list[str],
+    api_visibility_policy: str,
+) -> dict[str, Any]:
+    primary_family_sources = [source for source in primary_sources if _source_family_for_source(source, stage) == family]
+    secondary_family_sources = [source for source in secondary_sources if _source_family_for_source(source, stage) == family]
+    source_ids = sorted(primary_family_sources + secondary_family_sources)
+    return {
+        "source_family": family,
+        "description": definitions.get(family, "not_recorded"),
+        "stage_id": stage["stage_id"],
+        "source_count": len(source_ids),
+        "primary_source_count": len(primary_family_sources),
+        "secondary_source_count": len(secondary_family_sources),
+        "source_ids": source_ids,
+        "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
+        "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
+        "live_fetch_default": "disabled",
+        "fixture_required": True,
+        "api_visibility_policy": api_visibility_policy,
+    }
 
 
 def _evidence_refs(edges: list[dict[str, Any]], *, limit: int) -> list[dict[str, Any]]:

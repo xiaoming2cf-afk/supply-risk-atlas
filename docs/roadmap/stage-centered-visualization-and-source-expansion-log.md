@@ -2224,3 +2224,51 @@
 
 - Audit metadata remains available in APIs, exports, reports, and expandable audit details where needed for traceability.
 - This gate improves default display quality; it does not add new source telemetry or claim production readiness.
+
+## 2026-05-30 Stage Source Family Coverage Enrichment
+
+### Current HEAD
+
+- Starting HEAD: `0af333d69881e5c396c248c82160e45622d62627`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Stage source coverage now requires every L0-L11 stage to carry all three public source families: national/policy/macro, enterprise public disclosure, and industry public fixture evidence.
+- Coverage matrix gaps were patched for L0 policy/macro, L1 raw minerals, L6 products, L8 logistics, L9 downstream demand, and L11 compliance by adding appropriate public source candidates without enabling live fetch.
+- Stage graph API family coverage now reports true per-family source counts, primary/secondary counts, and source IDs instead of repeating the same total for every family.
+- Stage Graph Explorer views now show a compact "Evidence support by source" section with formatted source names, tier, source scope, and normalized coverage text.
+- Existing fixture/promoted public-evidence posture, bounded responses, no raw payload exposure, and `region:china_taiwan` / `中国台湾` terminology remain unchanged.
+
+### Files Changed
+
+- `configs/sources/stage_source_coverage_matrix.yaml`
+- `docs/data/stage-source-coverage-matrix.md`
+- `services/api/services/stage_graph_service.py`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `tests/sources/test_stage_source_coverage_matrix.py`
+- `tests/api/test_stage_graph_endpoints.py`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/sources/test_stage_source_coverage_matrix.py tests/api/test_stage_graph_endpoints.py tests/quality/test_frontend_display_declutter.py -q` - passed, 42 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - initial 120-second runner timeout with no assertion output, rerun with longer timeout passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- No Render deployment is claimed for this local source-coverage enrichment gate.
+- Deployed API/Web remain stale or unverified until a safe Render access path is available.
+- Computer Use actions for this gate: none.
+
+### Known Limitations
+
+- Added sources are registry/fixture/promoted public-evidence candidates; live connectors remain disabled by default.
+- Stage source coverage is broader and clearer, but still identifies proxy limitations and does not claim production telemetry.

@@ -136,6 +136,7 @@ export function StageGraphView({
   const endpointNodes = rows(endpointData?.nodes).slice(0, 6);
   const endpointEdges = rows(endpointData?.edges).slice(0, 6);
   const sourceCoverage = rows(endpointData?.source_coverage).slice(0, 5);
+  const sourceSupportRows = sourceCoverage.slice(0, 3);
   const sourceFamilyCoverage = rows(endpointData?.source_family_coverage).slice(0, 4);
   const evidenceRefs = rows(endpointData?.evidence_refs).slice(0, 5);
   const sourceGaps = list(endpointData?.source_gaps).slice(0, 3);
@@ -220,10 +221,29 @@ export function StageGraphView({
           {sourceFamilyCoverage.map((family) => (
             <li key={String(family.source_family)}>
               <strong>{formatSourceFamilyLabel(String(family.source_family))}</strong>
-              <span>{String(formatDisplayValue(String(family.source_status ?? "partial")))} | sources: {String(family.source_count ?? "n/a")}</span>
+              <span>
+                {String(formatDisplayValue(String(family.source_status ?? "partial")))} | sources: {String(family.source_count ?? "n/a")}
+                {formatSourceList(family.source_ids)}
+              </span>
             </li>
           ))}
         </ul>
+      ) : null}
+      {sourceSupportRows.length ? (
+        <div className="graph-view-summary source-support-summary">
+          <strong>Evidence support by source</strong>
+          <ul className="compact-list">
+            {sourceSupportRows.map((source) => (
+              <li key={String(source.source_id)}>
+                <strong>{formatSourceDisplayRef(String(source.source_id)) || formatDisplayLabel(String(source.source_id))}</strong>
+                <span>
+                  {formatDisplayLabel(String(source.tier ?? "source"))} | {formatCoverageText(source.source_scope, stage.id)}
+                </span>
+                <span>{formatCoverageText(source.coverage_summary, stage.id)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
       {sourceGaps.length || proxyLimitations.length ? (
         <p className="muted">This stage has documented source gaps and proxy limits. Open audit details for the full caveat list.</p>
@@ -276,4 +296,25 @@ function formatSourceFamilyLabel(value: string) {
     default:
       return formatDisplayLabel(value);
   }
+}
+
+function formatSourceList(value: unknown) {
+  if (!Array.isArray(value) || value.length === 0) return "";
+  const labels = value
+    .slice(0, 2)
+    .map((item) => formatSourceDisplayRef(String(item)) || formatDisplayLabel(String(item)))
+    .filter(Boolean);
+  if (labels.length === 0) return "";
+  const suffix = value.length > labels.length ? ` +${value.length - labels.length} more` : "";
+  return `: ${labels.join(", ")}${suffix}`;
+}
+
+function formatCoverageText(value: unknown, stageId: StageId) {
+  const stageLabel = stageViewOptions.find((option) => option.id === stageId)?.label ?? formatDisplayLabel(stageId);
+  return String(value ?? "Coverage summary unavailable")
+    .replaceAll(stageId, stageLabel)
+    .replaceAll("SUPPLY_RELATIONSHIP", "supply relationships")
+    .replaceAll("DEMAND_RELATIONSHIP", "demand relationships")
+    .replaceAll("PRODUCTION_DEPENDENCY", "production dependencies")
+    .replaceAll("EVIDENCE_CONTEXT", "evidence context");
 }

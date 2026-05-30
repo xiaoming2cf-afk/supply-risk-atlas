@@ -58,6 +58,29 @@ REQUIRED_SOURCE_FAMILIES = {
 }
 
 
+def _source_family_for_source(source_id: str) -> str:
+    if source_id.startswith(("sec_edgar", "company_annual_report")):
+        return "enterprise_public_disclosure"
+    if source_id.startswith(("eto_", "wsts_", "gdelt_", "openalex_")):
+        return "industry_public_fixture"
+    if source_id.startswith(
+        (
+            "oecd_",
+            "world_bank_",
+            "bis_",
+            "federal_register_",
+            "ofac_",
+            "consolidated_screening_",
+            "usgs_",
+            "un_comtrade_",
+            "wits_",
+            "nga_",
+        )
+    ):
+        return "national_policy_macro_public"
+    raise AssertionError(f"Unclassified source family for {source_id}")
+
+
 def _load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
@@ -100,8 +123,10 @@ def test_each_stage_has_source_view_chart_and_table_coverage() -> None:
         assert stage["core_node_types"], stage["stage_id"]
         assert stage["core_edge_types"], stage["stage_id"]
         assert stage["relationship_classes"], stage["stage_id"]
-        assert stage["source_families"], stage["stage_id"]
+        assert REQUIRED_SOURCE_FAMILIES <= set(stage["source_families"]), stage["stage_id"]
         assert set(stage["source_families"]) <= set(matrix["source_family_definitions"]), stage["stage_id"]
+        source_families_from_sources = {_source_family_for_source(source_id) for source_id in sources}
+        assert REQUIRED_SOURCE_FAMILIES <= source_families_from_sources, stage["stage_id"]
         assert stage["live_fetch_default"] == "disabled", stage["stage_id"]
         assert stage["fixture_required"] is True, stage["stage_id"]
         assert stage["source_payload_policy"] == matrix["defaults"]["source_payload_policy"], stage["stage_id"]

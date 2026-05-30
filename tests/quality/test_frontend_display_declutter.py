@@ -253,6 +253,11 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "formatNodeDisplayRef(raw)" in source
     assert "formatSourceDisplayRef(value)" in source
     assert "formatDisplayValue(String(family.source_status" in source
+    assert "Evidence support by source" in source
+    assert "formatSourceList(family.source_ids)" in source
+    assert "formatCoverageText(source.coverage_summary, stage.id)" in source
+    assert "source.source_id)}</strong>" not in source
+    assert "SUPPLY_RELATIONSHIP\", \"supply relationships\"" in source
 
 
 def test_browser_smoke_uses_stage_labels_not_component_names() -> None:

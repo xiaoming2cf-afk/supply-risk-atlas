@@ -122,6 +122,16 @@ def test_stage_graph_endpoint_returns_bounded_stage_data(
         assert row["api_visibility_policy"] == "sanitized_summary_and_lineage_only"
     for row in data["source_family_coverage"]:
         assert row["source_family"] in data["source_families"]
+        matching_sources = [
+            source
+            for source in data["source_coverage"]
+            if source["source_family"] == row["source_family"]
+        ]
+        assert row["source_count"] == len(matching_sources)
+        assert row["primary_source_count"] == len([source for source in matching_sources if source["tier"] == "primary"])
+        assert row["secondary_source_count"] == len([source for source in matching_sources if source["tier"] == "secondary"])
+        assert set(row["source_ids"]) == {source["source_id"] for source in matching_sources}
+        assert row["source_count"] >= 1
         assert row["live_fetch_default"] == "disabled"
         assert row["fixture_required"] is True
         assert row["api_visibility_policy"] == "sanitized_summary_and_lineage_only"
