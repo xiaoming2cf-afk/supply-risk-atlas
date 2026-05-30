@@ -224,9 +224,13 @@ function attemptsForBaseUrl(baseUrlIndex: number, baseUrlCount: number, isIdempo
 }
 
 function isRetryableTransportError(error: unknown) {
-  if (error instanceof DashboardApiHttpError) return error.status >= 500 && error.status < 600;
+  if (error instanceof DashboardApiHttpError) return isRetryableReadHttpStatus(error.status);
   if (typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "AbortError") return true;
   return error instanceof TypeError || error instanceof Error;
+}
+
+function isRetryableReadHttpStatus(status: number) {
+  return status === 408 || status === 425 || status === 429 || (status >= 500 && status < 600);
 }
 
 function sleep(ms: number) {

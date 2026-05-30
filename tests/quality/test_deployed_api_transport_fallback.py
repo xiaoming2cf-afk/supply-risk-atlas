@@ -37,6 +37,8 @@ def test_dashboard_client_retries_only_idempotent_reads_and_reports_http_status(
     assert "function attemptsForBaseUrl" in source
     assert "attemptsForBaseUrl(baseUrlIndex, baseUrls.length, isIdempotentRead)" in source
     assert "uniqueBaseUrls([baseUrl, options.readFallbackBaseUrl])" in source
+    assert "function isRetryableReadHttpStatus" in source
+    assert "status === 408 || status === 425 || status === 429" in source
     assert "lastError instanceof DashboardApiHttpError ? lastError.status : undefined" in source
     assert "transport_attempts: transportAttempts" in source
     assert "retry_hint:" in source

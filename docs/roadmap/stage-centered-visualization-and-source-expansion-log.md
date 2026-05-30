@@ -2591,3 +2591,42 @@
 
 - Render service warm-up can still produce short 503 windows. The UI must continue showing controlled degraded diagnostics rather than authoritative fallback data.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Deployed Read 429 Retry Follow-Up
+
+### Current HEAD
+
+- Starting HEAD: `a6caf97496b04b8891858ff5b773f3f57ddc80f3`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` and `Quality Gates` passed for `a6caf97`.
+- Render API/Web were redeployed from `a6caf97`, and the full commit version probe reported `deployed_verified`.
+- Deployed smoke still found Entity Risk degraded when the risk endpoints returned HTTP 429 during repeated browser smoke reads.
+- Updated the API client retry classifier so idempotent GET/HEAD reads retry and can move to the configured read fallback for HTTP `408`, `425`, `429`, and `5xx`. Non-idempotent write requests remain direct and single-attempt.
+
+### Files Changed
+
+- `packages/api-client/src/dashboard.ts`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- This 429 retry follow-up is local until committed, pushed, and redeployed.
+
+### Known Limitations
+
+- Render free-tier throttling can still exhaust all bounded read attempts; pages must continue to show controlled degraded diagnostics rather than fabricate entity risk rows.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
