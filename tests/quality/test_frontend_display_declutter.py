@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -36,6 +37,9 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
         assert "source_manifest_id=" not in source
         assert "metadata-line" not in source
     assert "formatDisplayLabel(column)" in table_source
+    assert "formatDisplayLabel(title)" in table_source
+    assert "Structured metadata" in table_source
+    assert "JSON.stringify(value)" not in table_source
     assert "formatDisplayLabel(metric.label)" in component_source
     assert "formatDisplayLabel(label)" in component_source
     assert "formatDisplayValue(value)" in component_source
@@ -43,6 +47,19 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     assert '"ConnectorStatus"' not in connector_status_source
     assert '"Source catalog"' in source_catalog_source
     assert '"Connector status"' in connector_status_source
+
+
+def test_default_table_titles_are_user_facing_not_component_names() -> None:
+    table_dir = REPO_ROOT / "apps/web/src/features/common/tables"
+    component_name_title = re.compile(r'title=\{props\.title \?\? "[A-Z][A-Za-z0-9]+(?:Table|Relationship|Dependency|Demand|Input|Event|Facility|Action|Result|Ranking|Run|Flow|Artifact|Node|Edge|Concentration|Balance)?"')
+
+    offenders = []
+    for path in sorted(table_dir.glob("*.tsx")):
+        source = path.read_text(encoding="utf-8")
+        if component_name_title.search(source):
+            offenders.append(path.name)
+
+    assert offenders == []
 
 
 def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> None:

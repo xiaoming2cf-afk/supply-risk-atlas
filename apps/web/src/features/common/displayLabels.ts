@@ -152,9 +152,17 @@ export function formatDisplayLabel(label: string) {
   if (!trimmed) return trimmed;
   const override = LABEL_OVERRIDES.get(trimmed);
   if (override) return override;
-  if (!trimmed.includes("_")) return trimmed;
-  return trimmed
-    .split("_")
+  if (/\s/.test(trimmed)) return trimmed;
+
+  const normalized = trimmed
+    .replace(/[-_]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+
+  if (normalized === trimmed && !trimmed.includes(" ")) return trimmed;
+
+  return normalized
+    .split(/\s+/)
     .filter(Boolean)
     .map((part, index) => {
       const lower = part.toLowerCase();

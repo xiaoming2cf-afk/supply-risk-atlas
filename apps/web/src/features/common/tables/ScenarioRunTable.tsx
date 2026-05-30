@@ -1,5 +1,5 @@
 import { DataTable, type EvidenceTableProps } from "./DataTable";
 
 export function ScenarioRunTable(props: EvidenceTableProps) {
-  return <DataTable title={props.title ?? "ScenarioRun"} {...props} />;
+  return <DataTable title={props.title ?? "Scenario runs"} {...props} />;
 }

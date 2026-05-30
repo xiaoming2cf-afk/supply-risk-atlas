@@ -638,7 +638,7 @@ async function main() {
         page: "Shock Simulator visualization integration",
         hash: "#shock-simulator",
         title: "Shock Simulator",
-        terms: ["Forward analytics charts and tables", "Monte Carlo histogram", "Downstream demand pressure", "Critical input bottlenecks", "Product to process dependency", "ScenarioRun"],
+        terms: ["Forward analytics charts and tables", "Monte Carlo histogram", "Downstream demand pressure", "Critical input bottlenecks", "Product to process dependency", "Scenario runs"],
       },
       {
         page: "Reverse Stress Lab visualization integration",
@@ -650,7 +650,7 @@ async function main() {
         page: "Intervention Optimizer visualization integration",
         hash: "#intervention-optimizer",
         title: "Intervention Optimizer",
-        terms: ["Optimizer charts and action tables", "Optimizer before after", "Intervention target category", "OptimizerAction"],
+        terms: ["Optimizer charts and action tables", "Optimizer before after", "Intervention target category", "Recommended actions"],
       },
       {
         page: "Investigation Report visualization integration",

@@ -1623,3 +1623,51 @@
 
 - Render redeploy still requires either the documented GitHub Actions secrets or a reliable authenticated Render Dashboard session.
 - GPT Pro handoff remains pending because the project page timed out through Chrome automation.
+
+## 2026-05-29 User-Facing Table Title Declutter
+
+### Current HEAD
+
+- Starting HEAD: `e28fe20feb94642bddc1011ea0cddde0d2355dc1`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Continued the demo-first display cleanup after a page audit found table titles such as `SupplyRelationship`, `ProductDemand`, `GraphNode`, and `ScenarioRun` still visible through default table component titles.
+- Updated table defaults to user-facing labels such as `Supply relationships`, `Product demand`, `Graph nodes`, `Scenario runs`, `Recommended actions`, and `Validation artifacts`.
+- Updated the shared display-label formatter to split PascalCase/camelCase fallback labels, while preserving existing acronym and explicit label overrides.
+- Updated `DataTable` to format titles through the display-label layer and avoid rendering nested object values as raw JSON in table cells. Nested structured values now render as `Structured metadata`.
+- Updated browser smoke expectations to use the new user-facing table titles.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/tables/DataTable.tsx`
+- `apps/web/src/features/common/tables/*Table.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- Started local API on `127.0.0.1:8000` and local Web on `localhost:3000`.
+- First `npm.cmd run smoke:web` attempt failed because the smoke script still expected the old implementation label `ScenarioRun`.
+- Updated smoke expectations to `Scenario runs` and `Recommended actions`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` - passed.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the documented Render deployment path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate improves local UI clarity only; it does not resolve the Render credential/Chrome extension deployment blocker.
+- GPT Pro handoff remains pending a stable project-scoped Chrome path.

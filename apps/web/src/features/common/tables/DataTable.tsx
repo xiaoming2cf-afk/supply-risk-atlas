@@ -31,7 +31,7 @@ export function DataTable({
   const visibleColumns = columns ?? inferColumns(visibleRows);
   return (
     <section className="table-frame" data-component="evidence-table">
-      {title ? <h3>{title}</h3> : null}
+      {title ? <h3>{formatDisplayLabel(title)}</h3> : null}
       {loading ? <p className="muted">Loading table data...</p> : null}
       {!loading && visibleRows.length === 0 ? <p className="muted">{emptyLabel}</p> : null}
       {visibleRows.length ? (
@@ -82,5 +82,5 @@ function renderCell(value: unknown): ReactNode {
   if (value === null || value === undefined) return "unavailable";
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
   if (Array.isArray(value)) return value.slice(0, 3).map(formatDisplayValue).map(String).join(", ");
-  return JSON.stringify(value);
+  return "Structured metadata";
 }
