@@ -315,6 +315,8 @@ This section supersedes the earlier commit-specific deployment requests above.
 - A screenshot attempt for the local System Health page timed out; no repeated screenshot loop was attempted.
 - Opening the provided GPT Pro project URL in the in-app browser reached the ChatGPT login page and no prompt input was available.
 - The GPT login page was closed after the failed handoff attempt.
+- Opening the Render Dashboard in the in-app browser timed out while attaching to the page.
+- The failed Render browser tab was closed, and no additional Render UI loop was attempted.
 - GPT Pro review remains blocked until a logged-in, controllable browser surface is available or the sanitized status is pasted manually.
 
 ### Required Next Action
