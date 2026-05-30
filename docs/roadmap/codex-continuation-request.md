@@ -1,5 +1,37 @@
 # Codex Continuation Request
 
+## 2026-05-30 Stage Graph API Coverage Handoff
+
+- Latest pushed commit: `919e597d6cd3298cfc1c514bcd280d843e076aac`.
+- Branch: `main`.
+- Commit purpose: harden stage graph API source coverage and stage-specific table payloads so L0-L11 views expose clearer national, enterprise, and industry public-evidence support without falling back to generic graph-node rows.
+- GitHub `ci`: passed for `919e597d6cd3298cfc1c514bcd280d843e076aac` in run `26682529199`.
+- GitHub `Quality Gates`: passed for `919e597d6cd3298cfc1c514bcd280d843e076aac` in run `26682529208`.
+- Local validation passed:
+  - `python -m pytest tests/api/test_stage_graph_endpoints.py tests/sources/test_stage_source_coverage_matrix.py -q`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+- Deployment probe:
+  - `python scripts/check-deployed-version.py --expected-commit 919e597 --timeout 10 --attempts 1`
+  - Result: `deployed_unavailable`.
+  - API, Web build-info, Web proxy, and Web HTML were unavailable in this automation run.
+- Render / GPT Pro status:
+  - No Render redeploy is claimed.
+  - Render browser automation remains blocked or unstable; no credentials were submitted.
+  - GPT Pro handoff remains blocked until an authenticated project prompt box is available through the authorized browser path.
+  - No secrets, cookies, tokens, raw payloads, private account details, local filesystem paths, or PII were copied or exposed.
+
+### Required Safe Next Action
+
+Redeploy Render API/Web from commit `919e597d6cd3298cfc1c514bcd280d843e076aac` after restoring a safe Render access path, then run:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit 919e597 --timeout 25 --attempts 3
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+After deployment is current, send GPT Pro a sanitized status with only project page observations/screenshots that do not expose secrets, account data, private URLs, cookies, tokens, raw payloads, local filesystem paths, or PII.
+
 ## 2026-05-30 Inspector Source Label Declutter And Deployment Handoff
 
 - Latest pushed commit: `f2a5a6f31f11d26c541993d2a456148c21509a59`.
