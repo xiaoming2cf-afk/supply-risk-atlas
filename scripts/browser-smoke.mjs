@@ -1544,10 +1544,23 @@ async function main() {
 }
 
 async function assertWebServer() {
-  const response = await fetch(webUrl);
-  if (!response.ok) {
-    throw new Error(`Web server is not ready at ${webUrl}: ${response.status}`);
+  await waitForWebServerReady(60000);
+}
+
+async function waitForWebServerReady(timeoutMs = 30000) {
+  const startedAt = Date.now();
+  let lastError = "";
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const response = await fetch(webUrl, { cache: "no-store" });
+      if (response.ok) return;
+      lastError = `status=${response.status}`;
+    } catch (error) {
+      lastError = error?.message ?? String(error);
+    }
+    await sleep(500);
   }
+  throw new Error(`Web server is not ready at ${webUrl}: ${lastError || "timeout"}`);
 }
 
 async function fetchApiJson(pathname, init = undefined) {
@@ -1597,7 +1610,28 @@ function textExcerpt(text, terms) {
 }
 
 async function navigate(client, url) {
-  await client.send("Page.navigate", { url });
+  const maxAttempts = 3;
+  let lastState = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    if (attempt > 1) {
+      await waitForWebServerReady(15000);
+      await sleep(750 * attempt);
+    }
+    await client.send("Page.navigate", { url });
+    await waitForLocation(client, url);
+    await applyHashNavigation(client, url);
+    lastState = await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
+    if (!isBrowserLoadErrorState(lastState)) {
+      return;
+    }
+    if (attempt < maxAttempts) {
+      await client.send("Page.reload", { ignoreCache: true });
+    }
+  }
+  throw new Error(`Browser failed to load application page at ${url}. Last state: ${JSON.stringify(lastState)}`);
+}
+
+async function waitForLocation(client, url) {
   const targetUrl = new URL(url);
   await waitFor(
     client,
@@ -1615,6 +1649,9 @@ async function navigate(client, url) {
     },
     30000,
   );
+}
+
+async function applyHashNavigation(client, url) {
   const expectedHash = new URL(url).hash;
   if (expectedHash) {
     await evaluate(client, `(() => {
@@ -1639,7 +1676,19 @@ async function navigate(client, url) {
       10000,
     );
   }
-  await waitFor(client, () => pageState(client), (state) => state.title.length > 0, 30000);
+}
+
+function isBrowserLoadErrorState(state) {
+  const title = String(state?.title ?? "");
+  const text = String(state?.text ?? "");
+  return (
+    title === "This page couldn\u2019t load" ||
+    title === "This page can't be reached" ||
+    text.includes("This page couldn\u2019t load") ||
+    text.includes("This site can't be reached") ||
+    text.includes("ERR_CONNECTION_REFUSED") ||
+    text.includes("Reload to try again")
+  );
 }
 
 async function pageState(client) {

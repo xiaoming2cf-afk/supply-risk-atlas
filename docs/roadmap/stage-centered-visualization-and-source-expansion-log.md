@@ -2493,3 +2493,45 @@
 
 - Render free-tier cold starts and short-lived 429s on auxiliary run-history reads can still occur under repeated smoke loops; user-facing pages must show controlled diagnostics instead of fabricated data.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Browser Smoke Navigation Readiness Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `ef5ce88f09adf619e13769e072cd78dc03d8011e`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `Quality Gates` passed for `ef5ce88`, but `ci / browser-smoke` failed twice in the local real-API smoke job with a transient Chrome error page titled `This page couldn\u2019t load`.
+- The failure occurred before page-specific assertions and after local API/Web startup, so the next fix targets smoke navigation readiness rather than weakening application checks.
+- Updated `scripts/browser-smoke.mjs` to poll Web readiness, recognize browser load-error pages, retry bounded navigation, and fail with a clear final page state only after repeated load errors.
+- Added a quality assertion so the smoke script keeps this CI hardening behavior.
+
+### Files Changed
+
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_source_readability.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `node --check scripts/browser-smoke.mjs` - passed.
+- `python -m pytest tests/quality/test_frontend_source_readability.py -q` - passed, 5 tests.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- Started local API/Web on `127.0.0.1:8000` and `127.0.0.1:3000`.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- No new deployment yet for this patch.
+- Latest deployed commit before this patch was `3bf5ce0` during the previous failed CI cycle; deployment must wait for this smoke stabilization to pass GitHub `ci` and `Quality Gates`.
+
+### Known Limitations
+
+- This patch does not mask application failures; it only retries transient Chrome local-load errors before running the same page, relevance, graph, relationship, and no-raw-payload assertions.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.

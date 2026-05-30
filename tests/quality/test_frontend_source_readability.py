@@ -57,3 +57,13 @@ def test_browser_smoke_chrome_launch_is_ci_hardened() -> None:
     assert '"--remote-debugging-address=127.0.0.1"' in source
     assert "waitForChrome(port, chrome, chromeReadyTimeoutMs)" in source
     assert "chrome_exited" in source
+
+
+def test_browser_smoke_retries_transient_chrome_load_errors() -> None:
+    source = SMOKE_SCRIPT.read_text(encoding="utf-8")
+
+    assert "waitForWebServerReady(60000)" in source
+    assert "isBrowserLoadErrorState" in source
+    assert "This page couldn\\u2019t load" in source
+    assert '"Page.reload"' in source
+    assert "Browser failed to load application page" in source
