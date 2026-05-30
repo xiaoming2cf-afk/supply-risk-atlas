@@ -81,6 +81,35 @@ function inferColumns(rows: Array<Record<string, unknown>>) {
 function renderCell(value: unknown): ReactNode {
   if (value === null || value === undefined) return "unavailable";
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
-  if (Array.isArray(value)) return value.slice(0, 3).map(formatDisplayValue).map(String).join(", ");
+  if (Array.isArray(value)) return renderArrayCell(value);
+  return "Structured metadata";
+}
+
+function renderArrayCell(values: unknown[]) {
+  const rendered = values.slice(0, 3).map(renderArrayItem).filter(Boolean);
+  if (rendered.length === 0) return "Structured metadata";
+  const suffix = values.length > rendered.length ? ` +${values.length - rendered.length} more` : "";
+  return `${rendered.join(", ")}${suffix}`;
+}
+
+function renderArrayItem(value: unknown) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
+  if (!Array.isArray(value) && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const id =
+      record.source_record_id ??
+      record.evidence_id ??
+      record.ref_id ??
+      record.node_id ??
+      record.edge_id ??
+      record.id ??
+      record.label ??
+      record.name;
+    const source = record.source_id ?? record.source;
+    if (source && id) return `${String(formatDisplayValue(String(source)))}:${String(formatDisplayValue(String(id)))}`;
+    if (id) return String(formatDisplayValue(String(id)));
+    if (source) return String(formatDisplayValue(String(source)));
+  }
   return "Structured metadata";
 }

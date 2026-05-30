@@ -1679,3 +1679,49 @@
 
 - This gate improves local UI clarity only; it does not resolve the Render credential/Chrome extension deployment blocker.
 - GPT Pro handoff remains pending a stable project-scoped Chrome path.
+
+## 2026-05-29 Stage Graph Metadata Folding And Evidence Cell Cleanup
+
+### Current HEAD
+
+- Starting HEAD: `11285efb01871f92f5d8557c1aca153729673f88`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Removed primary-page `graph_version`, `source_manifest_id`, `data_mode`, and `graph_mode` metric rows from stage-specific Graph Explorer views.
+- Stage graph views now show user-facing stage labels such as `L0 Policy / macro`, with implementation component names retained only inside collapsed audit details.
+- Relationship class labels now render as user-facing strings such as `Supply relationships` and `Production dependencies`.
+- Source-family status labels are formatted for display, including `fixture_promoted_public_evidence` -> `Fixture/promoted public evidence`.
+- `DataTable` now renders arrays of evidence/source objects as bounded evidence summaries instead of `[object Object]`.
+- Browser smoke stage-view checks now assert user-facing stage labels instead of implementation component names.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/tables/DataTable.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://localhost:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the documented Render deployment path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- This gate improves local Graph Explorer and table display quality only; it does not resolve the Render credential/Chrome extension deployment blocker.
+- GPT Pro handoff remains pending a stable project-scoped Chrome path.

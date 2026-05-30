@@ -40,6 +40,8 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     assert "formatDisplayLabel(title)" in table_source
     assert "Structured metadata" in table_source
     assert "JSON.stringify(value)" not in table_source
+    assert "renderArrayCell(value)" in table_source
+    assert ".map(formatDisplayValue).map(String)" not in table_source
     assert "formatDisplayLabel(metric.label)" in component_source
     assert "formatDisplayLabel(label)" in component_source
     assert "formatDisplayValue(value)" in component_source
@@ -151,3 +153,35 @@ def test_page_relevance_policy_declares_display_tiers() -> None:
     assert "displayTiers" in source
     assert "audit_details" in source
     assert "developer_diagnostics" in source
+
+
+def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
+    source = read("apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx")
+
+    assert "MetadataSummary" in source
+    assert "AuditDetails" in source
+    assert '<Metric label="graph_version"' not in source
+    assert '<Metric label="source_manifest_id"' not in source
+    assert '<Metric label="data_mode"' not in source
+    assert '<Metric label="graph_mode"' not in source
+    assert "<h3>{stage.viewName}</h3>" not in source
+    assert "<h3>{stage.label}</h3>" in source
+    assert "relationshipClassLabel(relationshipClassFilter)" in source
+    assert "formatDisplayValue(String(family.source_status" in source
+
+
+def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
+    source = read("scripts/browser-smoke.mjs")
+
+    forbidden_component_names = [
+        "PolicyMacroGraphView",
+        "MineralDependencyGraphView",
+        "EquipmentProcessDependencyGraphView",
+        "FabProcessGraphView",
+        "LogisticsRouteGraphView",
+        "ComplianceRiskGraphView",
+    ]
+    for needle in forbidden_component_names:
+        assert needle not in source
+    assert "L0 Policy / macro" in source
+    assert "L11 Compliance" in source

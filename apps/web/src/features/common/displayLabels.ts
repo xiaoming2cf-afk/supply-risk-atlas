@@ -61,6 +61,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["fixtureGraph", "Fixture graph"],
   ["fixtureGraphReady", "Fixture graph ready"],
   ["fixtureManifestReady", "Fixture manifest ready"],
+  ["fixture_promoted_public_evidence", "Fixture/promoted public evidence"],
   ["formula_refs", "Formula refs"],
   ["formula_version", "Formula version"],
   ["forward_scenario", "Forward scenario"],

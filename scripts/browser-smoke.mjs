@@ -524,14 +524,14 @@ async function main() {
     }
 
     const stageViewChecks = [
-      ["L0_policy_macro", "PolicyMacroGraphView"],
-      ["L1_raw_minerals", "MineralDependencyGraphView"],
-      ["L4_equipment", "EquipmentProcessDependencyGraphView"],
-      ["L5_fabrication", "FabProcessGraphView"],
-      ["L8_logistics", "LogisticsRouteGraphView"],
-      ["L11_compliance", "ComplianceRiskGraphView"],
+      ["L0_policy_macro", "L0 Policy / macro"],
+      ["L1_raw_minerals", "L1 Critical minerals"],
+      ["L4_equipment", "L4 Equipment"],
+      ["L5_fabrication", "L5 Fabrication"],
+      ["L8_logistics", "L8 Logistics"],
+      ["L11_compliance", "L11 Compliance"],
     ];
-    for (const [stageId, viewName] of stageViewChecks) {
+    for (const [stageId, stageLabel] of stageViewChecks) {
       await evaluate(client, `(() => {
         const stageSelect = document.querySelector('[data-testid="stage-selector"]');
         if (!stageSelect) return;
@@ -541,13 +541,13 @@ async function main() {
       const stageState = await waitFor(
         client,
         () => graphV2State(client),
-        (state) => state.text.includes(viewName) && state.hasStageSelector && state.hasRelationshipClassSelector,
+        (state) => state.text.includes(stageLabel) && state.hasStageSelector && state.hasRelationshipClassSelector,
       );
       checks.push({
         page: `Graph Explorer stage view ${stageId}`,
-        viewName,
+        stageLabel,
         passed:
-          stageState.text.includes(viewName) &&
+          stageState.text.includes(stageLabel) &&
           stageState.hasStageSelector &&
           stageState.hasRelationshipClassSelector &&
           stageState.text.includes("stage cap: 18 nodes / 30 edges"),

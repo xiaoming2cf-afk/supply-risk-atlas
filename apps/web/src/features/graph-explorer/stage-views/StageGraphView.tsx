@@ -1,4 +1,6 @@
 import type { GraphViewModel, GraphVersionMetadata } from "../graphViewModel";
+import { AuditDetails, MetadataSummary } from "../../common/AuditDetails";
+import { formatDisplayValue } from "../../common/displayLabels";
 
 export type StageId =
   | "L0_policy_macro"
@@ -154,19 +156,30 @@ export function StageGraphView({
   return (
     <section className="graph-list-section stage-graph-view" data-testid="stage-graph-view" data-stage-id={stage.id}>
       <div className="section-kicker">Supply-chain stage view</div>
-      <h3>{stage.viewName}</h3>
+      <h3>{stage.label}</h3>
       <p className="muted">{stage.label}: {stage.businessQuestion}</p>
-      <div className="inspector-grid">
-        <Metric label="graph_version" value={String(endpointData?.graph_version ?? metadata.graphVersion)} />
-        <Metric label="source_manifest_id" value={String(endpointData?.source_manifest_id ?? metadata.sourceManifestId)} />
-        <Metric label="data_mode" value={String(endpointData?.data_mode ?? "fixture")} />
-        <Metric label="graph_mode" value={String(endpointData?.graph_mode ?? "fixture")} />
-      </div>
+      <MetadataSummary
+        items={[
+          { label: "Public evidence mode" },
+          { label: "Stage source coverage" },
+          { label: relationshipClassLabel(relationshipClassFilter) },
+        ]}
+      />
+      <AuditDetails
+        items={[
+          { label: "graph_version", value: endpointData?.graph_version ?? metadata.graphVersion },
+          { label: "source_manifest_id", value: endpointData?.source_manifest_id ?? metadata.sourceManifestId },
+          { label: "data_mode", value: endpointData?.data_mode ?? "fixture" },
+          { label: "graph_mode", value: endpointData?.graph_mode ?? "fixture" },
+          { label: "stage_view_component", value: stage.viewName },
+        ]}
+        warnings={metadata.warnings}
+      />
       <p className="warning-text">
         fixture/promoted public-evidence view; evidence-context links are inspection links, not dependency edges.
       </p>
       <div className="graph-view-summary">
-        <span>relationship class: {relationshipClassFilter}</span>
+        <span>relationship class: {relationshipClassLabel(relationshipClassFilter)}</span>
         <span>Can this edge propagate risk? {propagates ? "yes, if evidence-backed" : "no"}</span>
         <span>stage cap: 18 nodes / 30 edges</span>
       </div>
@@ -204,7 +217,7 @@ export function StageGraphView({
           {sourceFamilyCoverage.map((family) => (
             <li key={String(family.source_family)}>
               <strong>{String(family.source_family)}</strong>
-              <span>{String(family.source_status ?? "partial")} | sources: {String(family.source_count ?? "n/a")}</span>
+              <span>{String(formatDisplayValue(String(family.source_status ?? "partial")))} | sources: {String(family.source_count ?? "n/a")}</span>
             </li>
           ))}
         </ul>
@@ -219,19 +232,25 @@ export function StageGraphView({
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
 function rows(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object") : [];
 }
 
 function list(value: unknown): string[] {
   return Array.isArray(value) ? value.map((item) => String(item)).filter(Boolean) : [];
+}
+
+function relationshipClassLabel(value: RelationshipClassFilter) {
+  switch (value) {
+    case "SUPPLY_RELATIONSHIP":
+      return "Supply relationships";
+    case "DEMAND_RELATIONSHIP":
+      return "Demand relationships";
+    case "PRODUCTION_DEPENDENCY":
+      return "Production dependencies";
+    case "EVIDENCE_CONTEXT":
+      return "Evidence context";
+    default:
+      return "All relationship classes";
+  }
 }
