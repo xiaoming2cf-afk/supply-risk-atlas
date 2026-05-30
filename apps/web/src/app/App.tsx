@@ -47,6 +47,7 @@ const iconByPage: Record<DashboardPageId, typeof Globe2> = {
 };
 
 const deploymentTarget = "supply-risk-atlas-web.onrender.com";
+const deployedPublicApiBaseUrl = "https://supply-risk-atlas-api.onrender.com/api/v1";
 const webBuildCommit = process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_COMMIT ?? "not_verified";
 const webBuildTime = process.env.NEXT_PUBLIC_SUPPLY_RISK_WEB_BUILD_TIME ?? "not_verified";
 const publicPageIds = new Set<DashboardPageId>([
@@ -75,7 +76,7 @@ function resolveApiBaseUrl(hostname: string | null) {
     return "/api/v1";
   }
   if (hostname === deploymentTarget) {
-    return "/api/v1";
+    return deployedPublicApiBaseUrl;
   }
   const configured = process.env.NEXT_PUBLIC_SUPPLY_RISK_API_URL?.trim();
   if (configured) {
@@ -90,7 +91,7 @@ function resolveApiWriteBaseUrl(hostname: string | null) {
     return configured;
   }
   if (hostname === deploymentTarget) {
-    return "/api/v1";
+    return deployedPublicApiBaseUrl;
   }
   return resolveApiBaseUrl(hostname);
 }

@@ -2550,3 +2550,44 @@
 
 - This patch does not mask application failures; it only retries transient Chrome local-load errors before running the same page, relevance, graph, relationship, and no-raw-payload assertions.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
+
+## 2026-05-30 Deployed Direct API Read Stabilization
+
+### Current HEAD
+
+- Starting HEAD: `c3f89457c068a35a58ff48014f6c6b50f762bb2a`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub `ci` and `Quality Gates` passed for `c3f8945`.
+- Render API/Web were redeployed from `c3f8945` and `/api/v1/version` verified that API, web build-info, same-origin proxy, and deployed HTML reported `c3f89457c068a35a58ff48014f6c6b50f762bb2a`.
+- Deployed smoke remained best-effort: it exited successfully but captured transient deployed read failures on Entity Risk/System Health during Render cold-start windows.
+- Direct public API CORS was verified healthy for the deployed web origin. The remaining issue was that deployed browser reads still preferred the same-origin Web proxy, so proxy cold starts could hold the page in degraded state even when the public API was reachable.
+- Updated deployed transport policy so deployed browser GET reads prefer `https://supply-risk-atlas-api.onrender.com/api/v1`, keep `/api/v1` as same-origin read fallback, and keep deployed write/POST calls direct to the public API without proxy retry.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `tests/quality/test_deployed_api_transport_fallback.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_display_declutter.py -q` - passed, 15 tests.
+- `python -m pytest tests/quality -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - first run hit a transient browser hash-switch wait state; immediate rerun passed with 63 checks.
+
+### Deployment Status
+
+- This direct-API deployed transport patch is local until committed, pushed, and redeployed.
+- Next verification target: `/api/v1/version` must report the new commit after Render API/Web redeploy; deployed smoke should no longer permanently degrade Entity Risk after transient Web proxy 503s.
+
+### Known Limitations
+
+- Render service warm-up can still produce short 503 windows. The UI must continue showing controlled degraded diagnostics rather than authoritative fallback data.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready telemetry.
