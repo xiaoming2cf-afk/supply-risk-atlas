@@ -152,6 +152,8 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert 'title="Before/after simulation run IDs"' not in source
     assert 'title="Simulation run counts"' in source
     assert "formatNodeDisplayRef(action.target_id)" in source
+    assert "formatSourceDisplayRef(row.sourceId)" in source
+    assert "formatSourceDisplayList(license.sourceIds)" in source
     assert "formatRunDisplayName(run, index)" in source
     assert "formatNodeDisplayRef(prediction.target_id)" in source
     assert '"semirisk_reverse_stress_v0.1"' not in read("scripts/browser-smoke.mjs")
@@ -184,12 +186,17 @@ def test_graph_explorer_tables_format_source_and_node_ids_for_primary_ui() -> No
     source_coverage = read("apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx")
     evidence_view = read("apps/web/src/features/graph-explorer/GraphEvidenceView.tsx")
     node_catalog = read("apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx")
+    inspector = read("apps/web/src/features/graph-explorer/GraphInspector.tsx")
 
     assert "formatSourceCell(row.source_id" in source_coverage
     assert '{String(row.source_id ?? "source_ref")}' not in source_coverage
     assert "formatEvidenceRef" in evidence_view
     assert "formatNodeCell" in node_catalog
     assert "formatSourceCandidate" in node_catalog
+    assert "formatEvidenceRef(ref)" in inspector
+    assert "<li key={ref}>{ref}</li>" not in inspector
+    assert "formatCountryRef(node.countryCode" in inspector
+    assert "formatNodeRef(edge.source)" in inspector
 
 
 def test_run_page_unavailable_states_keep_endpoint_diagnostics_collapsed() -> None:
@@ -242,6 +249,8 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "<h3>{stage.viewName}</h3>" not in source
     assert "<h3>{stage.label}</h3>" in source
     assert "relationshipClassLabel(relationshipClassFilter)" in source
+    assert "formatNodeDisplayRef(raw)" in source
+    assert "formatSourceDisplayRef(value)" in source
     assert "formatDisplayValue(String(family.source_status" in source
 
 

@@ -7,6 +7,7 @@ import type {
 } from "@supply-risk/shared-types";
 import { formatPercent } from "@supply-risk/design-system";
 import { Field, RiskPill } from "../../app/components";
+import { formatDisplayLabel, formatDisplayValue, formatNodeDisplayRef, formatSourceDisplayRef } from "../common/displayLabels";
 import { graphScore } from "./graphLayout";
 
 export function GraphInspector({
@@ -39,6 +40,7 @@ export function GraphInspector({
 
 function NodeInspector({ node }: { node: GraphNode }) {
   const evidenceRefs = nodeEvidenceRefs(node);
+  const countryRef = formatCountryRef(node.countryCode ?? String(node.metadata.country ?? "global"));
   return (
     <div className="inspector-stack">
       <div className="inspector-grid">
@@ -49,12 +51,12 @@ function NodeInspector({ node }: { node: GraphNode }) {
         <Field label="Criticality" value={`${graphScore(node.criticalityScore ?? node.score)}/100`} />
         <Field label="Rank" value={node.criticalityRank ? `#${node.criticalityRank}` : "n/a"} />
         <Field label="In / out degree" value={`${node.inDegree ?? 0} / ${node.outDegree ?? 0}`} />
-        <Field label="Country" value={node.countryCode ?? String(node.metadata.country ?? "global")} />
+        <Field label="Country" value={countryRef} />
       </div>
       <EvidenceRefs refs={evidenceRefs} />
       <div className="inspector-grid">
         {Object.entries(node.metadata).slice(0, 8).map(([label, value]) => (
-          <Field key={label} label={label} value={String(value)} />
+          <Field key={label} label={formatDisplayLabel(label)} value={formatInspectorValue(value)} />
         ))}
       </div>
     </div>
@@ -71,21 +73,21 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
     <div className={`inspector-stack edge-inspector ${evidenceContext ? "is-evidence-context" : ""}`}>
       <div className="inspector-grid">
         <Field label="Inspector section" value={evidenceContext ? "Evidence context link" : scenarioTrace ? "Scenario trace" : "Real graph edge"} />
-        <Field label={evidenceContext ? "Link type" : "Edge type"} value={evidenceContext ? "evidence-context link" : edge.edgeType ?? edge.label} />
-        <Field label="Role" value={edge.edgeRole ?? "context"} />
+        <Field label={evidenceContext ? "Link type" : "Edge type"} value={formatInspectorValue(evidenceContext ? "evidence_context_link" : edge.edgeType ?? edge.label)} />
+        <Field label="Role" value={formatInspectorValue(edge.edgeRole ?? "context")} />
         <Field label="Risk score" value={`${edge.riskScore ?? Math.round(edge.weight * 100)}/100`} />
         <Field label="Weight" value={formatPercent(edge.transmissionWeight ?? edge.weight)} />
         <Field label="Confidence" value={formatPercent(edge.confidence ?? 0)} />
         <Field label="Lag days" value={edge.lagDays ?? 0} />
-        <Field label="Source country" value={edge.sourceCountry ?? "global"} />
-        <Field label="Target country" value={edge.targetCountry ?? "global"} />
+        <Field label="Source country" value={formatCountryRef(edge.sourceCountry ?? "global")} />
+        <Field label="Target country" value={formatCountryRef(edge.targetCountry ?? "global")} />
       </div>
       {evidenceContext ? (
         <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
       ) : null}
       <EvidenceRefs refs={[edge.sourceId ?? "public_source_manifest", edge.edgeType ?? edge.edgeRole ?? "graph_edge", String(edge.metadata?.source ?? "")]} />
       <p className="inspector-note">
-        {edge.source} -&gt; {edge.target}
+        {formatNodeRef(edge.source)} -&gt; {formatNodeRef(edge.target)}
       </p>
     </div>
   );
@@ -108,8 +110,8 @@ function PathInspector({
         <Field label="Transmission" value={`${Math.round(path.transmissionScore * 100)}/100`} />
         <Field label="Confidence" value={formatPercent(path.pathConfidence)} />
         <Field label="Hops" value={path.edgeSequence.length} />
-        <Field label="Countries" value={path.countrySequence.join(" -> ")} />
-        <Field label="Bottleneck" value={path.bottleneckEdgeId} />
+        <Field label="Countries" value={path.countrySequence.map(formatCountryRef).join(" -> ")} />
+        <Field label="Bottleneck" value={formatInspectorValue(path.bottleneckEdgeId)} />
       </div>
       {path.steps.length > 1 ? (
         <div className="path-scrubber">
@@ -163,7 +165,7 @@ function PathInspector({
             <span>{index + 1}</span>
             <div>
               <strong>{step.label}</strong>
-              <small>{step.edgeType ?? "source"} / {step.countryCode ?? "global"} / {step.evidence}</small>
+              <small>{formatInspectorValue(step.edgeType ?? "source")} / {formatCountryRef(step.countryCode ?? "global")} / {formatInspectorValue(step.evidence)}</small>
             </div>
             <b>{step.contribution}</b>
           </button>
@@ -186,7 +188,7 @@ function CountryInspector({
   return (
     <div className="inspector-stack country-inspector">
       <div className="inspector-grid">
-        <Field label="Country" value={country.label} />
+        <Field label="Country" value={formatCountryRef(country.code) || country.label} />
         <Field label="Risk score" value={`${graphScore(country.riskScore)}/100`} />
         <Field label="Centrality" value={`${graphScore(country.centralityScore)}/100`} />
         <Field label="Nodes" value={country.entityCount} />
@@ -236,7 +238,7 @@ function EvidenceRefs({ refs }: { refs: string[] }) {
       <div className="section-kicker">Evidence refs</div>
       <ul className="evidence-list compact">
         {uniqueRefs.map((ref) => (
-          <li key={ref}>{ref}</li>
+          <li key={ref}>{formatEvidenceRef(ref)}</li>
         ))}
       </ul>
     </div>
@@ -251,4 +253,36 @@ function nodeEvidenceRefs(node: GraphNode) {
     String(node.metadata.dataset ?? ""),
     String(node.metadata.evidence_ref ?? ""),
   ].filter(Boolean);
+}
+
+function formatCountryRef(value?: string | null) {
+  const raw = String(value ?? "").trim();
+  if (!raw || raw === "global") return "Global";
+  const prefixed = raw.includes(":") ? raw : `country:${raw}`;
+  return formatNodeDisplayRef(prefixed) || formatInspectorValue(raw);
+}
+
+function formatNodeRef(value?: string | null) {
+  const raw = String(value ?? "").trim();
+  return formatNodeDisplayRef(raw) || formatInspectorValue(raw);
+}
+
+function formatEvidenceRef(ref: string) {
+  const sourceLabel = formatSourceDisplayRef(ref);
+  if (sourceLabel) return sourceLabel;
+  const nodeLabel = formatNodeDisplayRef(ref);
+  if (nodeLabel) return nodeLabel;
+  if (ref.startsWith("edge:")) return "Graph edge evidence";
+  return formatInspectorValue(ref);
+}
+
+function formatInspectorValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "n/a";
+  if (Array.isArray(value)) {
+    return value.map((item) => formatInspectorValue(item)).join(", ");
+  }
+  if (typeof value === "object") return "Structured metadata";
+
+  const raw = String(value).trim();
+  return formatSourceDisplayRef(raw) || formatNodeDisplayRef(raw) || String(formatDisplayValue(raw));
 }

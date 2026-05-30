@@ -1,6 +1,6 @@
 import type { GraphViewModel, GraphVersionMetadata } from "../graphViewModel";
 import { AuditDetails, MetadataSummary } from "../../common/AuditDetails";
-import { formatDisplayLabel, formatDisplayValue } from "../../common/displayLabels";
+import { formatDisplayLabel, formatDisplayValue, formatNodeDisplayRef, formatSourceDisplayRef } from "../../common/displayLabels";
 
 export type StageId =
   | "L0_policy_macro"
@@ -190,7 +190,7 @@ export function StageGraphView({
         <ul className="compact-list">
           {visibleNodes.map((node) => (
             <li key={String(node.id)}>
-              <strong>{String(node.label ?? node.id)}</strong>
+              <strong>{formatNodeRef(node.label ?? node.id)}</strong>
               <span>{formatDisplayLabel(String(node.kind ?? node.node_type ?? "node"))}</span>
             </li>
           ))}
@@ -257,13 +257,15 @@ function relationshipClassLabel(value: RelationshipClassFilter) {
 
 function formatNodeRef(value: unknown) {
   const raw = String(value ?? "node");
-  if (raw === "region:china_taiwan") return "中国台湾";
-  if (raw === "country:CN") return "中国";
+  const directNode = formatNodeDisplayRef(raw);
+  if (directNode) return directNode;
   const tail = raw.includes(":") ? raw.split(":").pop() ?? raw : raw;
   return formatDisplayLabel(tail);
 }
 
 function formatSourceFamilyLabel(value: string) {
+  const sourceLabel = formatSourceDisplayRef(value);
+  if (sourceLabel) return sourceLabel;
   switch (value) {
     case "national_policy_macro_public":
       return "National, policy, macro public sources";

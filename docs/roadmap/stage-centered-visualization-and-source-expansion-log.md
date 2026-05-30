@@ -2093,3 +2093,48 @@
 
 - Primary UI is cleaner, but source IDs and node IDs are intentionally still present in API responses, collapsed audit details, and exported evidence for traceability.
 - Browser smoke validates representative pages and high-noise identifiers; it does not inspect every possible table row from every endpoint.
+
+## 2026-05-30 Inspector And System Health Label Declutter
+
+### Current HEAD
+
+- Starting HEAD: `bd065cffed2fb048bd305cfd9c46790120a957c9`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Graph Explorer inspector now formats node refs, source refs, edge types, country refs, path evidence, and metadata values through the shared display-label layer before rendering primary UI text.
+- Stage graph views now use the shared node/source display helpers instead of local raw ID handling for node labels and source-family labels.
+- System Health data catalog and entity-resolution audit tables now render user-facing source labels rather than raw source IDs.
+- Existing API payloads, audit details, exports, source refs, graph/source/data-mode metadata, and evidence traceability are preserved.
+- Browser smoke evidence confirmed no primary-page matches for raw metadata/source/relationship patterns including `data_mode:`, `graph_version:`, `source_manifest_id:`, `failed_endpoint:`, `company:tsmc`, raw source IDs, or raw relationship class constants.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed, 12 tests.
+- `npm.cmd --workspace apps/web run typecheck` - passed after adding an explicit return type to the inspector formatter.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+- `Select-String -Path artifacts/browser-smoke/report.json -Pattern 'data_mode:|graph_version:|source_manifest_id:|transport_attempts:|failed_endpoint:|not_production_ready: true|company:tsmc|national_policy_macro_public|enterprise_public_disclosure|industry_public_fixture|sec_edgar_lite|gdelt_semiconductor_lite|un_comtrade_semiconductor_trade_lite|evidence_context_link|SUPPLY_RELATIONSHIP|DEMAND_RELATIONSHIP|PRODUCTION_DEPENDENCY'` - no matches.
+
+### Deployment Status
+
+- No Render deployment is claimed for this local UI-label gate.
+- The latest deployed API/Web remain stale or unverified until Render access is restored.
+- Previous Computer Use attempts reached ChatGPT login or Render browser timeout states; no credentials, cookies, tokens, secrets, raw payloads, or private account data were entered or recorded.
+
+### Known Limitations
+
+- Some raw IDs remain intentionally available in collapsed audit details, API responses, reports, and exports for traceability.
+- This gate improves default presentation quality; it does not change the deployed Render blocker or claim production readiness.

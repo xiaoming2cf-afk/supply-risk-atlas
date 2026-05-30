@@ -71,7 +71,12 @@ import { formatCompactNumber, formatPercent, formatUsdCompact, riskClassByLevel 
 import { Button, Field, IconButton, MetricTile, Panel, ProgressBar, RiskPill, ScoreDial, StatusPill } from "../../app/components";
 import { useI18n } from "../../app/i18n";
 import { AuditDetails, MetadataSummary } from "./AuditDetails";
-import { formatDisplayLabel, formatDisplayValue } from "./displayLabels";
+import {
+  formatDisplayLabel,
+  formatDisplayValue,
+  formatNodeDisplayRef as formatCommonNodeDisplayRef,
+  formatSourceDisplayRef as formatCommonSourceDisplayRef,
+} from "./displayLabels";
 import { EvidenceAuditPanel } from "../evidence-board/EvidenceAuditPanel";
 import {
   CVaRTailChart,
@@ -4137,8 +4142,21 @@ function formatInlineDisplayText(value: string) {
 }
 
 function formatNodeDisplayRef(value: string) {
+  const commonLabel = formatCommonNodeDisplayRef(value);
+  if (commonLabel) return commonLabel;
   const tail = value.includes(":") ? value.split(":").pop() ?? value : value;
   return formatDisplayLabel(tail);
+}
+
+function formatSourceDisplayRef(value?: string | null) {
+  const commonLabel = formatCommonSourceDisplayRef(value);
+  if (commonLabel) return commonLabel;
+  if (!value) return "n/a";
+  return String(formatDisplayValue(value));
+}
+
+function formatSourceDisplayList(values: string[]) {
+  return values.map((value) => formatSourceDisplayRef(value)).join(" / ");
 }
 
 function chartMetadataForRisk(risk: SemiriskEntityRiskScore) {
@@ -5329,7 +5347,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <tbody>
                         {health.dataCatalog.bySource.map((row) => (
                           <tr key={row.sourceId}>
-                            <td>{row.sourceId}</td>
+                            <td>{formatSourceDisplayRef(row.sourceId)}</td>
                             <td>{formatCompactNumber(row.count)}</td>
                           </tr>
                         ))}
@@ -5343,7 +5361,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <div className="row-top">
                         <div>
                           <span className="row-title">{license.name}</span>
-                          <span className="row-subtitle">{license.sourceIds.join(" / ")}</span>
+                          <span className="row-subtitle">{formatSourceDisplayList(license.sourceIds)}</span>
                         </div>
                         <StatusPill status={health.dataCatalog?.promoted ? "operational" : "degraded"} />
                       </div>
@@ -5384,7 +5402,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                         <tr key={row.entityType}>
                           <td>{formatDisplayLabel(row.entityType)}</td>
                           <td>{formatCompactNumber(row.count)}</td>
-                          <td>{sourceRow?.sourceId ?? "n/a"}</td>
+                          <td>{formatSourceDisplayRef(sourceRow?.sourceId)}</td>
                           <td>{formatCompactNumber(sourceRow?.entityCount ?? 0)}</td>
                         </tr>
                       );
