@@ -1996,3 +1996,47 @@
 - IDs and version fields remain intentionally present in API responses, exported reports, and collapsed audit details for traceability.
 - Browser smoke does not assert every possible table cell value; it now guards the main page text against the highest-noise raw identifiers and diagnostics.
 - Local Next dev startup still emitted a non-blocking cache persistence permission warning; smoke passed.
+
+## 2026-05-30 Stage View Source Family Declutter
+
+### Current HEAD
+
+- Starting HEAD: `f0111aac45db851ffef4b1b0d1e56a0e7362206b`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Graph Explorer stage views no longer show source-family identifiers such as `national_policy_macro_public` as primary labels.
+- Source families now render as business-readable labels:
+  - National, policy, macro public sources
+  - Enterprise public disclosures
+  - Industry public fixture sources
+- Stage edge endpoint labels now format node refs instead of showing raw `source -> target` IDs in the stage list.
+- Long source-gap and proxy-limitation text moved out of the main graph summary and into audit details with a short user-facing caveat.
+- Stage view still preserves graph/source/data-mode metadata, relationship class, and evidence-context non-dependency warnings.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `tests/quality/test_stage_frontend_artifacts.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_stage_frontend_artifacts.py tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000/ npm.cmd run smoke:web` - passed with 63 checks.
+
+### Deployment Status
+
+- No Render deployment is claimed for this gate.
+- Public deployed API/Web remain stale or unverified until the missing Render secrets or a stable manual Render redeploy path is restored.
+- The platform remains fixture/promoted-public-evidence research infrastructure, not production-ready.
+
+### Known Limitations
+
+- Stage source coverage remains fixture/promoted-public-evidence with documented proxy limitations.
+- Full source IDs are still present in API responses, source coverage tables, and audit/export paths for traceability.

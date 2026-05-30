@@ -39,3 +39,16 @@ def test_stage_graph_generic_view_shows_stage_metadata_and_declutter_limits() ->
     assert "graph_mode" in text
     assert "18 nodes / 30 edges" in text
     assert "evidence-context links are inspection links" in text
+
+
+def test_stage_graph_generic_view_formats_source_families_and_node_refs() -> None:
+    text = (STAGE_VIEW_ROOT / "StageGraphView.tsx").read_text(encoding="utf-8")
+
+    assert "formatSourceFamilyLabel" in text
+    assert "National, policy, macro public sources" in text
+    assert "Enterprise public disclosures" in text
+    assert "Industry public fixture sources" in text
+    assert "formatNodeRef(edge.source)" in text
+    assert "formatNodeRef(edge.target)" in text
+    assert 'source gaps: {sourceGaps.join' not in text
+    assert 'proxy limitations: {proxyLimitations.join' not in text

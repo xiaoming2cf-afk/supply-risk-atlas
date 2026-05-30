@@ -1,6 +1,6 @@
 import type { GraphViewModel, GraphVersionMetadata } from "../graphViewModel";
 import { AuditDetails, MetadataSummary } from "../../common/AuditDetails";
-import { formatDisplayValue } from "../../common/displayLabels";
+import { formatDisplayLabel, formatDisplayValue } from "../../common/displayLabels";
 
 export type StageId =
   | "L0_policy_macro"
@@ -161,7 +161,8 @@ export function StageGraphView({
       <MetadataSummary
         items={[
           { label: "Public evidence mode" },
-          { label: "Stage source coverage" },
+          { label: sourceCoverage.length ? `${sourceCoverage.length} source candidates` : "Source coverage fallback" },
+          { label: sourceGaps.length || proxyLimitations.length ? "Known proxy gaps" : "No stage gaps recorded", tone: sourceGaps.length || proxyLimitations.length ? "warning" : "default" },
           { label: relationshipClassLabel(relationshipClassFilter) },
         ]}
       />
@@ -172,6 +173,8 @@ export function StageGraphView({
           { label: "data_mode", value: endpointData?.data_mode ?? "fixture" },
           { label: "graph_mode", value: endpointData?.graph_mode ?? "fixture" },
           { label: "stage_view_component", value: stage.viewName },
+          { label: "source_gaps", value: sourceGaps },
+          { label: "proxy_limitations", value: proxyLimitations },
         ]}
         warnings={metadata.warnings}
       />
@@ -188,7 +191,7 @@ export function StageGraphView({
           {visibleNodes.map((node) => (
             <li key={String(node.id)}>
               <strong>{String(node.label ?? node.id)}</strong>
-              <span>{String(node.kind ?? node.node_type ?? "node")}</span>
+              <span>{formatDisplayLabel(String(node.kind ?? node.node_type ?? "node"))}</span>
             </li>
           ))}
         </ul>
@@ -199,8 +202,8 @@ export function StageGraphView({
         <ul className="compact-list">
           {visibleEdges.map((edge) => (
             <li key={String(edge.id)}>
-              <strong>{String(edge.edge_type ?? "edge")}</strong>
-              <span>{String(edge.source)} {"->"} {String(edge.target)}</span>
+              <strong>{formatDisplayLabel(String(edge.user_facing_label ?? edge.edge_type ?? "edge"))}</strong>
+              <span>{formatNodeRef(edge.source)} {"->"} {formatNodeRef(edge.target)}</span>
             </li>
           ))}
         </ul>
@@ -216,17 +219,14 @@ export function StageGraphView({
         <ul className="compact-list">
           {sourceFamilyCoverage.map((family) => (
             <li key={String(family.source_family)}>
-              <strong>{String(family.source_family)}</strong>
+              <strong>{formatSourceFamilyLabel(String(family.source_family))}</strong>
               <span>{String(formatDisplayValue(String(family.source_status ?? "partial")))} | sources: {String(family.source_count ?? "n/a")}</span>
             </li>
           ))}
         </ul>
       ) : null}
       {sourceGaps.length || proxyLimitations.length ? (
-        <div className="graph-view-summary">
-          <span>source gaps: {sourceGaps.join("; ") || "none"}</span>
-          <span>proxy limitations: {proxyLimitations.join("; ") || "none"}</span>
-        </div>
+        <p className="muted">This stage has documented source gaps and proxy limits. Open audit details for the full caveat list.</p>
       ) : null}
     </section>
   );
@@ -252,5 +252,26 @@ function relationshipClassLabel(value: RelationshipClassFilter) {
       return "Evidence context";
     default:
       return "All relationship classes";
+  }
+}
+
+function formatNodeRef(value: unknown) {
+  const raw = String(value ?? "node");
+  if (raw === "region:china_taiwan") return "中国台湾";
+  if (raw === "country:CN") return "中国";
+  const tail = raw.includes(":") ? raw.split(":").pop() ?? raw : raw;
+  return formatDisplayLabel(tail);
+}
+
+function formatSourceFamilyLabel(value: string) {
+  switch (value) {
+    case "national_policy_macro_public":
+      return "National, policy, macro public sources";
+    case "enterprise_public_disclosure":
+      return "Enterprise public disclosures";
+    case "industry_public_fixture":
+      return "Industry public fixture sources";
+    default:
+      return formatDisplayLabel(value);
   }
 }
