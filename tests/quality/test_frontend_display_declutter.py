@@ -15,12 +15,37 @@ def test_data_lineage_banner_uses_user_facing_summary_and_collapsed_audit_detail
     assert "DataAuditDetails" in source
     assert "MetadataSummary" in source
     assert "publicDataModeLabel" in source
+    assert "shouldShowDiagnostics(status)" in source
     assert "<span>data_mode:" not in source
+    assert "<span>source_status:" not in source
+    assert "<span>graph_mode:" not in source
     assert "<span>graph_version:" not in source
     assert "<span>source_manifest_id:" not in source
+    assert "<span>calibration_status:" not in source
+    assert "<span>last_checked_at:" not in source
     assert "<span>not_production_ready: true" not in source
     assert "<span>failed_endpoint:" not in source
     assert "<span>transport_attempts:" not in source
+
+
+def test_metadata_summary_filters_internal_audit_tokens_from_primary_badges() -> None:
+    source = read("apps/web/src/features/common/AuditDetails.tsx")
+
+    assert "INTERNAL_METADATA_SUMMARY_LABELS" in source
+    for token in [
+        '"data_mode"',
+        '"source_status"',
+        '"graph_mode"',
+        '"graph_version"',
+        '"source_manifest_id"',
+        '"calibration_status"',
+        '"last_checked_at"',
+        '"transport_attempts"',
+        '"failed_endpoint"',
+        '"not_production_ready"',
+    ]:
+        assert token in source
+    assert "isUserFacingSummaryLabel(item.label)" in source
 
 
 def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:

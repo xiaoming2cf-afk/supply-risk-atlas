@@ -1165,6 +1165,7 @@ async function main() {
         lineageState.lineageText.includes("Coverage:") &&
         lineageState.lineageText.includes("Updated:") &&
         lineageState.lineageText.includes("Source:") &&
+        !/data_mode:|source_status:|graph_mode:|graph_version:|source_manifest_id:|calibration_status:|last_checked_at:|transport_attempts:|failed_endpoint:|not_production_ready: true/.test(lineageState.lineageText) &&
         !lineageState.lineageText.includes("Lineage:") &&
         !lineageState.lineageText.includes("Request:") &&
         !lineageState.lineageText.includes("api-unavailable://"),
@@ -1844,7 +1845,7 @@ async function pageRelevanceState(client) {
       text: document.body?.innerText ?? '',
       visibleText,
       hasUserFacingEvidenceStatus: /Public evidence mode|Research fixture mode|Partial public data/.test(visibleText),
-      hasVisibleDeveloperDiagnostics: /data_mode:|graph_version:|source_manifest_id:|transport_attempts:|failed_endpoint:|not_production_ready: true/.test(visibleText),
+      hasVisibleDeveloperDiagnostics: /data_mode:|source_status:|graph_mode:|graph_version:|source_manifest_id:|calibration_status:|last_checked_at:|transport_attempts:|failed_endpoint:|not_production_ready: true/.test(visibleText),
       hasClosedAuditDetails: document.querySelectorAll('details.audit-details:not([open])').length > 0,
       hasDisallowedText: (policy?.dataset?.disallowedMajorSections ?? '').split('|').filter(Boolean)
         .some((section) => {

@@ -572,6 +572,8 @@ button {
 
 .data-lineage-banner {
   display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  align-items: start;
   gap: 12px;
   margin: 0 0 18px;
   padding: 14px 16px;
@@ -579,6 +581,14 @@ button {
   border-radius: 8px;
   background: rgba(16, 26, 24, 0.92);
   box-shadow: var(--shadow);
+}
+
+.data-lineage-banner .metadata-summary {
+  justify-content: flex-end;
+}
+
+.data-lineage-banner .audit-details {
+  grid-column: 1 / -1;
 }
 
 .data-lineage-banner strong {
@@ -706,6 +716,16 @@ button {
   margin: 0;
   color: #dce8e2;
   overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .data-lineage-banner {
+    grid-template-columns: 1fr;
+  }
+
+  .data-lineage-banner .metadata-summary {
+    justify-content: flex-start;
+  }
 }
 
 .audit-warning-list {

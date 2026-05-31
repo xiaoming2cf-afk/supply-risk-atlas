@@ -3062,3 +3062,48 @@
 - GitHub Actions secrets for automated Render deployment remain absent, so Render deployment currently requires project-scoped browser/console action or a safe future secret configuration path.
 - The strict version script still treats a missing root HTML commit marker as stale even when API, Web build-info, and Web proxy agree on the deployed commit.
 - GPT Pro review remains pending for the `c07222c` deployed result.
+
+## 2026-05-31 Display Declutter And Audit Details Gate
+
+### Current HEAD
+
+- Starting commit: `86e66a440c8c608302365ab73d410ca5d230c745`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Tightened the demonstration-first display policy for the global public-data banner.
+- `MetadataSummary` now filters internal audit and diagnostics tokens from primary badges, including `data_mode`, `source_status`, `graph_mode`, `graph_version`, `source_manifest_id`, `calibration_status`, `last_checked_at`, `transport_attempts`, `failed_endpoint`, and `not_production_ready`.
+- Top-level diagnostics now appear only for actual blocked/fallback/unavailable states, failed endpoints, retry hints, or repeated transport attempts.
+- `Data audit details` remains available as a collapsed audit surface; API/export metadata fields remain unchanged.
+- The public data banner layout is compacted so the primary view shows conclusion, coverage, update time, source summary, and public-evidence/research-fixture mode only.
+- Browser smoke now fails if primary visible text exposes raw audit keys such as `source_status:` or `source_manifest_id:`.
+
+### Files Changed
+
+- `apps/web/src/features/common/AuditDetails.tsx`
+- `apps/web/src/app/App.tsx`
+- `apps/web/src/app/globals.css`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_frontend_source_readability.py -q` -> PASS (`23` tests).
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS (`63` checks).
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Deployment And Computer Use Status
+
+- Deployment not yet updated for this gate at log-write time.
+- No Render or GPT Pro browser action was performed for this gate before commit.
+
+### Known Limitations
+
+- This gate changes default frontend presentation only; it does not change API contracts, report exports, connector policy, or fixture/promoted data semantics.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready.

@@ -496,7 +496,7 @@ function DataAuditDetails({
     { label: "retry_hint", value: diagnostics?.retryHint },
     { label: "transport_attempts", value: diagnostics?.transportAttempts },
   ];
-  const hasDiagnostics = diagnosticItems.some((item) => item.value !== undefined && item.value !== null && item.value !== "");
+  const hasDiagnostics = shouldShowDiagnostics(status);
   if (diagnosticsOnly && !hasDiagnostics) return null;
   return (
     <>
@@ -504,6 +504,14 @@ function DataAuditDetails({
       {hasDiagnostics ? <DiagnosticDetails items={diagnosticItems} /> : null}
     </>
   );
+}
+
+function shouldShowDiagnostics(status: DataStatus) {
+  const diagnostics = status.diagnostics;
+  if (!diagnostics) return false;
+  if (diagnostics.failedEndpoint || diagnostics.retryHint) return true;
+  if (typeof diagnostics.transportAttempts === "number" && diagnostics.transportAttempts > 1) return true;
+  return ["blocked", "fallback"].includes(status.tone) || ["unavailable", "error", "unauthorized"].includes(status.sourceStatus);
 }
 
 interface DataStatus {

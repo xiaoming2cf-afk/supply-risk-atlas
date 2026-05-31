@@ -13,6 +13,20 @@ export type MetadataSummaryItem = {
   tone?: "default" | "good" | "warning" | "degraded";
 };
 
+const INTERNAL_METADATA_SUMMARY_LABELS = new Set([
+  "calibration_status",
+  "data_mode",
+  "failed_endpoint",
+  "graph_mode",
+  "graph_version",
+  "last_checked_at",
+  "not_production_ready",
+  "retry_hint",
+  "source_manifest_id",
+  "source_status",
+  "transport_attempts",
+]);
+
 export function MetadataSummary({
   items,
   ariaLabel = "Data status summary",
@@ -20,7 +34,7 @@ export function MetadataSummary({
   items: MetadataSummaryItem[];
   ariaLabel?: string;
 }) {
-  const visibleItems = items.filter((item) => item.label.trim().length > 0);
+  const visibleItems = items.filter((item) => isUserFacingSummaryLabel(item.label));
   if (visibleItems.length === 0) return null;
 
   return (
@@ -32,6 +46,13 @@ export function MetadataSummary({
       ))}
     </div>
   );
+}
+
+function isUserFacingSummaryLabel(label: string) {
+  const trimmed = label.trim();
+  if (!trimmed) return false;
+  const rawKey = trimmed.split(":")[0]?.trim().toLowerCase();
+  return !INTERNAL_METADATA_SUMMARY_LABELS.has(rawKey);
 }
 
 export function AuditDetails({
