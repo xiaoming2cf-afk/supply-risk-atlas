@@ -13,6 +13,7 @@ from ml.risk_scoring.semirisk_score import (
 )
 from sra_core.api.envelope import make_envelope, make_error_envelope
 from services.api.services.common import semiconductor_metadata
+from services.api.services.semiconductor_content_service import profile_for_entity
 from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 
 
@@ -57,6 +58,9 @@ def route_semirisk_entity_risk(
             field="entity_id",
             warnings=[RISK_SCORE_WARNING_FIXTURE_GRAPH],
         )
+    profile = profile_for_entity(entity_id)
+    if profile is not None:
+        payload["semiconductor_profile"] = profile
     return make_envelope(
         payload,
         metadata=semiconductor_metadata(snapshot, feature_version=SEMIRISK_RISK_FEATURE_VERSION),

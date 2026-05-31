@@ -1,0 +1,1284 @@
+content_version: semiconductor-supply-chain-content-v0.1
+generated_at: "2026-05-30T00:00:00Z"
+data_mode: fixture
+graph_mode: promoted_public_evidence
+production_status: research_fixture
+source_manifest_id: manifest_semiconductor_content_fixture_v0_1
+coverage_level: public_evidence_fixture
+api_visibility_policy: sanitized_summary_and_lineage_only
+source_payload_policy: no_bulk_source_payloads_api_visible
+live_fetch_default: disabled
+fixture_required: true
+warnings:
+  - This is a public-evidence research fixture. It is not calibrated for production decisions.
+  - Live connector paths remain disabled by default.
+source_summaries:
+  national_policy_macro_public:
+    sources:
+      - oecd_semiconductor_value_chain_reports
+      - world_bank_macro_indicators_lite
+      - bis_export_controls_lite
+      - federal_register_export_controls_lite
+      - ofac_sanctions_list_lite
+      - consolidated_screening_list_lite
+      - usgs_mineral_commodity_summaries_lite
+      - un_comtrade_semiconductor_trade_lite
+      - wits_trade_tariff_lite
+      - nga_world_port_index_lite
+    coverage_level: summarized_public_fixture
+    evidence_summary: National, multilateral, policy, macro, trade, sanctions, minerals, hazard, and logistics sources support country/region and policy exposure summaries.
+  enterprise_public_disclosure:
+    sources:
+      - sec_edgar_lite
+      - company_annual_report_manual_upload
+    coverage_level: summarized_public_fixture
+    evidence_summary: Public filings and reviewed annual-report/manual-upload summaries support enterprise role, dependency, and risk-tag fields when disclosed.
+  industry_public_fixture:
+    sources:
+      - eto_cset_advanced_semiconductor_supply_chain
+      - wsts_historical_billings
+      - gdelt_semiconductor_lite
+      - openalex_crossref_literature_lite
+    coverage_level: summarized_public_fixture
+    evidence_summary: Industry, market, event, and literature fixtures support value-chain stages, demand pressure, and evidence-context summaries.
+country_region_exposures:
+  - geo_id: country:US
+    display_name: United States
+    region_group: North America
+    semiconductor_role_summary: Fabless design, EDA/IP, equipment, cloud demand, public filings, and policy signals are central in the fixture graph.
+    upstream_strengths: [EDA/IP, fabless design, equipment components, public company disclosure]
+    midstream_strengths: [leading-edge design, selected fabrication and equipment supply]
+    downstream_strengths: [AI datacenter, cloud computing, automotive electronics, defense electronics]
+    chokepoint_exposure: [EDA tool dependence, advanced equipment policy sensitivity, advanced logic demand concentration]
+    policy_exposure: [export controls, entity screening, public procurement and industrial policy]
+    logistics_exposure: [Pacific route dependence, air-freight exposure for high-value components]
+    substitution_notes: Public summaries indicate high switching costs for EDA, leading equipment, and qualified suppliers.
+    evidence_summary: Supported by SEC EDGAR, BIS/Federal Register, OECD, WSTS, ETO/CSET, GDELT, and manual annual-report summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, bis_export_controls_lite, federal_register_export_controls_lite, oecd_semiconductor_value_chain_reports]
+  - geo_id: country:CN
+    display_name: 中国
+    region_group: East Asia
+    semiconductor_role_summary: Large downstream electronics demand, mature-node fabrication, assembly, trade, policy, and minerals context are represented as public-evidence summaries.
+    upstream_strengths: [critical minerals context, raw material processing proxies, trade-flow indicators]
+    midstream_strengths: [mature fabrication, OSAT, electronics manufacturing]
+    downstream_strengths: [consumer electronics, telecom equipment, industrial control, IoT]
+    chokepoint_exposure: [advanced equipment access, mature-node demand pressure, policy-sensitive restricted items]
+    policy_exposure: [export controls, restricted-entity screening, industrial policy]
+    logistics_exposure: [coastal ports, intra-Asia shipping lanes, demand hub concentration]
+    substitution_notes: Public fixtures treat advanced equipment and leading-node capability as constrained; mature-node capacity is represented with proxy uncertainty.
+    evidence_summary: Supported by OECD, UN Comtrade, WITS, BIS/Federal Register summaries, GDELT, and ETO/CSET fixture mappings.
+    coverage_level: public_evidence_fixture
+    provenance: [oecd_semiconductor_value_chain_reports, un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite, gdelt_semiconductor_lite]
+  - geo_id: region:china_taiwan
+    display_name: 中国台湾
+    parent_country_id: country:CN
+    parent_country_display: 中国
+    region_group: East Asia
+    semiconductor_role_summary: Public-evidence fixtures represent foundry, advanced packaging, port, airport, and natural-hazard exposure through the canonical region node.
+    upstream_strengths: [foundry ecosystem, advanced packaging, port and airport logistics]
+    midstream_strengths: [leading-edge fabrication, foundry services, advanced packaging]
+    downstream_strengths: [global advanced logic, AI accelerator, mobile, and server-chip demand support]
+    chokepoint_exposure: [leading foundry concentration, advanced packaging capacity, water and earthquake hazard exposure]
+    policy_exposure: [geopolitical and export-control context represented only as sanitized public summaries]
+    logistics_exposure: [Kaohsiung, Keelung, Taoyuan air-freight corridor]
+    substitution_notes: Leading-edge fab qualification and advanced packaging substitution are modeled as high switching-cost fixture assumptions.
+    evidence_summary: Supported by ETO/CSET, GDELT, USGS earthquake, NGA World Port Index, WSTS, and company-report summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite, usgs_earthquake_lite, nga_world_port_index_lite]
+  - geo_id: country:JP
+    display_name: Japan
+    region_group: East Asia
+    semiconductor_role_summary: Materials, chemicals, photoresist, wafers, equipment, metrology, and downstream electronics exposure are represented by public fixture summaries.
+    upstream_strengths: [wafers, photoresist, chemicals, equipment components]
+    midstream_strengths: [materials, specialty gases, equipment, selected fabrication]
+    downstream_strengths: [automotive electronics, industrial electronics, consumer electronics]
+    chokepoint_exposure: [photoresist qualification, wafer supply, equipment component dependencies]
+    policy_exposure: [export-control alignment and industrial policy context]
+    logistics_exposure: [port and air-freight exposure across East Asia routes]
+    substitution_notes: Materials qualification is represented as slow and evidence-bound.
+    evidence_summary: Supported by ETO/CSET, SEC/annual-report summaries, GDELT, OECD, UN Comtrade, and WITS.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, un_comtrade_semiconductor_trade_lite]
+  - geo_id: country:KR
+    display_name: South Korea
+    region_group: East Asia
+    semiconductor_role_summary: Memory, foundry, advanced packaging, display/electronics demand, and large-company disclosure are represented.
+    upstream_strengths: [memory manufacturing ecosystem, supplier disclosure]
+    midstream_strengths: [DRAM, NAND, foundry, advanced packaging]
+    downstream_strengths: [consumer electronics, cloud memory, automotive electronics]
+    chokepoint_exposure: [memory concentration, fab hazard exposure, supplier qualification]
+    policy_exposure: [export-control and industrial-policy context]
+    logistics_exposure: [Incheon and Busan corridor exposure]
+    substitution_notes: Memory and foundry substitution is modeled as high lead-time public-evidence proxy.
+    evidence_summary: Supported by company reports, SEC EDGAR where applicable, GDELT, WSTS, OECD, and ETO/CSET.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - geo_id: country:NL
+    display_name: Netherlands
+    region_group: Europe
+    semiconductor_role_summary: Lithography equipment, related policy exposure, and supplier ecosystem concentration are represented.
+    upstream_strengths: [EUV lithography, DUV lithography, equipment integration]
+    midstream_strengths: [equipment supply to fabrication stages]
+    downstream_strengths: [global fabrication tool demand]
+    chokepoint_exposure: [EUV scanner availability, supplier concentration, policy restriction sensitivity]
+    policy_exposure: [semiconductor manufacturing equipment controls]
+    logistics_exposure: [European equipment logistics and export-control process latency]
+    substitution_notes: Leading lithography capability is represented as low substitutability in fixture graph.
+    evidence_summary: Supported by ETO/CSET, BIS/Federal Register summaries, SEC/annual reports, and OECD reports.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, federal_register_export_controls_lite, oecd_semiconductor_value_chain_reports]
+  - geo_id: country:DE
+    display_name: Germany
+    region_group: Europe
+    semiconductor_role_summary: Specialty chemicals, power semiconductors, automotive electronics, and industrial demand are represented.
+    upstream_strengths: [specialty chemicals, materials, industrial equipment]
+    midstream_strengths: [power semiconductors, sensors, analog chips]
+    downstream_strengths: [automotive electronics, industrial control, medical electronics]
+    chokepoint_exposure: [chemicals qualification, automotive demand cycles, energy/logistics exposure]
+    policy_exposure: [EU policy and compliance context]
+    logistics_exposure: [Rotterdam-linked European route exposure]
+    substitution_notes: Chemical and power-device substitution is represented as moderate to high switching cost.
+    evidence_summary: Supported by company reports, OECD, UN Comtrade, WITS, GDELT, and OpenAlex/Crossref summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, oecd_semiconductor_value_chain_reports, gdelt_semiconductor_lite]
+  - geo_id: country:MY
+    display_name: Malaysia
+    region_group: Southeast Asia
+    semiconductor_role_summary: OSAT, electronics manufacturing, logistics, and downstream assembly exposure are represented.
+    upstream_strengths: [packaging and testing workforce and facilities]
+    midstream_strengths: [OSAT, test, electronics assembly]
+    downstream_strengths: [consumer electronics and automotive electronics support]
+    chokepoint_exposure: [packaging capacity, labor and logistics disruptions]
+    policy_exposure: [trade and customs context]
+    logistics_exposure: [Southeast Asia port and air route exposure]
+    substitution_notes: Packaging and testing substitution is represented as moderate with qualification delays.
+    evidence_summary: Supported by UN Comtrade, WITS, GDELT, company reports, and ETO/CSET.
+    coverage_level: public_evidence_fixture
+    provenance: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite, gdelt_semiconductor_lite]
+  - geo_id: country:SG
+    display_name: Singapore
+    region_group: Southeast Asia
+    semiconductor_role_summary: Logistics hub, specialty chemicals, mature fabrication, and regional headquarters exposure are represented.
+    upstream_strengths: [specialty chemicals and regional logistics]
+    midstream_strengths: [mature fabrication, test, equipment service]
+    downstream_strengths: [regional electronics and cloud infrastructure support]
+    chokepoint_exposure: [logistics concentration, chemicals routing, port disruption]
+    policy_exposure: [trade and customs context]
+    logistics_exposure: [Changi air-freight and maritime hub exposure]
+    substitution_notes: Logistics alternatives are modeled as available but slower and more costly in fixture summaries.
+    evidence_summary: Supported by NGA World Port Index, GDELT, UN Comtrade, WITS, and company reports.
+    coverage_level: public_evidence_fixture
+    provenance: [nga_world_port_index_lite, un_comtrade_semiconductor_trade_lite, gdelt_semiconductor_lite]
+  - geo_id: country:VN
+    display_name: Vietnam
+    region_group: Southeast Asia
+    semiconductor_role_summary: Electronics assembly, emerging packaging/testing, logistics, and downstream manufacturing exposure are represented.
+    upstream_strengths: [assembly workforce and electronics manufacturing]
+    midstream_strengths: [packaging/testing proxies, manufacturing support]
+    downstream_strengths: [consumer electronics and communications equipment assembly]
+    chokepoint_exposure: [supplier qualification, port and customs latency, workforce concentration]
+    policy_exposure: [trade and customs context]
+    logistics_exposure: [Southeast Asia ports and regional lane exposure]
+    substitution_notes: Public fixtures treat emerging capacity as partially substitutable with qualification delays.
+    evidence_summary: Supported by UN Comtrade, WITS, GDELT, OECD, and company report summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [un_comtrade_semiconductor_trade_lite, wits_trade_tariff_lite, gdelt_semiconductor_lite]
+value_chain_layers:
+  - layer_id: vc_eda_ip
+    layer_name: EDA / IP
+    stage: upstream
+    role_in_chain: Supplies design automation, verification, synthesis, layout, and reusable IP capabilities before fabrication.
+    key_inputs: [engineers, design rules, process design kits, IP libraries]
+    key_outputs: [verified chip designs, IP blocks, design signoff artifacts]
+    representative_entities: [company:Synopsys, company:Cadence, company:Siemens_EDA, company:Arm]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Tool and IP switching requires qualification, retraining, and signoff-cycle changes.
+    shock_sensitivity: policy, license, and capability disruptions can delay tape-out and product qualification.
+    downstream_impact: Delays advanced logic, AI accelerator, automotive, and communications chip design.
+    evidence_summary: Public filings, OECD, OpenAlex/Crossref, and company report summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, oecd_semiconductor_value_chain_reports, openalex_crossref_literature_lite]
+  - layer_id: vc_semiconductor_design
+    layer_name: Semiconductor design
+    stage: upstream
+    role_in_chain: Converts product requirements into chip architectures, RTL, verification, and foundry-ready designs.
+    key_inputs: [EDA tools, IP cores, architecture licenses, engineering talent]
+    key_outputs: [advanced logic designs, GPUs, MCUs, RF chips, server CPUs]
+    representative_entities: [company:NVIDIA, company:AMD, company:Qualcomm, company:Broadcom, company:Apple, company:MediaTek]
+    concentration_risk: medium_high
+    substitutability: medium
+    lead_time_or_switching_cost_notes: Customer platform and software ecosystems create multi-cycle switching costs.
+    shock_sensitivity: demand spikes and foundry constraints can amplify design backlog.
+    downstream_impact: Affects datacenter, mobile, automotive, telecom, and consumer electronics.
+    evidence_summary: SEC filings, company reports, WSTS, and GDELT support public-evidence summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - layer_id: vc_silicon_wafers
+    layer_name: Silicon wafers
+    stage: upstream
+    role_in_chain: Provides 300mm and specialty wafer substrates used by fabs.
+    key_inputs: [polysilicon, quartz, crystal growth equipment, slicing and polishing]
+    key_outputs: [300mm wafers, SOI wafers, epitaxial wafers]
+    representative_entities: [company:SUMCO, company:Shin_Etsu_Chemical, company:Siltronic]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Wafer qualification and process tuning create long switching windows.
+    shock_sensitivity: Input purity, energy, and logistics disruptions can affect fab starts.
+    downstream_impact: Affects all wafer fabrication and advanced packaging throughput.
+    evidence_summary: ETO/CSET, company reports, USGS minerals, UN Comtrade, and WITS support proxy summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, usgs_mineral_commodity_summaries_lite]
+  - layer_id: vc_photoresist
+    layer_name: Photoresist
+    stage: upstream
+    role_in_chain: Supplies lithography-sensitive chemical layers for pattern transfer.
+    key_inputs: [specialty chemicals, solvents, polymer chemistry, quality control]
+    key_outputs: [ArF photoresist, EUV photoresist]
+    representative_entities: [company:JSR, company:Tokyo_Ohka_Kogyo, company:Fujifilm_Electronic_Materials]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Resist substitution requires process requalification and yield learning.
+    shock_sensitivity: Chemicals disruptions can halt lithography or reduce yield.
+    downstream_impact: Affects advanced logic, memory, and mature process nodes.
+    evidence_summary: ETO/CSET, company reports, UN Comtrade/WITS proxy data, and GDELT event summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, un_comtrade_semiconductor_trade_lite]
+  - layer_id: vc_specialty_gases
+    layer_name: Electronic specialty gases
+    stage: upstream
+    role_in_chain: Provides purified gases for lithography, etching, deposition, and chamber cleaning.
+    key_inputs: [gas production, purification, cylinders, logistics]
+    key_outputs: [neon, argon, helium, nitrogen trifluoride]
+    representative_entities: [company:Air_Liquide, company:Linde]
+    concentration_risk: medium_high
+    substitutability: medium
+    lead_time_or_switching_cost_notes: Qualification and logistics create medium switching costs even when alternate producers exist.
+    shock_sensitivity: Regional supply, transportation, and purification disruption can affect fab availability.
+    downstream_impact: Affects lithography, etch, deposition, and cleaning processes.
+    evidence_summary: ETO/CSET, USGS, UN Comtrade, WITS, GDELT, and company reports support proxy summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite, gdelt_semiconductor_lite]
+  - layer_id: vc_sputtering_targets
+    layer_name: Sputtering targets
+    stage: upstream
+    role_in_chain: Supplies high-purity metal and compound targets for PVD deposition.
+    key_inputs: [tantalum, tungsten, copper, aluminum, high-purity processing]
+    key_outputs: [PVD targets, barrier metal inputs]
+    representative_entities: [company:Materion, company:JX_Advanced_Metals, company:Entegris]
+    concentration_risk: medium
+    substitutability: medium
+    lead_time_or_switching_cost_notes: Target qualification is process-specific and requires purity validation.
+    shock_sensitivity: Critical mineral and metals disruption can affect deposition process availability.
+    downstream_impact: Affects logic, memory, power, and analog fabrication.
+    evidence_summary: USGS, ETO/CSET, UN Comtrade/WITS proxy data, and company reports support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [usgs_mineral_commodity_summaries_lite, eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - layer_id: vc_cmp_materials
+    layer_name: CMP materials
+    stage: upstream
+    role_in_chain: Provides slurry, pads, and chemicals for wafer planarization.
+    key_inputs: [abrasives, oxidizers, pads, chemical purification]
+    key_outputs: [CMP slurry, CMP pads, cleaning inputs]
+    representative_entities: [company:Entegris, company:DuPont, company:Fujifilm_Electronic_Materials]
+    concentration_risk: medium_high
+    substitutability: medium_low
+    lead_time_or_switching_cost_notes: Slurry and pad substitution requires process/yield validation.
+    shock_sensitivity: Materials disruptions can reduce yield or throughput.
+    downstream_impact: Affects fabrication process steps across nodes.
+    evidence_summary: ETO/CSET, company reports, and trade proxy summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, un_comtrade_semiconductor_trade_lite]
+  - layer_id: vc_lithography_equipment
+    layer_name: Lithography equipment
+    stage: support
+    role_in_chain: Provides scanners and associated systems needed for critical patterning.
+    key_inputs: [precision optics, lasers, stages, metrology integration]
+    key_outputs: [EUV scanners, DUV scanners, lithography service capacity]
+    representative_entities: [company:ASML, company:Nikon, company:Canon]
+    concentration_risk: very_high
+    substitutability: very_low
+    lead_time_or_switching_cost_notes: Tool availability, installation, service, and process qualification create long switching windows.
+    shock_sensitivity: Equipment, policy, or component constraints propagate to leading-node capacity.
+    downstream_impact: Affects advanced logic, DRAM, NAND, and mature nodes depending on tool class.
+    evidence_summary: ETO/CSET, BIS/Federal Register, company reports, and GDELT summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite, federal_register_export_controls_lite]
+  - layer_id: vc_etching_equipment
+    layer_name: Etching equipment
+    stage: support
+    role_in_chain: Provides plasma and wet etch tools for pattern transfer and material removal.
+    key_inputs: [chambers, RF power, specialty gases, process recipes]
+    key_outputs: [etch capacity, process capability]
+    representative_entities: [company:Lam_Research, company:Tokyo_Electron, company:Applied_Materials]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Process matching and yield qualification make switching difficult.
+    shock_sensitivity: Tool lead times and gas constraints can reduce process throughput.
+    downstream_impact: Affects advanced logic, memory, power, and analog devices.
+    evidence_summary: ETO/CSET, company reports, and policy summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, bis_export_controls_lite]
+  - layer_id: vc_deposition_equipment
+    layer_name: Deposition equipment
+    stage: support
+    role_in_chain: Provides CVD, PVD, and ALD process tools for thin-film formation.
+    key_inputs: [precursor chemicals, chambers, vacuum systems, process controls]
+    key_outputs: [deposition capacity, thin-film process capability]
+    representative_entities: [company:Applied_Materials, company:Tokyo_Electron, company:Lam_Research]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Film quality and integration requirements constrain tool substitutions.
+    shock_sensitivity: Equipment and precursor disruptions can affect critical layers.
+    downstream_impact: Affects logic, memory, power, and sensor fabrication.
+    evidence_summary: ETO/CSET and company-report summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - layer_id: vc_ion_implantation
+    layer_name: Ion implantation
+    stage: support
+    role_in_chain: Provides doping equipment and process capability for device electrical properties.
+    key_inputs: [implant tools, dopant sources, metrology]
+    key_outputs: [implant process capability]
+    representative_entities: [company:Applied_Materials, company:Axcelis]
+    concentration_risk: medium
+    substitutability: medium_low
+    lead_time_or_switching_cost_notes: Process recipes and device characteristics require requalification.
+    shock_sensitivity: Equipment lead times can constrain node transitions and capacity additions.
+    downstream_impact: Affects logic, power, analog, and memory processes.
+    evidence_summary: ETO/CSET and company-report summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - layer_id: vc_metrology_inspection
+    layer_name: Inspection / metrology
+    stage: support
+    role_in_chain: Provides defect inspection, process control, and measurement tools.
+    key_inputs: [optics, sensors, software, process recipes]
+    key_outputs: [yield learning, defect detection, process control]
+    representative_entities: [company:KLA, company:Applied_Materials, company:Hitachi_High_Tech]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Yield-learning integration creates high switching cost.
+    shock_sensitivity: Metrology bottlenecks can delay ramp and yield recovery.
+    downstream_impact: Affects yield, cycle time, and capacity confidence across fabs.
+    evidence_summary: ETO/CSET, company-report summaries, and public event summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, gdelt_semiconductor_lite]
+  - layer_id: vc_wafer_fabrication
+    layer_name: Wafer fabrication
+    stage: midstream
+    role_in_chain: Converts wafer starts through process stages into die on wafers.
+    key_inputs: [wafers, equipment, chemicals, gases, utilities, process recipes]
+    key_outputs: [processed wafers, tested die candidates]
+    representative_entities: [company:TSMC, company:Samsung_Electronics, company:Intel, company:SMIC, company:UMC, company:GlobalFoundries]
+    concentration_risk: high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Fab qualification, PDKs, capacity reservations, and yield learning create long switching windows.
+    shock_sensitivity: Hazards, water, power, equipment, and demand spikes propagate strongly through this layer.
+    downstream_impact: Affects nearly all chip types and downstream sectors.
+    evidence_summary: ETO/CSET, WSTS, company reports, GDELT, and USGS hazard summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, wsts_historical_billings, gdelt_semiconductor_lite, usgs_earthquake_lite]
+  - layer_id: vc_foundry
+    layer_name: Foundry
+    stage: midstream
+    role_in_chain: Provides external wafer manufacturing services for fabless and IDM customers.
+    key_inputs: [design handoff, PDKs, wafers, tools, chemicals, capacity]
+    key_outputs: [foundry capacity, wafer lots, product-qualified processes]
+    representative_entities: [company:TSMC, company:Samsung_Foundry, company:Intel_Foundry, company:GlobalFoundries, company:UMC, company:SMIC]
+    concentration_risk: very_high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Customer qualification and process portability constraints limit quick substitution.
+    shock_sensitivity: Capacity, hazard, water, power, and policy disruptions can propagate to product shortages.
+    downstream_impact: Affects AI, cloud, automotive, mobile, industrial, and communications markets.
+    evidence_summary: Public company reports, WSTS, ETO/CSET, and GDELT support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, eto_cset_advanced_semiconductor_supply_chain]
+  - layer_id: vc_osat
+    layer_name: OSAT / packaging and testing
+    stage: midstream
+    role_in_chain: Provides outsourced assembly, packaging, wafer sort, and final test.
+    key_inputs: [substrates, interposers, test equipment, dies, packaging capacity]
+    key_outputs: [packaged chips, tested components]
+    representative_entities: [company:ASE, company:Amkor, company:JCET, company:Powertech, company:SPIL]
+    concentration_risk: high
+    substitutability: medium_low
+    lead_time_or_switching_cost_notes: Qualification and package-specific process knowledge create switching delays.
+    shock_sensitivity: Substrate shortages, logistics disruption, and labor constraints can delay output.
+    downstream_impact: Affects finished chip availability and system assembly schedules.
+    evidence_summary: ETO/CSET, company reports, GDELT, and trade proxies support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, gdelt_semiconductor_lite]
+  - layer_id: vc_advanced_packaging
+    layer_name: Advanced packaging
+    stage: midstream
+    role_in_chain: Integrates chiplets, HBM, interposers, and 2.5D/3D packages.
+    key_inputs: [interposers, ABF substrates, HBM, packaging tools, test capacity]
+    key_outputs: [CoWoS-like capacity, chiplet packages, AI accelerator packages]
+    representative_entities: [company:TSMC, company:ASE, company:Amkor, company:Samsung_Electronics]
+    concentration_risk: very_high
+    substitutability: low
+    lead_time_or_switching_cost_notes: Package ecosystem qualification and capacity additions take multiple quarters in public fixture assumptions.
+    shock_sensitivity: AI demand spikes and substrate constraints can create bottlenecks.
+    downstream_impact: Affects AI accelerators, HBM integration, and datacenter systems.
+    evidence_summary: Company reports, WSTS, GDELT, and ETO/CSET support proxy summaries.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - layer_id: vc_ai_accelerators
+    layer_name: AI accelerators / data center chips
+    stage: downstream
+    role_in_chain: Converts advanced logic, HBM, foundry, and packaging capacity into datacenter accelerator supply.
+    key_inputs: [advanced logic, HBM, advanced packaging, substrates, cloud demand]
+    key_outputs: [GPU, AI accelerator, server accelerator modules]
+    representative_entities: [company:NVIDIA, company:AMD, company:Broadcom, company:TSMC, company:SK_hynix, company:Samsung_Electronics]
+    concentration_risk: high
+    substitutability: medium_low
+    lead_time_or_switching_cost_notes: Software ecosystems and capacity reservation constrain substitution.
+    shock_sensitivity: Demand spikes, HBM constraints, and advanced packaging bottlenecks amplify shortages.
+    downstream_impact: Affects cloud, AI datacenter, and enterprise compute markets.
+    evidence_summary: SEC EDGAR, company reports, WSTS, GDELT, and ETO/CSET support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - layer_id: vc_automotive_electronics
+    layer_name: Automotive electronics
+    stage: downstream
+    role_in_chain: Uses MCUs, power semiconductors, sensors, analog, memory, and communications chips in vehicles.
+    key_inputs: [MCUs, power semiconductors, sensors, analog chips, mature-node logic]
+    key_outputs: [vehicle electronic control units, EV power electronics, safety systems]
+    representative_entities: [company:NXP, company:Infineon, company:STMicroelectronics, company:Texas_Instruments, company:Renesas]
+    concentration_risk: medium_high
+    substitutability: medium_low
+    lead_time_or_switching_cost_notes: Automotive qualification and safety certification create long switching windows.
+    shock_sensitivity: Mature-node shortages and demand recovery can propagate to vehicle production.
+    downstream_impact: Affects automotive OEM assembly and maintenance supply.
+    evidence_summary: Company reports, SEC EDGAR, WSTS, and GDELT support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - layer_id: vc_communications_equipment
+    layer_name: Communications equipment
+    stage: downstream
+    role_in_chain: Uses RF, baseband, power, networking, and processor chips in telecom and networking systems.
+    key_inputs: [RF chips, networking ASICs, power semiconductors, memory]
+    key_outputs: [base stations, routers, optical transport, mobile devices]
+    representative_entities: [company:Qualcomm, company:Broadcom, company:MediaTek, company:NVIDIA]
+    concentration_risk: medium_high
+    substitutability: medium
+    lead_time_or_switching_cost_notes: Platform integration and standards certification create switching costs.
+    shock_sensitivity: Advanced-node, RF, and substrate constraints can affect product launches.
+    downstream_impact: Affects telecom infrastructure, mobile, and networking markets.
+    evidence_summary: SEC EDGAR, company reports, WSTS, and GDELT support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - layer_id: vc_industrial_control
+    layer_name: Industrial control
+    stage: downstream
+    role_in_chain: Uses MCUs, analog, sensors, and power semiconductors in automation and industrial systems.
+    key_inputs: [MCUs, analog chips, power semiconductors, sensors]
+    key_outputs: [industrial controllers, drives, factory automation systems]
+    representative_entities: [company:Texas_Instruments, company:Infineon, company:STMicroelectronics, company:NXP]
+    concentration_risk: medium
+    substitutability: medium_low
+    lead_time_or_switching_cost_notes: Long product lifecycles and qualification constrain rapid substitution.
+    shock_sensitivity: Mature-node and power semiconductor constraints can delay industrial equipment.
+    downstream_impact: Affects automation, energy, robotics, and manufacturing operations.
+    evidence_summary: Company reports, WSTS, and GDELT support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - layer_id: vc_medical_electronics
+    layer_name: Medical electronics
+    stage: downstream
+    role_in_chain: Uses analog, sensors, MCUs, power, and connectivity chips in regulated medical devices.
+    key_inputs: [analog chips, sensors, MCUs, power semiconductors, connectivity components]
+    key_outputs: [diagnostic devices, monitoring equipment, imaging electronics]
+    representative_entities: [company:Texas_Instruments, company:STMicroelectronics, company:NXP]
+    concentration_risk: medium
+    substitutability: low
+    lead_time_or_switching_cost_notes: Medical-device qualification and regulatory validation increase switching cost.
+    shock_sensitivity: Mature-node and analog shortages can affect device availability.
+    downstream_impact: Affects medical-device manufacturing and service supply chains.
+    evidence_summary: Company reports, WSTS demand summaries, and public event summaries support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - layer_id: vc_iot_consumer
+    layer_name: IoT / consumer electronics
+    stage: downstream
+    role_in_chain: Uses MCUs, RF, memory, sensors, power, and application processors in high-volume devices.
+    key_inputs: [MCUs, RF chips, memory, sensors, power semiconductors, application processors]
+    key_outputs: [smartphones, consumer devices, IoT modules, wearables]
+    representative_entities: [company:Apple, company:Qualcomm, company:MediaTek, company:Samsung_Electronics, company:NXP]
+    concentration_risk: medium_high
+    substitutability: medium
+    lead_time_or_switching_cost_notes: Platform integration, certification, and supplier qualification create switching cost.
+    shock_sensitivity: Demand cycles can create inventory swings and component shortages.
+    downstream_impact: Affects consumer electronics and IoT device availability.
+    evidence_summary: SEC EDGAR, company reports, WSTS, and GDELT support this layer.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+entity_profiles:
+  - entity_id: company:ASML
+    name: ASML
+    entity_type: company
+    headquarters_country: country:NL
+    value_chain_roles: [lithography equipment supplier]
+    primary_layers: [vc_lithography_equipment]
+    risk_tags: [equipment_bottleneck, policy_sensitive, low_substitutability]
+    dependency_tags: [precision_optics, EUV_scanner, DUV_scanner]
+    substitution_notes: Public fixtures treat leading lithography substitution as very limited.
+    evidence_summary: ETO/CSET, public company report summaries, and policy-source summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, federal_register_export_controls_lite]
+  - entity_id: company:TSMC
+    name: TSMC / 台积电
+    entity_type: company
+    headquarters_country: region:china_taiwan
+    value_chain_roles: [foundry, leading-edge fabrication, advanced packaging]
+    primary_layers: [vc_foundry, vc_wafer_fabrication, vc_advanced_packaging]
+    risk_tags: [foundry_concentration, advanced_packaging_bottleneck, hazard_exposure]
+    dependency_tags: [lithography_equipment, wafers, photoresist, specialty_gases, ABF_substrates]
+    substitution_notes: Public fixtures model leading-node and packaging switching as long-cycle and low-substitutability.
+    evidence_summary: ETO/CSET, company reports, WSTS, GDELT, USGS earthquake, and NGA port summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload, wsts_historical_billings, usgs_earthquake_lite]
+  - entity_id: company:Samsung_Electronics
+    name: Samsung Electronics
+    entity_type: company
+    headquarters_country: country:KR
+    value_chain_roles: [memory manufacturer, foundry, advanced packaging, consumer electronics]
+    primary_layers: [vc_foundry, vc_wafer_fabrication, vc_advanced_packaging, vc_iot_consumer]
+    risk_tags: [memory_concentration, foundry_capacity, demand_cycle]
+    dependency_tags: [lithography_equipment, specialty_gases, substrates, HBM]
+    substitution_notes: Memory and leading foundry capacity are modeled with high qualification cost.
+    evidence_summary: Company reports, WSTS, ETO/CSET, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Intel
+    name: Intel
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [IDM, foundry, server CPU design, fabrication]
+    primary_layers: [vc_semiconductor_design, vc_foundry, vc_wafer_fabrication]
+    risk_tags: [capacity_transition, advanced_process_ramp, demand_exposure]
+    dependency_tags: [equipment, EDA, wafers, chemicals]
+    substitution_notes: Product ecosystem and process qualification create switching delays.
+    evidence_summary: SEC EDGAR, company reports, WSTS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - entity_id: company:NVIDIA
+    name: NVIDIA
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [fabless design, AI accelerator demand source]
+    primary_layers: [vc_semiconductor_design, vc_ai_accelerators]
+    risk_tags: [AI_demand_spike, foundry_dependency, advanced_packaging_dependency]
+    dependency_tags: [foundry, HBM, advanced_packaging, EDA]
+    substitution_notes: Software ecosystem and packaging/foundry qualification constrain rapid substitution.
+    evidence_summary: SEC EDGAR, WSTS, company reports, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, wsts_historical_billings, company_annual_report_manual_upload]
+  - entity_id: company:AMD
+    name: AMD
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [fabless design, CPU/GPU supplier]
+    primary_layers: [vc_semiconductor_design, vc_ai_accelerators]
+    risk_tags: [foundry_dependency, advanced_packaging_dependency, AI_demand]
+    dependency_tags: [foundry, EDA, packaging, HBM]
+    substitution_notes: Public fixtures treat advanced products as foundry and packaging constrained.
+    evidence_summary: SEC EDGAR, WSTS, company report summaries, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, wsts_historical_billings, company_annual_report_manual_upload]
+  - entity_id: company:Qualcomm
+    name: Qualcomm
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [fabless design, RF and mobile platform supplier]
+    primary_layers: [vc_semiconductor_design, vc_communications_equipment, vc_iot_consumer]
+    risk_tags: [mobile_demand, RF_dependency, foundry_dependency]
+    dependency_tags: [foundry, EDA, RF_front_end, packaging]
+    substitution_notes: Platform certification and customer design-in cycles create switching delays.
+    evidence_summary: SEC EDGAR, WSTS, company reports, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, wsts_historical_billings, gdelt_semiconductor_lite]
+  - entity_id: company:Broadcom
+    name: Broadcom
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [fabless design, networking and custom silicon]
+    primary_layers: [vc_semiconductor_design, vc_ai_accelerators, vc_communications_equipment]
+    risk_tags: [custom_silicon_demand, foundry_dependency, networking_demand]
+    dependency_tags: [foundry, EDA, advanced_packaging]
+    substitution_notes: Customer-specific silicon and platform qualification constrain substitution.
+    evidence_summary: SEC EDGAR, company reports, and WSTS support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - entity_id: company:Micron
+    name: Micron
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [memory manufacturer, HBM supplier]
+    primary_layers: [vc_wafer_fabrication, vc_ai_accelerators]
+    risk_tags: [memory_cycle, HBM_demand, equipment_dependency]
+    dependency_tags: [lithography_equipment, gases, wafers]
+    substitution_notes: Memory qualification and supply contracts create switching delays.
+    evidence_summary: SEC EDGAR, WSTS, and company reports support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, wsts_historical_billings, company_annual_report_manual_upload]
+  - entity_id: company:SK_hynix
+    name: SK hynix
+    entity_type: company
+    headquarters_country: country:KR
+    value_chain_roles: [memory manufacturer, HBM supplier]
+    primary_layers: [vc_wafer_fabrication, vc_ai_accelerators]
+    risk_tags: [HBM_bottleneck, memory_cycle, advanced_packaging_dependency]
+    dependency_tags: [lithography_equipment, wafers, gases, packaging]
+    substitution_notes: HBM and memory products are represented as high qualification-cost fixture proxies.
+    evidence_summary: Company reports, WSTS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - entity_id: company:Applied_Materials
+    name: Applied Materials
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [equipment supplier, deposition and implant tools]
+    primary_layers: [vc_deposition_equipment, vc_ion_implantation, vc_metrology_inspection]
+    risk_tags: [equipment_lead_time, process_tool_dependency]
+    dependency_tags: [deposition, implant, metrology]
+    substitution_notes: Process-tool substitution requires yield and integration validation.
+    evidence_summary: SEC EDGAR, ETO/CSET, and company reports support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Lam_Research
+    name: Lam Research
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [etching and deposition equipment supplier]
+    primary_layers: [vc_etching_equipment, vc_deposition_equipment]
+    risk_tags: [equipment_lead_time, etch_bottleneck]
+    dependency_tags: [etch, deposition, specialty_gases]
+    substitution_notes: Process matching and installed-base service create switching cost.
+    evidence_summary: SEC EDGAR, ETO/CSET, and public event summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]
+  - entity_id: company:KLA
+    name: KLA
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [inspection and metrology supplier]
+    primary_layers: [vc_metrology_inspection]
+    risk_tags: [yield_learning_bottleneck, inspection_dependency]
+    dependency_tags: [metrology, inspection, software]
+    substitution_notes: Yield learning and process-control integration reduce substitutability.
+    evidence_summary: SEC EDGAR, ETO/CSET, and company reports support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Tokyo_Electron
+    name: Tokyo Electron
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [deposition, etch, clean, and coating equipment supplier]
+    primary_layers: [vc_deposition_equipment, vc_etching_equipment, vc_photoresist]
+    risk_tags: [equipment_dependency, process_tool_concentration]
+    dependency_tags: [etch, deposition, coating, cleaning]
+    substitution_notes: Tool/process matching and service networks constrain rapid substitution.
+    evidence_summary: Company reports and ETO/CSET support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Nikon
+    name: Nikon
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [lithography equipment supplier]
+    primary_layers: [vc_lithography_equipment]
+    risk_tags: [DUV_equipment, equipment_capacity]
+    dependency_tags: [optics, scanner_service]
+    substitution_notes: Lithography process qualification constrains tool substitution.
+    evidence_summary: ETO/CSET and company-report summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - entity_id: company:Canon
+    name: Canon
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [lithography and process equipment supplier]
+    primary_layers: [vc_lithography_equipment]
+    risk_tags: [equipment_capacity, DUV_tooling]
+    dependency_tags: [scanner_service, optics]
+    substitution_notes: Tool qualification and process matching create switching cost.
+    evidence_summary: ETO/CSET and company-report summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - entity_id: company:Synopsys
+    name: Synopsys
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [EDA and IP supplier]
+    primary_layers: [vc_eda_ip]
+    risk_tags: [EDA_concentration, IP_dependency]
+    dependency_tags: [logic_synthesis, verification, IP]
+    substitution_notes: Tool flow and IP migration create high switching cost.
+    evidence_summary: SEC EDGAR, OpenAlex/Crossref, and OECD summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, openalex_crossref_literature_lite, oecd_semiconductor_value_chain_reports]
+  - entity_id: company:Cadence
+    name: Cadence
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [EDA and IP supplier]
+    primary_layers: [vc_eda_ip]
+    risk_tags: [EDA_concentration, verification_dependency]
+    dependency_tags: [place_and_route, verification, IP]
+    substitution_notes: Design-flow migration and customer signoff constrain substitution.
+    evidence_summary: SEC EDGAR, OpenAlex/Crossref, and OECD summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, openalex_crossref_literature_lite, oecd_semiconductor_value_chain_reports]
+  - entity_id: company:Siemens_EDA
+    name: Siemens EDA
+    entity_type: company
+    headquarters_country: country:DE
+    value_chain_roles: [EDA supplier]
+    primary_layers: [vc_eda_ip]
+    risk_tags: [EDA_dependency, verification_dependency]
+    dependency_tags: [verification, design_for_test, EDA]
+    substitution_notes: Verification and design-for-test flows require qualification.
+    evidence_summary: Company reports, OECD, and literature summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, oecd_semiconductor_value_chain_reports, openalex_crossref_literature_lite]
+  - entity_id: company:Arm
+    name: Arm
+    entity_type: company
+    headquarters_country: country:GB
+    value_chain_roles: [IP and architecture supplier]
+    primary_layers: [vc_eda_ip, vc_semiconductor_design]
+    risk_tags: [IP_dependency, architecture_ecosystem]
+    dependency_tags: [ARM_core, architecture_license]
+    substitution_notes: Architecture and software ecosystem switching cost is high.
+    evidence_summary: Company reports and literature summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, openalex_crossref_literature_lite]
+  - entity_id: company:Infineon
+    name: Infineon
+    entity_type: company
+    headquarters_country: country:DE
+    value_chain_roles: [power semiconductor and automotive chip supplier]
+    primary_layers: [vc_automotive_electronics, vc_industrial_control]
+    risk_tags: [automotive_qualification, power_semiconductor_demand]
+    dependency_tags: [mature_nodes, wafers, packaging]
+    substitution_notes: Automotive and industrial qualification create long switching windows.
+    evidence_summary: Company reports, WSTS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - entity_id: company:NXP
+    name: NXP
+    entity_type: company
+    headquarters_country: country:NL
+    value_chain_roles: [automotive, industrial, and secure connectivity chip supplier]
+    primary_layers: [vc_automotive_electronics, vc_industrial_control, vc_iot_consumer]
+    risk_tags: [automotive_demand, mature_node_dependency]
+    dependency_tags: [MCU, RF, mature_logic, packaging]
+    substitution_notes: Design-in cycles and safety/security certification constrain substitution.
+    evidence_summary: SEC EDGAR, company reports, and WSTS support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - entity_id: company:STMicroelectronics
+    name: STMicroelectronics
+    entity_type: company
+    headquarters_country: country:CH
+    value_chain_roles: [automotive, industrial, analog, and power chip supplier]
+    primary_layers: [vc_automotive_electronics, vc_industrial_control, vc_medical_electronics]
+    risk_tags: [power_semiconductor, automotive_qualification, industrial_demand]
+    dependency_tags: [mature_nodes, wafers, packaging]
+    substitution_notes: Customer qualification and product lifecycle create switching delays.
+    evidence_summary: Company reports, WSTS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - entity_id: company:Texas_Instruments
+    name: Texas Instruments
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [analog and embedded chip supplier]
+    primary_layers: [vc_industrial_control, vc_automotive_electronics, vc_medical_electronics]
+    risk_tags: [analog_demand, mature_node_capacity, industrial_lifecycle]
+    dependency_tags: [wafers, mature_nodes, packaging]
+    substitution_notes: Long product lifecycles and design-in cycles reduce substitutability.
+    evidence_summary: SEC EDGAR, company reports, WSTS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, wsts_historical_billings]
+  - entity_id: company:GlobalFoundries
+    name: GlobalFoundries
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [foundry and mature/specialty process supplier]
+    primary_layers: [vc_foundry, vc_wafer_fabrication]
+    risk_tags: [mature_node_capacity, specialty_processes]
+    dependency_tags: [wafers, equipment, chemicals]
+    substitution_notes: Customer qualification and process portability constrain substitution.
+    evidence_summary: SEC EDGAR, company reports, ETO/CSET, and WSTS support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, eto_cset_advanced_semiconductor_supply_chain, wsts_historical_billings]
+  - entity_id: company:UMC
+    name: UMC
+    entity_type: company
+    headquarters_country: region:china_taiwan
+    value_chain_roles: [foundry and mature-node fabrication]
+    primary_layers: [vc_foundry, vc_wafer_fabrication]
+    risk_tags: [mature_node_capacity, regional_hazard_exposure]
+    dependency_tags: [wafers, equipment, chemicals]
+    substitution_notes: Mature-node substitution remains qualification-bound.
+    evidence_summary: Company reports, ETO/CSET, WSTS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, wsts_historical_billings]
+  - entity_id: company:SMIC
+    name: SMIC
+    entity_type: company
+    headquarters_country: country:CN
+    value_chain_roles: [foundry and mature-node fabrication]
+    primary_layers: [vc_foundry, vc_wafer_fabrication]
+    risk_tags: [policy_sensitive, mature_node_capacity, equipment_dependency]
+    dependency_tags: [equipment, wafers, chemicals]
+    substitution_notes: Public fixture summaries model advanced capability and equipment access as constrained.
+    evidence_summary: ETO/CSET, GDELT, OECD, and policy summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite, bis_export_controls_lite]
+  - entity_id: company:ASE
+    name: ASE
+    entity_type: company
+    headquarters_country: region:china_taiwan
+    value_chain_roles: [OSAT, advanced packaging, testing]
+    primary_layers: [vc_osat, vc_advanced_packaging]
+    risk_tags: [packaging_capacity, regional_hazard_exposure]
+    dependency_tags: [substrates, test_equipment, interposers]
+    substitution_notes: Package qualification and capacity constraints create medium-low substitutability.
+    evidence_summary: Company reports, ETO/CSET, GDELT, and WSTS support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]
+  - entity_id: company:Amkor
+    name: Amkor
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [OSAT, advanced packaging, testing]
+    primary_layers: [vc_osat, vc_advanced_packaging]
+    risk_tags: [packaging_capacity, logistics_exposure]
+    dependency_tags: [substrates, test_equipment, interposers]
+    substitution_notes: Package-specific qualification constrains rapid substitution.
+    evidence_summary: SEC EDGAR, ETO/CSET, company reports, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]
+  - entity_id: company:JCET
+    name: JCET
+    entity_type: company
+    headquarters_country: country:CN
+    value_chain_roles: [OSAT and packaging/testing]
+    primary_layers: [vc_osat]
+    risk_tags: [packaging_capacity, regional_policy_context]
+    dependency_tags: [substrates, test_equipment]
+    substitution_notes: Packaging/test substitution has qualification and logistics constraints.
+    evidence_summary: Company reports, ETO/CSET, GDELT, and trade proxies support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]
+  - entity_id: company:SUMCO
+    name: SUMCO
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [silicon wafer supplier]
+    primary_layers: [vc_silicon_wafers]
+    risk_tags: [wafer_concentration, qualification_lead_time]
+    dependency_tags: [quartz, polysilicon, wafer_polishing]
+    substitution_notes: Wafer qualification and yield tuning reduce substitutability.
+    evidence_summary: Company reports, USGS, ETO/CSET, and trade proxies support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, usgs_mineral_commodity_summaries_lite, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Shin_Etsu_Chemical
+    name: Shin-Etsu Chemical
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [silicon wafer and chemical supplier]
+    primary_layers: [vc_silicon_wafers, vc_photoresist]
+    risk_tags: [wafer_concentration, specialty_chemical_dependency]
+    dependency_tags: [silicon_wafers, photoresist, specialty_chemicals]
+    substitution_notes: Materials qualification creates high switching cost.
+    evidence_summary: Company reports, ETO/CSET, and trade proxies support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]
+  - entity_id: company:JSR
+    name: JSR
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [photoresist and materials supplier]
+    primary_layers: [vc_photoresist]
+    risk_tags: [photoresist_bottleneck, low_substitutability]
+    dependency_tags: [EUV_photoresist, ArF_photoresist]
+    substitution_notes: Resist substitution requires lithography process requalification.
+    evidence_summary: ETO/CSET and company-report summaries support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - entity_id: company:Tokyo_Ohka_Kogyo
+    name: Tokyo Ohka Kogyo
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [photoresist and process chemical supplier]
+    primary_layers: [vc_photoresist]
+    risk_tags: [photoresist_qualification, specialty_chemical_dependency]
+    dependency_tags: [photoresist, solvents]
+    substitution_notes: Process and yield qualification create switching delays.
+    evidence_summary: Company reports and ETO/CSET support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Merck_KGaA
+    name: Merck KGaA / EMD Electronics
+    entity_type: company
+    headquarters_country: country:DE
+    value_chain_roles: [specialty chemicals and materials supplier]
+    primary_layers: [vc_specialty_gases, vc_cmp_materials, vc_photoresist]
+    risk_tags: [specialty_chemical_dependency, qualification_lead_time]
+    dependency_tags: [chemicals, gases, materials]
+    substitution_notes: Chemical qualification and purity requirements constrain substitution.
+    evidence_summary: Company reports, ETO/CSET, and trade proxies support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]
+  - entity_id: company:Air_Liquide
+    name: Air Liquide
+    entity_type: company
+    headquarters_country: country:FR
+    value_chain_roles: [specialty gas supplier]
+    primary_layers: [vc_specialty_gases]
+    risk_tags: [gas_supply, logistics_exposure]
+    dependency_tags: [neon, helium, nitrogen_trifluoride]
+    substitution_notes: Alternate gas sourcing may exist but purity and logistics constraints remain.
+    evidence_summary: Company reports, ETO/CSET, USGS, and GDELT support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, usgs_mineral_commodity_summaries_lite, gdelt_semiconductor_lite]
+  - entity_id: company:Linde
+    name: Linde
+    entity_type: company
+    headquarters_country: country:GB
+    value_chain_roles: [specialty gas supplier]
+    primary_layers: [vc_specialty_gases]
+    risk_tags: [gas_supply, logistics_exposure]
+    dependency_tags: [argon, helium, nitrogen_trifluoride]
+    substitution_notes: Purity and on-site gas supply arrangements constrain rapid substitution.
+    evidence_summary: Company reports, USGS, ETO/CSET, and trade proxies support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, usgs_mineral_commodity_summaries_lite, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Entegris
+    name: Entegris
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [materials, filtration, CMP, and specialty input supplier]
+    primary_layers: [vc_cmp_materials, vc_sputtering_targets]
+    risk_tags: [materials_dependency, process_qualification]
+    dependency_tags: [CMP_slurry, filtration, specialty_materials]
+    substitution_notes: Material matching and process control reduce substitutability.
+    evidence_summary: SEC EDGAR, company reports, and ETO/CSET support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Fujifilm_Electronic_Materials
+    name: Fujifilm Electronic Materials
+    entity_type: company
+    headquarters_country: country:JP
+    value_chain_roles: [photoresist, CMP, and electronic materials supplier]
+    primary_layers: [vc_photoresist, vc_cmp_materials]
+    risk_tags: [specialty_materials, photoresist_qualification]
+    dependency_tags: [photoresist, CMP_slurry, chemicals]
+    substitution_notes: Process/yield qualification creates switching cost.
+    evidence_summary: Company reports and ETO/CSET support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:DuPont
+    name: DuPont
+    entity_type: company
+    headquarters_country: country:US
+    value_chain_roles: [electronic materials and CMP supplier]
+    primary_layers: [vc_cmp_materials, vc_photoresist]
+    risk_tags: [materials_dependency, qualification_lead_time]
+    dependency_tags: [CMP_pads, electronic_chemicals]
+    substitution_notes: Material qualification and process integration reduce substitutability.
+    evidence_summary: SEC EDGAR, company reports, and ETO/CSET support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [sec_edgar_lite, company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - entity_id: company:Siltronic
+    name: Siltronic
+    entity_type: company
+    headquarters_country: country:DE
+    value_chain_roles: [silicon wafer supplier]
+    primary_layers: [vc_silicon_wafers]
+    risk_tags: [wafer_supply, qualification_lead_time]
+    dependency_tags: [polysilicon, wafer_polishing]
+    substitution_notes: Wafer qualification creates switching delays.
+    evidence_summary: Company reports, ETO/CSET, and trade proxies support this profile.
+    coverage_level: public_evidence_fixture
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, un_comtrade_semiconductor_trade_lite]
+relationship_edges:
+  - source_id: company:ASML
+    source_node_id: company:ASML
+    target_id: vc_lithography_equipment
+    target_node_id: vc_lithography_equipment
+    relationship_type: supplies_to
+    relationship_class: SUPPLY_RELATIONSHIP
+    edge_type: provides_equipment
+    confidence: fixture_high
+    rationale: Lithography equipment is a named support-layer chokepoint in public industry summaries.
+    evidence_summary: ETO/CSET and company summaries identify lithography tool dependence for fabrication.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - source_id: vc_lithography_equipment
+    source_node_id: vc_lithography_equipment
+    target_id: vc_wafer_fabrication
+    target_node_id: vc_wafer_fabrication
+    relationship_type: equipment_dependency
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: uses_equipment
+    confidence: fixture_high
+    rationale: Fabrication process capability depends on lithography scanners and related service capacity.
+    evidence_summary: ETO/CSET and policy summaries support equipment-to-process dependency.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, bis_export_controls_lite]
+  - source_id: company:TSMC
+    source_node_id: company:TSMC
+    target_id: vc_ai_accelerators
+    target_node_id: vc_ai_accelerators
+    relationship_type: serves_downstream_market
+    relationship_class: SUPPLY_RELATIONSHIP
+    edge_type: provides_capacity
+    confidence: fixture_medium
+    rationale: Public summaries connect leading foundry and packaging capacity to AI accelerator supply.
+    evidence_summary: Company reports, WSTS, and GDELT demand summaries support this downstream link.
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - source_id: vc_advanced_packaging
+    source_node_id: vc_ai_accelerators
+    target_id: vc_ai_accelerators
+    target_node_id: vc_advanced_packaging
+    relationship_type: depends_on
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: depends_on
+    confidence: fixture_high
+    rationale: Advanced accelerator packages depend on chiplet/HBM integration capacity.
+    evidence_summary: Public company and industry summaries identify advanced packaging as a bottleneck proxy.
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - source_id: company:Synopsys
+    source_node_id: company:Synopsys
+    target_id: vc_eda_ip
+    target_node_id: vc_eda_ip
+    relationship_type: supplies_to
+    relationship_class: SUPPLY_RELATIONSHIP
+    edge_type: provides_ip
+    confidence: fixture_high
+    rationale: EDA/IP suppliers support chip design stages.
+    evidence_summary: SEC and literature summaries support EDA role classification.
+    provenance: [sec_edgar_lite, openalex_crossref_literature_lite]
+  - source_id: vc_photoresist
+    source_node_id: vc_lithography_equipment
+    target_id: vc_lithography_equipment
+    target_node_id: vc_photoresist
+    relationship_type: material_dependency
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: uses_material
+    confidence: fixture_medium
+    rationale: Lithography process outcomes depend on qualified photoresist materials.
+    evidence_summary: ETO/CSET and company summaries support photoresist qualification dependency.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - source_id: vc_specialty_gases
+    source_node_id: vc_etching_equipment
+    target_id: vc_etching_equipment
+    target_node_id: vc_specialty_gases
+    relationship_type: material_dependency
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: uses_material
+    confidence: fixture_medium
+    rationale: Etch processes consume purified specialty gases.
+    evidence_summary: ETO/CSET, USGS, and trade proxy summaries support gas dependency.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite]
+  - source_id: vc_silicon_wafers
+    source_node_id: vc_wafer_fabrication
+    target_id: vc_wafer_fabrication
+    target_node_id: vc_silicon_wafers
+    relationship_type: material_dependency
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: uses_material
+    confidence: fixture_high
+    rationale: Wafer fabrication requires qualified silicon wafer substrates.
+    evidence_summary: ETO/CSET and company report summaries support wafer-to-fab dependency.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - source_id: country:NL
+    source_node_id: evidence:country_nl_lithography_context
+    target_id: vc_lithography_equipment
+    target_node_id: vc_lithography_equipment
+    relationship_type: located_in
+    relationship_class: EVIDENCE_CONTEXT
+    edge_type: evidence_context_link
+    not_supply_chain_dependency: true
+    confidence: fixture_high
+    rationale: Lithography equipment exposure includes Netherlands-headquartered supplier ecosystem.
+    evidence_summary: Country exposure and company profiles link Netherlands to lithography equipment.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, oecd_semiconductor_value_chain_reports]
+  - source_id: region:china_taiwan
+    source_node_id: evidence:region_china_taiwan_foundry_context
+    target_id: vc_foundry
+    target_node_id: vc_foundry
+    relationship_type: located_in
+    relationship_class: EVIDENCE_CONTEXT
+    edge_type: evidence_context_link
+    not_supply_chain_dependency: true
+    confidence: fixture_high
+    rationale: The canonical region node is linked to foundry and packaging exposure.
+    evidence_summary: Public-evidence fixtures link foundry services, ports, and hazards to 中国台湾.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]
+  - source_id: vc_foundry
+    source_node_id: vc_foundry
+    target_id: vc_semiconductor_design
+    target_node_id: vc_semiconductor_design
+    relationship_type: supplies_to
+    relationship_class: SUPPLY_RELATIONSHIP
+    edge_type: provides_capacity
+    confidence: fixture_medium
+    rationale: Foundry services supply manufacturing capacity to design firms.
+    evidence_summary: OECD, ETO/CSET, and company reports support foundry-to-fabless chain semantics.
+    provenance: [oecd_semiconductor_value_chain_reports, eto_cset_advanced_semiconductor_supply_chain]
+  - source_id: vc_osat
+    source_node_id: vc_osat
+    target_id: vc_iot_consumer
+    target_node_id: vc_iot_consumer
+    relationship_type: supplies_to
+    relationship_class: SUPPLY_RELATIONSHIP
+    edge_type: provides_service
+    confidence: fixture_medium
+    rationale: Packaging/testing capacity supports finished consumer and IoT chip availability.
+    evidence_summary: Company reports and ETO/CSET fixture mappings support OSAT role.
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain]
+  - source_id: vc_automotive_electronics
+    source_node_id: vc_automotive_electronics
+    target_id: vc_wafer_fabrication
+    target_node_id: vc_wafer_fabrication
+    relationship_type: depends_on
+    relationship_class: DEMAND_RELATIONSHIP
+    edge_type: demand_signal_for
+    confidence: fixture_medium
+    rationale: Automotive chip demand depends on mature-node wafer fabrication.
+    evidence_summary: WSTS and company reports support mature-node demand sensitivity.
+    provenance: [wsts_historical_billings, company_annual_report_manual_upload]
+  - source_id: policy:US_advanced_computing_controls
+    source_node_id: policy:US_advanced_computing_controls
+    target_id: vc_ai_accelerators
+    target_node_id: vc_ai_accelerators
+    relationship_type: constrained_by_policy
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: restricted_by
+    confidence: fixture_medium
+    rationale: Policy-sensitive accelerator categories are modeled as compliance exposure, not operational guidance.
+    evidence_summary: BIS/Federal Register summaries support policy context for restricted items.
+    provenance: [bis_export_controls_lite, federal_register_export_controls_lite]
+  - source_id: port:Kaohsiung
+    source_node_id: vc_foundry
+    target_id: vc_foundry
+    target_node_id: port:Kaohsiung
+    relationship_type: exposed_to_logistics
+    relationship_class: PRODUCTION_DEPENDENCY
+    edge_type: routes_through
+    confidence: fixture_medium
+    rationale: Regional port exposure can affect logistics around foundry and packaging clusters.
+    evidence_summary: NGA port summaries and GDELT event summaries support logistics exposure.
+    provenance: [nga_world_port_index_lite, gdelt_semiconductor_lite]
+chokepoints:
+  - chokepoint_id: chokepoint_lithography_equipment
+    layer_id: vc_lithography_equipment
+    title: Lithography equipment availability
+    countries_regions: [country:NL, country:JP, country:US]
+    representative_entities: [company:ASML, company:Nikon, company:Canon]
+    substitutability: very_low
+    shock_sensitivity: high
+    downstream_impact: Delays fabrication capacity and leading-node product availability.
+    evidence_summary: ETO/CSET, company reports, and policy summaries support this chokepoint.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, federal_register_export_controls_lite]
+  - chokepoint_id: chokepoint_advanced_foundry
+    layer_id: vc_foundry
+    title: Leading foundry capacity
+    countries_regions: [region:china_taiwan, country:KR, country:US]
+    representative_entities: [company:TSMC, company:Samsung_Electronics, company:Intel]
+    substitutability: low
+    shock_sensitivity: high
+    downstream_impact: Affects AI, cloud, mobile, automotive, and industrial chip supply.
+    evidence_summary: Company reports, WSTS, ETO/CSET, and public event summaries support this chokepoint.
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, eto_cset_advanced_semiconductor_supply_chain]
+  - chokepoint_id: chokepoint_advanced_packaging
+    layer_id: vc_advanced_packaging
+    title: Advanced packaging capacity
+    countries_regions: [region:china_taiwan, country:KR, country:MY, country:SG]
+    representative_entities: [company:TSMC, company:ASE, company:Amkor, company:Samsung_Electronics]
+    substitutability: low
+    shock_sensitivity: high
+    downstream_impact: Constrains AI accelerator, HBM integration, and chiplet system delivery.
+    evidence_summary: Company reports, WSTS, and GDELT demand/event summaries support this chokepoint.
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - chokepoint_id: chokepoint_photoresist
+    layer_id: vc_photoresist
+    title: Qualified photoresist supply
+    countries_regions: [country:JP, country:US, country:DE]
+    representative_entities: [company:JSR, company:Tokyo_Ohka_Kogyo, company:Fujifilm_Electronic_Materials]
+    substitutability: low
+    shock_sensitivity: medium_high
+    downstream_impact: Affects lithography yield and process availability.
+    evidence_summary: ETO/CSET and company report summaries support this chokepoint.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, company_annual_report_manual_upload]
+  - chokepoint_id: chokepoint_silicon_wafers
+    layer_id: vc_silicon_wafers
+    title: Qualified silicon wafer supply
+    countries_regions: [country:JP, country:DE, country:US]
+    representative_entities: [company:SUMCO, company:Shin_Etsu_Chemical, company:Siltronic]
+    substitutability: low
+    shock_sensitivity: medium_high
+    downstream_impact: Affects wafer starts across fab nodes.
+    evidence_summary: Company reports, USGS, ETO/CSET, and trade proxy summaries support this chokepoint.
+    provenance: [company_annual_report_manual_upload, usgs_mineral_commodity_summaries_lite]
+  - chokepoint_id: chokepoint_specialty_gases
+    layer_id: vc_specialty_gases
+    title: Electronic specialty gas purity and logistics
+    countries_regions: [country:US, country:JP, country:KR, country:SG]
+    representative_entities: [company:Air_Liquide, company:Linde]
+    substitutability: medium
+    shock_sensitivity: medium_high
+    downstream_impact: Affects lithography, etch, deposition, and cleaning process availability.
+    evidence_summary: ETO/CSET, USGS, trade proxies, and event summaries support this chokepoint.
+    provenance: [eto_cset_advanced_semiconductor_supply_chain, usgs_mineral_commodity_summaries_lite, gdelt_semiconductor_lite]
+  - chokepoint_id: chokepoint_eda_ip
+    layer_id: vc_eda_ip
+    title: EDA/IP design capability
+    countries_regions: [country:US, country:DE, country:GB]
+    representative_entities: [company:Synopsys, company:Cadence, company:Siemens_EDA, company:Arm]
+    substitutability: low
+    shock_sensitivity: medium_high
+    downstream_impact: Delays chip design, verification, and tape-out cycles.
+    evidence_summary: SEC EDGAR, company reports, OECD, and literature summaries support this chokepoint.
+    provenance: [sec_edgar_lite, openalex_crossref_literature_lite, oecd_semiconductor_value_chain_reports]
+  - chokepoint_id: chokepoint_hbm_memory
+    layer_id: vc_ai_accelerators
+    title: HBM and accelerator memory integration
+    countries_regions: [country:KR, country:US, region:china_taiwan]
+    representative_entities: [company:SK_hynix, company:Samsung_Electronics, company:Micron, company:TSMC]
+    substitutability: medium_low
+    shock_sensitivity: high
+    downstream_impact: Affects AI accelerator modules and datacenter deployments.
+    evidence_summary: Company reports, WSTS, and GDELT demand summaries support this chokepoint.
+    provenance: [company_annual_report_manual_upload, wsts_historical_billings, gdelt_semiconductor_lite]
+  - chokepoint_id: chokepoint_osat_capacity
+    layer_id: vc_osat
+    title: Packaging and testing capacity
+    countries_regions: [region:china_taiwan, country:MY, country:SG, country:CN, country:US]
+    representative_entities: [company:ASE, company:Amkor, company:JCET]
+    substitutability: medium_low
+    shock_sensitivity: medium_high
+    downstream_impact: Affects finished chip availability and time-to-ship.
+    evidence_summary: Company reports, ETO/CSET, trade proxies, and GDELT event summaries support this chokepoint.
+    provenance: [company_annual_report_manual_upload, eto_cset_advanced_semiconductor_supply_chain, gdelt_semiconductor_lite]
+  - chokepoint_id: chokepoint_logistics_corridor
+    layer_id: vc_foundry
+    title: East Asia high-value component logistics
+    countries_regions: [region:china_taiwan, country:JP, country:KR, country:SG, country:MY]
+    representative_entities: [port:Kaohsiung, airport:Taoyuan, port:Busan, airport:Changi]
+    substitutability: medium
+    shock_sensitivity: medium_high
+    downstream_impact: Delays movement of high-value components, equipment, and urgent spares.
+    evidence_summary: NGA World Port Index, GDELT, and USGS hazard summaries support this chokepoint.
+    provenance: [nga_world_port_index_lite, gdelt_semiconductor_lite, usgs_earthquake_lite]
+coverage_gaps:
+  - Private supplier transactions, order books, capacity reservations, and customer shares are not represented.
+  - Capacity shares, demand values, and substitution lead times are fixture proxies unless directly disclosed in public summaries.
+  - Non-US annual reports are manual-upload or summarized fixtures unless already mapped in public evidence.
+  - Chokepoint severity is not calibrated against real outage outcomes.

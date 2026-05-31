@@ -12,6 +12,7 @@ from services.api.services.common import (
     semiconductor_fixture_warnings,
 )
 from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
+from services.api.services.semiconductor_content_service import semiconductor_content_summary_payload
 from services.api.services.version_service import build_version_payload
 
 
@@ -114,6 +115,7 @@ def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
             "records": [],
         },
         "semiconductorGraph": graph_health,
+        "semiconductorContentCoverage": semiconductor_content_summary_payload(),
         "platformStatus": platform_status,
     }
 
