@@ -277,6 +277,30 @@ def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
     assert "L11 Compliance" in source
 
 
+def test_deployed_smoke_accepts_only_controlled_forward_diagnostics() -> None:
+    source = read("scripts/browser-smoke.mjs")
+
+    assert "const canAcceptForwardDegradedState = deployedBestEffort || !forwardScenarioReady;" in source
+    assert "const canAcceptReverseDegradedState = deployedBestEffort || !reverseScenarioReady;" in source
+    assert "const canAcceptOptimizerDegradedState = deployedBestEffort || !interventionOptimizationReady;" in source
+    assert "const canAcceptReportDegradedState = deployedBestEffort || !investigationReportReady;" in source
+    assert "const degradedEnvelopeApiUrlLiteral = JSON.stringify(deployedBestEffort ? webApiBase : apiBase);" in source
+    assert "(deployedBestEffort && [502, 503].includes(degradedApiResult.status))" in source
+    assert "attempt <= 3" in source
+    assert "baseKind: base.includes('supply-risk-atlas-web') ? 'web_proxy' : 'api_direct'" in source
+    assert "error: degradedApiResult.error" in source
+    assert "(deployedBestEffort && Boolean(degradedApiResult.error))" in source
+    assert 'state.text.includes("Shock Simulator unavailable")' in source
+    assert 'state.text.includes("Reverse Stress Lab unavailable")' in source
+    assert 'state.text.includes("Intervention Optimizer unavailable")' in source
+    assert 'state.text.includes("Investigation Report unavailable")' in source
+    assert 'state.text.includes("View diagnostics")' in source
+    assert "canAcceptForwardDegradedState &&" in source
+    assert "canAcceptReverseDegradedState &&" in source
+    assert "canAcceptOptimizerDegradedState &&" in source
+    assert "canAcceptReportDegradedState &&" in source
+
+
 def test_graph_legend_does_not_render_raw_warning_metadata_in_primary_list() -> None:
     source = read("apps/web/src/features/graph-explorer/GraphLegend.tsx")
     audit_source = read("apps/web/src/features/common/AuditDetails.tsx")

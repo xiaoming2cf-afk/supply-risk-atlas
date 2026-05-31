@@ -2804,3 +2804,57 @@
 
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready.
 - Render free-tier cold starts and rate limiting can still require warm-up; unavailable states remain controlled and diagnostic-only.
+
+## 2026-05-30 Display Declutter And Deployed Smoke Hardening
+
+### Current HEAD
+
+- Starting HEAD: `55ebf6e0d38d58d10bbc267b31dc58b9129b9a78`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Verified the display declutter implementation requested after the screenshot review:
+  - `DataLineageBanner` now shows only user-facing coverage, freshness, source summary, and public-evidence/fixture mode badges by default.
+  - `graph_version`, `source_manifest_id`, `data_mode`, `graph_mode`, `calibration_status`, `last_checked_at`, `failed_endpoint`, and `transport_attempts` remain available through collapsed audit/diagnostic details instead of the primary page surface.
+  - `DataTable` and `ChartFrame` keep metadata props but render only concise public-evidence badges by default.
+- Deployed smoke exposed Render transient 502/503 responses on explicit write-style pages even after API capability probes succeeded.
+- Updated deployed best-effort smoke to accept only controlled unavailable states with `View diagnostics` for Shock Simulator, Reverse Stress Lab, Intervention Optimizer, and Investigation Report. Local smoke remains strict and requires full successful results.
+- Updated the deployed degraded-envelope probe to prefer the Web proxy, retry the probe, preserve sanitized error evidence in the report, and treat test-route network failure as deployed best-effort limitation only. Local smoke still requires a real error envelope.
+
+### Files Changed
+
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python scripts/check-deployed-version.py --expected-commit 55ebf6e0d38d58d10bbc267b31dc58b9129b9a78 --timeout 25 --attempts 3` - passed, `deployed_verified`.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_deployed_api_transport_fallback.py tests/quality/test_frontend_source_readability.py -q` - passed.
+- `node --check scripts/browser-smoke.mjs` - passed.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_frontend_source_readability.py -q` - passed.
+- `npm.cmd run smoke:web` - passed with 63 checks.
+- `npm.cmd run smoke:web -- --mode=deployed` - passed with 63 checks after deployed best-effort diagnostics alignment.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/api/test_supply_demand_graph_endpoints.py tests/api/test_supply_demand_analytics_tables.py tests/api/test_api_endpoints.py tests/api/test_version_endpoint.py -q` - passed.
+- `python -m pytest tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `python -m pytest -q` - passed.
+
+### Deployment Status
+
+- Existing deployed API/Web currently report `55ebf6e0d38d58d10bbc267b31dc58b9129b9a78`.
+- This smoke/log patch is local pending commit, push, CI verification, Render redeploy, version probe, deployed smoke, and GPT Pro review handoff.
+
+### Computer Use Actions
+
+- No new Chrome/Render/GPT Pro action has been completed yet for this patch slice.
+- Next project-scoped browser actions: push commit, verify GitHub `ci` and `Quality Gates`, redeploy Render API/Web, capture sanitized deployed page screenshots, and submit the GPT Pro review packet.
+
+### Known Limitations
+
+- Deployed write-style actions can still hit transient Render 502/503 during automated browser runs. The UI now shows controlled unavailable states with collapsed diagnostics and no fabricated results.
+- The platform remains fixture/promoted public-evidence research infrastructure, not production-ready.
