@@ -3114,3 +3114,16 @@
 
 - This gate changes default frontend presentation only; it does not change API contracts, report exports, connector policy, or fixture/promoted data semantics.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready.
+
+### Post-Commit Recovery Verification
+
+- Documentation evidence commit: `40b982994861bc01c84ad9318d1685e7a9034ce2`.
+- GitHub `ci` passed for `40b982994861bc01c84ad9318d1685e7a9034ce2` (`26707823139`).
+- GitHub `Quality Gates` passed for `40b982994861bc01c84ad9318d1685e7a9034ce2` (`26707823146`).
+- Worktree remained clean except for preserved user-owned untracked files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+- A first deployed probe for the runtime code commit hit Render `x-render-routing: hibernate-wake-error` on API endpoints, including `/api/v1/version`, `/api/v1/health`, and `/api/v1/graph/supply-relationships`.
+- After a bounded warm-up wait, deployed API endpoints recovered with HTTP `200` for `/api/v1/version`, `/api/v1/health`, and `/api/v1/graph/supply-relationships`.
+- `python scripts/check-deployed-version.py --expected-commit 5f3f3dd96dc1100faa86a99c57f458e518bd9f6b --timeout 40 --attempts 2` -> `deployed_verified`.
+- `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
+- Render was not redeployed for the docs-only evidence commit because deployed API/Web runtime code already verified at `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`; the later commits only update roadmap evidence.
+- GPT Pro handoff remains `sent_response_unread_due_browser_timeout`; no additional browser loop was started after the deployed recovery check.

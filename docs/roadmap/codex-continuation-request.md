@@ -576,3 +576,31 @@ Please review the completed Codex result and provide the next safe implementatio
 ## Requested Next Action
 
 When browser control is stable, reopen the existing project GPT Pro conversation and retrieve the response to the `5f3f3dd` review packet. If it is unavailable, continue with the next local-safe implementation slice: enrich national/enterprise/industry semiconductor public-evidence coverage and wire those coverage summaries into the stage-centered UI without exposing raw payloads or developer diagnostics.
+
+# Deployment Recovery Evidence - 2026-05-31
+
+## Current Commit State
+
+- Latest pushed documentation evidence commit: `40b982994861bc01c84ad9318d1685e7a9034ce2`.
+- Latest deployed runtime code commit: `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+- Branch: `main`.
+- Preserved local user-owned files remain untracked: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+## GitHub Verification
+
+- GitHub `ci` passed for `40b982994861bc01c84ad9318d1685e7a9034ce2` (`26707823139`).
+- GitHub `Quality Gates` passed for `40b982994861bc01c84ad9318d1685e7a9034ce2` (`26707823146`).
+
+## Deployment Verification
+
+- A first deployed API probe returned Render `x-render-routing: hibernate-wake-error` for `/api/v1/version`, `/api/v1/health`, and `/api/v1/graph/supply-relationships`.
+- After a bounded warm-up wait, those same deployed API endpoints returned HTTP `200`.
+- `python scripts/check-deployed-version.py --expected-commit 5f3f3dd96dc1100faa86a99c57f458e518bd9f6b --timeout 40 --attempts 2` -> `deployed_verified`.
+- `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
+- No Render redeploy was triggered for the docs-only commit; runtime code remains verified at `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+
+## Remaining Handoff State
+
+- GPT Pro review packet was already sent, but the response could not be read because browser control timed out.
+- No credentials, cookies, tokens, private logs, raw payloads, or unrelated browser content were copied.
+- Next safe implementation slice remains: enrich national, enterprise, and industry semiconductor public-evidence coverage and wire coverage summaries into the stage-centered UI without exposing raw payloads or developer diagnostics.
