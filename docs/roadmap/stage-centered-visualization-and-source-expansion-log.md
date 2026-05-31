@@ -3037,12 +3037,28 @@
 
 ### Computer Use And Deployment Status
 
-- No new Computer Use action has been completed for this API-hardening slice yet.
-- Latest verified deployment before this slice remained commit `755d549f07fb1b0b15fbd473df72c7de8bf017b1`.
+- GitHub `ci` passed for commit `c07222cef472547ba30e2df21c349939bf812312` (`26705354314`).
+- GitHub `Quality Gates` passed for commit `c07222cef472547ba30e2df21c349939bf812312` (`26705354309`).
+- GitHub Render Manual Deploy workflow was attempted for `c07222c` and failed preflight because required Actions secrets are not configured (`RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, `RENDER_WEB_SERVICE_ID`); no secret values were printed.
+- Used project-scoped Chrome Render tabs only:
+  - API service `supply-risk-atlas-api` was manually deployed from latest `main` and reached `live` for `c07222c`.
+  - Web service `supply-risk-atlas-web` was manually deployed from latest `main` with build cache cleared and reached `live` for `c07222c`.
+- Public version probe after deployment reported API, Web build-info, and Web proxy all at `c07222cef472547ba30e2df21c349939bf812312`; the root HTML commit marker was not visible, so the strict version script returned `deployed_stale_or_unverified`.
+- Deployed endpoint probes returned HTTP `200` for:
+  - `/api/v1/semiconductor/relationships?relationship_class=SUPPLY_RELATIONSHIP&limit=3`
+  - `/api/v1/semiconductor/source-coverage?stage=midstream&limit=3`
+  - Web proxy `/api/v1/semiconductor/relationships?relationship_class=EVIDENCE_CONTEXT&limit=2`
+- `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
+- Screenshot evidence for GPT Pro review was captured from public deployed pages:
+  - `artifacts/gpt-pro-review/c07222c/system-health.png`
+  - `artifacts/gpt-pro-review/c07222c/graph-explorer.png`
+  - `artifacts/gpt-pro-review/c07222c/entity-risk.png`
 - GPT Pro review from the prior deployment evidence packet did not return a complete next prompt before being stopped; local safe hardening continued without accessing unrelated tabs.
 
 ### Known Limitations
 
 - The new endpoints expose curated fixture summaries and indices only; they do not fetch live data or expose raw source payloads.
 - Relationship class-specific fields are normalized from existing public-evidence relationship summaries. Quantitative share, capacity, lead-time, and demand values remain null unless supported by future source-specific fixtures.
-- Deployment, GitHub CI verification, deployed smoke, and GPT Pro review remain pending for the new commit produced by this slice.
+- GitHub Actions secrets for automated Render deployment remain absent, so Render deployment currently requires project-scoped browser/console action or a safe future secret configuration path.
+- The strict version script still treats a missing root HTML commit marker as stale even when API, Web build-info, and Web proxy agree on the deployed commit.
+- GPT Pro review remains pending for the `c07222c` deployed result.
