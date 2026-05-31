@@ -532,3 +532,47 @@ Please review the completed Codex result and provide the next safe implementatio
 - Should `scripts/check-deployed-version.py` treat API, Web build-info, and Web proxy commit agreement as sufficient even when the root HTML marker is absent?
 - Should the next implementation slice wire the new semiconductor relationship/source-coverage endpoints into the UI, or continue enriching national, enterprise, and industry source coverage fixtures first?
 - Does the current page display still expose too much diagnostic detail on main user-facing pages?
+
+# GPT Pro Review Handoff Request - 2026-05-31 Display Declutter Gate
+
+## Current Commit State
+
+- Latest implemented commit: `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+- Branch: `main`.
+- Preserved local user-owned files remain untracked: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+## Completed Work
+
+- Decluttered the global public-data status banner so the main page no longer exposes raw engineering fields such as `data_mode`, `source_status`, `graph_version`, `source_manifest_id`, `calibration_status`, `last_checked_at`, `transport_attempts`, `failed_endpoint`, or `not_production_ready`.
+- Kept audit metadata available through collapsed `Data audit details`.
+- Restricted visible diagnostics to genuinely degraded/unavailable states.
+- Strengthened browser smoke and frontend quality tests so raw developer diagnostics fail if they appear in primary visible text.
+
+## Verification
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_frontend_source_readability.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS (`63` checks).
+- GitHub `ci` passed for `5f3f3dd`.
+- GitHub `Quality Gates` passed for `5f3f3dd`.
+
+## Deployment Status
+
+- Render API service `supply-risk-atlas-api` deployed latest `main` and reports `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+- Render Web service `supply-risk-atlas-web` deployed latest `main` and reports `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+- `python scripts/check-deployed-version.py --expected-commit 5f3f3dd96dc1100faa86a99c57f458e518bd9f6b --timeout 40 --attempts 2` -> `deployed_verified`.
+- `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
+
+## GPT Pro Handoff Status
+
+- A sanitized review packet was sent to the existing project GPT Pro conversation.
+- Public page observations were included for System Health, Graph Explorer, and Entity Risk 360.
+- Reading the response was blocked by repeated Chrome extension timeouts. Handoff status: `sent_response_unread_due_browser_timeout`.
+- No credentials, cookies, tokens, private logs, raw payloads, or unrelated browser content were copied.
+
+## Requested Next Action
+
+When browser control is stable, reopen the existing project GPT Pro conversation and retrieve the response to the `5f3f3dd` review packet. If it is unavailable, continue with the next local-safe implementation slice: enrich national/enterprise/industry semiconductor public-evidence coverage and wire those coverage summaries into the stage-centered UI without exposing raw payloads or developer diagnostics.

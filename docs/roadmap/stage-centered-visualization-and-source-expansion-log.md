@@ -3100,8 +3100,15 @@
 
 ### Deployment And Computer Use Status
 
-- Deployment not yet updated for this gate at log-write time.
-- No Render or GPT Pro browser action was performed for this gate before commit.
+- GitHub `ci` passed for commit `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b` (`26706963595`).
+- GitHub `Quality Gates` passed for commit `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b` (`26706963610`).
+- Used project-scoped Chrome tabs only for Render Dashboard, deployed public pages, and the existing GPT Pro project conversation.
+- Render API service `supply-risk-atlas-api` was manually deployed from latest `main` and reported `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+- Render Web service `supply-risk-atlas-web` was manually deployed from latest `main` and reported `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`.
+- `python scripts/check-deployed-version.py --expected-commit 5f3f3dd96dc1100faa86a99c57f458e518bd9f6b --timeout 40 --attempts 2` -> `deployed_verified`.
+- `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
+- Public screenshot observations for GPT Pro review were captured from System Health, Graph Explorer, and Entity Risk 360. The status banner now shows user-facing public-data badges and collapsed audit details rather than raw engineering fields.
+- GPT Pro review packet was sent to the existing project conversation with sanitized status and public page observations. Reading the response was blocked by repeated Chrome extension timeouts, so the handoff status is `sent_response_unread_due_browser_timeout`.
 
 ### Known Limitations
 
