@@ -475,3 +475,60 @@ npm.cmd run smoke:web -- --mode=deployed
 ```
 
 For GPT Pro review, paste the sanitized latest commit/test/deployment summary from this section and `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`. Do not paste secrets, cookies, raw logs, private URLs, raw payloads, or local filesystem diagnostics.
+# GPT Pro Review Handoff Request - 2026-05-31
+
+## Current Commit State
+
+- Latest `main` commit: `11d470834137585c38c4049b3b79a7e0fac3cce3`.
+- Functional API commit in this slice: `c07222cef472547ba30e2df21c349939bf812312`.
+- Branch: `main`.
+- Preserved local user-owned files remain untracked: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+## Completed Work
+
+- Added `GET /api/v1/semiconductor/relationships`.
+- Added `GET /api/v1/semiconductor/source-coverage`.
+- Extended `GET /api/v1/semiconductor/entities` filters with `stage`, `layer_id`, `geo_id`, `source_id`, and `risk_tag`.
+- Standardized semiconductor relationship rows with `source_refs`, `evidence_refs`, validity window fields, source families, stage context, and class-specific fields.
+- Kept `evidence_context_link` non-propagating with `not_supply_chain_dependency=true`.
+- Preserved canonical geography: `region:china_taiwan`, `中国台湾`, `country:CN` / `中国`.
+
+## Verification
+
+- `python -m pytest tests/api/test_semiconductor_content_endpoints.py tests/sources/test_semiconductor_supply_chain_content.py -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api -q` -> PASS.
+- `python -m pytest tests/security -q` -> PASS.
+- `python -m pytest tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS (`63` checks).
+- GitHub `ci` and `Quality Gates` passed for `c07222c`.
+- GitHub `ci` and `Quality Gates` passed for `11d4708`.
+
+## Deployment Status
+
+- Render API service `supply-risk-atlas-api` was manually deployed from latest `main`.
+- Render Web service `supply-risk-atlas-web` was manually deployed from latest `main`.
+- API `/api/v1/version` reports `11d470834137585c38c4049b3b79a7e0fac3cce3`.
+- Web `/api/build-info` reports `11d470834137585c38c4049b3b79a7e0fac3cce3`.
+- Deployed smoke passed with `63` checks.
+- New deployed endpoint probes returned HTTP `200` for semiconductor relationships and source coverage.
+- Known limitation: `scripts/check-deployed-version.py` still returns `deployed_stale_or_unverified` because the root HTML page does not expose a visible commit marker, even though API, Web build-info, and Web proxy report the latest commit.
+- GitHub Render Manual Deploy workflow remains blocked by missing repository secrets; no secret values were printed.
+
+## GPT Pro Handoff Status
+
+- Project-scoped Chrome tabs were used only for Render, deployed pages, and the project GPT Pro conversation.
+- Public deployed screenshots were captured under `artifacts/gpt-pro-review/c07222c/`.
+- Browser control timed out repeatedly while attempting to send the GPT Pro review packet, so GPT handoff is currently `unverified`.
+- No credentials, cookies, tokens, private logs, raw payloads, or unrelated browser content were copied.
+
+## Requested GPT Pro Review
+
+Please review the completed Codex result and provide the next safe implementation prompt. Focus questions:
+
+- Should `scripts/check-deployed-version.py` treat API, Web build-info, and Web proxy commit agreement as sufficient even when the root HTML marker is absent?
+- Should the next implementation slice wire the new semiconductor relationship/source-coverage endpoints into the UI, or continue enriching national, enterprise, and industry source coverage fixtures first?
+- Does the current page display still expose too much diagnostic detail on main user-facing pages?
