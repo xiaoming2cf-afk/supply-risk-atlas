@@ -2858,3 +2858,82 @@
 
 - Deployed write-style actions can still hit transient Render 502/503 during automated browser runs. The UI now shows controlled unavailable states with collapsed diagnostics and no fabricated results.
 - The platform remains fixture/promoted public-evidence research infrastructure, not production-ready.
+
+## 2026-05-30 Semiconductor Content Coverage API Slice
+
+### Current HEAD
+
+- Starting HEAD: `6b08696e7213f6af9a743848ec40801fedc21407`.
+- Branch: `stage/chip-supply-chain-content-coverage`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added a fixture-first semiconductor content coverage layer for national/regional, enterprise, and industry supply-chain context.
+- Added bounded sanitized API routes for semiconductor coverage overview, value-chain layers, country/region exposures, entity profiles, and chokepoints.
+- Extended Entity Risk 360 with an evidence-bound supply-chain role panel for known semiconductor entities.
+- Extended System Health with a concise chip supply-chain coverage panel while keeping manifest/version/data-mode diagnostics folded in audit details.
+- Kept canonical geography: `region:china_taiwan`, display `中国台湾`, parent `country:CN` / `中国`.
+
+### Coverage Counts
+
+- Countries/regions: `10`.
+- Value-chain layers: `22`.
+- Entity profiles: `41`.
+- Relationship summaries: `15`.
+- Chokepoints: `10`.
+- Source families: `3` (`national_policy_macro_public`, `enterprise_public_disclosure`, `industry_public_fixture`).
+
+### Files Changed
+
+- `configs/sources/semiconductor_supply_chain_content.yaml`
+- `docs/data/semiconductor-supply-chain-content-coverage.md`
+- `services/api/services/semiconductor_content_service.py`
+- `services/api/routes/semiconductor_content.py`
+- `services/api/main.py`
+- `services/api/dev_server.py`
+- `services/api/services/system_health_service.py`
+- `services/api/services/risk_service.py`
+- `packages/shared-types/src/semiconductor-content.ts`
+- `packages/shared-types/src/health.ts`
+- `packages/shared-types/src/risk.ts`
+- `packages/shared-types/src/index.ts`
+- `packages/api-client/src/dashboard.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/sources/test_semiconductor_supply_chain_content.py`
+- `tests/api/test_semiconductor_content_endpoints.py`
+- `tests/quality/test_frontend_display_declutter.py`
+
+### Commands Run
+
+- `python -m pytest tests/sources/test_semiconductor_supply_chain_content.py tests/api/test_semiconductor_content_endpoints.py -q` -> PASS.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api -q` -> PASS.
+- `python -m pytest tests/security -q` -> PASS.
+- `python -m pytest tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/sources -q` -> PASS.
+- `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` -> PASS.
+- `python -m pytest -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS (`63` checks).
+
+### Failures And Fixes
+
+- Initial local smoke connected to stale local API/Web dev processes. The stale processes were restarted with current code, then smoke passed.
+- Initial System Health smoke did not show the new coverage panel because the lightweight summary payload lacked `coverage_counts` and representative rows. The summary now includes both `counts` and `coverage_counts` plus representative country/region, layer, entity, and chokepoint summaries.
+- Initial relationship-content tests exposed missing `relationship_class` fields in the content fixture. Relationship summaries now explicitly separate supply, demand, production dependency, and evidence context records.
+- API-visible audit payload no longer exposes a `raw_payload_policy` field name; it uses `source_payload_policy` while preserving the no-bulk-payload policy.
+
+### Computer Use And Deployment Status
+
+- No new Chrome/Render/GitHub/GPT Pro action has been completed for this slice yet.
+- Next steps after commit: push branch, verify GitHub `ci` and `Quality Gates`, open or update PR, deploy from latest main/approved branch path as applicable, run deployed version probe and deployed smoke, then send GPT Pro a sanitized review packet.
+
+### Known Limitations
+
+- The content layer is a curated public-evidence fixture; live connectors remain disabled by default.
+- Private supplier transactions, order books, capacity reservations, and customer shares are documented gaps.
+- Capacity, demand, lead-time, and substitution values are proxy summaries unless directly supported by public fixture evidence.

@@ -31,6 +31,7 @@ from services.api.prediction_center import (
     ranked_paths_for_target,
 )
 from services.api.routes import graph as graph_routes
+from services.api.routes import semiconductor_content as semiconductor_content_routes
 from services.api.routes import stage_graph as stage_graph_routes
 from services.api.routes import analytics as analytics_routes
 from services.api.routes import optimization as optimization_routes
@@ -75,6 +76,14 @@ from services.api.services.graph_service import (
     route_analytics_tables,
     route_semiconductor_graph_neighborhood,
     route_semiconductor_graph_snapshot,
+)
+from services.api.services.semiconductor_content_service import (
+    route_semiconductor_chokepoints,
+    route_semiconductor_country_exposures,
+    route_semiconductor_coverage_overview,
+    route_semiconductor_entity_profiles,
+    route_semiconductor_value_chain_layers,
+    semiconductor_content_summary_payload as _semiconductor_content_summary_payload,
 )
 from services.api.services.stage_graph_service import (
     route_stage_graph,
@@ -587,6 +596,7 @@ def route_dashboard_page(
             **page_payload,
             "sourceRegistryReadiness": health_source_readiness,
             "semiconductorGraph": health_graph,
+            "semiconductorContentCoverage": _semiconductor_content_summary_payload(),
             "platformStatus": _platform_status_payload(health_graph, health_source_readiness),
         }
     return make_envelope(
@@ -697,6 +707,7 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
     health_graph = _semiconductor_graph_health_payload()
     health_source_readiness = _source_registry_readiness_payload()
     health_platform_status = _platform_status_payload(health_graph, health_source_readiness)
+    semiconductor_content_coverage = _semiconductor_content_summary_payload()
 
     return {
         "global-risk-cockpit": {
@@ -834,6 +845,7 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
             "evidenceLineage": _evidence_lineage_payload(result),
             "dataCatalog": _data_catalog_payload(result),
             "semiconductorGraph": health_graph,
+            "semiconductorContentCoverage": semiconductor_content_coverage,
             "platformStatus": health_platform_status,
         },
     }
@@ -2650,6 +2662,16 @@ def create_app() -> Any:
         route_stage_graph_evidence=route_stage_graph_evidence,
         route_stage_graph_tables=route_stage_graph_tables,
         route_stage_graph_charts=route_stage_graph_charts,
+    )
+    semiconductor_content_routes.register(
+        app,
+        Header=Header,
+        Query=Query,
+        route_semiconductor_coverage_overview=route_semiconductor_coverage_overview,
+        route_semiconductor_value_chain_layers=route_semiconductor_value_chain_layers,
+        route_semiconductor_country_exposures=route_semiconductor_country_exposures,
+        route_semiconductor_entity_profiles=route_semiconductor_entity_profiles,
+        route_semiconductor_chokepoints=route_semiconductor_chokepoints,
     )
     analytics_routes.register(
         app,

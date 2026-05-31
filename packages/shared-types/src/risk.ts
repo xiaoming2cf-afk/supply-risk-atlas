@@ -1,4 +1,5 @@
 import type { RiskLevel } from "./common";
+import type { SemiconductorEntityProfile } from "./semiconductor-content";
 
 export interface PredictionScoreComponents {
   baseline?: number;
@@ -198,6 +199,7 @@ export interface SemiriskEntityRiskScore {
   source_manifest_id: string;
   as_of_time: string;
   fixture_graph: boolean;
+  semiconductor_profile?: SemiconductorEntityProfile;
   warnings: string[];
 }
 

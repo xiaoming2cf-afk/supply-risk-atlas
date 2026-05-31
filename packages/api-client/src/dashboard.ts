@@ -36,6 +36,11 @@ import type {
   ReverseStressResult,
   RunDetailData,
   RunHistoryData,
+  SemiconductorChokepointsData,
+  SemiconductorCountryExposuresData,
+  SemiconductorCoverageOverview,
+  SemiconductorEntityProfilesData,
+  SemiconductorValueChainLayersData,
   SemiriskEntityRiskScore,
   SemiriskGraphNeighborhoodData,
   SemiriskGraphSnapshotData,
@@ -84,6 +89,11 @@ export interface SupplyRiskApiClient {
   getGraphProductionDependencies(options?: { limit?: number }): Promise<ApiResult<GraphRelationshipData>>;
   getGraphSupplyDemandBalance(options?: { limit?: number }): Promise<ApiResult<GraphSupplyDemandBalanceData>>;
   getStageGraph(options?: { stageId?: string; relationshipClass?: string | null; limit?: number }): Promise<ApiResult<Record<string, unknown>>>;
+  getSemiconductorCoverageOverview(): Promise<ApiResult<SemiconductorCoverageOverview>>;
+  getSemiconductorValueChainLayers(options?: { stage?: string | null; layerId?: string | null; limit?: number }): Promise<ApiResult<SemiconductorValueChainLayersData>>;
+  getSemiconductorCountryExposures(options?: { geoId?: string | null; stage?: string | null; limit?: number }): Promise<ApiResult<SemiconductorCountryExposuresData>>;
+  getSemiconductorEntityProfiles(options?: { entityId?: string | null; limit?: number }): Promise<ApiResult<SemiconductorEntityProfilesData>>;
+  getSemiconductorChokepoints(options?: { layerId?: string | null; stage?: string | null; limit?: number }): Promise<ApiResult<SemiconductorChokepointsData>>;
   getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
   getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
   getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
@@ -461,6 +471,51 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         `/stage-graph/${encodeURIComponent(options?.stageId ?? "L5_fabrication")}${queryString({
           limit: options?.limit,
           relationship_class: options?.relationshipClass ?? undefined,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiconductorCoverageOverview: () =>
+      requestJson(baseUrl, "/semiconductor/coverage", undefined, clientOptions),
+    getSemiconductorValueChainLayers: (options) =>
+      requestJson(
+        baseUrl,
+        `/semiconductor/value-chain/layers${queryString({
+          stage: options?.stage ?? undefined,
+          layer_id: options?.layerId ?? undefined,
+          limit: options?.limit,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiconductorCountryExposures: (options) =>
+      requestJson(
+        baseUrl,
+        `/semiconductor/country-exposures${queryString({
+          geo_id: options?.geoId ?? undefined,
+          stage: options?.stage ?? undefined,
+          limit: options?.limit,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiconductorEntityProfiles: (options) =>
+      requestJson(
+        baseUrl,
+        `/semiconductor/entities${queryString({
+          entity_id: options?.entityId ?? undefined,
+          limit: options?.limit,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiconductorChokepoints: (options) =>
+      requestJson(
+        baseUrl,
+        `/semiconductor/chokepoints${queryString({
+          layer_id: options?.layerId ?? undefined,
+          stage: options?.stage ?? undefined,
+          limit: options?.limit,
         })}`,
         undefined,
         clientOptions,

@@ -2016,6 +2016,7 @@ export function CompanyRisk360({
     );
   const sourceConcentration = asRecord(risk?.concentration?.["source_concentration"]);
   const countryConcentration = asRecord(risk?.concentration?.["country_concentration"]);
+  const semiconductorProfile = risk?.semiconductor_profile;
 
   return (
     <div className="page-grid split-layout">
@@ -2091,6 +2092,37 @@ export function CompanyRisk360({
                 ]}
               />
             </Panel>
+
+            {semiconductorProfile ? (
+              <Panel
+                title="Supply-chain role"
+                subtitle="Country/region, value-chain, dependency, and downstream context from public-evidence fixture coverage."
+              >
+                <div className="field-grid">
+                  <Field label="Value-chain roles" value={semiconductorProfile.value_chain_roles.map(formatDisplayValue).join(" / ")} />
+                  <Field label="Primary layers" value={semiconductorProfile.primary_layers.map(formatNodeDisplayRef).join(" / ")} />
+                  <Field label="Country exposure" value={formatNodeDisplayRef(semiconductorProfile.headquarters_country)} />
+                  <Field label="Risk tags" value={semiconductorProfile.risk_tags.map(formatDisplayValue).join(" / ")} />
+                  <Field label="Dependencies" value={semiconductorProfile.dependency_tags.map(formatDisplayValue).join(" / ")} />
+                  <Field label="Coverage" value={formatDisplayValue(semiconductorProfile.coverage_level)} />
+                </div>
+                <p className="public-data-note">{semiconductorProfile.evidence_summary}</p>
+                <p className="public-data-note">{semiconductorProfile.substitution_notes}</p>
+                <MetadataSummary
+                  items={[
+                    { label: "Public evidence mode" },
+                    { label: "Research fixture mode", tone: "warning" },
+                  ]}
+                />
+                <AuditDetails
+                  label="Data audit details"
+                  items={[
+                    { label: "entity_id", value: semiconductorProfile.entity_id },
+                    { label: "provenance", value: semiconductorProfile.provenance.map(formatSourceDisplayRef) },
+                  ]}
+                />
+              </Panel>
+            ) : null}
 
             <Panel title="Scoring method and HHI" subtitle="Likelihood, impact, vulnerability, and concentration are shown separately so the proxy score is auditable.">
               <div className="field-grid">
@@ -4995,6 +5027,8 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
     : String(platformStatus.calibrationStatus ?? "fixture_proxy_not_calibrated");
   const deploymentReadiness = platformStatus.deploymentVersionReadiness;
   const webGitCommit = WEB_BUILD_COMMIT !== "not_verified" ? WEB_BUILD_COMMIT : deploymentReadiness.webGitCommit ?? "not_verified";
+  const contentCoverage = health.semiconductorContentCoverage;
+  const contentCounts = contentCoverage?.coverage_counts;
 
   return (
     <div className="page-grid">
@@ -5039,6 +5073,78 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <p className="metric-detail">{t("Signal ingest is the current freshness constraint.")}</p>
         </article>
       </div>
+
+      {contentCoverage && contentCounts ? (
+        <Panel
+          title="Chip supply chain coverage"
+          subtitle="Country/region, value-chain, entity, relationship, and chokepoint fixture coverage for semiconductor research."
+        >
+          <div className="inspector-grid" style={{ marginBottom: 16 }}>
+            <Field label="Countries / regions" value={contentCounts.country_region_count} />
+            <Field label="Value-chain layers" value={contentCounts.value_chain_layer_count} />
+            <Field label="Entity profiles" value={contentCounts.entity_profile_count} />
+            <Field label="Relationship summaries" value={contentCounts.relationship_edge_count} />
+            <Field label="Chokepoints" value={contentCounts.chokepoint_count} />
+            <Field label="Source families" value={contentCounts.source_family_count} />
+          </div>
+          <MetadataSummary
+            items={[
+              { label: "Public evidence mode" },
+              { label: "Research fixture mode", tone: "warning" },
+              { label: `Updated ${formatDateTime(contentCoverage.last_updated)}` },
+            ]}
+          />
+          <div className="driver-grid" style={{ marginTop: 16 }}>
+            <div className="data-row">
+              <div className="row-top">
+                <span className="row-title">National and regional coverage</span>
+                <StatusPill status="degraded" />
+              </div>
+              <p className="row-subtitle">
+                {contentCoverage.representative_country_region_exposures
+                  .slice(0, 4)
+                  .map((row) => row.display_name)
+                  .join(" / ")}
+              </p>
+            </div>
+            <div className="data-row">
+              <div className="row-top">
+                <span className="row-title">Industry layer coverage</span>
+                <StatusPill status="degraded" />
+              </div>
+              <p className="row-subtitle">
+                {contentCoverage.representative_value_chain_layers
+                  .slice(0, 4)
+                  .map((row) => row.layer_name)
+                  .join(" / ")}
+              </p>
+            </div>
+            <div className="data-row">
+              <div className="row-top">
+                <span className="row-title">Enterprise coverage</span>
+                <StatusPill status="degraded" />
+              </div>
+              <p className="row-subtitle">
+                {contentCoverage.representative_entities
+                  .slice(0, 4)
+                  .map((row) => row.name)
+                  .join(" / ")}
+              </p>
+            </div>
+          </div>
+          <AuditDetails
+            label="Data audit details"
+            items={[
+              { label: "content_version", value: contentCoverage.content_version },
+              { label: "source_manifest_id", value: contentCoverage.source_manifest_id },
+              { label: "data_mode", value: contentCoverage.data_mode },
+              { label: "graph_mode", value: contentCoverage.graph_mode },
+              { label: "calibration_status", value: contentCoverage.calibration_status },
+              { label: "coverage_gaps", value: contentCoverage.coverage_gaps },
+            ]}
+          />
+        </Panel>
+      ) : null}
 
       <Panel title="Readiness summary" subtitle="Fixture readiness is shown separately from production readiness.">
         <div className="field-grid">

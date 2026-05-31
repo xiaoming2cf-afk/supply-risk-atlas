@@ -116,6 +116,32 @@ class Handler(BaseHTTPRequestHandler):
                 limit=_int_or_default(_first(query.get("limit")), 50),
                 request_id=request_id,
             ),
+            "/api/v1/semiconductor/coverage": lambda: main.route_semiconductor_coverage_overview(
+                request_id=request_id,
+            ),
+            "/api/v1/semiconductor/value-chain/layers": lambda: main.route_semiconductor_value_chain_layers(
+                stage=_first(query.get("stage")),
+                layer_id=_first(query.get("layer_id")),
+                limit=_int_or_default(_first(query.get("limit")), 100),
+                request_id=request_id,
+            ),
+            "/api/v1/semiconductor/country-exposures": lambda: main.route_semiconductor_country_exposures(
+                geo_id=_first(query.get("geo_id")),
+                stage=_first(query.get("stage")),
+                limit=_int_or_default(_first(query.get("limit")), 100),
+                request_id=request_id,
+            ),
+            "/api/v1/semiconductor/entities": lambda: main.route_semiconductor_entity_profiles(
+                entity_id=_first(query.get("entity_id")),
+                limit=_int_or_default(_first(query.get("limit")), 100),
+                request_id=request_id,
+            ),
+            "/api/v1/semiconductor/chokepoints": lambda: main.route_semiconductor_chokepoints(
+                layer_id=_first(query.get("layer_id")),
+                stage=_first(query.get("stage")),
+                limit=_int_or_default(_first(query.get("limit")), 100),
+                request_id=request_id,
+            ),
             "/api/v1/graph/snapshot": lambda: main.route_semiconductor_graph_snapshot(
                 request_id=request_id,
             ),
@@ -185,6 +211,17 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if parsed.path.startswith("/api/v1/stage-graph/"):
                 self._write(200, _route_stage_graph(parsed.path, query, request_id))
+                return
+            if parsed.path.startswith("/api/v1/semiconductor/entities/"):
+                entity_id = unquote(parsed.path.rsplit("/", 1)[-1])
+                self._write(
+                    200,
+                    main.route_semiconductor_entity_profiles(
+                        entity_id=entity_id,
+                        limit=1,
+                        request_id=request_id,
+                    ),
+                )
                 return
             if parsed.path.startswith("/api/v1/analytics/tables/"):
                 table_id = unquote(parsed.path.rsplit("/", 1)[-1])

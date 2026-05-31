@@ -230,6 +230,53 @@ def test_system_health_heavy_inventory_sections_are_collapsed() -> None:
     assert 'title="Connector status"' in source
 
 
+def test_semiconductor_content_coverage_is_summarized_on_primary_pages() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    shared_types = read("packages/shared-types/src/semiconductor-content.ts")
+    api_client = read("packages/api-client/src/dashboard.ts")
+
+    assert "semiconductorContentCoverage" in source
+    assert 'title="Chip supply chain coverage"' in source
+    assert '<Field label="Countries / regions"' in source
+    assert '<Field label="Value-chain layers"' in source
+    assert '<Field label="Entity profiles"' in source
+    assert '<Field label="Relationship summaries"' in source
+    assert '<Field label="Chokepoints"' in source
+    assert '<Field label="Source families"' in source
+    assert "National and regional coverage" in source
+    assert "Industry layer coverage" in source
+    assert "Enterprise coverage" in source
+    assert 'label="Data audit details"' in source
+    assert "contentCoverage.source_manifest_id" in source
+    assert "contentCoverage.graph_version" not in source
+    assert "contentCoverage.source_manifest_id" in source
+    assert "contentCoverage.data_mode" in source
+    assert "contentCoverage.graph_mode" in source
+    assert "SemiconductorCoverageOverview" in shared_types
+    assert "SemiconductorEntityProfile" in shared_types
+    assert "getSemiconductorCoverageOverview" in api_client
+    assert "getSemiconductorCountryExposures" in api_client
+    assert "getSemiconductorChokepoints" in api_client
+
+
+def test_entity_risk_profile_enrichment_is_evidence_bound_and_folded() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    risk_types = read("packages/shared-types/src/risk.ts")
+
+    assert "semiconductor_profile" in risk_types
+    assert "semiconductorProfile" in source
+    assert 'title="Supply-chain role"' in source
+    assert '<Field label="Value-chain roles"' in source
+    assert '<Field label="Primary layers"' in source
+    assert '<Field label="Country exposure"' in source
+    assert '<Field label="Risk tags"' in source
+    assert '<Field label="Dependencies"' in source
+    assert "semiconductorProfile.evidence_summary" in source
+    assert "semiconductorProfile.substitution_notes" in source
+    assert '{ label: "provenance", value: semiconductorProfile.provenance.map(formatSourceDisplayRef) }' in source
+    assert '<Field label="entity_id"' not in source
+
+
 def test_page_relevance_policy_declares_display_tiers() -> None:
     source = read("apps/web/src/features/common/pageRelevance.ts")
 

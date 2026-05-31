@@ -8,3 +8,4 @@ export * from "./optimization";
 export * from "./report";
 export * from "./health";
 export * from "./runs";
+export * from "./semiconductor-content";

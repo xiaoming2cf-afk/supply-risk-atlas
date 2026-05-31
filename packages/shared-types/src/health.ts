@@ -1,3 +1,5 @@
+import type { SemiconductorCoverageOverview } from "./semiconductor-content";
+
 export interface ServiceHealth {
   id: string;
   service: string;
@@ -229,5 +231,6 @@ export interface SystemHealthData {
   evidenceLineage: EvidenceLineageSummary;
   dataCatalog?: DataCatalogSummary;
   semiconductorGraph?: SemiconductorGraphHealth;
+  semiconductorContentCoverage?: SemiconductorCoverageOverview;
   platformStatus?: PlatformStatus;
 }
