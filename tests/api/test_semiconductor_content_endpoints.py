@@ -134,6 +134,19 @@ def test_entity_profile_endpoint_returns_enterprise_supply_chain_role() -> None:
     assert profile["headquarters_country"] == CANONICAL_REGION_ID
 
 
+def test_entity_profile_endpoint_supports_stage_and_source_filters() -> None:
+    response = _client().get(
+        "/api/v1/semiconductor/entities?stage=midstream&source_id=company_annual_report_manual_upload&limit=50"
+    )
+    assert response.status_code == 200
+    data = _assert_content_envelope(response.json())
+
+    assert data["filters"]["stage"] == "midstream"
+    assert data["filters"]["source_id"] == "company_annual_report_manual_upload"
+    assert data["entity_profiles"]
+    assert all("company_annual_report_manual_upload" in row["provenance"] for row in data["entity_profiles"])
+
+
 def test_chokepoint_endpoint_filters_by_stage() -> None:
     response = _client().get("/api/v1/semiconductor/chokepoints?stage=midstream&limit=50")
     assert response.status_code == 200
@@ -142,6 +155,61 @@ def test_chokepoint_endpoint_filters_by_stage() -> None:
     assert data["filters"]["stage"] == "midstream"
     assert data["chokepoints"]
     assert all(chokepoint["provenance"] for chokepoint in data["chokepoints"])
+
+
+def test_relationship_endpoint_returns_standardized_supply_rows() -> None:
+    response = _client().get(
+        "/api/v1/semiconductor/relationships?relationship_class=SUPPLY_RELATIONSHIP&limit=20"
+    )
+    assert response.status_code == 200
+    data = _assert_content_envelope(response.json())
+
+    assert data["filters"]["relationship_class"] == "SUPPLY_RELATIONSHIP"
+    assert data["relationships"]
+    assert set(data["relationship_class_counts"]) == {"SUPPLY_RELATIONSHIP"}
+    for row in data["relationships"]:
+        assert row["relationship_class"] == "SUPPLY_RELATIONSHIP"
+        assert row["supplied_item_id"]
+        assert row["supplier_id"] == row["source_node_id"]
+        assert row["source_refs"]
+        assert row["evidence_refs"]
+        assert row["valid_from"]
+        assert row["valid_to"] is None
+        assert row["can_propagate_risk"] is True
+        assert row["edge_type"] != "evidence_context_link"
+
+
+def test_relationship_endpoint_keeps_evidence_context_non_propagating() -> None:
+    response = _client().get(
+        "/api/v1/semiconductor/relationships?relationship_class=EVIDENCE_CONTEXT&limit=20"
+    )
+    assert response.status_code == 200
+    data = _assert_content_envelope(response.json())
+
+    assert data["relationships"]
+    for row in data["relationships"]:
+        assert row["relationship_class"] == "EVIDENCE_CONTEXT"
+        assert row["edge_type"] == "evidence_context_link"
+        assert row["not_supply_chain_dependency"] is True
+        assert row["can_propagate_risk"] is False
+        assert row["warning"] == "This is not a supply-chain dependency edge."
+
+
+def test_source_coverage_endpoint_summarizes_layer_support() -> None:
+    response = _client().get("/api/v1/semiconductor/source-coverage?stage=midstream&limit=50")
+    assert response.status_code == 200
+    data = _assert_content_envelope(response.json())
+
+    assert data["filters"]["stage"] == "midstream"
+    assert data["stage_source_coverage"]
+    assert data["source_family_counts"]
+    assert data["relationship_class_counts"]
+    for row in data["stage_source_coverage"]:
+        assert row["stage"] == "midstream"
+        assert row["source_refs"]
+        assert row["source_families"]
+        assert row["connector_status"] == "fixture_required_live_disabled"
+        assert row["live_fetch_default"] == "disabled"
 
 
 def test_system_health_and_entity_risk_include_semiconductor_content_summaries() -> None:
@@ -166,10 +234,17 @@ def test_system_health_and_entity_risk_include_semiconductor_content_summaries()
 def test_dev_server_serves_semiconductor_content_routes(dev_server_base_url: str) -> None:
     coverage_status, coverage = _get_json(dev_server_base_url, "/api/v1/semiconductor/coverage")
     entity_status, entity = _get_json(dev_server_base_url, "/api/v1/semiconductor/entities/company:TSMC")
+    relationship_status, relationships = _get_json(
+        dev_server_base_url,
+        "/api/v1/semiconductor/relationships?relationship_class=SUPPLY_RELATIONSHIP&limit=5",
+    )
 
     assert coverage_status == 200
     assert entity_status == 200
+    assert relationship_status == 200
     assert coverage["data"]["coverage_counts"]["value_chain_layer_count"] >= 20
     assert entity["data"]["entity_profiles"][0]["entity_id"] == "company:TSMC"
+    assert relationships["data"]["relationships"]
     _assert_content_envelope(coverage)
     _assert_content_envelope(entity)
+    _assert_content_envelope(relationships)

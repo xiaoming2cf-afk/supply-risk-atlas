@@ -72,6 +72,51 @@ export interface SemiconductorChokepoint {
   provenance: string[];
 }
 
+export interface SemiconductorRelationship {
+  source_id: string;
+  source_node_id: string;
+  target_id: string;
+  target_node_id: string;
+  relationship_type: string;
+  relationship_class: "SUPPLY_RELATIONSHIP" | "DEMAND_RELATIONSHIP" | "PRODUCTION_DEPENDENCY" | "EVIDENCE_CONTEXT" | string;
+  edge_type: string;
+  confidence: string;
+  rationale: string;
+  evidence_summary: string;
+  provenance: string[];
+  source_refs: string[];
+  evidence_refs: string[];
+  valid_from: string;
+  valid_to: string | null;
+  calibration_status: string;
+  source_families: string[];
+  stage_context: string[];
+  can_propagate_risk: boolean;
+}
+
+export interface SemiconductorStageSourceCoverage {
+  layer_id: string;
+  layer_name: string;
+  stage: string;
+  coverage_level: string;
+  source_refs: string[];
+  source_families: string[];
+  relationship_classes: string[];
+  relationship_count: number;
+  entity_count: number;
+  chokepoint_count: number;
+  relationship_coverage: {
+    supply: boolean;
+    demand: boolean;
+    production_dependency: boolean;
+    evidence_context: boolean;
+  };
+  source_gaps: string[];
+  connector_status: string;
+  live_fetch_default: "disabled" | string;
+  fixture_required: boolean;
+}
+
 export interface SemiconductorContentBase {
   content_scope: string;
   content_version: string;
@@ -121,4 +166,21 @@ export interface SemiconductorChokepointsData extends SemiconductorContentBase {
   filters: Record<string, string | null>;
   total: number;
   chokepoints: SemiconductorChokepoint[];
+}
+
+export interface SemiconductorRelationshipsData extends SemiconductorContentBase {
+  filters: Record<string, string | null>;
+  total: number;
+  relationship_class_counts: Record<string, number>;
+  relationships: SemiconductorRelationship[];
+}
+
+export interface SemiconductorSourceCoverageData extends SemiconductorContentBase {
+  filters: Record<string, string | null>;
+  total: number;
+  source_family_counts: Record<string, number>;
+  relationship_class_counts: Record<string, number>;
+  source_families: Record<string, unknown>;
+  coverage_gaps: string[];
+  stage_source_coverage: SemiconductorStageSourceCoverage[];
 }

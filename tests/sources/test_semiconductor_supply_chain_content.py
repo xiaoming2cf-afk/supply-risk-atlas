@@ -185,7 +185,28 @@ def test_relationship_summaries_are_classified_and_have_sources() -> None:
         assert edge["target_node_id"]
         assert edge["edge_type"]
         assert edge["provenance"]
+        assert edge["evidence_summary"]
+        assert edge["rationale"]
         if edge["relationship_class"] == "EVIDENCE_CONTEXT":
             assert edge.get("not_supply_chain_dependency") is True
         else:
             assert edge["edge_type"] != "evidence_context_link"
+
+
+def test_stage_layer_source_coverage_is_queryable_from_fixture() -> None:
+    content = _load_content()
+    layer_ids = {layer["layer_id"] for layer in content["value_chain_layers"]}
+    relationship_layer_ids = {
+        node_id
+        for edge in content["relationship_edges"]
+        for node_id in (edge["source_node_id"], edge["target_node_id"], edge["source_id"], edge["target_id"])
+        if str(node_id).startswith("vc_")
+    }
+
+    assert relationship_layer_ids <= layer_ids
+    assert relationship_layer_ids
+    for stage in {"upstream", "midstream", "downstream", "support"}:
+        stage_layers = [layer for layer in content["value_chain_layers"] if layer["stage"] == stage]
+        assert stage_layers, stage
+        stage_sources = {source for layer in stage_layers for source in layer["provenance"]}
+        assert len(stage_sources) >= 2, stage

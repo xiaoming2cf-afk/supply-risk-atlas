@@ -82,6 +82,8 @@ from services.api.services.semiconductor_content_service import (
     route_semiconductor_country_exposures,
     route_semiconductor_coverage_overview,
     route_semiconductor_entity_profiles,
+    route_semiconductor_relationships,
+    route_semiconductor_source_coverage,
     route_semiconductor_value_chain_layers,
     semiconductor_content_summary_payload as _semiconductor_content_summary_payload,
 )
@@ -2672,6 +2674,8 @@ def create_app() -> Any:
         route_semiconductor_country_exposures=route_semiconductor_country_exposures,
         route_semiconductor_entity_profiles=route_semiconductor_entity_profiles,
         route_semiconductor_chokepoints=route_semiconductor_chokepoints,
+        route_semiconductor_relationships=route_semiconductor_relationships,
+        route_semiconductor_source_coverage=route_semiconductor_source_coverage,
     )
     analytics_routes.register(
         app,

@@ -40,6 +40,8 @@ import type {
   SemiconductorCountryExposuresData,
   SemiconductorCoverageOverview,
   SemiconductorEntityProfilesData,
+  SemiconductorRelationshipsData,
+  SemiconductorSourceCoverageData,
   SemiconductorValueChainLayersData,
   SemiriskEntityRiskScore,
   SemiriskGraphNeighborhoodData,
@@ -92,8 +94,33 @@ export interface SupplyRiskApiClient {
   getSemiconductorCoverageOverview(): Promise<ApiResult<SemiconductorCoverageOverview>>;
   getSemiconductorValueChainLayers(options?: { stage?: string | null; layerId?: string | null; limit?: number }): Promise<ApiResult<SemiconductorValueChainLayersData>>;
   getSemiconductorCountryExposures(options?: { geoId?: string | null; stage?: string | null; limit?: number }): Promise<ApiResult<SemiconductorCountryExposuresData>>;
-  getSemiconductorEntityProfiles(options?: { entityId?: string | null; limit?: number }): Promise<ApiResult<SemiconductorEntityProfilesData>>;
+  getSemiconductorEntityProfiles(options?: {
+    entityId?: string | null;
+    stage?: string | null;
+    layerId?: string | null;
+    geoId?: string | null;
+    sourceId?: string | null;
+    riskTag?: string | null;
+    limit?: number;
+  }): Promise<ApiResult<SemiconductorEntityProfilesData>>;
   getSemiconductorChokepoints(options?: { layerId?: string | null; stage?: string | null; limit?: number }): Promise<ApiResult<SemiconductorChokepointsData>>;
+  getSemiconductorRelationships(options?: {
+    relationshipClass?: string | null;
+    relationshipType?: string | null;
+    edgeType?: string | null;
+    sourceId?: string | null;
+    targetId?: string | null;
+    layerId?: string | null;
+    stage?: string | null;
+    sourceFamily?: string | null;
+    limit?: number;
+  }): Promise<ApiResult<SemiconductorRelationshipsData>>;
+  getSemiconductorSourceCoverage(options?: {
+    stage?: string | null;
+    sourceFamily?: string | null;
+    relationshipClass?: string | null;
+    limit?: number;
+  }): Promise<ApiResult<SemiconductorSourceCoverageData>>;
   getAnalyticsCharts(options?: { chartId?: string | null; limit?: number }): Promise<ApiResult<AnalyticsChartsData>>;
   getAnalyticsTables(options?: { tableId?: string | null; limit?: number; offset?: number }): Promise<ApiResult<AnalyticsTablesData>>;
   getAnalyticsTable(tableId: string, options?: { limit?: number; offset?: number }): Promise<ApiResult<AnalyticsNamedTableData>>;
@@ -504,6 +531,11 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         baseUrl,
         `/semiconductor/entities${queryString({
           entity_id: options?.entityId ?? undefined,
+          stage: options?.stage ?? undefined,
+          layer_id: options?.layerId ?? undefined,
+          geo_id: options?.geoId ?? undefined,
+          source_id: options?.sourceId ?? undefined,
+          risk_tag: options?.riskTag ?? undefined,
           limit: options?.limit,
         })}`,
         undefined,
@@ -515,6 +547,35 @@ export function createSupplyRiskApiClient(options: SupplyRiskApiClientOptions = 
         `/semiconductor/chokepoints${queryString({
           layer_id: options?.layerId ?? undefined,
           stage: options?.stage ?? undefined,
+          limit: options?.limit,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiconductorRelationships: (options) =>
+      requestJson(
+        baseUrl,
+        `/semiconductor/relationships${queryString({
+          relationship_class: options?.relationshipClass ?? undefined,
+          relationship_type: options?.relationshipType ?? undefined,
+          edge_type: options?.edgeType ?? undefined,
+          source_id: options?.sourceId ?? undefined,
+          target_id: options?.targetId ?? undefined,
+          layer_id: options?.layerId ?? undefined,
+          stage: options?.stage ?? undefined,
+          source_family: options?.sourceFamily ?? undefined,
+          limit: options?.limit,
+        })}`,
+        undefined,
+        clientOptions,
+      ),
+    getSemiconductorSourceCoverage: (options) =>
+      requestJson(
+        baseUrl,
+        `/semiconductor/source-coverage${queryString({
+          stage: options?.stage ?? undefined,
+          source_family: options?.sourceFamily ?? undefined,
+          relationship_class: options?.relationshipClass ?? undefined,
           limit: options?.limit,
         })}`,
         undefined,

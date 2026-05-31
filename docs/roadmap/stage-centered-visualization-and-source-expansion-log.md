@@ -2914,6 +2914,7 @@
 - `python -m pytest tests/api -q` -> PASS.
 - `python -m pytest tests/security -q` -> PASS.
 - `python -m pytest tests/graph_invariants -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS (`63` checks).
 - `python -m pytest tests/sources -q` -> PASS.
 - `python -m pytest tests/geo tests/contract tests/sources tests/graph_invariants tests/api tests/security tests/model tests/simulation tests/optimization tests/reports -q` -> PASS.
 - `python -m pytest -q` -> PASS.
@@ -2988,3 +2989,60 @@
 - The semiconductor content layer remains fixture/promoted public-evidence infrastructure, not production-ready.
 - Live source connectors remain disabled by default; source enrichment is curated and bounded by public fixture evidence.
 - GPT Pro review handoff is pending immediately after this deployment evidence commit is pushed and the latest docs-only commit is redeployed or explicitly marked as docs-only.
+
+## 2026-05-31 Semiconductor Relationship And Source-Coverage API Hardening
+
+### Current HEAD
+
+- Starting commit: `755d549f07fb1b0b15fbd473df72c7de8bf017b1`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added bounded semiconductor content endpoints for direct relationship inspection and value-chain source coverage:
+  - `GET /api/v1/semiconductor/relationships`
+  - `GET /api/v1/semiconductor/source-coverage`
+- Extended `GET /api/v1/semiconductor/entities` filters with `stage`, `layer_id`, `geo_id`, `source_id`, and `risk_tag`.
+- Relationship rows now standardize `source_refs`, `evidence_refs`, validity window fields, source families, stage context, and class-specific fields for supply, demand, production dependency, and evidence-context rows.
+- Evidence-context links remain non-propagating and carry `not_supply_chain_dependency=true`.
+- Source coverage rows now summarize source families, relationship-class coverage, source gaps, connector status, fixture requirement, and live-fetch-disabled policy by value-chain layer.
+- Canonical geography remains `region:china_taiwan` / `中国台湾` with parent `country:CN` / `中国`.
+
+### Files Changed
+
+- `services/api/services/semiconductor_content_service.py`
+- `services/api/routes/semiconductor_content.py`
+- `services/api/main.py`
+- `services/api/dev_server.py`
+- `packages/shared-types/src/semiconductor-content.ts`
+- `packages/api-client/src/dashboard.ts`
+- `tests/api/test_semiconductor_content_endpoints.py`
+- `tests/sources/test_semiconductor_supply_chain_content.py`
+- `docs/data/semiconductor-supply-chain-content-coverage.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_semiconductor_content_endpoints.py tests/sources/test_semiconductor_supply_chain_content.py -q` -> PASS (`17` tests).
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api/test_semiconductor_content_endpoints.py -q` -> PASS (`11` tests).
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> timed out at the local command window without a reported assertion failure.
+- `python -m pytest tests/api -q` -> PASS.
+- `python -m pytest tests/security -q` -> PASS.
+- `python -m pytest tests/graph_invariants -q` -> PASS.
+
+### Computer Use And Deployment Status
+
+- No new Computer Use action has been completed for this API-hardening slice yet.
+- Latest verified deployment before this slice remained commit `755d549f07fb1b0b15fbd473df72c7de8bf017b1`.
+- GPT Pro review from the prior deployment evidence packet did not return a complete next prompt before being stopped; local safe hardening continued without accessing unrelated tabs.
+
+### Known Limitations
+
+- The new endpoints expose curated fixture summaries and indices only; they do not fetch live data or expose raw source payloads.
+- Relationship class-specific fields are normalized from existing public-evidence relationship summaries. Quantitative share, capacity, lead-time, and demand values remain null unless supported by future source-specific fixtures.
+- Deployment, GitHub CI verification, deployed smoke, and GPT Pro review remain pending for the new commit produced by this slice.

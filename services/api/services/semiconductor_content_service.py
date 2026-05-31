@@ -132,6 +132,11 @@ def route_semiconductor_country_exposures(
 
 def route_semiconductor_entity_profiles(
     entity_id: str | None = None,
+    stage: str | None = None,
+    layer_id: str | None = None,
+    geo_id: str | None = None,
+    source_id: str | None = None,
+    risk_tag: str | None = None,
     limit: int = DEFAULT_LIMIT,
     request_id: str | None = None,
 ) -> dict[str, Any]:
@@ -143,11 +148,138 @@ def route_semiconductor_entity_profiles(
     rows = list(fixture["entity_profiles"])
     if entity_id:
         rows = [row for row in rows if str(row.get("entity_id")).lower() == entity_id.lower()]
+    if layer_id:
+        rows = [row for row in rows if layer_id in (row.get("primary_layers") or [])]
+    if stage:
+        layer_stage = {row["layer_id"]: row["stage"] for row in fixture["value_chain_layers"]}
+        rows = [
+            row
+            for row in rows
+            if any(layer_stage.get(layer) == stage for layer in row.get("primary_layers", []))
+        ]
+    if geo_id:
+        rows = [row for row in rows if str(row.get("headquarters_country")) == geo_id]
+    if source_id:
+        rows = [row for row in rows if source_id in (row.get("provenance") or [])]
+    if risk_tag:
+        rows = [row for row in rows if risk_tag in (row.get("risk_tags") or [])]
     payload = {
         **_base_payload(fixture, snapshot, content_scope="entity_profiles"),
-        "filters": {"entity_id": entity_id},
+        "filters": {
+            "entity_id": entity_id,
+            "stage": stage,
+            "layer_id": layer_id,
+            "geo_id": geo_id,
+            "source_id": source_id,
+            "risk_tag": risk_tag,
+        },
         "total": len(rows),
         "entity_profiles": rows[: _bounded_limit(limit)],
+    }
+    return _content_envelope(payload, snapshot=snapshot, request_id=request_id)
+
+
+def route_semiconductor_relationships(
+    relationship_class: str | None = None,
+    relationship_type: str | None = None,
+    edge_type: str | None = None,
+    source_id: str | None = None,
+    target_id: str | None = None,
+    layer_id: str | None = None,
+    stage: str | None = None,
+    source_family: str | None = None,
+    limit: int = DEFAULT_LIMIT,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = fixture_snapshot_for_services()
+        fixture = _content_fixture()
+    except Exception as exc:
+        return _content_error(exc, request_id=request_id)
+    layer_stage = {row["layer_id"]: row["stage"] for row in fixture["value_chain_layers"]}
+    chokepoint_layers = {row["layer_id"] for row in fixture["chokepoints"]}
+    rows = [
+        _relationship_row(edge, fixture=fixture, layer_stage=layer_stage, chokepoint_layers=chokepoint_layers)
+        for edge in fixture["relationship_edges"]
+    ]
+    if relationship_class:
+        normalized_class = relationship_class.upper()
+        rows = [row for row in rows if row["relationship_class"] == normalized_class]
+    if relationship_type:
+        rows = [row for row in rows if row["relationship_type"] == relationship_type]
+    if edge_type:
+        rows = [row for row in rows if row["edge_type"] == edge_type]
+    if source_id:
+        rows = [row for row in rows if row["source_node_id"] == source_id or row["source_id"] == source_id]
+    if target_id:
+        rows = [row for row in rows if row["target_node_id"] == target_id or row["target_id"] == target_id]
+    if layer_id:
+        rows = [
+            row
+            for row in rows
+            if layer_id in {row.get("source_node_id"), row.get("target_node_id"), row.get("source_id"), row.get("target_id")}
+        ]
+    if stage:
+        rows = [row for row in rows if stage in (row.get("stage_context") or [])]
+    if source_family:
+        rows = [row for row in rows if source_family in (row.get("source_families") or [])]
+    payload = {
+        **_base_payload(fixture, snapshot, content_scope="relationship_edges"),
+        "filters": {
+            "relationship_class": relationship_class,
+            "relationship_type": relationship_type,
+            "edge_type": edge_type,
+            "source_id": source_id,
+            "target_id": target_id,
+            "layer_id": layer_id,
+            "stage": stage,
+            "source_family": source_family,
+        },
+        "total": len(rows),
+        "relationship_class_counts": dict(Counter(row["relationship_class"] for row in rows)),
+        "relationships": rows[: _bounded_limit(limit)],
+    }
+    return _content_envelope(payload, snapshot=snapshot, request_id=request_id)
+
+
+def route_semiconductor_source_coverage(
+    stage: str | None = None,
+    source_family: str | None = None,
+    relationship_class: str | None = None,
+    limit: int = DEFAULT_LIMIT,
+    request_id: str | None = None,
+) -> dict[str, Any]:
+    try:
+        snapshot = fixture_snapshot_for_services()
+        fixture = _content_fixture()
+    except Exception as exc:
+        return _content_error(exc, request_id=request_id)
+    rows = _source_coverage_rows(fixture)
+    if stage:
+        rows = [row for row in rows if row["stage"] == stage]
+    if source_family:
+        rows = [row for row in rows if source_family in row["source_families"]]
+    if relationship_class:
+        normalized_class = relationship_class.upper()
+        rows = [row for row in rows if normalized_class in row["relationship_classes"]]
+    source_family_counts: Counter[str] = Counter()
+    relationship_counts: Counter[str] = Counter()
+    for row in rows:
+        source_family_counts.update(row["source_families"])
+        relationship_counts.update(row["relationship_classes"])
+    payload = {
+        **_base_payload(fixture, snapshot, content_scope="source_coverage_matrix"),
+        "filters": {
+            "stage": stage,
+            "source_family": source_family,
+            "relationship_class": relationship_class,
+        },
+        "total": len(rows),
+        "source_family_counts": dict(sorted(source_family_counts.items())),
+        "relationship_class_counts": dict(sorted(relationship_counts.items())),
+        "source_families": fixture["source_summaries"],
+        "coverage_gaps": fixture.get("coverage_gaps", []),
+        "stage_source_coverage": rows[: _bounded_limit(limit)],
     }
     return _content_envelope(payload, snapshot=snapshot, request_id=request_id)
 
@@ -252,6 +384,181 @@ def _source_family_counts(fixture: dict[str, Any]) -> dict[str, int]:
             for source_id in row.get("provenance", []):
                 families[_source_family_for_source(source_id)] += 1
     return dict(sorted(families.items()))
+
+
+def _relationship_row(
+    edge: dict[str, Any],
+    *,
+    fixture: dict[str, Any],
+    layer_stage: dict[str, str],
+    chokepoint_layers: set[str],
+) -> dict[str, Any]:
+    row = deepcopy(edge)
+    row["source_refs"] = list(edge.get("provenance", []))
+    row["evidence_refs"] = list(edge.get("provenance", []))
+    row["valid_from"] = fixture["generated_at"]
+    row["valid_to"] = None
+    row["calibration_status"] = "fixture_proxy_not_calibrated"
+    row["source_families"] = sorted(
+        {_source_family_for_source(source_id) for source_id in row["source_refs"]}
+    )
+    row["stage_context"] = _relationship_stage_context(edge, layer_stage)
+    row["can_propagate_risk"] = row["relationship_class"] in {
+        "SUPPLY_RELATIONSHIP",
+        "PRODUCTION_DEPENDENCY",
+    }
+    if row["relationship_class"] == "SUPPLY_RELATIONSHIP":
+        row.update(
+            {
+                "supplier_id": row["source_node_id"],
+                "buyer_or_stage_id": row["target_node_id"],
+                "supplied_item_id": row["target_node_id"],
+                "supplied_item_type": _node_kind(row["target_node_id"]),
+                "relationship_scope": "public_evidence_stage_summary",
+                "share_or_capacity_proxy": None,
+                "lead_time_days": None,
+                "qualification_time_days": None,
+                "substitution_available": None,
+            }
+        )
+    elif row["relationship_class"] == "DEMAND_RELATIONSHIP":
+        row.update(
+            {
+                "demand_source_id": row["source_node_id"],
+                "product_grade_id": row["target_node_id"],
+                "region": None,
+                "period": None,
+                "demand_proxy_type": "public_evidence_summary",
+                "demand_value": None,
+                "demand_growth_proxy": None,
+                "can_propagate_risk": False,
+            }
+        )
+    elif row["relationship_class"] == "PRODUCTION_DEPENDENCY":
+        row.update(
+            {
+                "dependency_source_id": row["source_node_id"],
+                "dependency_target_id": row["target_node_id"],
+                "dependency_type": row["edge_type"],
+                "criticality": "high_proxy"
+                if row["source_node_id"] in chokepoint_layers or row["target_node_id"] in chokepoint_layers
+                else "public_evidence_proxy",
+                "substitutability": "low_or_uncertain_proxy",
+                "bottleneck_flag": row["source_node_id"] in chokepoint_layers or row["target_node_id"] in chokepoint_layers,
+                "propagation_mode_hint": "physical_or_policy_constraint",
+            }
+        )
+    elif row["relationship_class"] == "EVIDENCE_CONTEXT":
+        row.update(
+            {
+                "derived_context": True,
+                "not_supply_chain_dependency": True,
+                "can_propagate_risk": False,
+                "user_facing_label": "evidence-context link",
+                "warning": "This is not a supply-chain dependency edge.",
+            }
+        )
+    return row
+
+
+def _source_coverage_rows(fixture: dict[str, Any]) -> list[dict[str, Any]]:
+    layer_stage = {row["layer_id"]: row["stage"] for row in fixture["value_chain_layers"]}
+    relationship_rows = [
+        _relationship_row(
+            edge,
+            fixture=fixture,
+            layer_stage=layer_stage,
+            chokepoint_layers={row["layer_id"] for row in fixture["chokepoints"]},
+        )
+        for edge in fixture["relationship_edges"]
+    ]
+    relationships_by_layer: dict[str, list[dict[str, Any]]] = {}
+    for relationship in relationship_rows:
+        for node_id in (
+            relationship.get("source_node_id"),
+            relationship.get("target_node_id"),
+            relationship.get("source_id"),
+            relationship.get("target_id"),
+        ):
+            if node_id in layer_stage:
+                relationships_by_layer.setdefault(str(node_id), []).append(relationship)
+    entities_by_layer: dict[str, list[dict[str, Any]]] = {}
+    for entity in fixture["entity_profiles"]:
+        for layer_id in entity.get("primary_layers", []):
+            entities_by_layer.setdefault(str(layer_id), []).append(entity)
+    chokepoints_by_layer: dict[str, list[dict[str, Any]]] = {}
+    for chokepoint in fixture["chokepoints"]:
+        chokepoints_by_layer.setdefault(str(chokepoint.get("layer_id")), []).append(chokepoint)
+
+    rows: list[dict[str, Any]] = []
+    for layer in fixture["value_chain_layers"]:
+        layer_id = layer["layer_id"]
+        related_relationships = relationships_by_layer.get(layer_id, [])
+        related_entities = entities_by_layer.get(layer_id, [])
+        related_chokepoints = chokepoints_by_layer.get(layer_id, [])
+        source_refs = set(layer.get("provenance", []))
+        source_refs.update(source for row in related_relationships for source in row.get("source_refs", []))
+        source_refs.update(source for row in related_entities for source in row.get("provenance", []))
+        source_refs.update(source for row in related_chokepoints for source in row.get("provenance", []))
+        relationship_classes = sorted({row["relationship_class"] for row in related_relationships})
+        rows.append(
+            {
+                "layer_id": layer_id,
+                "layer_name": layer["layer_name"],
+                "stage": layer["stage"],
+                "coverage_level": layer["coverage_level"],
+                "source_refs": sorted(source_refs),
+                "source_families": sorted({_source_family_for_source(source_id) for source_id in source_refs}),
+                "relationship_classes": relationship_classes,
+                "relationship_count": len(related_relationships),
+                "entity_count": len(related_entities),
+                "chokepoint_count": len(related_chokepoints),
+                "relationship_coverage": {
+                    "supply": "SUPPLY_RELATIONSHIP" in relationship_classes,
+                    "demand": "DEMAND_RELATIONSHIP" in relationship_classes,
+                    "production_dependency": "PRODUCTION_DEPENDENCY" in relationship_classes,
+                    "evidence_context": "EVIDENCE_CONTEXT" in relationship_classes,
+                },
+                "source_gaps": _layer_source_gaps(relationship_classes, source_refs),
+                "connector_status": "fixture_required_live_disabled",
+                "live_fetch_default": fixture["live_fetch_default"],
+                "fixture_required": fixture["fixture_required"],
+            }
+        )
+    return rows
+
+
+def _relationship_stage_context(edge: dict[str, Any], layer_stage: dict[str, str]) -> list[str]:
+    stages = {
+        layer_stage[node_id]
+        for node_id in (
+            edge.get("source_node_id"),
+            edge.get("target_node_id"),
+            edge.get("source_id"),
+            edge.get("target_id"),
+        )
+        if node_id in layer_stage
+    }
+    return sorted(stages)
+
+
+def _node_kind(node_id: str) -> str:
+    if ":" in node_id:
+        return node_id.split(":", 1)[0]
+    if node_id.startswith("vc_"):
+        return "value_chain_layer"
+    return "node"
+
+
+def _layer_source_gaps(relationship_classes: list[str], source_refs: set[str]) -> list[str]:
+    gaps: list[str] = []
+    if not relationship_classes:
+        gaps.append("no_direct_relationship_edge_in_fixture")
+    if not any(source.startswith(("sec_edgar", "company_annual_report")) for source in source_refs):
+        gaps.append("enterprise_disclosure_not_mapped")
+    if not any(source.startswith(("un_comtrade", "wits", "usgs", "nga", "bis", "federal_register", "ofac", "consolidated")) for source in source_refs):
+        gaps.append("national_policy_macro_source_not_mapped")
+    return gaps
 
 
 def _source_family_for_source(source_id: str) -> str:

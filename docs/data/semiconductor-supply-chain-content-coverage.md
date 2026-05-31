@@ -32,8 +32,14 @@ External-source wording is represented only through sanitized summaries. API-vis
 - `GET /api/v1/semiconductor/entities`
 - `GET /api/v1/semiconductor/entities/{entity_id}`
 - `GET /api/v1/semiconductor/chokepoints`
+- `GET /api/v1/semiconductor/relationships`
+- `GET /api/v1/semiconductor/source-coverage`
 
 Each response keeps graph/source/data-mode metadata and warnings for audit consumers. The web UI summarizes those details by default and keeps technical lineage in folded audit details.
+
+The relationship endpoint exposes bounded, sanitized relationship summaries by `relationship_class`, `edge_type`, `source_id`, `target_id`, `layer_id`, `stage`, and source family. It standardizes `source_refs`, `evidence_refs`, validity window fields, and class-specific fields so supply, demand, production dependency, and evidence-context links remain distinct.
+
+The source-coverage endpoint rolls up public source support by value-chain layer. It shows which source families support each layer, which relationship classes are represented, and where source gaps remain. Live fetch remains disabled; this is an index over reviewed fixture summaries, not a raw source-data feed.
 
 ## Current Limitations
 
