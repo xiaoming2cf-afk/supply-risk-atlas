@@ -2937,3 +2937,54 @@
 - The content layer is a curated public-evidence fixture; live connectors remain disabled by default.
 - Private supplier transactions, order books, capacity reservations, and customer shares are documented gaps.
 - Capacity, demand, lead-time, and substitution values are proxy summaries unless directly supported by public fixture evidence.
+
+## 2026-05-31 Semiconductor Content Coverage Deployment Verification
+
+### Current HEAD
+
+- Verified code commit: `d064e3d71b12a6e46e5ffe6a02b6d029a418635f`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- GitHub PR `#1` for the semiconductor content coverage API slice was merged into `main`.
+- GitHub `ci` and `Quality Gates` both passed on `d064e3d71b12a6e46e5ffe6a02b6d029a418635f`.
+- Render Web service `supply-risk-atlas-web` was manually redeployed with `Clear build cache & deploy` from `d064e3d71b12a6e46e5ffe6a02b6d029a418635f` and reached `live`.
+- Render API service `supply-risk-atlas-api` was manually redeployed with `Deploy latest commit` from `d064e3d71b12a6e46e5ffe6a02b6d029a418635f` and reached `live`.
+- Public version probe reported `deployed_verified`: API, Web build-info, Web HTML marker, and Web proxy all matched `d064e3d71b12a6e46e5ffe6a02b6d029a418635f`.
+- Deployed smoke passed with `63` checks.
+- Canonical geography remained visible as `region:china_taiwan` / `中国台湾`; no legacy standalone geography output was introduced.
+
+### Commands Run
+
+- `gh run watch 26703741609 --exit-status` - GitHub `ci` passed on merged `main`.
+- `gh run watch 26703741614 --exit-status` - GitHub `Quality Gates` passed on merged `main`.
+- `python scripts/check-deployed-version.py --expected-commit d064e3d71b12a6e46e5ffe6a02b6d029a418635f --timeout 40 --attempts 5` - passed, `deployed_verified`.
+- Deployed endpoint probes returned HTTP `200` for `/api/v1/version`, `/api/v1/health`, `/api/v1/semiconductor/coverage`, and `/api/v1/risk/entities/company%3Atsmc`.
+- `npm.cmd run smoke:web -- --mode=deployed` - passed with `63` checks.
+
+### Screenshot Evidence For GPT Pro Review
+
+- `artifacts/gpt-pro-review/d064e3d/system-health-headless.png` - System Health shows chip supply-chain coverage counts and public-evidence badges.
+- `artifacts/gpt-pro-review/d064e3d/graph-explorer-headless.png` - Graph Explorer shows stage selector, relationship class selector, graph mode selector, source/evidence context, and no full dense graph by default.
+- `artifacts/gpt-pro-review/d064e3d/entity-risk-headless.png` - Entity Risk 360 shows TSMC risk posture and supply-chain role context from fixture public evidence.
+- One Chrome extension screenshot attempt initially observed a temporary `public data unavailable` state before refresh; retry loaded the expected System Health coverage panel. This was recorded as a transient deployed-page observation, not hidden.
+
+### Computer Use Actions
+
+- Used only project-scoped Chrome tabs for Render, deployed public pages, and the existing GPT Pro project conversation.
+- Did not open unrelated tabs or copy credentials, cookies, tokens, private URLs, raw logs, or account secrets.
+- Triggered Render manual deployments for `supply-risk-atlas-api` and `supply-risk-atlas-web`.
+- Captured only public deployed application screenshots for GPT Pro review.
+
+### Deployment Status
+
+- Deployment status after this verification gate: `deployed_verified` for commit `d064e3d71b12a6e46e5ffe6a02b6d029a418635f`.
+- This log update is docs-only and requires a follow-up commit/push plus Render redeploy if it becomes the latest `main` commit.
+
+### Known Limitations
+
+- The semiconductor content layer remains fixture/promoted public-evidence infrastructure, not production-ready.
+- Live source connectors remain disabled by default; source enrichment is curated and bounded by public fixture evidence.
+- GPT Pro review handoff is pending immediately after this deployment evidence commit is pushed and the latest docs-only commit is redeployed or explicitly marked as docs-only.
