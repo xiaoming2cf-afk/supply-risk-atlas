@@ -3127,3 +3127,46 @@
 - `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
 - Render was not redeployed for the docs-only evidence commit because deployed API/Web runtime code already verified at `5f3f3dd96dc1100faa86a99c57f458e518bd9f6b`; the later commits only update roadmap evidence.
 - GPT Pro handoff remains `sent_response_unread_due_browser_timeout`; no additional browser loop was started after the deployed recovery check.
+
+## 2026-05-31 L0-L11 Stage Coverage Summary Gate
+
+### Current HEAD
+
+- Starting commit: `4f76d3618217e665e0a0248f4d735cfa62fb8f4d`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Extended the semiconductor content summary payload with an L0-L11 `stage_source_coverage_summary` derived from the canonical `stage_source_coverage_matrix.yaml`.
+- Each stage summary records public source counts, source families, relationship classes, linked graph views, charts, tables, source gaps, proxy limitations, fixture-required policy, and live-fetch-disabled policy.
+- Added `stage_source_family_counts` so System Health can show whether national/policy, enterprise disclosure, and industry fixture evidence cover all stages.
+- Updated System Health's Chip supply chain coverage panel with compact L0-L11 coverage counts and visible first-stage summaries, while keeping full stage coverage details folded under `Data audit details`.
+- No raw payloads, secrets, private diagnostics, live fetches, or production-readiness claims were added.
+
+### Files Changed
+
+- `services/api/services/semiconductor_content_service.py`
+- `packages/shared-types/src/semiconductor-content.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/api/test_semiconductor_content_endpoints.py`
+- `tests/sources/test_semiconductor_supply_chain_content.py`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/data/semiconductor-supply-chain-content-coverage.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_semiconductor_content_endpoints.py tests/sources/test_semiconductor_supply_chain_content.py tests/quality/test_frontend_display_declutter.py -q` -> PASS.
+- `python -m pytest tests/sources/test_stage_source_coverage_matrix.py tests/api/test_stage_graph_endpoints.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- First `npm.cmd run smoke:web` attempt failed because the local web server was not yet listening at `http://127.0.0.1:3000`.
+- After starting local API/Web dev servers, `npm.cmd run smoke:web` -> PASS (`63` checks).
+
+### Known Limitations
+
+- The L0-L11 stage coverage summary is still a curated fixture/promoted public-evidence index. It does not perform live source fetches and does not add raw source payloads.
+- Quantitative capacity, demand, substitution, and lead-time fields remain proxy summaries unless supported by source-specific fixtures.

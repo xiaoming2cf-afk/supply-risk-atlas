@@ -117,6 +117,37 @@ export interface SemiconductorStageSourceCoverage {
   fixture_required: boolean;
 }
 
+export interface SemiconductorChainStageCoverageSummary {
+  stage_id: string;
+  stage_name: string;
+  business_question: string;
+  coverage_status: "implemented" | "partial" | "missing" | "deferred" | string;
+  source_status: string;
+  source_count: number;
+  primary_source_count: number;
+  secondary_source_count: number;
+  source_refs: string[];
+  source_families: string[];
+  source_family_counts: Record<string, number>;
+  relationship_classes: string[];
+  graph_views: string[];
+  charts: string[];
+  tables: string[];
+  evidence_ref_count: number;
+  source_gaps: string[];
+  proxy_limitations: string[];
+  live_fetch_default: "disabled" | string;
+  fixture_required: boolean;
+  calibration_status: string;
+}
+
+export interface SemiconductorStageSourceFamilySummary {
+  description: string;
+  stage_count: number;
+  source_count: number;
+  source_refs: string[];
+}
+
 export interface SemiconductorContentBase {
   content_scope: string;
   content_version: string;
@@ -137,6 +168,8 @@ export interface SemiconductorCoverageOverview extends SemiconductorContentBase 
   coverage_counts: SemiconductorCoverageCounts;
   source_family_counts: Record<string, number>;
   source_summaries: Record<string, unknown>;
+  stage_source_coverage_summary: SemiconductorChainStageCoverageSummary[];
+  stage_source_family_counts: Record<string, SemiconductorStageSourceFamilySummary>;
   coverage_gaps: string[];
   representative_country_region_exposures: SemiconductorCountryExposure[];
   representative_value_chain_layers: SemiconductorValueChainLayer[];

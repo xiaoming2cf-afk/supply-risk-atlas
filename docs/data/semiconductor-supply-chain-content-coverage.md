@@ -24,6 +24,22 @@ External-source wording is represented only through sanitized summaries. API-vis
 - `enterprise_public_disclosure`: SEC EDGAR and annual-report/manual-upload summaries.
 - `industry_public_fixture`: ETO/CSET, WSTS, GDELT, OpenAlex/Crossref summaries.
 
+## L0-L11 Stage Coverage
+
+System Health now receives a compact `stage_source_coverage_summary` from the existing `stage_source_coverage_matrix.yaml` so reviewers can see the full semiconductor chain map without opening diagnostics.
+
+For each L0-L11 stage the summary includes:
+
+- stage id, stage name, and business question;
+- implemented/partial/deferred coverage status;
+- primary and secondary public source counts;
+- national/policy, enterprise-disclosure, and industry-fixture source families;
+- relationship classes represented;
+- linked graph views, charts, and tables;
+- source gaps, proxy limitations, fixture-required policy, and live-fetch-disabled policy.
+
+The stage summary is still fixture/promoted public evidence. It is an evidence coverage index, not a live source feed or production data claim.
+
 ## API Surface
 
 - `GET /api/v1/semiconductor/coverage`
@@ -40,6 +56,8 @@ Each response keeps graph/source/data-mode metadata and warnings for audit consu
 The relationship endpoint exposes bounded, sanitized relationship summaries by `relationship_class`, `edge_type`, `source_id`, `target_id`, `layer_id`, `stage`, and source family. It standardizes `source_refs`, `evidence_refs`, validity window fields, and class-specific fields so supply, demand, production dependency, and evidence-context links remain distinct.
 
 The source-coverage endpoint rolls up public source support by value-chain layer. It shows which source families support each layer, which relationship classes are represented, and where source gaps remain. Live fetch remains disabled; this is an index over reviewed fixture summaries, not a raw source-data feed.
+
+The coverage overview endpoint also includes the L0-L11 `stage_source_coverage_summary` and `stage_source_family_counts` so System Health can show national, enterprise, and industry evidence coverage by supply-chain stage while keeping raw audit fields folded.
 
 ## Current Limitations
 

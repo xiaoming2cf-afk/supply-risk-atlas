@@ -268,16 +268,24 @@ def test_semiconductor_content_coverage_is_summarized_on_primary_pages() -> None
     assert '<Field label="Relationship summaries"' in source
     assert '<Field label="Chokepoints"' in source
     assert '<Field label="Source families"' in source
+    assert '<Field label="L0-L11 stage coverage"' in source
+    assert '<Field label="Implemented stages"' in source
+    assert "stage map: L0-L11" in source
+    assert "chainStageCoverageRows.slice(0, 6)" in source
+    assert "Stage coverage links national/policy, enterprise disclosure, and industry fixture sources" in source
     assert "National and regional coverage" in source
     assert "Industry layer coverage" in source
     assert "Enterprise coverage" in source
     assert 'label="Data audit details"' in source
+    assert "stage_source_family_counts" in source
+    assert "stage_source_coverage" in source
     assert "contentCoverage.source_manifest_id" in source
     assert "contentCoverage.graph_version" not in source
     assert "contentCoverage.source_manifest_id" in source
     assert "contentCoverage.data_mode" in source
     assert "contentCoverage.graph_mode" in source
     assert "SemiconductorCoverageOverview" in shared_types
+    assert "SemiconductorChainStageCoverageSummary" in shared_types
     assert "SemiconductorEntityProfile" in shared_types
     assert "getSemiconductorCoverageOverview" in api_client
     assert "getSemiconductorCountryExposures" in api_client

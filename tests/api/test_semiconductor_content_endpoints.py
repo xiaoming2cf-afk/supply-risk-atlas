@@ -93,6 +93,24 @@ def test_semiconductor_coverage_overview_endpoint_returns_counts_and_sources() -
     assert data["representative_value_chain_layers"]
     assert data["representative_entities"]
     assert data["representative_chokepoints"]
+    assert len(data["stage_source_coverage_summary"]) == 12
+    assert {"national_policy_macro_public", "enterprise_public_disclosure", "industry_public_fixture"} <= set(
+        data["stage_source_family_counts"]
+    )
+    for row in data["stage_source_coverage_summary"]:
+        assert row["stage_id"].startswith("L")
+        assert row["source_count"] >= 2
+        assert row["primary_source_count"] >= 1
+        assert row["secondary_source_count"] >= 1
+        assert {"national_policy_macro_public", "enterprise_public_disclosure", "industry_public_fixture"} <= set(
+            row["source_families"]
+        )
+        assert row["relationship_classes"]
+        assert row["graph_views"]
+        assert row["charts"]
+        assert row["tables"]
+        assert row["live_fetch_default"] == "disabled"
+        assert row["fixture_required"] is True
 
 
 def test_value_chain_layer_endpoint_filters_by_stage() -> None:
@@ -222,6 +240,12 @@ def test_system_health_and_entity_risk_include_semiconductor_content_summaries()
     assert content["counts"]["country_region_count"] >= 10
     assert content["counts"]["entity_profile_count"] >= 35
     assert content["counts"]["source_family_count"] >= 3
+    assert len(content["stage_source_coverage_summary"]) == 12
+    assert content["stage_source_coverage_summary"][0]["stage_id"] == "L0_policy_macro"
+    assert content["stage_source_coverage_summary"][-1]["stage_id"] == "L11_compliance"
+    assert content["stage_source_family_counts"]["national_policy_macro_public"]["stage_count"] == 12
+    assert content["stage_source_family_counts"]["enterprise_public_disclosure"]["stage_count"] == 12
+    assert content["stage_source_family_counts"]["industry_public_fixture"]["stage_count"] == 12
     assert risk["status"] == "success"
     profile = risk["data"]["semiconductor_profile"]
     assert profile["entity_id"] == "company:TSMC"

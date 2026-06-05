@@ -16,6 +16,7 @@ from sra_core.geo.normalize import sanitize_chart_table_payload
 
 ROOT = Path(__file__).resolve().parents[3]
 CONTENT_PATH = ROOT / "configs" / "sources" / "semiconductor_supply_chain_content.yaml"
+MATRIX_PATH = ROOT / "configs" / "sources" / "stage_source_coverage_matrix.yaml"
 CONTENT_FEATURE_VERSION = "semiconductor_content_coverage_v0.1"
 DEFAULT_LIMIT = 100
 MAX_LIMIT = 500
@@ -26,8 +27,14 @@ def _content_fixture() -> dict[str, Any]:
     return yaml.safe_load(CONTENT_PATH.read_text(encoding="utf-8"))
 
 
+@lru_cache(maxsize=1)
+def _stage_matrix_fixture() -> dict[str, Any]:
+    return yaml.safe_load(MATRIX_PATH.read_text(encoding="utf-8"))
+
+
 def semiconductor_content_summary_payload() -> dict[str, Any]:
     fixture = _content_fixture()
+    matrix = _stage_matrix_fixture()
     counts = _coverage_counts(fixture)
     return sanitize_chart_table_payload(
         {
@@ -45,6 +52,8 @@ def semiconductor_content_summary_payload() -> dict[str, Any]:
             "coverage_counts": counts,
             "source_family_counts": _source_family_counts(fixture),
             "source_summaries": fixture["source_summaries"],
+            "stage_source_coverage_summary": _stage_source_coverage_summary(matrix),
+            "stage_source_family_counts": _stage_source_family_counts(matrix),
             "coverage_gaps": fixture.get("coverage_gaps", []),
             "representative_country_region_exposures": fixture["country_region_exposures"][:10],
             "representative_value_chain_layers": fixture["value_chain_layers"][:12],
@@ -59,6 +68,7 @@ def route_semiconductor_coverage_overview(request_id: str | None = None) -> dict
     try:
         snapshot = fixture_snapshot_for_services()
         fixture = _content_fixture()
+        matrix = _stage_matrix_fixture()
     except Exception as exc:
         return _content_error(exc, request_id=request_id)
     payload = {
@@ -66,6 +76,8 @@ def route_semiconductor_coverage_overview(request_id: str | None = None) -> dict
         "coverage_counts": _coverage_counts(fixture),
         "source_family_counts": _source_family_counts(fixture),
         "source_summaries": fixture["source_summaries"],
+        "stage_source_coverage_summary": _stage_source_coverage_summary(matrix),
+        "stage_source_family_counts": _stage_source_family_counts(matrix),
         "coverage_gaps": fixture.get("coverage_gaps", []),
         "representative_country_region_exposures": fixture["country_region_exposures"][:10],
         "representative_value_chain_layers": fixture["value_chain_layers"][:12],
@@ -384,6 +396,67 @@ def _source_family_counts(fixture: dict[str, Any]) -> dict[str, int]:
             for source_id in row.get("provenance", []):
                 families[_source_family_for_source(source_id)] += 1
     return dict(sorted(families.items()))
+
+
+def _stage_source_coverage_summary(matrix: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for stage in matrix.get("stages", []):
+        primary_sources = list(stage.get("primary_sources", []))
+        secondary_sources = list(stage.get("secondary_sources", []))
+        source_refs = sorted(set(primary_sources + secondary_sources))
+        source_family_counts: Counter[str] = Counter(
+            _source_family_for_source(source_id) for source_id in source_refs
+        )
+        rows.append(
+            {
+                "stage_id": stage["stage_id"],
+                "stage_name": stage["stage_name"],
+                "business_question": stage["business_question"],
+                "coverage_status": stage["current_coverage_status"],
+                "source_status": stage["source_status"],
+                "source_count": len(source_refs),
+                "primary_source_count": len(primary_sources),
+                "secondary_source_count": len(secondary_sources),
+                "source_refs": source_refs,
+                "source_families": sorted(source_family_counts),
+                "source_family_counts": dict(sorted(source_family_counts.items())),
+                "relationship_classes": list(stage.get("relationship_classes", [])),
+                "graph_views": list(stage.get("graph_views", [])),
+                "charts": list(stage.get("charts", [])),
+                "tables": list(stage.get("tables", [])),
+                "evidence_ref_count": int(stage.get("evidence_ref_count") or 0),
+                "source_gaps": list(stage.get("source_gaps", [])),
+                "proxy_limitations": list(stage.get("proxy_limitations", [])),
+                "live_fetch_default": stage.get("live_fetch_default", "disabled"),
+                "fixture_required": bool(stage.get("fixture_required", True)),
+                "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
+            }
+        )
+    return rows
+
+
+def _stage_source_family_counts(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    definitions = matrix.get("source_family_definitions", {})
+    for family, description in definitions.items():
+        stages = [
+            stage
+            for stage in matrix.get("stages", [])
+            if family in set(stage.get("source_families", []))
+        ]
+        source_refs = {
+            source_id
+            for stage in stages
+            for source_id in list(stage.get("primary_sources", [])) + list(stage.get("secondary_sources", []))
+            if _source_family_for_source(source_id) == family
+        }
+        result[family] = {
+            "description": description,
+            "stage_count": len(stages),
+            "source_count": len(source_refs),
+            "source_refs": sorted(source_refs),
+        }
+    return result
 
 
 def _relationship_row(

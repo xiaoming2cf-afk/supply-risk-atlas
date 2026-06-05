@@ -5029,6 +5029,10 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const webGitCommit = WEB_BUILD_COMMIT !== "not_verified" ? WEB_BUILD_COMMIT : deploymentReadiness.webGitCommit ?? "not_verified";
   const contentCoverage = health.semiconductorContentCoverage;
   const contentCounts = contentCoverage?.coverage_counts;
+  const chainStageCoverageRows = contentCoverage?.stage_source_coverage_summary ?? [];
+  const implementedChainStageCount = chainStageCoverageRows.filter((row) => row.coverage_status === "implemented").length;
+  const partialChainStageCount = chainStageCoverageRows.filter((row) => row.coverage_status !== "implemented").length;
+  const chainStageSourceFamilyRows = Object.entries(contentCoverage?.stage_source_family_counts ?? {});
 
   return (
     <div className="page-grid">
@@ -5086,6 +5090,9 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             <Field label="Relationship summaries" value={contentCounts.relationship_edge_count} />
             <Field label="Chokepoints" value={contentCounts.chokepoint_count} />
             <Field label="Source families" value={contentCounts.source_family_count} />
+            <Field label="L0-L11 stage coverage" value={chainStageCoverageRows.length} />
+            <Field label="Implemented stages" value={implementedChainStageCount} />
+            <Field label="Partial / gap stages" value={partialChainStageCount} />
           </div>
           <MetadataSummary
             items={[
@@ -5132,6 +5139,30 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               </p>
             </div>
           </div>
+          {chainStageCoverageRows.length ? (
+            <div className="source-support-summary" style={{ marginTop: 16 }}>
+              <div className="graph-view-summary">
+                <span>stage map: L0-L11</span>
+                <span>implemented: {implementedChainStageCount}</span>
+                <span>partial/gap: {partialChainStageCount}</span>
+                <span>live fetch: disabled</span>
+              </div>
+              <ul className="compact-list">
+                {chainStageCoverageRows.slice(0, 6).map((stage) => (
+                  <li key={stage.stage_id}>
+                    <strong>{formatDisplayLabel(stage.stage_id)}</strong>
+                    <span>
+                      {formatDisplayValue(stage.coverage_status)} | {stage.source_count} public sources |{" "}
+                      {stage.relationship_classes.map(formatDisplayValue).join(" / ")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="public-data-note">
+                Stage coverage links national/policy, enterprise disclosure, and industry fixture sources to each supply-chain layer.
+              </p>
+            </div>
+          ) : null}
           <AuditDetails
             label="Data audit details"
             items={[
@@ -5140,6 +5171,20 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               { label: "data_mode", value: contentCoverage.data_mode },
               { label: "graph_mode", value: contentCoverage.graph_mode },
               { label: "calibration_status", value: contentCoverage.calibration_status },
+              {
+                label: "stage_source_family_counts",
+                value: chainStageSourceFamilyRows.map(
+                  ([family, summary]) =>
+                    `${formatDisplayValue(family)}: ${summary.stage_count} stages / ${summary.source_count} sources`,
+                ),
+              },
+              {
+                label: "stage_source_coverage",
+                value: chainStageCoverageRows.map(
+                  (stage) =>
+                    `${formatDisplayLabel(stage.stage_id)}: ${formatDisplayValue(stage.coverage_status)}; sources=${stage.source_count}; gaps=${stage.source_gaps.length}`,
+                ),
+              },
               { label: "coverage_gaps", value: contentCoverage.coverage_gaps },
             ]}
           />

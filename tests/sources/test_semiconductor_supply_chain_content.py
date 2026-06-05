@@ -210,3 +210,29 @@ def test_stage_layer_source_coverage_is_queryable_from_fixture() -> None:
         assert stage_layers, stage
         stage_sources = {source for layer in stage_layers for source in layer["provenance"]}
         assert len(stage_sources) >= 2, stage
+
+
+def test_content_summary_service_exposes_l0_l11_stage_source_matrix() -> None:
+    from services.api.services.semiconductor_content_service import semiconductor_content_summary_payload
+
+    summary = semiconductor_content_summary_payload()
+    rows = summary["stage_source_coverage_summary"]
+
+    assert len(rows) == 12
+    assert rows[0]["stage_id"] == "L0_policy_macro"
+    assert rows[-1]["stage_id"] == "L11_compliance"
+    for row in rows:
+        assert row["source_count"] >= 2
+        assert row["primary_source_count"] >= 1
+        assert row["secondary_source_count"] >= 1
+        assert {"national_policy_macro_public", "enterprise_public_disclosure", "industry_public_fixture"} <= set(
+            row["source_families"]
+        )
+        assert row["relationship_classes"]
+        assert row["source_refs"]
+        assert row["live_fetch_default"] == "disabled"
+        assert row["fixture_required"] is True
+        assert row["calibration_status"] == "fixture_proxy_not_calibrated"
+    for family in REQUIRED_SOURCE_FAMILIES:
+        assert summary["stage_source_family_counts"][family]["stage_count"] == 12
+        assert summary["stage_source_family_counts"][family]["source_count"] >= 1
