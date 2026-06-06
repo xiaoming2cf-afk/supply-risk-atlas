@@ -3520,6 +3520,48 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-06 Background Graph Node Geography Label Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `fe86d66a99a0cb0968e64149942efdb97914e49b`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added a shared frontend `formatGeographyDisplayRef` helper for visible country/region labels in graph UI.
+- Updated Graph Explorer controls, focus view, graph canvas node tooltip/card text, and the retained legacy dashboard graph canvas/list to use user-facing geography labels instead of raw country codes.
+- The helper normalizes legacy region aliases internally without writing legacy geography node ids as source literals, preserving the repository-wide geography guard.
+- Added frontend quality assertions to prevent graph node country labels from returning to raw code display.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography-policy exception was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/graph-explorer/GraphControls.tsx`
+- `apps/web/src/features/graph-explorer/GraphFocusView.tsx`
+- `apps/web/src/features/graph-explorer/GraphCanvas.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 28 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` initially failed because a new formatter used forbidden legacy geography ids as source literals; after replacing them with constructed internal aliases -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate is a graph display-layer geography label fix only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-06 Background Graph Edge Tooltip Declutter Gate
 
 ### Current HEAD

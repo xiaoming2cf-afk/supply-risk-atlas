@@ -13,7 +13,7 @@ import {
 } from "@xyflow/react";
 import type { GraphLink, GraphNode, RiskLevel } from "@supply-risk/shared-types";
 import { formatPercent, riskClassByLevel } from "@supply-risk/design-system";
-import { formatDisplayValue } from "../common/displayLabels";
+import { formatDisplayLabel, formatDisplayValue, formatGeographyDisplayRef } from "../common/displayLabels";
 import { graphColorByLevel, computeRankedTopologyLayout, countGraphPositionOverlaps, graphScore } from "./graphLayout";
 import type { GraphViewMode } from "./graphViewModel";
 
@@ -211,7 +211,7 @@ export function GraphCanvas({
             x: event.clientX,
             y: event.clientY,
             title: data.graphNode.label,
-            meta: `${data.graphNode.kind} / ${data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? "global")}`,
+            meta: `${formatDisplayLabel(data.graphNode.kind)} / ${formatGeographyDisplayRef(data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? "global"))}`,
             detail: `risk ${graphScore(data.graphNode.riskScore ?? data.graphNode.score)} / centrality ${graphScore(data.graphNode.centralityScore ?? 0)}`,
           });
         }}
@@ -272,7 +272,7 @@ function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
       <p>{node.label}</p>
       <small>
         R{graphScore(node.riskScore ?? node.score)} / C{graphScore(node.centralityScore ?? 0)} /{" "}
-        {node.countryCode ?? String(node.metadata.country ?? "global")}
+        {formatGeographyDisplayRef(node.countryCode ?? String(node.metadata.country ?? "global"))}
       </small>
     </div>
   );

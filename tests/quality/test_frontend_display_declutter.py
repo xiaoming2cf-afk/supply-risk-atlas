@@ -597,3 +597,24 @@ def test_graph_canvas_tooltips_do_not_fallback_to_raw_edge_ids() -> None:
         assert "title: edge.label ? String(edge.label) : link?.label ?? edge.id" not in source
         assert 'return "Graph edge";' in source
         assert "link?.edgeRole || link?.edgeType" in source
+
+
+def test_graph_node_country_labels_use_canonical_geography_formatter() -> None:
+    display_labels = read("apps/web/src/features/common/displayLabels.ts")
+    controls = read("apps/web/src/features/graph-explorer/GraphControls.tsx")
+    focus = read("apps/web/src/features/graph-explorer/GraphFocusView.tsx")
+    canvas = read("apps/web/src/features/graph-explorer/GraphCanvas.tsx")
+    legacy_dashboard = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert "export function formatGeographyDisplayRef" in display_labels
+    assert 'return "\\u4e2d\\u56fd\\u53f0\\u6e7e";' in display_labels.encode("unicode_escape").decode("ascii")
+    assert 'return "Global";' in display_labels
+    for source in (controls, focus, canvas, legacy_dashboard):
+        assert "formatGeographyDisplayRef" in source
+    for source in (controls, focus):
+        assert 'node.countryCode ?? "global"' in source
+        assert "{node.countryCode ?? \"global\"}" not in source
+    assert "${data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? \"global\")}" not in canvas
+    assert "{node.countryCode ?? String(node.metadata.country ?? \"global\")}" not in canvas
+    assert "${data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? \"global\")}" not in legacy_dashboard
+    assert "{node.countryCode ?? String(node.metadata.country ?? \"global\")}" not in legacy_dashboard

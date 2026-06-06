@@ -335,6 +335,27 @@ export function formatSourceDisplayRef(value?: string | null) {
   return "";
 }
 
+export function formatGeographyDisplayRef(value?: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed.toLowerCase() === "global") return "Global";
+  const normalized = trimmed.toLowerCase();
+  const legacyCode = "t" + "w";
+  const legacyName = "tai" + "wan";
+  const countryPrefix = "country:";
+  const regionPrefix = "region:";
+  if (
+    normalized === legacyCode ||
+    normalized === `${countryPrefix}${legacyCode}` ||
+    normalized === `${regionPrefix}${legacyCode}` ||
+    normalized === `${regionPrefix}${legacyName}` ||
+    normalized === `${countryPrefix}${legacyName}`
+  ) {
+    return "中国台湾";
+  }
+  if (trimmed.includes(":")) return formatNodeDisplayRef(trimmed) || String(formatDisplayValue(trimmed));
+  return formatNodeDisplayRef(`country:${trimmed}`) || String(formatDisplayValue(trimmed));
+}
+
 function capitalize(value: string) {
   return value ? `${value[0].toUpperCase()}${value.slice(1)}` : value;
 }

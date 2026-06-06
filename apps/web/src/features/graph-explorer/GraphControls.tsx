@@ -19,6 +19,7 @@ import {
 import type { CountryRiskSummary, GraphNode, GraphNodeKind, GraphTransmissionPath } from "@supply-risk/shared-types";
 import { Field } from "../../app/components";
 import { useI18n } from "../../app/i18n";
+import { formatDisplayLabel, formatGeographyDisplayRef } from "../common/displayLabels";
 import { graphScore } from "./graphLayout";
 import { graphModeLabel, type GraphFocusDirection, type GraphViewMode } from "./graphViewModel";
 import { stageViewOptions, type RelationshipClassFilter, type StageId } from "./stage-views";
@@ -305,7 +306,7 @@ export function GraphControls({
               >
                 <span>
                   <strong>{node.criticalityRank ? `#${node.criticalityRank} ` : ""}{node.label}</strong>
-                  <small>{node.kind} / {node.countryCode ?? "global"}</small>
+                  <small>{formatDisplayLabel(node.kind)} / {formatGeographyDisplayRef(node.countryCode ?? "global")}</small>
                 </span>
                 <b>{graphScore(node.criticalityScore ?? node.score)}</b>
               </button>

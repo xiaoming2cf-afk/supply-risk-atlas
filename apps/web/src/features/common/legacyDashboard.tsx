@@ -74,6 +74,7 @@ import { AuditDetails, MetadataSummary } from "./AuditDetails";
 import {
   formatDisplayLabel,
   formatDisplayValue,
+  formatGeographyDisplayRef,
   formatNodeDisplayRef as formatCommonNodeDisplayRef,
   formatSourceDisplayRef as formatCommonSourceDisplayRef,
 } from "./displayLabels";
@@ -824,7 +825,7 @@ function GraphCriticalNodeList({
             >
               <span>
                 <strong>{node.criticalityRank ? `#${node.criticalityRank} ` : ""}{node.label}</strong>
-                <small>{node.kind} / {node.countryCode ?? "global"}</small>
+                <small>{formatDisplayLabel(node.kind)} / {formatGeographyDisplayRef(node.countryCode ?? "global")}</small>
               </span>
               <b>{graphScore(node.criticalityScore ?? node.score)}</b>
             </button>
@@ -948,7 +949,7 @@ function NodeInspector({ node }: { node: GraphNode }) {
         <Field label="Criticality" value={`${graphScore(node.criticalityScore ?? node.score)}/100`} />
         <Field label="Rank" value={node.criticalityRank ? `#${node.criticalityRank}` : "n/a"} />
         <Field label="In / out degree" value={`${node.inDegree ?? 0} / ${node.outDegree ?? 0}`} />
-        <Field label="Country" value={node.countryCode ?? String(node.metadata.country ?? "global")} />
+        <Field label="Country" value={formatGeographyDisplayRef(node.countryCode ?? String(node.metadata.country ?? "global"))} />
       </div>
       {node.riskDrivers?.length ? (
         <ul className="evidence-list compact">
@@ -1388,7 +1389,7 @@ function GraphNetwork({
             x: event.clientX,
             y: event.clientY,
             title: data.graphNode.label,
-            meta: `${data.graphNode.kind} / ${data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? "global")}`,
+            meta: `${formatDisplayLabel(data.graphNode.kind)} / ${formatGeographyDisplayRef(data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? "global"))}`,
             detail: `Risk ${graphScore(data.graphNode.riskScore ?? data.graphNode.score)} / centrality ${graphScore(data.graphNode.centralityScore ?? 0)}`,
           });
         }}
@@ -1482,7 +1483,7 @@ function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
       </div>
       <p>{node.label}</p>
       <small>
-        R{graphScore(node.riskScore ?? node.score)} / C{graphScore(node.centralityScore ?? 0)} / {node.countryCode ?? String(node.metadata.country ?? "global")}
+        R{graphScore(node.riskScore ?? node.score)} / C{graphScore(node.centralityScore ?? 0)} / {formatGeographyDisplayRef(node.countryCode ?? String(node.metadata.country ?? "global"))}
       </small>
     </div>
   );

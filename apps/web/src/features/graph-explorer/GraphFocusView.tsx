@@ -1,4 +1,5 @@
 import type { GraphViewModel } from "./graphViewModel";
+import { formatDisplayLabel, formatGeographyDisplayRef } from "../common/displayLabels";
 
 export function GraphFocusView({ view }: { view: GraphViewModel }) {
   return (
@@ -9,7 +10,7 @@ export function GraphFocusView({ view }: { view: GraphViewModel }) {
       </p>
       <ul className="evidence-list compact">
         {view.visibleNodes.slice(0, 5).map((node) => (
-          <li key={node.id}>{node.label} / {node.kind} / {node.countryCode ?? "global"}</li>
+          <li key={node.id}>{node.label} / {formatDisplayLabel(node.kind)} / {formatGeographyDisplayRef(node.countryCode ?? "global")}</li>
         ))}
       </ul>
     </div>
