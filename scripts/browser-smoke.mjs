@@ -800,12 +800,12 @@ async function main() {
       "Research fixture mode",
       "LIKELIHOOD",
       "IMPACT",
-      "VULNERABILITY MODIFIER",
+      "VULNERABILITY ADJUSTMENT",
       "SOURCE CONCENTRATION HHI",
       "Supply-chain role",
       "VALUE-CHAIN ROLES",
       "Substitution gap",
-      "Evidence refs",
+      "EVIDENCE RECORDS",
       "Research fixture mode",
     ];
     const riskState = await waitFor(

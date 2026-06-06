@@ -3616,3 +3616,47 @@
 - Probe evidence: API and Web build-info timed out during the bounded one-attempt check, public Web HTML returned HTTP 503, and Web proxy `/api/v1/version` still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Entity Risk Label Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `8564bb66a8c2291a37838a58f6e52730dde12013`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced Entity Risk 360 primary metric labels that looked like raw field names with user-facing labels:
+  - `score` -> `Risk score`
+  - `level` -> `Risk level`
+  - `likelihood` -> `Likelihood`
+  - `impact` -> `Impact`
+  - `vulnerability_modifier` -> `Vulnerability adjustment`
+  - concentration and weighting fields now use title-cased business labels.
+- The unavailable Entity Risk panel now formats the selected entity through the public node display helper instead of rendering the raw node id.
+- Browser smoke now verifies the user-facing `EVIDENCE RECORDS` label instead of the older field-oriented evidence text.
+- Added quality assertions scoped to Entity Risk 360 to prevent these raw metric labels returning to the primary UI.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 20 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd run smoke:web` initially failed because the smoke expectation still used the old evidence label; after updating the smoke expectation -> PASS, 63 checks.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate changes Entity Risk 360 display copy only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

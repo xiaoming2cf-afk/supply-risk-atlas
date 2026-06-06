@@ -2067,15 +2067,15 @@ export function CompanyRisk360({
                 <ScoreDial score={risk.score} level={risk.level} label="Risk Score v0" />
                 <div className="inspector-grid">
                   <Field label="Selected entity" value={risk.entity.canonical_name} />
-                  <Field label="score" value={risk.score.toFixed(2)} />
-                  <Field label="level" value={risk.level} />
+                  <Field label="Risk score" value={risk.score.toFixed(2)} />
+                  <Field label="Risk level" value={risk.level} />
                   <Field label="Scoring method" value={formatDisplayValue(risk.scoring_method)} />
-                  <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
-                  <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
-                  <Field label="Vulnerability" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
+                  <Field label="Likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
+                  <Field label="Impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
+                  <Field label="Vulnerability adjustment" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
                   <Field label="Node type" value={risk.entity.node_type} />
-                  <Field label="confidence" value={formatPercent(risk.entity.confidence)} />
-                  <Field label="Evidence refs" value={formatCompactNumber(risk.evidence_refs.length)} />
+                  <Field label="Confidence" value={formatPercent(risk.entity.confidence)} />
+                  <Field label="Evidence records" value={formatCompactNumber(risk.evidence_refs.length)} />
                 </div>
               </div>
               <MetadataSummary items={[{ label: risk.fixture_graph ? "Research fixture mode" : "Public evidence mode", tone: risk.fixture_graph ? "warning" : "default" }]} />
@@ -2126,15 +2126,15 @@ export function CompanyRisk360({
 
             <Panel title="Scoring method and HHI" subtitle="Likelihood, impact, vulnerability, and concentration are shown separately so the proxy score is auditable.">
               <div className="field-grid">
-                <Field label="scoring_method" value={formatDisplayValue(risk.scoring_method)} />
-                <Field label="likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
-                <Field label="impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
-                <Field label="vulnerability_modifier" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
-                <Field label="source_concentration_hhi" value={formatUnknownNumber(sourceConcentration?.["hhi"])} />
-                <Field label="source_concentration_level" value={formatUnknownValue(sourceConcentration?.["concentration_level"])} />
-                <Field label="country_concentration_hhi" value={formatUnknownNumber(countryConcentration?.["hhi"])} />
-                <Field label="country_concentration_level" value={formatUnknownValue(countryConcentration?.["concentration_level"])} />
-                <Field label="weighting_method" value={formatDisplayValue(risk.weighting_method ?? "unavailable")} />
+                <Field label="Scoring method" value={formatDisplayValue(risk.scoring_method)} />
+                <Field label="Likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
+                <Field label="Impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
+                <Field label="Vulnerability adjustment" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
+                <Field label="Source concentration HHI" value={formatUnknownNumber(sourceConcentration?.["hhi"])} />
+                <Field label="Source concentration level" value={formatUnknownValue(sourceConcentration?.["concentration_level"])} />
+                <Field label="Country concentration HHI" value={formatUnknownNumber(countryConcentration?.["hhi"])} />
+                <Field label="Country concentration level" value={formatUnknownValue(countryConcentration?.["concentration_level"])} />
+                <Field label="Weighting method" value={formatDisplayValue(risk.weighting_method ?? "unavailable")} />
               </div>
               <p className="public-data-note">
                 HHI uses fixture/proxy shares on a 0 to 1 scale and is not calibrated for production decisions.
@@ -2278,7 +2278,7 @@ export function CompanyRisk360({
               <p>{degradedMessage}</p>
             </div>
             <div className="inspector-grid" style={{ marginTop: 16 }}>
-              <Field label="Selected entity" value={selectedNodeId} />
+              <Field label="Selected entity" value={formatNodeDisplayRef(selectedNodeId)} />
               <Field label="Source status" value={riskResult?.sourceStatus ?? "pending"} />
             </div>
             <AuditDetails

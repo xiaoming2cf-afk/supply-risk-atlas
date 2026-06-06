@@ -337,6 +337,40 @@ def test_entity_risk_profile_enrichment_is_evidence_bound_and_folded() -> None:
     assert '<Field label="entity_id"' not in source
 
 
+def test_entity_risk_primary_fields_use_user_facing_metric_labels() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    entity_risk_source = source.split("export function CompanyRisk360", 1)[1].split("export function PredictionCenter", 1)[0]
+
+    forbidden_primary_labels = [
+        '<Field label="score"',
+        '<Field label="level"',
+        '<Field label="likelihood"',
+        '<Field label="impact"',
+        '<Field label="confidence"',
+        '<Field label="vulnerability_modifier"',
+        '<Field label="source_concentration_hhi"',
+        '<Field label="source_concentration_level"',
+        '<Field label="country_concentration_hhi"',
+        '<Field label="country_concentration_level"',
+        '<Field label="weighting_method"',
+        '<Field label="Selected entity" value={selectedNodeId}',
+    ]
+
+    for needle in forbidden_primary_labels:
+        assert needle not in entity_risk_source
+    assert '<Field label="Risk score"' in entity_risk_source
+    assert '<Field label="Risk level"' in entity_risk_source
+    assert '<Field label="Likelihood"' in entity_risk_source
+    assert '<Field label="Impact"' in entity_risk_source
+    assert '<Field label="Vulnerability adjustment"' in entity_risk_source
+    assert '<Field label="Confidence"' in entity_risk_source
+    assert '<Field label="Evidence records"' in entity_risk_source
+    assert '<Field label="Source concentration HHI"' in entity_risk_source
+    assert '<Field label="Country concentration HHI"' in entity_risk_source
+    assert '<Field label="Weighting method"' in entity_risk_source
+    assert '<Field label="Selected entity" value={formatNodeDisplayRef(selectedNodeId)}' in entity_risk_source
+
+
 def test_page_relevance_policy_declares_display_tiers() -> None:
     source = read("apps/web/src/features/common/pageRelevance.ts")
 
