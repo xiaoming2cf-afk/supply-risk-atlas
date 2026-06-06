@@ -586,3 +586,14 @@ def test_data_table_hides_raw_evidence_record_ids_without_source_context() -> No
     assert 'if (evidenceId) return "Evidence record";' in source
     assert "if (id) return formatPrimaryValue(String(id));" not in source
     assert "record.source_record_id ??\n      record.evidence_id ??" not in source
+
+
+def test_graph_canvas_tooltips_do_not_fallback_to_raw_edge_ids() -> None:
+    graph_canvas = read("apps/web/src/features/graph-explorer/GraphCanvas.tsx")
+    legacy_dashboard = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    for source in (graph_canvas, legacy_dashboard):
+        assert "title: formatEdgeTooltipTitle(edge.label, link)" in source
+        assert "title: edge.label ? String(edge.label) : link?.label ?? edge.id" not in source
+        assert 'return "Graph edge";' in source
+        assert "link?.edgeRole || link?.edgeType" in source

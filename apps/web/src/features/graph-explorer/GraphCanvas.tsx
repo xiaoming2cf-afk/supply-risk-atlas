@@ -13,6 +13,7 @@ import {
 } from "@xyflow/react";
 import type { GraphLink, GraphNode, RiskLevel } from "@supply-risk/shared-types";
 import { formatPercent, riskClassByLevel } from "@supply-risk/design-system";
+import { formatDisplayValue } from "../common/displayLabels";
 import { graphColorByLevel, computeRankedTopologyLayout, countGraphPositionOverlaps, graphScore } from "./graphLayout";
 import type { GraphViewMode } from "./graphViewModel";
 
@@ -192,7 +193,7 @@ export function GraphCanvas({
           setTooltip({
             x: event.clientX,
             y: event.clientY,
-            title: edge.label ? String(edge.label) : link?.label ?? edge.id,
+            title: formatEdgeTooltipTitle(edge.label, link),
             meta: evidenceContext
               ? "evidence-context link / not supply-chain dependency"
               : `${link?.edgeRole ?? link?.edgeType ?? "edge"} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
@@ -242,6 +243,12 @@ export function GraphCanvas({
       ) : null}
     </>
   );
+}
+
+function formatEdgeTooltipTitle(edgeLabel: unknown, link?: GraphLink) {
+  const label = edgeLabel || link?.label || link?.edgeRole || link?.edgeType;
+  if (!label) return "Graph edge";
+  return String(formatDisplayValue(String(label)));
 }
 
 function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {

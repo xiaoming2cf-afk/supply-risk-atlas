@@ -3520,6 +3520,44 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-06 Background Graph Edge Tooltip Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `54c690438af825fe948454f376997fa30fee152c`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Updated the Graph Explorer canvas edge hover tooltip so missing labels fall back to formatted edge role/type text or `Graph edge`, not raw `edge.id`.
+- Updated the retained legacy dashboard graph canvas with the same tooltip fallback rule.
+- Added a frontend quality assertion to prevent edge hover titles from exposing raw edge ids.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography-policy exception was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphCanvas.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 27 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate is a graph tooltip display-layer declutter fix only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-06 Background Data Table Evidence ID Declutter Gate
 
 ### Current HEAD

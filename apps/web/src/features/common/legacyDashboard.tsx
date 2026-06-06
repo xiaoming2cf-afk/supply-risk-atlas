@@ -1357,7 +1357,7 @@ function GraphNetwork({
           setTooltip({
             x: event.clientX,
             y: event.clientY,
-            title: edge.label ? String(edge.label) : link?.label ?? edge.id,
+            title: formatEdgeTooltipTitle(edge.label, link),
             meta: `${link?.edgeRole ?? link?.edgeType ?? "edge"} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
             detail: `${link?.sourceCountry ?? "global"} -> ${link?.targetCountry ?? "global"}`,
           });
@@ -1454,6 +1454,12 @@ function useTopologyPositions(
   }, [activePathNodeIndex, fallbackPositions, links, nodes]);
 
   return positions.size ? positions : fallbackPositions;
+}
+
+function formatEdgeTooltipTitle(edgeLabel: unknown, link?: GraphLink) {
+  const label = edgeLabel || link?.label || link?.edgeRole || link?.edgeType;
+  if (!label) return "Graph edge";
+  return String(formatDisplayValue(String(label)));
 }
 
 function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
