@@ -51,7 +51,9 @@ jobs:
           [[ -n "${RENDER_API_SERVICE_ID}" ]] || missing+=("RENDER_API_SERVICE_ID")
           [[ -n "${RENDER_WEB_SERVICE_ID}" ]] || missing+=("RENDER_WEB_SERVICE_ID")
           if (( ${#missing[@]} > 0 )); then
-            echo "::error::Missing required GitHub Actions secrets: ${missing[*]}"
+            echo "::error title=render_preflight_failed_missing_secrets::Missing required GitHub Actions secrets by safe name only: ${missing[*]}"
+            echo "render_preflight_status=missing_required_deploy_secrets"
+            echo "No Render deploy API call was attempted."
             echo "See docs/roadmap/render-deploy-secret-requirements.md for setup guidance."
             exit 1
           fi

@@ -29,6 +29,9 @@ def test_render_deploy_workflow_uses_secret_gated_api_path() -> None:
     assert '\\"commitId\\":\\"${EXPECTED_COMMIT}\\"' in source
     assert '\\"clearCache\\":\\"${CLEAR_CACHE}\\"' in source
     assert "scripts/check-deployed-version.py" in source
+    assert "render_preflight_failed_missing_secrets" in source
+    assert "render_preflight_status=missing_required_deploy_secrets" in source
+    assert "No Render deploy API call was attempted." in source
     assert "cat ${response_file}" not in source
     assert "cat \"${response_file}\"" not in source
     assert "upload-artifact" not in source

@@ -82,7 +82,7 @@ jobs:
           cp artifacts/browser-smoke/report.json artifacts/browser-smoke/report.real.json
       - name: Upload smoke artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: browser-smoke-artifacts
           path: |

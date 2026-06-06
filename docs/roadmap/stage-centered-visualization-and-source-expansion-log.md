@@ -3170,3 +3170,68 @@
 
 - The L0-L11 stage coverage summary is still a curated fixture/promoted public-evidence index. It does not perform live source fetches and does not add raw source payloads.
 - Quantitative capacity, demand, substitution, and lead-time fields remain proxy summaries unless supported by source-specific fixtures.
+
+### Post-Commit Deployment And GPT Pro Review Evidence
+
+- Implementation commit: `b281948e446031f7605d4d85e6f7f6269adfa357`.
+- GitHub `Quality Gates` passed for `b281948e446031f7605d4d85e6f7f6269adfa357` in run `27029817219`.
+- GitHub `ci` passed for `b281948e446031f7605d4d85e6f7f6269adfa357` in run `27029817226`.
+- GitHub `Render Manual Deploy` workflow run `27048315827` failed preflight before any Render API call because required repository secrets were absent: `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID`. No secret values, cookies, tokens, private diagnostics, or raw payloads were printed.
+- Project-scoped Chrome Computer Use was used only for GitHub/Render/deployed public pages/GPT Pro. Render Dashboard was already authenticated by the user.
+- Render API service `supply-risk-atlas-api` was manually deployed from latest `main` at `b281948e446031f7605d4d85e6f7f6269adfa357`.
+- Render Web service `supply-risk-atlas-web` was manually deployed from latest `main` at `b281948e446031f7605d4d85e6f7f6269adfa357` with build cache cleared.
+- `python scripts/check-deployed-version.py --expected-commit b281948e446031f7605d4d85e6f7f6269adfa357 --timeout 40 --attempts 2` -> `deployed_verified`.
+- First deployed smoke attempt timed out during deploy/cold-start transition; residual smoke Node processes were stopped after their command lines were checked.
+- After warm-up, `npm.cmd run smoke:web -- --mode=deployed` -> PASS (`63` checks).
+- Public page screenshots for GPT Pro review were captured from deployed System Health, Graph Explorer, and Entity Risk 360. They did not include Render account screens, secrets, cookies, or private diagnostics.
+- GPT Pro review packet was sent through the project-scoped Chrome ChatGPT project conversation. GPT Pro returned `Verdict: PASS` for this gate and accepted the L0-L11 Stage Coverage Summary/source-coverage visibility hardening.
+- GPT Pro next priority: deployed API/Web readiness hardening, Render workflow preflight clarity, GitHub Actions Node 24 readiness, and complete compact all-12-stage System Health coverage before richer real-data fixtures.
+
+## 2026-06-05 Deployed Readiness And All-Stage Display Hardening Gate
+
+### Current HEAD
+
+- Starting commit: `b281948e446031f7605d4d85e6f7f6269adfa357`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- `scripts/check-deployed-version.py` now emits sanitized deployment `failure_class` and `retry_hint` fields. It distinguishes `deployed_verified`, `cold_start_or_deploy_transition`, `transport_timeout`, `schema_mismatch`, `commit_mismatch`, `unavailable`, and `probe_error` without printing raw response bodies.
+- Public deployed probes remain bounded by explicit attempt and timeout limits. GET probes are retried only through the existing bounded probe loop; no POST/write retry path was added.
+- Render Manual Deploy preflight now reports `render_preflight_status=missing_required_deploy_secrets` and explicitly states that no Render deploy API call was attempted when required GitHub Actions secrets are absent.
+- `scripts/browser-smoke.mjs` now installs SIGINT/SIGTERM/SIGHUP cleanup for the temporary headless browser and profile directory, reducing residual process risk after an external timeout.
+- GitHub `ci` upgraded `actions/upload-artifact` from `v4` to `v6`, while keeping explicit smoke-report artifact paths. Official GitHub-owned action usage is covered by a quality test for Node 24-ready major versions.
+- System Health's `Chip supply chain coverage` panel now renders all 12 L0-L11 stages in a compact user-facing grid instead of only the first six. Detailed source gaps, proxy limitations, source refs, and manifest details remain folded under `Data audit details`.
+- No live fetch, raw payload exposure, production-ready claim, secret exposure, or geography-policy change was introduced. Canonical geography remains `region:china_taiwan` / `中国台湾` / `country:CN` / `中国`.
+
+### Files Changed
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/render-manual-deploy.yml`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `docs/deployment/github-ci.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+- `scripts/browser-smoke.mjs`
+- `scripts/check-deployed-version.py`
+- `tests/quality/test_deployed_version_checker.py`
+- `tests/quality/test_frontend_display_declutter.py`
+- `tests/quality/test_github_workflow_runtime_readiness.py`
+- `tests/quality/test_render_manual_deploy_workflow.py`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_deployed_version_checker.py tests/quality/test_render_manual_deploy_workflow.py tests/quality/test_github_workflow_runtime_readiness.py tests/quality/test_frontend_display_declutter.py -q` -> PASS.
+- `python -m pytest tests/api/test_semiconductor_content_endpoints.py tests/sources/test_semiconductor_supply_chain_content.py tests/sources/test_stage_source_coverage_matrix.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS (`63` checks).
+- `python scripts/check-deployed-version.py --expected-commit b281948e446031f7605d4d85e6f7f6269adfa357 --timeout 40 --attempts 2` first classified the public HTML shell as `cold_start_or_deploy_transition` with retry hint `wait_for_render_warmup_then_retry_bounded_probe`; API, Web build-info, and Web proxy were already on `b281948e446031f7605d4d85e6f7f6269adfa357`.
+- After a bounded warm-up wait, the same deployed version probe returned `deployed_verified` with `failure_class=none` and no warnings.
+
+### Known Limitations
+
+- This gate hardens deployment/readiness classification and presentation. It does not add richer real-data fixtures, new live ingestion connectors, databases, or production deployment guarantees.
+- Render Manual Deploy remains unable to run fully through GitHub Actions until the required Render repository secrets are configured by a safe manual path.

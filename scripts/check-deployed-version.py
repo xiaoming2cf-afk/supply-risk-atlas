@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 from typing import Any
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
@@ -48,10 +48,17 @@ def main() -> int:
         web_proxy_result=web_proxy_result,
         web_proxy_commit=web_proxy_commit,
     )
+    failure_class = deployment_failure_class(
+        status=status,
+        warnings=warnings,
+        probe_results=[api_result, web_html_result, web_build_result, web_proxy_result],
+    )
 
     report = {
         "status": status,
         "deployment_status": status,
+        "failure_class": failure_class,
+        "retry_hint": retry_hint(failure_class),
         "expected_commit": expected_commit,
         "api": {
             "status": api_result.get("status", "failed"),
@@ -59,6 +66,7 @@ def main() -> int:
             "app_version": api_result.get("app_version", "unknown"),
             "environment": api_result.get("environment", "unknown"),
             "latency_class": api_result.get("latency_class", "failed"),
+            "failure_class": api_result.get("failure_class", "none"),
             "attempts": api_result.get("attempts", 1),
         },
         "web": {
@@ -68,6 +76,7 @@ def main() -> int:
                 "web_commit": web_build_commit,
                 "deployment_readiness_state": web_build_result.get("deployment_readiness_state", "unknown"),
                 "latency_class": web_build_result.get("latency_class", "failed"),
+                "failure_class": web_build_result.get("failure_class", "none"),
                 "attempts": web_build_result.get("attempts", 1),
             },
             "proxy": {
@@ -76,6 +85,7 @@ def main() -> int:
                 "app_version": web_proxy_result.get("app_version", "unknown"),
                 "environment": web_proxy_result.get("environment", "unknown"),
                 "latency_class": web_proxy_result.get("latency_class", "failed"),
+                "failure_class": web_proxy_result.get("failure_class", "none"),
                 "attempts": web_proxy_result.get("attempts", 1),
             },
         },
@@ -91,11 +101,20 @@ def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
     try:
         with urlopen(Request(url, headers={"accept": "application/json"}), timeout=timeout) as response:
             body = json.loads(response.read(250_000).decode("utf-8"))
-    except (OSError, URLError, json.JSONDecodeError, AttributeError) as exc:
-        return {"status": "failed", "error": type(exc).__name__, "latency_class": "failed"}
+    except HTTPError as exc:
+        return sanitized_fetch_failure(exc)
+    except (TimeoutError, OSError, URLError) as exc:
+        return sanitized_fetch_failure(exc)
+    except (json.JSONDecodeError, AttributeError) as exc:
+        return sanitized_fetch_failure(exc, failure_class="schema_mismatch")
     latency = time.perf_counter() - started
     if not isinstance(body, dict):
-        return {"status": "failed", "error": "InvalidEnvelope", "latency_class": latency_class(latency)}
+        return {
+            "status": "failed",
+            "error": "InvalidEnvelope",
+            "latency_class": latency_class(latency),
+            "failure_class": "schema_mismatch",
+        }
     data = body.get("data") if isinstance(body, dict) else {}
     if not isinstance(data, dict):
         data = {}
@@ -121,9 +140,11 @@ def retry_probe(factory, *, attempts: int) -> dict[str, Any]:
                 "status": "failed",
                 "error": type(exc).__name__,
                 "latency_class": "failed",
+                "failure_class": "probe_exception",
             }
         result["attempts"] = attempt
         if result.get("status") in {"ok", "verified"}:
+            result["failure_class"] = result.get("failure_class", "none")
             return result
         if attempt < attempts:
             time.sleep(min(3.0, 0.75 * attempt))
@@ -136,11 +157,20 @@ def fetch_web_proxy_version(web_url: str, timeout: float) -> dict[str, Any]:
     try:
         with urlopen(Request(proxy_url, headers={"accept": "application/json"}), timeout=timeout) as response:
             body = json.loads(response.read(250_000).decode("utf-8"))
-    except (OSError, URLError, json.JSONDecodeError, AttributeError) as exc:
-        return {"status": "failed", "error": type(exc).__name__, "latency_class": "failed"}
+    except HTTPError as exc:
+        return sanitized_fetch_failure(exc)
+    except (TimeoutError, OSError, URLError) as exc:
+        return sanitized_fetch_failure(exc)
+    except (json.JSONDecodeError, AttributeError) as exc:
+        return sanitized_fetch_failure(exc, failure_class="schema_mismatch")
     latency = time.perf_counter() - started
     if not isinstance(body, dict):
-        return {"status": "failed", "error": "InvalidEnvelope", "latency_class": latency_class(latency)}
+        return {
+            "status": "failed",
+            "error": "InvalidEnvelope",
+            "latency_class": latency_class(latency),
+            "failure_class": "schema_mismatch",
+        }
     data = body.get("data") if isinstance(body, dict) else {}
     if not isinstance(data, dict):
         data = {}
@@ -160,11 +190,20 @@ def fetch_web_build_info(web_url: str, timeout: float) -> dict[str, Any]:
         with urlopen(Request(build_info_url, headers={"accept": "application/json"}), timeout=timeout) as response:
             body = json.loads(response.read(250_000).decode("utf-8"))
             cache_control = response.headers.get("Cache-Control", "")
-    except (OSError, URLError, json.JSONDecodeError, AttributeError) as exc:
-        return {"status": "failed", "error": type(exc).__name__, "latency_class": "failed"}
+    except HTTPError as exc:
+        return sanitized_fetch_failure(exc)
+    except (TimeoutError, OSError, URLError) as exc:
+        return sanitized_fetch_failure(exc)
+    except (json.JSONDecodeError, AttributeError) as exc:
+        return sanitized_fetch_failure(exc, failure_class="schema_mismatch")
     latency = time.perf_counter() - started
     if not isinstance(body, dict):
-        return {"status": "failed", "error": "InvalidEnvelope", "latency_class": latency_class(latency)}
+        return {
+            "status": "failed",
+            "error": "InvalidEnvelope",
+            "latency_class": latency_class(latency),
+            "failure_class": "schema_mismatch",
+        }
     data = body.get("data") if isinstance(body, dict) else {}
     if not isinstance(data, dict):
         data = {}
@@ -179,19 +218,31 @@ def fetch_web_build_info(web_url: str, timeout: float) -> dict[str, Any]:
 
 def fetch_web_commit_presence(web_url: str, expected_commit: str, timeout: float) -> dict[str, Any]:
     if expected_commit == "unknown":
-        return {"status": "not_verified", "commit_visible": False, "latency_class": "not_checked"}
+        return {
+            "status": "not_verified",
+            "commit_visible": False,
+            "latency_class": "not_checked",
+            "failure_class": "expected_commit_unknown",
+        }
     started = time.perf_counter()
     try:
         with urlopen(Request(web_url, headers={"accept": "text/html"}), timeout=timeout) as response:
             html = response.read(500_000).decode("utf-8", errors="replace")
-    except (OSError, URLError) as exc:
-        return {"status": "failed", "commit_visible": False, "error": type(exc).__name__, "latency_class": "failed"}
+    except HTTPError as exc:
+        failure = sanitized_fetch_failure(exc)
+        failure["commit_visible"] = False
+        return failure
+    except (TimeoutError, OSError, URLError) as exc:
+        failure = sanitized_fetch_failure(exc)
+        failure["commit_visible"] = False
+        return failure
     latency = time.perf_counter() - started
     visible = web_commit_visible(html, expected_commit)
     return {
         "status": "verified" if visible else "commit_not_visible",
         "commit_visible": visible,
         "latency_class": latency_class(latency),
+        "failure_class": "none" if visible else "web_commit_marker_missing",
     }
 
 
@@ -249,6 +300,76 @@ def deployment_status(
     if warnings:
         return "deployed_stale_or_unverified", warnings
     return "deployed_verified", []
+
+
+def sanitized_fetch_failure(exc: BaseException, *, failure_class: str | None = None) -> dict[str, Any]:
+    status_code = getattr(exc, "code", None)
+    result: dict[str, Any] = {
+        "status": "failed",
+        "error": type(exc).__name__,
+        "latency_class": "failed",
+        "failure_class": failure_class or classify_fetch_failure(exc),
+    }
+    if isinstance(status_code, int):
+        result["http_status"] = status_code
+    return result
+
+
+def classify_fetch_failure(exc: BaseException) -> str:
+    status_code = getattr(exc, "code", None)
+    if isinstance(status_code, int):
+        if status_code in {502, 503, 504}:
+            return "cold_start_or_deploy_transition"
+        if 500 <= status_code <= 599:
+            return "server_error"
+        if 400 <= status_code <= 499:
+            return "unavailable"
+    if isinstance(exc, TimeoutError) or "timeout" in type(exc).__name__.lower():
+        return "transport_timeout"
+    if isinstance(exc, (URLError, OSError)):
+        return "transport_error"
+    if isinstance(exc, (json.JSONDecodeError, AttributeError)):
+        return "schema_mismatch"
+    return "unavailable"
+
+
+def deployment_failure_class(
+    *,
+    status: str,
+    warnings: list[str],
+    probe_results: list[dict[str, Any]],
+) -> str:
+    if status == "deployed_verified":
+        return "none"
+    classes = {str(result.get("failure_class", "")) for result in probe_results}
+    classes.discard("")
+    classes.discard("none")
+    if "cold_start_or_deploy_transition" in classes:
+        return "cold_start_or_deploy_transition"
+    if "transport_timeout" in classes:
+        return "transport_timeout"
+    if "schema_mismatch" in classes or any("schema" in warning for warning in warnings):
+        return "schema_mismatch"
+    if any("mismatch" in warning for warning in warnings):
+        return "commit_mismatch"
+    if any("unavailable" in warning for warning in warnings):
+        return "unavailable"
+    if status == "probe_error":
+        return "probe_error"
+    return "deployed_stale_or_unverified"
+
+
+def retry_hint(failure_class: str) -> str:
+    hints = {
+        "none": "none",
+        "cold_start_or_deploy_transition": "wait_for_render_warmup_then_retry_bounded_probe",
+        "transport_timeout": "retry_bounded_probe_with_existing_timeout_limits",
+        "commit_mismatch": "redeploy_api_and_web_from_expected_commit_or_verify_render_service_commit",
+        "schema_mismatch": "verify_public_version_envelope_and_web_build_info_contract",
+        "unavailable": "check_api_web_service_readiness_before_redeploy",
+        "probe_error": "provide_expected_git_commit_and_retry_probe",
+    }
+    return hints.get(failure_class, "inspect_sanitized_probe_warnings")
 
 
 def local_git_commit() -> str:

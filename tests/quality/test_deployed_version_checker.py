@@ -200,6 +200,7 @@ def test_retry_probe_records_attempt_count_and_stops_on_success() -> None:
 
     assert result["status"] == "ok"
     assert result["attempts"] == 2
+    assert result["failure_class"] == "none"
 
 
 def test_retry_probe_reports_exhausted_attempt_count() -> None:
@@ -226,6 +227,7 @@ def test_retry_probe_sanitizes_factory_exceptions() -> None:
         "status": "failed",
         "error": "RuntimeError",
         "latency_class": "failed",
+        "failure_class": "probe_exception",
         "attempts": 1,
     }
 
@@ -257,6 +259,7 @@ def test_fetch_web_build_info_extracts_sanitized_metadata(monkeypatch) -> None:
     assert result["web_commit"] == "9674e6005021597182b05aac4700247b89f81464"
     assert result["deployment_readiness_state"] == "web_build_metadata"
     assert result["cache_control"] == "no-store, max-age=0"
+    assert "failure_class" not in result
 
 
 def test_fetch_web_build_info_sanitizes_transport_failure(monkeypatch) -> None:
@@ -273,6 +276,7 @@ def test_fetch_web_build_info_sanitizes_transport_failure(monkeypatch) -> None:
         "status": "failed",
         "error": "OSError",
         "latency_class": "failed",
+        "failure_class": "transport_error",
     }
 
 
@@ -292,3 +296,44 @@ def test_deployment_status_requires_web_build_info_no_store() -> None:
 
     assert status == "deployed_stale_or_unverified"
     assert warnings == ["web_build_info_cache_control_missing"]
+
+
+def test_fetch_api_version_classifies_http_503_as_deploy_transition(monkeypatch) -> None:
+    checker = _load_checker_module()
+
+    def failing_urlopen(*_args, **_kwargs):
+        raise checker.HTTPError(
+            "https://example.test/api/v1/version",
+            503,
+            "Service Unavailable",
+            hdrs=None,
+            fp=None,
+        )
+
+    monkeypatch.setattr(checker, "urlopen", failing_urlopen)
+
+    result = checker.fetch_api_version("https://example.test/api/v1", 1)
+
+    assert result == {
+        "status": "failed",
+        "error": "HTTPError",
+        "latency_class": "failed",
+        "failure_class": "cold_start_or_deploy_transition",
+        "http_status": 503,
+    }
+
+
+def test_deployment_failure_class_prioritizes_commit_mismatch() -> None:
+    checker = _load_checker_module()
+
+    failure_class = checker.deployment_failure_class(
+        status="deployed_stale_or_unverified",
+        warnings=["api_commit_mismatch", "web_proxy_commit_mismatch"],
+        probe_results=[
+            {"status": "ok", "failure_class": "none"},
+            {"status": "commit_not_visible", "failure_class": "web_commit_marker_missing"},
+        ],
+    )
+
+    assert failure_class == "commit_mismatch"
+    assert checker.retry_hint(failure_class) == "redeploy_api_and_web_from_expected_commit_or_verify_render_service_commit"

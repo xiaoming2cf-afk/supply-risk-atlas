@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import net from "node:net";
 import os from "node:os";
@@ -145,6 +145,24 @@ function cliOption(name) {
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let activeChromeProcess = null;
+let activeProfileDir = null;
+
+function cleanupActiveBrowser() {
+  if (activeChromeProcess && activeChromeProcess.exitCode === null && activeChromeProcess.signalCode === null) {
+    activeChromeProcess.kill();
+  }
+  if (activeProfileDir) {
+    rmSync(activeProfileDir, { recursive: true, force: true });
+  }
+}
+
+for (const signalName of ["SIGINT", "SIGTERM", "SIGHUP"]) {
+  process.once(signalName, () => {
+    cleanupActiveBrowser();
+    process.exit(1);
+  });
+}
 
 const waitForExit = (processHandle) =>
   new Promise((resolve) => {
@@ -180,6 +198,8 @@ async function main() {
     `--user-data-dir=${profileDir}`,
     "about:blank",
   ], { stdio: "ignore" });
+  activeChromeProcess = chrome;
+  activeProfileDir = profileDir;
 
   const checks = [];
   let client;
@@ -1588,6 +1608,8 @@ async function main() {
     chrome.kill();
     await waitForExit(chrome);
     await rm(profileDir, { recursive: true, force: true }).catch(() => undefined);
+    activeChromeProcess = null;
+    activeProfileDir = null;
   }
 
   const report = { url: webUrl, apiBase, smokeMode, bestEffort: deployedBestEffort, checkedAt: new Date().toISOString(), checks };

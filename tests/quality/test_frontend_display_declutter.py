@@ -271,7 +271,12 @@ def test_semiconductor_content_coverage_is_summarized_on_primary_pages() -> None
     assert '<Field label="L0-L11 stage coverage"' in source
     assert '<Field label="Implemented stages"' in source
     assert "stage map: L0-L11" in source
-    assert "chainStageCoverageRows.slice(0, 6)" in source
+    assert 'aria-label="All L0-L11 semiconductor supply-chain stage coverage"' in source
+    assert "visible stages: {chainStageCoverageRows.length}" in source
+    assert "chainStageCoverageRows.map((stage)" in source
+    assert "chainStageCoverageRows.slice(0, 6)" not in source
+    assert "{stage.stage_name}" in source
+    assert "fixture required | live fetch" in source
     assert "Stage coverage links national/policy, enterprise disclosure, and industry fixture sources" in source
     assert "National and regional coverage" in source
     assert "Industry layer coverage" in source

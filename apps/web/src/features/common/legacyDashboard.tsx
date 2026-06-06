@@ -5143,17 +5143,27 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             <div className="source-support-summary" style={{ marginTop: 16 }}>
               <div className="graph-view-summary">
                 <span>stage map: L0-L11</span>
+                <span>visible stages: {chainStageCoverageRows.length}</span>
                 <span>implemented: {implementedChainStageCount}</span>
                 <span>partial/gap: {partialChainStageCount}</span>
                 <span>live fetch: disabled</span>
               </div>
-              <ul className="compact-list">
-                {chainStageCoverageRows.slice(0, 6).map((stage) => (
+              <ul
+                className="compact-list"
+                aria-label="All L0-L11 semiconductor supply-chain stage coverage"
+                style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 10 }}
+              >
+                {chainStageCoverageRows.map((stage) => (
                   <li key={stage.stage_id}>
-                    <strong>{formatDisplayLabel(stage.stage_id)}</strong>
+                    <strong>
+                      {formatDisplayLabel(stage.stage_id)} - {stage.stage_name}
+                    </strong>
                     <span>
                       {formatDisplayValue(stage.coverage_status)} | {stage.source_count} public sources |{" "}
                       {stage.relationship_classes.map(formatDisplayValue).join(" / ")}
+                    </span>
+                    <span>
+                      fixture required | live fetch {formatDisplayValue(stage.live_fetch_default)}
                     </span>
                   </li>
                 ))}
