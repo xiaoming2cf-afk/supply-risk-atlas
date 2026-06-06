@@ -34,21 +34,23 @@ def test_graph_explorer_keeps_diagnostics_separate_from_relationship_rows() -> N
     assert "diagnosticsForEndpointResult" in source
     assert "failed_endpoint" in source
     assert "transport_attempts" in source
+    assert "relationshipEndpointLoadingExpired" in source
+    assert "displayedEndpointDetails" in source
     assert "const endpointDataForMode =" in source
-    assert 'endpointDetails.mode === mode && endpointDetails.source === "backend" && endpointDetails.status === "active"' in source
+    assert 'displayedEndpointDetails.source === "backend"' in source
+    assert 'displayedEndpointDetails.status === "active"' in source
     assert "endpointData={endpointDataForMode}" in source
     assert "mode: options.mode" in source
     assert 'status: "loading"' in source
     assert "visibleLinks.slice" not in source
-    assert "buildRelationshipExportSummary(mode, endpointDataForMode, endpointDetails, metadata)" in source
+    assert "buildRelationshipExportSummary(mode, endpointDataForMode, displayedEndpointDetails, metadata)" in source
     assert "data_scope: \"unavailable_preview_no_authoritative_relationship_rows\"" in source
     assert "authoritative_backend_relationship_rows_only" in source
     assert "authoritative_backend_aggregate_rows_only" in source
-    assert "relationshipModeLoading" in source
-    assert "Loading authoritative relationship data." in source
+    assert "Loading authoritative relationship data." not in source
     assert "GRAPH_ENDPOINT_LOADING_TIMEOUT_MS" in source
-    assert "Backend graph view endpoint timed out; authoritative rows are hidden." in source
-    assert "Backend stage graph endpoint timed out; authoritative rows are hidden." in source
+    assert "Authoritative graph data timed out; rows are hidden." in source
+    assert "Authoritative stage graph data timed out; rows are hidden." in source
     assert "transportAttempts: 0" in source
     assert source.index("buildRelationshipExportSummary") < source.index("links: view.visibleLinks.map")
 

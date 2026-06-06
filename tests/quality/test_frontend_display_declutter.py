@@ -391,11 +391,26 @@ def test_graph_explorer_endpoint_status_uses_user_facing_unavailable_copy() -> N
 
     assert "GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE" in source
     assert "STAGE_ENDPOINT_UNAVAILABLE_MESSAGE" in source
+    assert "GRAPH_DATA_LOADING_MESSAGE" in source
+    assert "GRAPH_DATA_TIMEOUT_MESSAGE" in source
+    assert "GRAPH_DATA_LOADED_MESSAGE" in source
+    assert "STAGE_DATA_LOADING_MESSAGE" in source
+    assert "STAGE_DATA_TIMEOUT_MESSAGE" in source
+    assert "STAGE_DATA_LOADED_MESSAGE" in source
     assert "Backend graph data unavailable; authoritative rows are hidden." in source
     assert "Backend stage graph data unavailable; authoritative rows are hidden." in source
+    assert "Loading authoritative graph data." in source
+    assert "Authoritative graph data loaded." in source
+    assert "Loading authoritative stage graph data." in source
+    assert "Authoritative stage graph data loaded." in source
+    assert "Authoritative data connected" in source
     assert "Backend data unavailable" in source
     assert "Fallback graph payload" not in source
     assert "Fallback stage graph payload" not in source
+    assert "Backend graph view endpoint loading." not in source
+    assert "Backend graph view endpoint active." not in source
+    assert "Backend stage graph endpoint loading." not in source
+    assert "Backend stage graph endpoint active." not in source
 
 
 def test_browser_smoke_uses_stage_labels_not_component_names() -> None:

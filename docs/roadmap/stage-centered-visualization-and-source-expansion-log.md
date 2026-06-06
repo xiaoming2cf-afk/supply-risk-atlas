@@ -3568,3 +3568,41 @@
 - Probe evidence: API and Web build-info timed out during the bounded one-attempt check, public Web HTML returned HTTP 503, and Web proxy `/api/v1/version` still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Relationship Loading Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `9528a0c13cfda2817a9d764df9d01d4da130cb8a`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Removed the relationship-mode main-panel loading blocker from Graph Explorer. If authoritative relationship endpoint rows are not available, the relationship views immediately show their controlled degraded empty state instead of an indefinite loading message.
+- Added a second UI-level timeout guard for relationship endpoint loading state, used by export summaries and endpoint status display.
+- Changed endpoint status headings so loading state is labeled `Authoritative data loading`, active state is labeled `Authoritative data connected`, and unavailable state is labeled `Backend data unavailable`.
+- Updated regression tests so relationship rows still require backend authoritative data and do not fall back to local visible graph links.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` -> PASS, 22 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd run smoke:web` initially reproduced a stuck relationship loading state; after the relationship loading blocker removal -> PASS, 63 checks.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate changes Graph Explorer loading semantics only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

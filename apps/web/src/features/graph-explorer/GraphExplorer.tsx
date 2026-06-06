@@ -72,6 +72,12 @@ import {
 const GRAPH_ENDPOINT_LOADING_TIMEOUT_MS = 15000;
 const GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE = "Backend graph data unavailable; authoritative rows are hidden.";
 const STAGE_ENDPOINT_UNAVAILABLE_MESSAGE = "Backend stage graph data unavailable; authoritative rows are hidden.";
+const GRAPH_DATA_LOADING_MESSAGE = "Loading authoritative graph data.";
+const GRAPH_DATA_TIMEOUT_MESSAGE = "Authoritative graph data timed out; rows are hidden.";
+const GRAPH_DATA_LOADED_MESSAGE = "Authoritative graph data loaded.";
+const STAGE_DATA_LOADING_MESSAGE = "Loading authoritative stage graph data.";
+const STAGE_DATA_TIMEOUT_MESSAGE = "Authoritative stage graph data timed out; rows are hidden.";
+const STAGE_DATA_LOADED_MESSAGE = "Authoritative stage graph data loaded.";
 
 export function GraphExplorer({
   apiClient,
@@ -108,6 +114,7 @@ export function GraphExplorer({
     status: "fallback",
     message: GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE,
   });
+  const [relationshipEndpointLoadingExpired, setRelationshipEndpointLoadingExpired] = useState(false);
   const [stageEndpointDetails, setStageEndpointDetails] = useState<GraphEndpointDetails>({
     source: "fallback",
     status: "fallback",
@@ -144,6 +151,18 @@ export function GraphExplorer({
   }, [selectedPathId]);
 
   useEffect(() => {
+    if (!isRelationshipGraphMode(mode) || endpointDetails.status !== "loading") {
+      setRelationshipEndpointLoadingExpired(false);
+      return;
+    }
+    setRelationshipEndpointLoadingExpired(false);
+    const timeoutHandle = globalThis.setTimeout(() => {
+      setRelationshipEndpointLoadingExpired(true);
+    }, GRAPH_ENDPOINT_LOADING_TIMEOUT_MS);
+    return () => globalThis.clearTimeout(timeoutHandle);
+  }, [endpointDetails.status, mode]);
+
+  useEffect(() => {
     let cancelled = false;
     let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | undefined;
     if (!apiClient) {
@@ -161,7 +180,7 @@ export function GraphExplorer({
         mode,
         source: "backend",
         status: "loading",
-        message: "Backend graph view endpoint loading.",
+        message: GRAPH_DATA_LOADING_MESSAGE,
       });
       timeoutHandle = globalThis.setTimeout(() => {
         if (cancelled) return;
@@ -169,7 +188,7 @@ export function GraphExplorer({
           mode,
           source: "fallback",
           status: "fallback",
-          message: "Backend graph view endpoint timed out; authoritative rows are hidden.",
+          message: GRAPH_DATA_TIMEOUT_MESSAGE,
           diagnostics: {
             retryHint: "Retry the graph view request. The UI keeps loading bounded and hides non-authoritative rows.",
             transportAttempts: 0,
@@ -221,14 +240,14 @@ export function GraphExplorer({
       setStageEndpointDetails((current) => ({
         ...current,
         status: "loading",
-        message: "Backend stage graph endpoint loading.",
+        message: STAGE_DATA_LOADING_MESSAGE,
       }));
       timeoutHandle = globalThis.setTimeout(() => {
         if (cancelled) return;
         setStageEndpointDetails({
           source: "fallback",
           status: "fallback",
-          message: "Backend stage graph endpoint timed out; authoritative rows are hidden.",
+          message: STAGE_DATA_TIMEOUT_MESSAGE,
           diagnostics: {
             retryHint: "Retry the stage graph request. The UI keeps loading bounded and hides non-authoritative rows.",
             transportAttempts: 0,
@@ -245,7 +264,7 @@ export function GraphExplorer({
       if (result.data && result.envelope.status !== "error") {
         setStageEndpointDetails({
           data: result.data,
-          message: "Backend stage graph endpoint active.",
+          message: STAGE_DATA_LOADED_MESSAGE,
           source: "backend",
           status: "active",
         });
@@ -322,12 +341,25 @@ export function GraphExplorer({
   const selectedPathStepEdgeId =
     view.selectedPathStep?.edgeId ??
     (view.activePath && selectedPathStepIndex > 0 ? view.activePath.edgeSequence[selectedPathStepIndex - 1] : undefined);
+  const displayedEndpointDetails =
+    relationshipEndpointLoadingExpired && isRelationshipGraphMode(mode) && endpointDetails.status === "loading"
+      ? ({
+          ...endpointDetails,
+          source: "fallback",
+          status: "fallback",
+          message: GRAPH_DATA_TIMEOUT_MESSAGE,
+          diagnostics: {
+            retryHint: "Retry the graph view request. The UI keeps loading bounded and hides non-authoritative rows.",
+            transportAttempts: 0,
+          },
+        } satisfies GraphEndpointDetails)
+      : endpointDetails;
   const endpointDataForMode =
-    endpointDetails.mode === mode && endpointDetails.source === "backend" && endpointDetails.status === "active"
-      ? endpointDetails.data
+    displayedEndpointDetails.mode === mode &&
+    displayedEndpointDetails.source === "backend" &&
+    displayedEndpointDetails.status === "active"
+      ? displayedEndpointDetails.data
       : undefined;
-  const relationshipModeLoading = isRelationshipGraphMode(mode) && endpointDetails.status === "loading";
-
   const toggleLayer = (layer: GraphLayerCategory) => {
     setEnabledLayers((current) => {
       const next = new Set(current);
@@ -380,7 +412,7 @@ export function GraphExplorer({
 
   const exportViewSummary = () => {
     if (typeof document === "undefined") return;
-    const relationshipSummary = buildRelationshipExportSummary(mode, endpointDataForMode, endpointDetails, metadata);
+    const relationshipSummary = buildRelationshipExportSummary(mode, endpointDataForMode, displayedEndpointDetails, metadata);
     const summary = relationshipSummary ?? {
       export_type: "graph_view_summary",
       exported_at: new Date().toISOString(),
@@ -524,7 +556,7 @@ export function GraphExplorer({
           <span>focus cap: 25 nodes / 40 edges</span>
           <span>edge labels hidden by default</span>
         </div>
-        <EndpointStatusPanel details={endpointDetails} />
+        <EndpointStatusPanel details={displayedEndpointDetails} />
         <EndpointStatusPanel details={stageEndpointDetails} />
         <StageModePanel
           endpointDetails={stageEndpointDetails}
@@ -534,9 +566,7 @@ export function GraphExplorer({
           view={view}
         />
         <div className="graph-canvas">
-          {relationshipModeLoading ? (
-            <GraphEmptyState message="Loading authoritative relationship data." />
-          ) : mode === "supply" ? (
+          {mode === "supply" ? (
             <SupplyRelationshipView view={view} endpointData={endpointDataForMode} />
           ) : mode === "demand" ? (
             <DemandRelationshipView view={view} endpointData={endpointDataForMode} />
@@ -791,7 +821,7 @@ async function fetchGraphEndpointDetails(
   if (result.data && result.envelope.status !== "error") {
     return {
       data: result.data as GraphEndpointDetails["data"],
-      message: "Backend graph view endpoint active.",
+      message: GRAPH_DATA_LOADED_MESSAGE,
       mode: options.mode,
       source: "backend",
       status: "active",
@@ -809,11 +839,11 @@ async function fetchGraphEndpointDetails(
 function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
   return (
     <div className={`graph-endpoint-status is-${details.status}`}>
-      <strong>{details.source === "backend" ? "Backend graph view endpoint" : "Backend data unavailable"}</strong>
+      <strong>{endpointStatusTitle(details)}</strong>
       <span>{details.message}</span>
       {details.diagnostics ? (
         <MetadataSummary
-          ariaLabel="Graph endpoint diagnostic summary"
+          ariaLabel="Graph data diagnostic summary"
           items={[{ label: "Backend relationship data unavailable; authoritative rows are hidden.", tone: "warning" }]}
         />
       ) : null}
@@ -829,6 +859,12 @@ function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
       ) : null}
     </div>
   );
+}
+
+function endpointStatusTitle(details: GraphEndpointDetails) {
+  if (details.status === "loading") return "Authoritative data loading";
+  if (details.source === "backend") return "Authoritative data connected";
+  return "Backend data unavailable";
 }
 
 function diagnosticsForEndpointResult(result: ApiResult<unknown>): GraphEndpointDetails["diagnostics"] {
