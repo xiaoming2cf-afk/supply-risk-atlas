@@ -577,3 +577,12 @@ def test_timeline_and_geo_views_avoid_raw_id_visible_fallbacks() -> None:
     assert "formatGeoLabel(country as Record<string, unknown>)" in geo
     assert "countryName ?? (country as Record<string, unknown>).code" not in geo
     assert "formatNodeDisplayRef(value) || String(formatDisplayValue(value))" in geo
+
+
+def test_data_table_hides_raw_evidence_record_ids_without_source_context() -> None:
+    source = read("apps/web/src/features/common/tables/DataTable.tsx")
+
+    assert "const evidenceId = record.source_record_id ?? record.evidence_id ?? record.ref_id ?? record.edge_id ?? record.id" in source
+    assert 'if (evidenceId) return "Evidence record";' in source
+    assert "if (id) return formatPrimaryValue(String(id));" not in source
+    assert "record.source_record_id ??\n      record.evidence_id ??" not in source

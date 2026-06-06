@@ -102,18 +102,14 @@ function renderArrayItem(value: unknown) {
   if (typeof value === "number" || typeof value === "boolean") return String(formatDisplayValue(value));
   if (!Array.isArray(value) && typeof value === "object") {
     const record = value as Record<string, unknown>;
-    const id =
-      record.source_record_id ??
-      record.evidence_id ??
-      record.ref_id ??
-      record.node_id ??
-      record.edge_id ??
-      record.id ??
-      record.label ??
-      record.name;
+    const nodeId = record.node_id;
+    const displayName = record.label ?? record.name;
+    const evidenceId = record.source_record_id ?? record.evidence_id ?? record.ref_id ?? record.edge_id ?? record.id;
     const source = record.source_id ?? record.source;
-    if (source && id) return `${formatPrimaryValue(String(source))} evidence`;
-    if (id) return formatPrimaryValue(String(id));
+    if (source && (evidenceId || nodeId || displayName)) return `${formatPrimaryValue(String(source))} evidence`;
+    if (nodeId) return formatPrimaryValue(String(nodeId));
+    if (displayName) return formatPrimaryValue(String(displayName));
+    if (evidenceId) return "Evidence record";
     if (source) return formatPrimaryValue(String(source));
   }
   return "Structured metadata";
