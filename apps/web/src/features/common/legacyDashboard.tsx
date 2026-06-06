@@ -2187,12 +2187,11 @@ export function CompanyRisk360({
               </div>
               <EvidenceRefsTable
                 rows={risk.evidence_refs.map((evidence) => ({
-                  edge_id: evidence.edge_id,
-                  edge_type: evidence.edge_type,
-                  source_ref: evidence.source_refs[0]?.source_id ?? "unavailable",
+                  relationship: formatDisplayLabel(evidence.edge_type),
+                  source: formatSourceDisplayRef(evidence.source_refs[0]?.source_id ?? "unavailable"),
                   summary: evidence.evidence_text_summary,
                 }))}
-                columns={["edge_id", "edge_type", "source_ref", "summary"]}
+                columns={["relationship", "source", "summary"]}
                 limit={8}
                 metadata={chartMetadataForRisk(risk)}
               />
@@ -2245,8 +2244,7 @@ export function CompanyRisk360({
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>{t("Edge")}</th>
-                      <th>{t("Type")}</th>
+                      <th>{t("Relationship")}</th>
                       <th>{t("Source")}</th>
                       <th>{t("Summary")}</th>
                     </tr>
@@ -2256,9 +2254,8 @@ export function CompanyRisk360({
                       const sourceRef = evidence.source_refs[0];
                       return (
                         <tr key={evidence.edge_id}>
-                          <td>{evidence.edge_id}</td>
-                          <td>{evidence.edge_type}</td>
-                          <td>{sourceRef ? `${sourceRef.source_id}:${sourceRef.source_record_id}` : "unavailable"}</td>
+                          <td>{formatDisplayLabel(evidence.edge_type)}</td>
+                          <td>{sourceRef ? formatSourceDisplayRef(sourceRef.source_id) : "unavailable"}</td>
                           <td>{evidence.evidence_text_summary}</td>
                         </tr>
                       );

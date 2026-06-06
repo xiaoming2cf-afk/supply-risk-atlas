@@ -214,6 +214,11 @@ def test_browser_smoke_checks_unavailable_preview_as_dom_state_not_user_text() -
     assert "previewStates: Array.from(document.querySelectorAll('[data-preview-state]'))" in source
     assert 'state.previewStates.includes("unavailable_preview")' in source
     assert 'relationshipState.previewStates.includes("unavailable_preview")' in source
+    assert "hasControlledUnavailableCopy" in source
+    assert "Backend relationship data unavailable; authoritative rows are hidden." in source
+    assert 'relationshipState.text.includes("Local graph")' in source
+    assert 'relationshipState.text.includes("excluded from")' in source
+    assert "(!hasUnavailablePreview || hasControlledUnavailableCopy)" in source
     assert 'state.text.includes("unavailable_preview")' not in source
     assert 'relationshipState.text.includes("unavailable_preview")' not in source
 
@@ -369,6 +374,22 @@ def test_entity_risk_primary_fields_use_user_facing_metric_labels() -> None:
     assert '<Field label="Country concentration HHI"' in entity_risk_source
     assert '<Field label="Weighting method"' in entity_risk_source
     assert '<Field label="Selected entity" value={formatNodeDisplayRef(selectedNodeId)}' in entity_risk_source
+
+
+def test_entity_risk_evidence_tables_hide_raw_edge_and_source_record_ids() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    entity_risk_source = source.split("export function CompanyRisk360", 1)[1].split("export function PredictionCenter", 1)[0]
+
+    assert 'columns={["edge_id", "edge_type", "source_ref", "summary"]}' not in entity_risk_source
+    assert "source_record_id" not in entity_risk_source
+    assert "<td>{evidence.edge_id}</td>" not in entity_risk_source
+    assert "<td>{evidence.edge_type}</td>" not in entity_risk_source
+    assert 'relationship: formatDisplayLabel(evidence.edge_type)' in entity_risk_source
+    assert 'source: formatSourceDisplayRef(evidence.source_refs[0]?.source_id ?? "unavailable")' in entity_risk_source
+    assert 'columns={["relationship", "source", "summary"]}' in entity_risk_source
+    assert "<th>{t(\"Relationship\")}</th>" in entity_risk_source
+    assert "<td>{formatDisplayLabel(evidence.edge_type)}</td>" in entity_risk_source
+    assert "<td>{sourceRef ? formatSourceDisplayRef(sourceRef.source_id) : \"unavailable\"}</td>" in entity_risk_source
 
 
 def test_page_relevance_policy_declares_display_tiers() -> None:

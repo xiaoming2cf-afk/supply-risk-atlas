@@ -527,22 +527,33 @@ async function main() {
       const relationshipState = await waitFor(
         client,
         () => graphV2State(client),
-        (state) =>
-          state.text.includes(titleText) &&
-          state.text.includes(detailText) &&
-          (relationshipEndpointsReady
-            ? !state.previewStates.includes("unavailable_preview")
-            : state.previewStates.includes("unavailable_preview")),
+        (state) => {
+          const hasUnavailablePreview = state.previewStates.includes("unavailable_preview");
+          const hasControlledUnavailableCopy =
+            state.text.includes("Backend relationship data unavailable; authoritative rows are hidden.") &&
+            state.text.includes("Local graph") &&
+            state.text.includes("excluded from");
+          return (
+            state.text.includes(titleText) &&
+            state.text.includes(detailText) &&
+            (!hasUnavailablePreview || hasControlledUnavailableCopy)
+          );
+        },
       );
       const hasUnavailablePreview = relationshipState.previewStates.includes("unavailable_preview");
+      const hasControlledUnavailableCopy =
+        relationshipState.text.includes("Backend relationship data unavailable; authoritative rows are hidden.") &&
+        relationshipState.text.includes("Local graph") &&
+        relationshipState.text.includes("excluded from");
       checks.push({
         page: `Graph Explorer supply-demand ${buttonLabel} mode`,
         relationshipEndpointsReady,
         hasUnavailablePreview,
+        hasControlledUnavailableCopy,
         passed:
           relationshipState.text.includes(titleText) &&
           relationshipState.text.includes(detailText) &&
-          (relationshipEndpointsReady ? !hasUnavailablePreview : hasUnavailablePreview),
+          (!hasUnavailablePreview || hasControlledUnavailableCopy),
       });
     }
 

@@ -3670,3 +3670,42 @@
 - Probe evidence: API, Web build-info, and Web proxy timed out during the bounded one-attempt check, and public Web HTML returned HTTP 503.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Entity Risk Evidence Table Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `30bdec98ebe3f76624344a5b02e0d931e18342de`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Removed raw `edge_id`, `edge_type`, and `source_ref` columns from the Entity Risk 360 evidence summary table.
+- The primary evidence table now displays `Relationship`, `Source`, and `Summary` with formatted relationship/source labels.
+- The detailed evidence table no longer renders raw edge ids or source record ids in the main page; source display is formatted through the public source label helper.
+- Browser smoke now accepts either authoritative relationship rows or a controlled unavailable state that explicitly says local graph rows are excluded. This keeps the smoke aligned with the no-synthetic-relationship-row requirement.
+- Added quality assertions preventing raw evidence edge/source record identifiers from returning to Entity Risk 360 primary evidence tables.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 21 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd run smoke:web` initially failed because Graph Explorer relationship endpoints entered controlled unavailable state while smoke expected authoritative rows; after updating smoke to require controlled unavailable copy when preview rows are hidden -> PASS, 63 checks.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate changes Entity Risk 360 evidence table display and smoke acceptance semantics only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
