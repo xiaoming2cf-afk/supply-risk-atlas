@@ -120,6 +120,7 @@ export const stageViewOptions: StageViewDefinition[] = [
 
 export type StageGraphViewProps = {
   endpointData?: Record<string, unknown>;
+  endpointStatus?: "active" | "fallback" | "loading";
   metadata: GraphVersionMetadata;
   relationshipClassFilter: RelationshipClassFilter;
   stage: StageViewDefinition;
@@ -128,10 +129,10 @@ export type StageGraphViewProps = {
 
 export function StageGraphView({
   endpointData,
+  endpointStatus = "fallback",
   metadata,
   relationshipClassFilter,
   stage,
-  view,
 }: StageGraphViewProps) {
   const endpointNodes = rows(endpointData?.nodes).slice(0, 6);
   const endpointEdges = rows(endpointData?.edges).slice(0, 6);
@@ -143,16 +144,9 @@ export function StageGraphView({
   const proxyLimitations = list(endpointData?.proxy_limitations).slice(0, 3);
   const failureReason = String(endpointData?.failure_reason ?? "none");
   const narrowPatchPlan = String(endpointData?.required_narrow_patch_if_failed ?? "none");
-  const fallbackNodes: Array<Record<string, unknown>> = view.visibleNodes
-    .filter((node) => stage.nodeTypes.includes(node.kind))
-    .slice(0, 6)
-    .map((node) => ({ id: node.id, label: node.label, kind: node.kind }));
-  const fallbackEdges: Array<Record<string, unknown>> = view.visibleLinks
-    .filter((edge) => relationshipClassFilter === "all" || edge.metadata?.relationship_class === relationshipClassFilter)
-    .slice(0, 6)
-    .map((edge) => ({ id: edge.id, edge_type: edge.edgeType, source: edge.source, target: edge.target }));
-  const visibleNodes = endpointNodes.length ? endpointNodes : fallbackNodes;
-  const visibleEdges = endpointEdges.length ? endpointEdges : fallbackEdges;
+  const hasAuthoritativeStageData = endpointStatus === "active" && Boolean(endpointData);
+  const visibleNodes = hasAuthoritativeStageData ? endpointNodes : [];
+  const visibleEdges = hasAuthoritativeStageData ? endpointEdges : [];
   const propagates =
     relationshipClassFilter === "SUPPLY_RELATIONSHIP" || relationshipClassFilter === "PRODUCTION_DEPENDENCY";
 
@@ -164,7 +158,7 @@ export function StageGraphView({
       <MetadataSummary
         items={[
           { label: "Public evidence mode" },
-          { label: sourceCoverage.length ? `${sourceCoverage.length} source candidates` : "Source coverage fallback" },
+          { label: sourceCoverage.length ? `${sourceCoverage.length} source candidates` : "Stage source coverage unavailable", tone: sourceCoverage.length ? "default" : "warning" },
           { label: sourceGaps.length || proxyLimitations.length ? "Known proxy gaps" : "No stage gaps recorded", tone: sourceGaps.length || proxyLimitations.length ? "warning" : "default" },
           { label: relationshipClassLabel(relationshipClassFilter) },
         ]}
@@ -191,6 +185,11 @@ export function StageGraphView({
         <span>Can this edge propagate risk? {propagates ? "yes, if evidence-backed" : "no"}</span>
         <span>stage cap: 18 nodes / 30 edges</span>
       </div>
+      {!hasAuthoritativeStageData ? (
+        <p className="inspector-note unavailable-preview" data-preview-state="stage_endpoint_unavailable">
+          Stage graph data unavailable; backend stage rows are hidden.
+        </p>
+      ) : null}
       {visibleNodes.length ? (
         <ul className="compact-list">
           {visibleNodes.map((node) => (

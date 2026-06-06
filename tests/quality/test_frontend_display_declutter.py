@@ -351,6 +351,12 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "formatCoverageText(source.coverage_summary, stage.id)" in source
     assert "source.source_id)}</strong>" not in source
     assert "SUPPLY_RELATIONSHIP\", \"supply relationships\"" in source
+    assert "view.visibleNodes" not in source
+    assert "view.visibleLinks" not in source
+    assert "fallbackNodes" not in source
+    assert "fallbackEdges" not in source
+    assert "Stage graph data unavailable; backend stage rows are hidden." in source
+    assert "Source coverage fallback" not in source
 
 
 def test_browser_smoke_uses_stage_labels_not_component_names() -> None:

@@ -219,6 +219,7 @@ export function GraphExplorer({
           source: "fallback",
           status: "fallback",
           message: result.envelope.warnings?.[0] ?? "Fallback stage graph payload: backend stage endpoint unavailable.",
+          diagnostics: diagnosticsForEndpointResult(result),
         });
       }
     };
@@ -584,6 +585,7 @@ function StageModePanel({
 }) {
   const props = {
     endpointData: endpointDetails.data as Record<string, unknown> | undefined,
+    endpointStatus: endpointDetails.status,
     metadata,
     relationshipClassFilter,
     view,
