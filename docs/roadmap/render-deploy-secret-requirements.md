@@ -59,3 +59,28 @@ python scripts/check-deployed-version.py --expected-commit <latest_commit_sha> -
 ```
 
 Record only sanitized evidence: service name, commit SHA, build status, public probe status, and deployed smoke result.
+
+## Background Local Fallback
+
+If foreground browser interaction is not acceptable, use the local background helper after configuring environment variables outside chat:
+
+```powershell
+$env:RENDER_API_KEY="<set outside chat>"
+$env:RENDER_API_SERVICE_ID="<api service id>"
+$env:RENDER_WEB_SERVICE_ID="<web service id>"
+python scripts/trigger-render-deploy.py --commit <latest_commit_sha> --clear-cache clear
+```
+
+Safety behavior:
+
+- The helper reads credentials only from environment variables.
+- It does not print secret values, service IDs, raw Render API responses, response bodies, cookies, tokens, or headers.
+- If any required variable is absent, it exits before making any Render API call and reports `render_deploy_blocked_missing_safe_deploy_path`.
+- `--dry-run` validates commit/service shape and prints only sanitized service names.
+
+After triggering the deploys, verify convergence with:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit <latest_commit_sha> --timeout 40 --attempts 2
+npm.cmd run smoke:web -- --mode=deployed
+```

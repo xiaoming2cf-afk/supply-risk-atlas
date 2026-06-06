@@ -3246,3 +3246,26 @@
 - Current deployed runtime status: stale relative to `b253acf418837b775c7b8310c21e403a33854329`.
 - Background deployment capability check found no Render CLI, no `RENDER_API_KEY` environment variable, and no exposed Render MCP tool. The user requested background-only work, so no further Render Dashboard or ChatGPT foreground interaction was attempted.
 - Next safe deployment options are documented in `docs/roadmap/codex-continuation-request.md`.
+
+## 2026-06-06 Background Render Deploy Helper Gate
+
+### Gate Result
+
+- Added `scripts/trigger-render-deploy.py` as a foreground-free Render API deployment helper for future use when `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are configured outside chat.
+- The helper validates commit SHA and service ID shape, supports `--dry-run`, triggers API/Web deploys with bounded request timeouts, and prints only sanitized service names, HTTP status categories, commit SHA, and retry hints.
+- Missing credentials return `render_deploy_blocked_missing_safe_deploy_path` before any Render API call.
+- HTTP failures are sanitized; raw Render API bodies, tokens, cookies, headers, service IDs, and secret values are not printed.
+- Updated Render deployment docs and continuation request with the new background path.
+- This gate does not deploy Render by itself because no Render API key is present in the local environment.
+
+### Files Changed
+
+- `scripts/trigger-render-deploy.py`
+- `tests/quality/test_render_background_deploy_script.py`
+- `docs/roadmap/render-deploy-secret-requirements.md`
+- `docs/roadmap/codex-continuation-request.md`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Known Limitations
+
+- The deployed API/Web runtime remains stale until Render deploys are triggered by GitHub Actions secrets, Render MCP/CLI/API environment configuration, or manual Dashboard action.

@@ -28,6 +28,7 @@
   - Render CLI is not installed in this environment.
   - No `RENDER_API_KEY` environment variable is present.
   - No Render MCP tool is currently exposed to Codex.
+  - Local helper `scripts/trigger-render-deploy.py` is now available for a future environment-variable based background deploy path.
   - Because the user requested background-only work, no further Chrome/Render Dashboard clicks were attempted.
 - GPT Pro status:
   - GPT Pro accepted the previous `b281948e446031f7605d4d85e6f7f6269adfa357` gate with `Verdict: PASS`.
@@ -41,7 +42,13 @@ Use one of these safe paths to deploy `b253acf418837b775c7b8310c21e403a33854329`
 
 1. Configure the three GitHub Actions secrets listed above, then rerun `Render Manual Deploy` on `main` with `commit_sha=b253acf418837b775c7b8310c21e403a33854329` and `clear_cache=clear`.
 2. Or configure a Render API/MCP/CLI path outside chat, then run a bounded API/Web redeploy from latest `main`.
-3. Or manually deploy `supply-risk-atlas-api` and `supply-risk-atlas-web` from the Render Dashboard while Codex remains in background-only mode.
+3. Or set `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` outside chat and run:
+
+```powershell
+python scripts/trigger-render-deploy.py --commit b253acf418837b775c7b8310c21e403a33854329 --clear-cache clear
+```
+
+4. Or manually deploy `supply-risk-atlas-api` and `supply-risk-atlas-web` from the Render Dashboard while Codex remains in background-only mode.
 
 After deployment, run:
 
