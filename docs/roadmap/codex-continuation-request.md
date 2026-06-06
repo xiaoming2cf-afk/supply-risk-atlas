@@ -1,5 +1,57 @@
 # Codex Continuation Request
 
+## 2026-06-06 Background Deployment Handoff
+
+- Latest pushed commit: `b253acf418837b775c7b8310c21e403a33854329`.
+- Branch: `main`.
+- Commit purpose: harden deployed readiness classification, Render preflight diagnostics, GitHub Actions Node 24-ready action usage, smoke cleanup, and System Health all-12-stage coverage display.
+- GitHub `ci`: passed for `b253acf418837b775c7b8310c21e403a33854329` in run `27051669296`.
+- GitHub `Quality Gates`: passed for `b253acf418837b775c7b8310c21e403a33854329` in run `27051669298`.
+- GitHub `Render Manual Deploy`: run `27051776714` failed in preflight before any Render API call because required repository secrets are absent:
+  - `RENDER_API_KEY`
+  - `RENDER_API_SERVICE_ID`
+  - `RENDER_WEB_SERVICE_ID`
+- Local validation passed before commit:
+  - `python -m pytest tests/quality/test_deployed_version_checker.py tests/quality/test_render_manual_deploy_workflow.py tests/quality/test_github_workflow_runtime_readiness.py tests/quality/test_frontend_display_declutter.py -q`
+  - `python -m pytest tests/api/test_semiconductor_content_endpoints.py tests/sources/test_semiconductor_supply_chain_content.py tests/sources/test_stage_source_coverage_matrix.py -q`
+  - `npm.cmd --workspace apps/web run typecheck`
+  - `npm.cmd --workspace apps/web run build`
+  - `python -m pytest tests/quality -q`
+  - `python -m pytest tests/api tests/security tests/graph_invariants -q`
+  - `npm.cmd run smoke:web` -> PASS, 63 checks.
+- Background deployed probes after the user requested no foreground interaction:
+  - API `/api/v1/version`: HTTP 200, still reports `b281948e446031f7605d4d85e6f7f6269adfa357`.
+  - Web `/api/build-info`: HTTP 200, still reports `b281948e446031f7605d4d85e6f7f6269adfa357`.
+  - Web proxy `/api/v1/version`: HTTP 200, still reports `b281948e446031f7605d4d85e6f7f6269adfa357`.
+  - Current status: deployed runtime is stale relative to `b253acf418837b775c7b8310c21e403a33854329`.
+- Background deployment capability check:
+  - Render CLI is not installed in this environment.
+  - No `RENDER_API_KEY` environment variable is present.
+  - No Render MCP tool is currently exposed to Codex.
+  - Because the user requested background-only work, no further Chrome/Render Dashboard clicks were attempted.
+- GPT Pro status:
+  - GPT Pro accepted the previous `b281948e446031f7605d4d85e6f7f6269adfa357` gate with `Verdict: PASS`.
+  - GPT Pro requested the next gate that produced `b253acf418837b775c7b8310c21e403a33854329`.
+  - Latest `b253acf` review has not been sent because the user requested no foreground browser interaction and no background ChatGPT connector is available.
+- No secrets, cookies, tokens, raw payloads, private diagnostics, or PII were copied, submitted, logged, or screenshotted as part of the background handoff.
+
+### Required Safe Next Action
+
+Use one of these safe paths to deploy `b253acf418837b775c7b8310c21e403a33854329` without foreground disruption:
+
+1. Configure the three GitHub Actions secrets listed above, then rerun `Render Manual Deploy` on `main` with `commit_sha=b253acf418837b775c7b8310c21e403a33854329` and `clear_cache=clear`.
+2. Or configure a Render API/MCP/CLI path outside chat, then run a bounded API/Web redeploy from latest `main`.
+3. Or manually deploy `supply-risk-atlas-api` and `supply-risk-atlas-web` from the Render Dashboard while Codex remains in background-only mode.
+
+After deployment, run:
+
+```powershell
+python scripts/check-deployed-version.py --expected-commit b253acf418837b775c7b8310c21e403a33854329 --timeout 40 --attempts 2
+npm.cmd run smoke:web -- --mode=deployed
+```
+
+Then send GPT Pro a sanitized status for `b253acf` only through a project-scoped path that does not expose secrets, account data, private URLs, cookies, tokens, raw payloads, local filesystem paths, or PII.
+
 ## 2026-05-30 Stage Graph API Coverage Handoff
 
 - Latest pushed commit: `919e597d6cd3298cfc1c514bcd280d843e076aac`.
