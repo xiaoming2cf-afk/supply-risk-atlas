@@ -532,3 +532,11 @@ def test_audit_details_formats_internal_tokens_before_rendering() -> None:
     assert 'return value ? "yes" : "no"' in source
     assert "{warning}</li>" not in source
     assert "fixture_proxy_not_calibrated; not_financial_loss" not in source
+
+
+def test_graph_evidence_view_does_not_use_edge_id_as_visible_source_fallback() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphEvidenceView.tsx")
+
+    assert "formatEvidenceRef((row as Record<string, unknown>).source_id)" in source
+    assert "formatEvidenceRef((row as Record<string, unknown>).source_id ?? (row as Record<string, unknown>).edge_id)" not in source
+    assert 'return "Evidence source"' in source

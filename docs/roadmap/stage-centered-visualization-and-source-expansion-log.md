@@ -3520,6 +3520,43 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-06 Background Graph Evidence Source Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `962cfbb73204f14cbf2794e6bf64e1a346b803ce`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Removed `edge_id` as a visible fallback for the Graph Explorer Evidence mode source column.
+- Evidence rows still keep internal edge ids for React row identity, but missing source data now renders the user-facing fallback `Evidence source` instead of presenting a graph edge id as if it were a source.
+- Added a quality assertion to prevent the source cell from falling back to `edge_id`.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphEvidenceView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 22 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` initially timed out at 180 seconds with no failure summary; rerun with a 420 second timeout -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+
+### Known Limitations
+
+- This gate is a display-layer declutter fix only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-06 Background Graph Endpoint Copy Declutter Gate
 
 ### Current HEAD

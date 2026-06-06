@@ -28,7 +28,7 @@ export function GraphEvidenceView({
         <tbody>
           {evidenceRows.slice(0, 12).map((row, index) => (
             <tr key={String((row as Record<string, unknown>).edge_id ?? (row as Record<string, unknown>).id ?? index)}>
-              <td>{formatEvidenceRef((row as Record<string, unknown>).source_id ?? (row as Record<string, unknown>).edge_id)}</td>
+              <td>{formatEvidenceRef((row as Record<string, unknown>).source_id)}</td>
               <td>
                 {String(formatDisplayValue(String((row as Record<string, unknown>).edge_type ?? "evidence-context link")))}
                 {Boolean((row as Record<string, unknown>).not_supply_chain_dependency) ? " / not supply-chain dependency" : ""}
