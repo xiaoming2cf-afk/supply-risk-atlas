@@ -3520,6 +3520,44 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-06 Background System Health Metadata Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `5b6b1c0f007d3e4cd8a7e9bd7dc90b6142d34a1e`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Moved Source Registry manifest/checksum/catalog identifiers out of the System Health primary subtitle and into collapsed audit details.
+- Moved Evidence Lineage manifest/checksum identifiers out of the primary subtitle/metric grid and into collapsed audit details.
+- Replaced the main Evidence Lineage checksum tile with a user-facing `Lineage status` summary.
+- Added frontend quality assertions preventing manifest/checksum internals from returning to System Health primary subtitles or metric tiles.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography-policy exception was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 29 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate is a System Health display-layer metadata declutter fix only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-06 Background Graph Node Geography Label Declutter Gate
 
 ### Current HEAD

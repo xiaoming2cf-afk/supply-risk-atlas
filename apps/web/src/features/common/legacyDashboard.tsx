@@ -5351,11 +5351,10 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             </ul>
           </Panel>
 
-            <Panel
-              title="Source registry"
-              subtitle={`${health.sourceRegistry.manifestRef}; checksum ${manifestChecksum}; catalog ${health.sourceRegistry.catalogSource ?? "unknown"}.`}
-              translateSubtitle={false}
-            >
+          <Panel
+            title="Source registry"
+            subtitle="Public source registry summary; manifest and checksum details are available in audit details."
+          >
             <div className="inspector-grid" style={{ marginBottom: 16 }}>
               <Field label="Sources" value={health.sourceRegistry.sourceCount} />
               <Field label="Raw records" value={health.sourceRegistry.rawRecordCount} />
@@ -5364,7 +5363,14 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               <Field label="Data nodes" value={health.sourceRegistry.dataNodeCount ?? 0} />
               <Field label="Promoted" value={health.sourceRegistry.promotedGraph?.status ?? "partial"} />
             </div>
-            <AuditDetails label="Source registry details">
+            <AuditDetails
+              label="Source registry details"
+              items={[
+                { label: "manifest_ref", value: health.sourceRegistry.manifestRef },
+                { label: "checksum", value: manifestChecksum },
+                { label: "catalog_source", value: health.sourceRegistry.catalogSource ?? "unknown" },
+              ]}
+            >
               <ul className="health-list">
                 {health.sourceRegistry.sources.map((source) => (
                   <li className="data-row" key={source.id}>
@@ -5385,7 +5391,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                 ))}
               </ul>
             </AuditDetails>
-            </Panel>
+          </Panel>
 
             {health.semiconductorGraph ? (
               <Panel
@@ -5596,16 +5602,21 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
 
           <Panel
             title="Evidence lineage"
-            subtitle={`${health.evidenceLineage.manifestRef}; raw to silver to gold audit chain.`}
-            translateSubtitle={false}
+            subtitle="Public evidence lineage summary from source records to graph edges."
           >
             <div className="inspector-grid" style={{ marginBottom: 16 }}>
               <Field label="Raw records" value={health.evidenceLineage.rawRecordCount} />
               <Field label="Silver events" value={health.evidenceLineage.silverEventCount} />
               <Field label="Gold edges" value={health.evidenceLineage.goldEdgeEventCount} />
-              <Field label="Checksum" value={health.evidenceLineage.checksum.slice(0, 12)} />
+              <Field label="Lineage status" value="Public evidence graph" />
             </div>
-            <AuditDetails label="Evidence lineage details">
+            <AuditDetails
+              label="Evidence lineage details"
+              items={[
+                { label: "manifest_ref", value: health.evidenceLineage.manifestRef },
+                { label: "checksum", value: health.evidenceLineage.checksum.slice(0, 12) },
+              ]}
+            >
               <div className="table-wrap">
                 <table className="data-table">
                   <thead>

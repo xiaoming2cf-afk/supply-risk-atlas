@@ -618,3 +618,17 @@ def test_graph_node_country_labels_use_canonical_geography_formatter() -> None:
     assert "{node.countryCode ?? String(node.metadata.country ?? \"global\")}" not in canvas
     assert "${data.graphNode.countryCode ?? String(data.graphNode.metadata.country ?? \"global\")}" not in legacy_dashboard
     assert "{node.countryCode ?? String(node.metadata.country ?? \"global\")}" not in legacy_dashboard
+
+
+def test_system_health_manifest_and_checksum_are_audit_details_not_primary_subtitles() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert 'subtitle="Public source registry summary; manifest and checksum details are available in audit details."' in source
+    assert 'subtitle="Public evidence lineage summary from source records to graph edges."' in source
+    assert "subtitle={`${health.sourceRegistry.manifestRef}; checksum" not in source
+    assert "subtitle={`${health.evidenceLineage.manifestRef}; raw to silver to gold audit chain.`}" not in source
+    assert '<Field label="Checksum"' not in source
+    assert '{ label: "manifest_ref", value: health.sourceRegistry.manifestRef }' in source
+    assert '{ label: "checksum", value: manifestChecksum }' in source
+    assert '{ label: "manifest_ref", value: health.evidenceLineage.manifestRef }' in source
+    assert '{ label: "checksum", value: health.evidenceLineage.checksum.slice(0, 12) }' in source
