@@ -386,6 +386,18 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "evidence refs unavailable" in source
 
 
+def test_graph_explorer_endpoint_status_uses_user_facing_unavailable_copy() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphExplorer.tsx")
+
+    assert "GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE" in source
+    assert "STAGE_ENDPOINT_UNAVAILABLE_MESSAGE" in source
+    assert "Backend graph data unavailable; authoritative rows are hidden." in source
+    assert "Backend stage graph data unavailable; authoritative rows are hidden." in source
+    assert "Backend data unavailable" in source
+    assert "Fallback graph payload" not in source
+    assert "Fallback stage graph payload" not in source
+
+
 def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
     source = read("scripts/browser-smoke.mjs")
 

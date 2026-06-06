@@ -70,6 +70,8 @@ import {
 } from "./graphViewModel";
 
 const GRAPH_ENDPOINT_LOADING_TIMEOUT_MS = 15000;
+const GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE = "Backend graph data unavailable; authoritative rows are hidden.";
+const STAGE_ENDPOINT_UNAVAILABLE_MESSAGE = "Backend stage graph data unavailable; authoritative rows are hidden.";
 
 export function GraphExplorer({
   apiClient,
@@ -104,12 +106,12 @@ export function GraphExplorer({
     mode,
     source: "fallback",
     status: "fallback",
-    message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
+    message: GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE,
   });
   const [stageEndpointDetails, setStageEndpointDetails] = useState<GraphEndpointDetails>({
     source: "fallback",
     status: "fallback",
-    message: "Fallback stage graph payload: dashboard graph used until a backend stage endpoint responds.",
+    message: STAGE_ENDPOINT_UNAVAILABLE_MESSAGE,
   });
   const [hideLowConfidence, setHideLowConfidence] = useState(false);
   const [showEdgeLabels, setShowEdgeLabels] = useState(false);
@@ -149,7 +151,7 @@ export function GraphExplorer({
         mode,
         source: "fallback",
         status: "fallback",
-        message: "Fallback graph payload: dashboard graph used until a backend graph view endpoint responds.",
+        message: GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE,
       });
       return;
     }
@@ -191,7 +193,7 @@ export function GraphExplorer({
           mode,
           source: "fallback",
           status: "fallback",
-          message: error instanceof Error ? error.message : "Fallback graph payload: backend graph view endpoint unavailable.",
+          message: GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE,
         });
       }
     };
@@ -210,7 +212,7 @@ export function GraphExplorer({
       setStageEndpointDetails({
         source: "fallback",
         status: "fallback",
-        message: "Fallback stage graph payload: no backend API client is configured.",
+        message: STAGE_ENDPOINT_UNAVAILABLE_MESSAGE,
       });
       return;
     }
@@ -251,7 +253,7 @@ export function GraphExplorer({
         setStageEndpointDetails({
           source: "fallback",
           status: "fallback",
-          message: result.envelope.warnings?.[0] ?? "Fallback stage graph payload: backend stage endpoint unavailable.",
+          message: STAGE_ENDPOINT_UNAVAILABLE_MESSAGE,
           diagnostics: diagnosticsForEndpointResult(result),
         });
       }
@@ -263,7 +265,7 @@ export function GraphExplorer({
       setStageEndpointDetails({
         source: "fallback",
         status: "fallback",
-        message: error instanceof Error ? error.message : "Fallback stage graph payload: backend stage endpoint unavailable.",
+        message: STAGE_ENDPOINT_UNAVAILABLE_MESSAGE,
       });
     });
     return () => {
@@ -796,7 +798,7 @@ async function fetchGraphEndpointDetails(
     };
   }
   return {
-    message: result.envelope.warnings?.[0] ?? "Fallback graph payload: backend graph view endpoint unavailable.",
+    message: GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE,
     mode: options.mode,
     source: "fallback",
     status: "fallback",
@@ -807,7 +809,7 @@ async function fetchGraphEndpointDetails(
 function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
   return (
     <div className={`graph-endpoint-status is-${details.status}`}>
-      <strong>{details.source === "backend" ? "Backend graph view endpoint" : "Fallback graph payload"}</strong>
+      <strong>{details.source === "backend" ? "Backend graph view endpoint" : "Backend data unavailable"}</strong>
       <span>{details.message}</span>
       {details.diagnostics ? (
         <MetadataSummary
