@@ -1,18 +1,16 @@
 import type { GraphSourceCoverageData } from "@supply-risk/shared-types";
 import { formatDisplayValue, formatSourceDisplayRef } from "../common/displayLabels";
-import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphSourceCoverageView({
   endpointData,
-  view,
 }: {
   endpointData?: unknown;
-  view: GraphViewModel;
+  view?: unknown;
 }) {
   const sourceCoverage = (endpointData as GraphSourceCoverageData | undefined)?.source_coverage;
   const rows = Array.isArray((sourceCoverage as Record<string, unknown> | undefined)?.rows)
     ? ((sourceCoverage as { rows: Array<Record<string, unknown>> }).rows ?? [])
-    : fallbackRows(view);
+    : [];
   const nodeCoverage = (sourceCoverage as Record<string, unknown> | undefined)?.node_catalog_coverage as
     | Record<string, unknown>
     | undefined;
@@ -36,31 +34,28 @@ export function GraphSourceCoverageView({
           </tr>
         </thead>
         <tbody>
-          {rows.slice(0, 16).map((row, index) => (
-            <tr key={String(row.source_id ?? index)}>
-              <td>{formatSourceCell(row.source_id ?? "source_ref")}</td>
-              <td>
-                {String(
-                  (row as Record<string, unknown>).reference_count ??
-                    (row as Record<string, unknown>).count ??
-                    0,
-                )}
-              </td>
+          {rows.length ? (
+            rows.slice(0, 16).map((row, index) => (
+              <tr key={String(row.source_id ?? index)}>
+                <td>{formatSourceCell(row.source_id ?? "source_ref")}</td>
+                <td>
+                  {String(
+                    (row as Record<string, unknown>).reference_count ??
+                      (row as Record<string, unknown>).count ??
+                      0,
+                  )}
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr className="unavailable-preview" data-preview-state="source_coverage_endpoint_unavailable">
+              <td colSpan={2}>Backend source coverage data unavailable; authoritative rows are hidden.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
   );
-}
-
-function fallbackRows(view: GraphViewModel) {
-  const counts = new Map<string, number>();
-  for (const link of view.visibleLinks) {
-    const source = String(link.sourceId ?? link.metadata?.source ?? "fixture_source");
-    counts.set(source, (counts.get(source) ?? 0) + 1);
-  }
-  return [...counts.entries()].map(([source_id, reference_count]) => ({ source_id, reference_count }));
 }
 
 function formatSourceCell(value: unknown) {

@@ -222,13 +222,22 @@ def test_graph_explorer_tables_format_source_and_node_ids_for_primary_ui() -> No
     source_coverage = read("apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx")
     evidence_view = read("apps/web/src/features/graph-explorer/GraphEvidenceView.tsx")
     node_catalog = read("apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx")
+    matrix = read("apps/web/src/features/graph-explorer/GraphMatrixView.tsx")
     inspector = read("apps/web/src/features/graph-explorer/GraphInspector.tsx")
 
     assert "formatSourceCell(row.source_id" in source_coverage
     assert '{String(row.source_id ?? "source_ref")}' not in source_coverage
+    assert "fallbackRows" not in source_coverage
+    assert "view.visibleLinks" not in source_coverage
+    assert "source_coverage_endpoint_unavailable" in source_coverage
     assert "formatEvidenceRef" in evidence_view
     assert "formatNodeCell" in node_catalog
     assert "formatSourceCandidate" in node_catalog
+    assert "view.visibleNodes" not in node_catalog
+    assert "node_catalog_endpoint_unavailable" in node_catalog
+    assert "view.visibleLinks" not in matrix
+    assert "graph.nodes.find" not in matrix
+    assert "matrix_endpoint_unavailable" in matrix
     assert "formatEvidenceRef(ref)" in inspector
     assert "<li key={ref}>{ref}</li>" not in inspector
     assert "formatCountryRef(node.countryCode" in inspector

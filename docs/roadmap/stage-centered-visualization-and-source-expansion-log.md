@@ -3419,3 +3419,43 @@
 - Probe evidence: API and Web build-info timed out during the bounded one-attempt check, public Web HTML returned HTTP 503, and Web proxy `/api/v1/version` still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Graph Table Authority Gate
+
+### Current HEAD
+
+- Starting commit: `c8ca4ea2a7cefd5e38cbed3f366dbe38be7464cf`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Removed local visible-graph-derived fallback rows from Graph Explorer table modes:
+  - Source Coverage no longer counts `view.visibleLinks` when the backend source-coverage endpoint is unavailable.
+  - Node Catalog no longer builds catalog rows from `view.visibleNodes` when the backend node-catalog endpoint is unavailable.
+  - Matrix mode no longer builds matrix rows from visible graph links when the backend matrix endpoint is unavailable.
+- Each affected table now renders a controlled degraded row with a `data-preview-state` marker and user-facing copy stating that authoritative backend rows are hidden.
+- Added frontend quality assertions preventing reintroduction of local fallback rows in these table modes.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx`
+- `apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx`
+- `apps/web/src/features/graph-explorer/GraphMatrixView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` -> PASS, 21 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd run smoke:web` first timed out while a relationship endpoint remained in loading state; rerun -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate hardens frontend table authority boundaries only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
