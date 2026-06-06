@@ -83,6 +83,15 @@ def test_common_chart_and_table_metadata_is_collapsed_by_default() -> None:
     assert '"Connector status"' in connector_status_source
 
 
+def test_i18n_preserves_canonical_geography_display_labels() -> None:
+    source = read("apps/web/src/app/i18n.tsx")
+
+    assert '中国台湾: { zh: "中国台湾", fr: "中国台湾" }' in source
+    assert '"中国台湾海峡": { zh: "中国台湾海峡", fr: "中国台湾海峡" }' in source
+    assert '中国台湾: { zh: "中国台湾", fr: "Chine" }' not in source
+    assert '"中国台湾海峡": { zh: "中国台湾海峡", fr: "Détroit lié à la Chine" }' not in source
+
+
 def test_default_table_titles_are_user_facing_not_component_names() -> None:
     table_dir = REPO_ROOT / "apps/web/src/features/common/tables"
     component_name_title = re.compile(r'title=\{props\.title \?\? "[A-Z][A-Za-z0-9]+(?:Table|Relationship|Dependency|Demand|Input|Event|Facility|Action|Result|Ranking|Run|Flow|Artifact|Node|Edge|Concentration|Balance)?"')
