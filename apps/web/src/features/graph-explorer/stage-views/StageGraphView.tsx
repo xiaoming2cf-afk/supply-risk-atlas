@@ -151,6 +151,21 @@ export function StageGraphView({
   const visibleEdges = hasAuthoritativeStageData ? endpointEdges : [];
   const propagates =
     relationshipClassFilter === "SUPPLY_RELATIONSHIP" || relationshipClassFilter === "PRODUCTION_DEPENDENCY";
+  const sourceCoverageLabel = sourceCoverage.length
+    ? `${sourceCoverage.length} source records`
+    : isStageEndpointLoading
+      ? "source coverage loading"
+      : "source coverage unavailable";
+  const sourceFamilyLabel = sourceFamilyCoverage.length
+    ? `${sourceFamilyCoverage.length} source families`
+    : isStageEndpointLoading
+      ? "source families loading"
+      : "source families unavailable";
+  const evidenceRefsLabel = evidenceRefs.length
+    ? `${evidenceRefs.length} evidence refs`
+    : isStageEndpointLoading
+      ? "evidence refs loading"
+      : "evidence refs unavailable";
 
   return (
     <section className="graph-list-section stage-graph-view" data-testid="stage-graph-view" data-stage-id={stage.id}>
@@ -220,9 +235,9 @@ export function StageGraphView({
         <p className="muted">No stage edges are available for the active relationship class.</p>
       )}
       <div className="graph-view-summary">
-        <span>source coverage: {sourceCoverage.length || "fallback"}</span>
-        <span>source families: {sourceFamilyCoverage.length || "not recorded"}</span>
-        <span>evidence refs: {evidenceRefs.length || "fallback"}</span>
+        <span>{sourceCoverageLabel}</span>
+        <span>{sourceFamilyLabel}</span>
+        <span>{evidenceRefsLabel}</span>
       </div>
       {sourceFamilyCoverage.length ? (
         <ul className="compact-list">

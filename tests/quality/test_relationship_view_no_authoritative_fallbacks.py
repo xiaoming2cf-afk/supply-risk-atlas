@@ -46,6 +46,10 @@ def test_graph_explorer_keeps_diagnostics_separate_from_relationship_rows() -> N
     assert "authoritative_backend_aggregate_rows_only" in source
     assert "relationshipModeLoading" in source
     assert "Loading authoritative relationship data." in source
+    assert "GRAPH_ENDPOINT_LOADING_TIMEOUT_MS" in source
+    assert "Backend graph view endpoint timed out; authoritative rows are hidden." in source
+    assert "Backend stage graph endpoint timed out; authoritative rows are hidden." in source
+    assert "transportAttempts: 0" in source
     assert source.index("buildRelationshipExportSummary") < source.index("links: view.visibleLinks.map")
 
 

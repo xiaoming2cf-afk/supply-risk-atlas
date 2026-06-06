@@ -69,6 +69,8 @@ import {
   type LegacyGraphExplorerMode,
 } from "./graphViewModel";
 
+const GRAPH_ENDPOINT_LOADING_TIMEOUT_MS = 15000;
+
 export function GraphExplorer({
   apiClient,
   data,
@@ -141,6 +143,7 @@ export function GraphExplorer({
 
   useEffect(() => {
     let cancelled = false;
+    let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | undefined;
     if (!apiClient) {
       setEndpointDetails({
         mode,
@@ -158,6 +161,19 @@ export function GraphExplorer({
         status: "loading",
         message: "Backend graph view endpoint loading.",
       });
+      timeoutHandle = globalThis.setTimeout(() => {
+        if (cancelled) return;
+        setEndpointDetails({
+          mode,
+          source: "fallback",
+          status: "fallback",
+          message: "Backend graph view endpoint timed out; authoritative rows are hidden.",
+          diagnostics: {
+            retryHint: "Retry the graph view request. The UI keeps loading bounded and hides non-authoritative rows.",
+            transportAttempts: 0,
+          },
+        });
+      }, GRAPH_ENDPOINT_LOADING_TIMEOUT_MS);
       try {
         const result = await fetchGraphEndpointDetails(apiClient, {
           mode,
@@ -166,9 +182,11 @@ export function GraphExplorer({
           selectedPath: graph.transmissionPaths?.find((path) => path.id === selectedPathId) ?? graph.transmissionPaths?.[0],
         });
         if (cancelled) return;
+        if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
         setEndpointDetails(result);
       } catch (error) {
         if (cancelled) return;
+        if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
         setEndpointDetails({
           mode,
           source: "fallback",
@@ -181,11 +199,13 @@ export function GraphExplorer({
     void loadEndpointDetails();
     return () => {
       cancelled = true;
+      if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
     };
   }, [apiClient, focusDepth, graph.selectedNodeId, graph.transmissionPaths, mode, selectedNodeId, selectedPathId]);
 
   useEffect(() => {
     let cancelled = false;
+    let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | undefined;
     if (!apiClient) {
       setStageEndpointDetails({
         source: "fallback",
@@ -201,12 +221,25 @@ export function GraphExplorer({
         status: "loading",
         message: "Backend stage graph endpoint loading.",
       }));
+      timeoutHandle = globalThis.setTimeout(() => {
+        if (cancelled) return;
+        setStageEndpointDetails({
+          source: "fallback",
+          status: "fallback",
+          message: "Backend stage graph endpoint timed out; authoritative rows are hidden.",
+          diagnostics: {
+            retryHint: "Retry the stage graph request. The UI keeps loading bounded and hides non-authoritative rows.",
+            transportAttempts: 0,
+          },
+        });
+      }, GRAPH_ENDPOINT_LOADING_TIMEOUT_MS);
       const result = await apiClient.getStageGraph({
         stageId: selectedStage,
         relationshipClass: relationshipClassFilter === "all" ? null : relationshipClassFilter,
         limit: 18,
       });
       if (cancelled) return;
+      if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
       if (result.data && result.envelope.status !== "error") {
         setStageEndpointDetails({
           data: result.data,
@@ -226,6 +259,7 @@ export function GraphExplorer({
 
     void loadStageEndpoint().catch((error) => {
       if (cancelled) return;
+      if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
       setStageEndpointDetails({
         source: "fallback",
         status: "fallback",
@@ -234,6 +268,7 @@ export function GraphExplorer({
     });
     return () => {
       cancelled = true;
+      if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
     };
   }, [apiClient, relationshipClassFilter, selectedStage]);
 

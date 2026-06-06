@@ -3469,3 +3469,43 @@
 - Probe evidence: API and Web build-info timed out during the bounded one-attempt check, public Web HTML returned HTTP 503, and Web proxy `/api/v1/version` still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Graph Endpoint Loading Bound Gate
+
+### Current HEAD
+
+- Starting commit: `b958fa3ba1ca01a3004e6671d4812e252886079b`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added a bounded frontend loading timeout for Graph Explorer backend graph-view and stage-graph requests.
+- If an endpoint remains in loading state past the bound, the UI switches to a controlled fallback message stating that authoritative rows are hidden.
+- Late successful endpoint responses can still replace the controlled fallback because the request remains active until cleanup.
+- Replaced stage-view summary copy that previously showed `fallback` or `not recorded` as if it were a metric. The UI now says source coverage, source families, or evidence refs are loading or unavailable.
+- Added quality assertions so those fallback labels and unbounded loading regressions are caught.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_relationship_view_no_authoritative_fallbacks.py tests/quality/test_frontend_display_declutter.py -q` -> PASS, 21 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` first hit the local command timeout and terminal flush error before completion; rerun with a longer timeout -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate improves Graph Explorer frontend availability semantics only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

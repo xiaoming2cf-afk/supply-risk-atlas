@@ -378,6 +378,12 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "Loading authoritative stage graph data." in source
     assert "isStageEndpointUnavailable" in source
     assert "Source coverage fallback" not in source
+    assert 'source coverage: {sourceCoverage.length || "fallback"}' not in source
+    assert 'source families: {sourceFamilyCoverage.length || "not recorded"}' not in source
+    assert 'evidence refs: {evidenceRefs.length || "fallback"}' not in source
+    assert "source coverage unavailable" in source
+    assert "source families unavailable" in source
+    assert "evidence refs unavailable" in source
 
 
 def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
