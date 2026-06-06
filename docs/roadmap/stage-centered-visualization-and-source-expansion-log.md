@@ -3368,3 +3368,44 @@
 - Probe evidence: API and Web build-info timed out during the bounded one-attempt check, public Web HTML returned HTTP 503, and Web proxy `/api/v1/version` still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Relationship Preview State Gate
+
+### Current HEAD
+
+- Starting commit: `da91e83ca1e01c9d5379f78e4e39dba614ad3554`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Browser smoke no longer expects `unavailable_preview` to appear in user-visible text. It now checks `data-preview-state` DOM attributes so internal preview state can remain testable without becoming user copy.
+- Graph Explorer relationship modes now render a neutral loading state while authoritative backend relationship data is still loading, instead of briefly showing a degraded unavailable preview.
+- Stage graph views now distinguish endpoint loading from endpoint fallback. Loading shows `Loading authoritative stage graph data`; only actual fallback renders `data-preview-state="stage_endpoint_unavailable"`.
+- Added quality tests to prevent reintroducing user-visible `unavailable_preview` checks and to keep relationship/stage loading states separate from unavailable-preview states.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography terminology change was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `tests/quality/test_relationship_view_no_authoritative_fallbacks.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_frontend_source_readability.py -q` -> PASS, 24 tests.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_relationship_view_no_authoritative_fallbacks.py -q` -> PASS, 21 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` initially exposed the stale issue where `unavailable_preview` DOM state appeared while relationship endpoints were ready but the UI was still loading.
+- After the loading-state fix, `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate improves frontend state semantics only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.

@@ -208,6 +208,16 @@ def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> No
         assert "formatSourceDisplayRef" in source
 
 
+def test_browser_smoke_checks_unavailable_preview_as_dom_state_not_user_text() -> None:
+    source = read("scripts/browser-smoke.mjs")
+
+    assert "previewStates: Array.from(document.querySelectorAll('[data-preview-state]'))" in source
+    assert 'state.previewStates.includes("unavailable_preview")' in source
+    assert 'relationshipState.previewStates.includes("unavailable_preview")' in source
+    assert 'state.text.includes("unavailable_preview")' not in source
+    assert 'relationshipState.text.includes("unavailable_preview")' not in source
+
+
 def test_graph_explorer_tables_format_source_and_node_ids_for_primary_ui() -> None:
     source_coverage = read("apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx")
     evidence_view = read("apps/web/src/features/graph-explorer/GraphEvidenceView.tsx")
@@ -356,6 +366,8 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "fallbackNodes" not in source
     assert "fallbackEdges" not in source
     assert "Stage graph data unavailable; backend stage rows are hidden." in source
+    assert "Loading authoritative stage graph data." in source
+    assert "isStageEndpointUnavailable" in source
     assert "Source coverage fallback" not in source
 
 

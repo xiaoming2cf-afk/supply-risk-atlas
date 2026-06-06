@@ -289,6 +289,7 @@ export function GraphExplorer({
     endpointDetails.mode === mode && endpointDetails.source === "backend" && endpointDetails.status === "active"
       ? endpointDetails.data
       : undefined;
+  const relationshipModeLoading = isRelationshipGraphMode(mode) && endpointDetails.status === "loading";
 
   const toggleLayer = (layer: GraphLayerCategory) => {
     setEnabledLayers((current) => {
@@ -496,7 +497,9 @@ export function GraphExplorer({
           view={view}
         />
         <div className="graph-canvas">
-          {mode === "supply" ? (
+          {relationshipModeLoading ? (
+            <GraphEmptyState message="Loading authoritative relationship data." />
+          ) : mode === "supply" ? (
             <SupplyRelationshipView view={view} endpointData={endpointDataForMode} />
           ) : mode === "demand" ? (
             <DemandRelationshipView view={view} endpointData={endpointDataForMode} />
@@ -668,6 +671,10 @@ function buildRelationshipExportSummary(
     relationships,
     balance_rows: [],
   };
+}
+
+function isRelationshipGraphMode(mode: GraphViewMode) {
+  return mode === "supply" || mode === "demand" || mode === "production-dependency" || mode === "supply-demand-balance";
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {

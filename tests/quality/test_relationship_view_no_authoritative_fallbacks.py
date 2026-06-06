@@ -44,6 +44,8 @@ def test_graph_explorer_keeps_diagnostics_separate_from_relationship_rows() -> N
     assert "data_scope: \"unavailable_preview_no_authoritative_relationship_rows\"" in source
     assert "authoritative_backend_relationship_rows_only" in source
     assert "authoritative_backend_aggregate_rows_only" in source
+    assert "relationshipModeLoading" in source
+    assert "Loading authoritative relationship data." in source
     assert source.index("buildRelationshipExportSummary") < source.index("links: view.visibleLinks.map")
 
 

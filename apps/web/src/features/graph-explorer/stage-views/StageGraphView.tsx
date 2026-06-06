@@ -145,6 +145,8 @@ export function StageGraphView({
   const failureReason = String(endpointData?.failure_reason ?? "none");
   const narrowPatchPlan = String(endpointData?.required_narrow_patch_if_failed ?? "none");
   const hasAuthoritativeStageData = endpointStatus === "active" && Boolean(endpointData);
+  const isStageEndpointLoading = endpointStatus === "loading";
+  const isStageEndpointUnavailable = endpointStatus === "fallback";
   const visibleNodes = hasAuthoritativeStageData ? endpointNodes : [];
   const visibleEdges = hasAuthoritativeStageData ? endpointEdges : [];
   const propagates =
@@ -158,7 +160,7 @@ export function StageGraphView({
       <MetadataSummary
         items={[
           { label: "Public evidence mode" },
-          { label: sourceCoverage.length ? `${sourceCoverage.length} source candidates` : "Stage source coverage unavailable", tone: sourceCoverage.length ? "default" : "warning" },
+          { label: sourceCoverage.length ? `${sourceCoverage.length} source candidates` : isStageEndpointLoading ? "Stage source coverage loading" : "Stage source coverage unavailable", tone: sourceCoverage.length ? "default" : "warning" },
           { label: sourceGaps.length || proxyLimitations.length ? "Known proxy gaps" : "No stage gaps recorded", tone: sourceGaps.length || proxyLimitations.length ? "warning" : "default" },
           { label: relationshipClassLabel(relationshipClassFilter) },
         ]}
@@ -185,7 +187,10 @@ export function StageGraphView({
         <span>Can this edge propagate risk? {propagates ? "yes, if evidence-backed" : "no"}</span>
         <span>stage cap: 18 nodes / 30 edges</span>
       </div>
-      {!hasAuthoritativeStageData ? (
+      {isStageEndpointLoading ? (
+        <p className="inspector-note">Loading authoritative stage graph data.</p>
+      ) : null}
+      {isStageEndpointUnavailable ? (
         <p className="inspector-note unavailable-preview" data-preview-state="stage_endpoint_unavailable">
           Stage graph data unavailable; backend stage rows are hidden.
         </p>

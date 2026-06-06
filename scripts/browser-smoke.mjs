@@ -531,10 +531,10 @@ async function main() {
           state.text.includes(titleText) &&
           state.text.includes(detailText) &&
           (relationshipEndpointsReady
-            ? !state.text.includes("unavailable_preview")
-            : state.text.includes("unavailable_preview")),
+            ? !state.previewStates.includes("unavailable_preview")
+            : state.previewStates.includes("unavailable_preview")),
       );
-      const hasUnavailablePreview = relationshipState.text.includes("unavailable_preview");
+      const hasUnavailablePreview = relationshipState.previewStates.includes("unavailable_preview");
       checks.push({
         page: `Graph Explorer supply-demand ${buttonLabel} mode`,
         relationshipEndpointsReady,
@@ -1896,6 +1896,7 @@ async function graphV2State(client) {
       hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence') && text.includes('Source Coverage') && text.includes('Node Catalog'),
       hasStageSelector: Boolean(document.querySelector('[data-testid="stage-selector"]')) && text.includes('Supply-chain stage selector'),
       hasRelationshipClassSelector: Boolean(document.querySelector('[data-testid="relationship-class-selector"]')) && text.includes('Relationship class'),
+      previewStates: Array.from(document.querySelectorAll('[data-preview-state]')).map((item) => item.getAttribute('data-preview-state')).filter(Boolean),
       hasLegend: text.includes('Legend'),
       hasLayerControls: text.includes('Layer controls'),
       hasFixtureWarning: text.includes('Research fixture mode'),
