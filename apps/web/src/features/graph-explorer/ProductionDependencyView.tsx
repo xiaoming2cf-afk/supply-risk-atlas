@@ -98,7 +98,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
 
 function criticalInputChartData(rows: Array<Record<string, unknown>>) {
   return rows.slice(0, 6).map((row) => ({
-    label: String(row.dependency_target_id ?? row.dependency_type ?? "dependency"),
+    label: formatCell(row.dependency_target_id ?? row.dependency_type ?? "dependency"),
     value: row.bottleneck_flag === true ? 1 : 0.25,
   }));
 }

@@ -53,7 +53,7 @@ export function SupplyDemandBalanceView({
       )}
       <SupplyDemandBalanceChart
         data={!isEndpointUnavailable ? rows.slice(0, 6).map((row) => ({
-          label: String((row as Record<string, unknown>).product_grade_id ?? "product"),
+          label: formatCell((row as Record<string, unknown>).product_grade_id ?? "product"),
           value: Number((row as Record<string, unknown>).shortage_proxy ?? 0),
           secondaryValue: Number((row as Record<string, unknown>).demand_edge_count ?? 0),
         })) : []}

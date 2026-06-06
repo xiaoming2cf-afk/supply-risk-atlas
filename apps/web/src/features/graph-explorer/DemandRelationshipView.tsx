@@ -101,7 +101,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
 function demandChartData(rows: Array<Record<string, unknown>>) {
   const counts = new Map<string, number>();
   rows.forEach((row) => {
-    const key = String(row.product_grade_id ?? "product_grade");
+    const key = formatCell(row.product_grade_id ?? "product_grade");
     counts.set(key, (counts.get(key) ?? 0) + 1);
   });
   return [...counts.entries()].slice(0, 6).map(([label, value]) => ({ label, value }));

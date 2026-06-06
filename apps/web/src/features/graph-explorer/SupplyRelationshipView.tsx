@@ -25,7 +25,7 @@ export function SupplyRelationshipView({
       <RelationshipMetadata data={data} />
       <SupplierConcentrationHHIChart
         data={!isEndpointUnavailable ? (data?.supplier_concentration ?? []).slice(0, 6).map((row) => ({
-          label: String(row.supplier_id ?? "supplier"),
+          label: formatCell(row.supplier_id ?? "supplier"),
           value: Number(row.hhi_component ?? row.share ?? 0),
         })) : []}
         metadata={metadataForRelationshipData(data)}

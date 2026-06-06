@@ -549,3 +549,19 @@ def test_graph_evidence_view_does_not_use_edge_id_as_visible_source_fallback() -
     assert "formatEvidenceRef((row as Record<string, unknown>).source_id)" in source
     assert "formatEvidenceRef((row as Record<string, unknown>).source_id ?? (row as Record<string, unknown>).edge_id)" not in source
     assert 'return "Evidence source"' in source
+
+
+def test_relationship_chart_labels_use_user_facing_node_labels() -> None:
+    supply = read("apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx")
+    demand = read("apps/web/src/features/graph-explorer/DemandRelationshipView.tsx")
+    dependency = read("apps/web/src/features/graph-explorer/ProductionDependencyView.tsx")
+    balance = read("apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx")
+
+    assert "label: formatCell(row.supplier_id ?? \"supplier\")" in supply
+    assert "label: String(row.supplier_id ?? \"supplier\")" not in supply
+    assert "const key = formatCell(row.product_grade_id ?? \"product_grade\")" in demand
+    assert "const key = String(row.product_grade_id ?? \"product_grade\")" not in demand
+    assert "label: formatCell(row.dependency_target_id ?? row.dependency_type ?? \"dependency\")" in dependency
+    assert "label: String(row.dependency_target_id ?? row.dependency_type ?? \"dependency\")" not in dependency
+    assert "label: formatCell((row as Record<string, unknown>).product_grade_id ?? \"product\")" in balance
+    assert "label: String((row as Record<string, unknown>).product_grade_id ?? \"product\")" not in balance
