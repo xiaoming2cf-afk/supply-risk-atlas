@@ -1,4 +1,5 @@
 import type { GraphExplorerData, GraphGeoData } from "@supply-risk/shared-types";
+import { formatDisplayValue, formatNodeDisplayRef } from "../common/displayLabels";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphGeoView({
@@ -24,10 +25,16 @@ export function GraphGeoView({
       <ul className="evidence-list compact">
         {countries.slice(0, 6).map((country, index) => (
           <li key={String((country as Record<string, unknown>).code ?? (country as Record<string, unknown>).id ?? index)}>
-            {String((country as Record<string, unknown>).label ?? (country as Record<string, unknown>).countryName ?? (country as Record<string, unknown>).code ?? "country")}
+            {formatGeoLabel(country as Record<string, unknown>)}
           </li>
         ))}
       </ul>
     </div>
   );
+}
+
+function formatGeoLabel(country: Record<string, unknown>) {
+  const raw = country.label ?? country.countryName ?? country.id ?? country.code ?? "geography";
+  const value = String(raw);
+  return formatNodeDisplayRef(value) || String(formatDisplayValue(value));
 }

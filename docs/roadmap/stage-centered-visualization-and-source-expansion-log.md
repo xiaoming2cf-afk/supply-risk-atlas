@@ -3520,6 +3520,44 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-06 Background Timeline And Geo Label Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `c76292c112024abcbdb893bc09775f733ef29651`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Updated Graph Explorer Timeline mode so event labels no longer fall back to raw `event.id` values in visible text.
+- Updated Graph Explorer Geo mode so visible geography labels prefer canonical node/display formatting instead of raw country/region codes.
+- Added frontend quality assertions to prevent Timeline and Geo views from regressing to raw identifier fallbacks.
+- No public API route was removed or changed. No live fetch, raw payload exposure, production-ready claim, or geography-policy exception was introduced.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphTimelineView.tsx`
+- `apps/web/src/features/graph-explorer/GraphGeoView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 25 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd run smoke:web` first attempt timed out during the initial page hash-switch loop while the browser target remained on System Health; rerun -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+
+### Known Limitations
+
+- This gate is a display-layer label fallback fix only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-06 Background Relationship Chart Label Declutter Gate
 
 ### Current HEAD

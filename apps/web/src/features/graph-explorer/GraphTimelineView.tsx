@@ -1,4 +1,5 @@
 import type { GraphExplorerData, GraphTimelineData } from "@supply-risk/shared-types";
+import { formatDisplayValue } from "../common/displayLabels";
 import type { GraphViewModel } from "./graphViewModel";
 
 export function GraphTimelineView({
@@ -20,7 +21,7 @@ export function GraphTimelineView({
       <p className="inspector-note">Event timeline shows event nodes and affected graph nodes over hop order; it does not render the full graph.</p>
       <ul className="timeline-list compact">
         {endpointEvents.slice(0, 6).map((event, index) => (
-          <li key={String(event.id ?? index)}>{String(event.label ?? event.event_type ?? event.id ?? "event")} / hop {String(event.hop_order ?? index)}</li>
+          <li key={String(event.id ?? index)}>{formatTimelineEventLabel(event, index)} / hop {String(event.hop_order ?? index)}</li>
         ))}
         {endpointEvents.length === 0
           ? pathSteps.slice(0, 6).map((step, index) => (
@@ -30,4 +31,9 @@ export function GraphTimelineView({
       </ul>
     </div>
   );
+}
+
+function formatTimelineEventLabel(event: Record<string, unknown>, index: number) {
+  const value = event.label ?? event.event_type ?? `event ${index + 1}`;
+  return String(formatDisplayValue(String(value)));
 }

@@ -565,3 +565,15 @@ def test_relationship_chart_labels_use_user_facing_node_labels() -> None:
     assert "label: String(row.dependency_target_id ?? row.dependency_type ?? \"dependency\")" not in dependency
     assert "label: formatCell((row as Record<string, unknown>).product_grade_id ?? \"product\")" in balance
     assert "label: String((row as Record<string, unknown>).product_grade_id ?? \"product\")" not in balance
+
+
+def test_timeline_and_geo_views_avoid_raw_id_visible_fallbacks() -> None:
+    timeline = read("apps/web/src/features/graph-explorer/GraphTimelineView.tsx")
+    geo = read("apps/web/src/features/graph-explorer/GraphGeoView.tsx")
+
+    assert "formatTimelineEventLabel(event, index)" in timeline
+    assert "event.id ?? \"event\"" not in timeline
+    assert "formatDisplayValue(String(value))" in timeline
+    assert "formatGeoLabel(country as Record<string, unknown>)" in geo
+    assert "countryName ?? (country as Record<string, unknown>).code" not in geo
+    assert "formatNodeDisplayRef(value) || String(formatDisplayValue(value))" in geo
