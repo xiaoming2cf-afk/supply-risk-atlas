@@ -284,6 +284,9 @@ def test_semiconductor_content_coverage_is_summarized_on_primary_pages() -> None
     assert 'label="Data audit details"' in source
     assert "stage_source_family_counts" in source
     assert "stage_source_coverage" in source
+    assert "Priority coverage gaps" in source
+    assert "stage_narrow_patch_plan" in source
+    assert "required_narrow_patch_if_failed" in source
     assert "contentCoverage.source_manifest_id" in source
     assert "contentCoverage.graph_version" not in source
     assert "contentCoverage.source_manifest_id" in source
@@ -338,6 +341,11 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "formatNodeDisplayRef(raw)" in source
     assert "formatSourceDisplayRef(value)" in source
     assert "formatDisplayValue(String(family.source_status" in source
+    assert 'label: "known source gaps"' in source
+    assert 'label: "proxy limitations"' in source
+    assert 'label: "next narrow patch"' in source
+    assert 'label: "source_gaps"' not in source
+    assert 'label: "proxy_limitations"' not in source
     assert "Evidence support by source" in source
     assert "formatSourceList(family.source_ids)" in source
     assert "formatCoverageText(source.coverage_summary, stage.id)" in source

@@ -3269,3 +3269,45 @@
 ### Known Limitations
 
 - The deployed API/Web runtime remains stale until Render deploys are triggered by GitHub Actions secrets, Render MCP/CLI/API environment configuration, or manual Dashboard action.
+
+## 2026-06-06 Background Stage Gap Summary Gate
+
+### Current HEAD
+
+- Starting commit: `9fab22bb54455b9fd1de76d7a8d23201cb37a1ef`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+- User requested background-only work, so no Chrome, Render Dashboard, or ChatGPT foreground actions were attempted.
+
+### Gate Result
+
+- Extended the semiconductor content coverage summary with per-stage `failure_reason` and `required_narrow_patch_if_failed` so partial L0-L11 stages expose actionable next steps through API data without inventing production data.
+- Updated shared frontend types for the expanded stage coverage summary.
+- System Health now shows a compact user-facing `Priority coverage gaps` line for partial stages while retaining detailed narrow patch plans in folded `Data audit details`.
+- Graph Explorer stage views now label folded source caveats as `known source gaps`, `proxy limitations`, `why coverage is partial`, and `next narrow patch` instead of exposing raw field labels in the primary display.
+- No API route was removed or renamed. No live fetch path, raw payload exposure, production-ready claim, secret exposure, or geography terminology change was introduced.
+
+### Files Changed
+
+- `services/api/services/semiconductor_content_service.py`
+- `packages/shared-types/src/semiconductor-content.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `tests/api/test_semiconductor_content_endpoints.py`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/api/test_semiconductor_content_endpoints.py tests/sources/test_stage_source_coverage_matrix.py tests/quality/test_frontend_display_declutter.py -q` -> PASS, 38 tests.
+- `python -m pytest tests/quality -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` first timed out at 184 seconds without failure output, then passed with a longer timeout.
+
+### Known Limitations
+
+- This gate improves stage-gap visibility and page decluttering only. It does not add live ingestion, private enterprise data, calibrated production shares, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is available.
+- GPT Pro handoff was not attempted because the user requested background-only operation and there is no background ChatGPT connector in this environment.

@@ -141,6 +141,8 @@ export function StageGraphView({
   const evidenceRefs = rows(endpointData?.evidence_refs).slice(0, 5);
   const sourceGaps = list(endpointData?.source_gaps).slice(0, 3);
   const proxyLimitations = list(endpointData?.proxy_limitations).slice(0, 3);
+  const failureReason = String(endpointData?.failure_reason ?? "none");
+  const narrowPatchPlan = String(endpointData?.required_narrow_patch_if_failed ?? "none");
   const fallbackNodes: Array<Record<string, unknown>> = view.visibleNodes
     .filter((node) => stage.nodeTypes.includes(node.kind))
     .slice(0, 6)
@@ -174,8 +176,10 @@ export function StageGraphView({
           { label: "data_mode", value: endpointData?.data_mode ?? "fixture" },
           { label: "graph_mode", value: endpointData?.graph_mode ?? "fixture" },
           { label: "stage_view_component", value: stage.viewName },
-          { label: "source_gaps", value: sourceGaps },
-          { label: "proxy_limitations", value: proxyLimitations },
+          { label: "known source gaps", value: sourceGaps },
+          { label: "proxy limitations", value: proxyLimitations },
+          { label: "why coverage is partial", value: failureReason },
+          { label: "next narrow patch", value: narrowPatchPlan },
         ]}
         warnings={metadata.warnings}
       />

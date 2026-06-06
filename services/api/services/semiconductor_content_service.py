@@ -427,6 +427,11 @@ def _stage_source_coverage_summary(matrix: dict[str, Any]) -> list[dict[str, Any
                 "evidence_ref_count": int(stage.get("evidence_ref_count") or 0),
                 "source_gaps": list(stage.get("source_gaps", [])),
                 "proxy_limitations": list(stage.get("proxy_limitations", [])),
+                "failure_reason": stage.get("failure_reason", "none"),
+                "required_narrow_patch_if_failed": stage.get(
+                    "required_narrow_patch_if_failed",
+                    "none",
+                ),
                 "live_fetch_default": stage.get("live_fetch_default", "disabled"),
                 "fixture_required": bool(stage.get("fixture_required", True)),
                 "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),

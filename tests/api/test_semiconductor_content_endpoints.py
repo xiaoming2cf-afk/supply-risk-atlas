@@ -109,8 +109,13 @@ def test_semiconductor_coverage_overview_endpoint_returns_counts_and_sources() -
         assert row["graph_views"]
         assert row["charts"]
         assert row["tables"]
+        assert isinstance(row["failure_reason"], str)
+        assert isinstance(row["required_narrow_patch_if_failed"], str)
         assert row["live_fetch_default"] == "disabled"
         assert row["fixture_required"] is True
+        if row["coverage_status"] != "implemented":
+            assert row["failure_reason"] != "none"
+            assert row["required_narrow_patch_if_failed"] != "none"
 
 
 def test_value_chain_layer_endpoint_filters_by_stage() -> None:

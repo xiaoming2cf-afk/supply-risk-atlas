@@ -5031,7 +5031,8 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const contentCounts = contentCoverage?.coverage_counts;
   const chainStageCoverageRows = contentCoverage?.stage_source_coverage_summary ?? [];
   const implementedChainStageCount = chainStageCoverageRows.filter((row) => row.coverage_status === "implemented").length;
-  const partialChainStageCount = chainStageCoverageRows.filter((row) => row.coverage_status !== "implemented").length;
+  const partialChainStageRows = chainStageCoverageRows.filter((row) => row.coverage_status !== "implemented");
+  const partialChainStageCount = partialChainStageRows.length;
   const chainStageSourceFamilyRows = Object.entries(contentCoverage?.stage_source_family_counts ?? {});
 
   return (
@@ -5171,6 +5172,14 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               <p className="public-data-note">
                 Stage coverage links national/policy, enterprise disclosure, and industry fixture sources to each supply-chain layer.
               </p>
+              {partialChainStageRows.length ? (
+                <div className="public-data-note" aria-label="Priority stage coverage gaps">
+                  <strong>Priority coverage gaps: </strong>
+                  {partialChainStageRows
+                    .map((stage) => `${formatDisplayLabel(stage.stage_id)} ${stage.stage_name}`)
+                    .join("; ")}
+                </div>
+              ) : null}
             </div>
           ) : null}
           <AuditDetails
@@ -5193,6 +5202,13 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                 value: chainStageCoverageRows.map(
                   (stage) =>
                     `${formatDisplayLabel(stage.stage_id)}: ${formatDisplayValue(stage.coverage_status)}; sources=${stage.source_count}; gaps=${stage.source_gaps.length}`,
+                ),
+              },
+              {
+                label: "stage_narrow_patch_plan",
+                value: partialChainStageRows.map(
+                  (stage) =>
+                    `${formatDisplayLabel(stage.stage_id)}: ${formatDisplayValue(stage.failure_reason)}; next=${formatDisplayValue(stage.required_narrow_patch_if_failed)}`,
                 ),
               },
               { label: "coverage_gaps", value: contentCoverage.coverage_gaps },

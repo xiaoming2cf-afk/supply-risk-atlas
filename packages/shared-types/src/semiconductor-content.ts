@@ -136,6 +136,8 @@ export interface SemiconductorChainStageCoverageSummary {
   evidence_ref_count: number;
   source_gaps: string[];
   proxy_limitations: string[];
+  failure_reason: string;
+  required_narrow_patch_if_failed: string;
   live_fetch_default: "disabled" | string;
   fixture_required: boolean;
   calibration_status: string;
