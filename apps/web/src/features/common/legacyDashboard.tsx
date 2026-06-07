@@ -336,13 +336,13 @@ const graphModeOptions: Array<{ id: GraphExplorerMode; label: string; descriptio
   {
     id: "geo-aggregate",
     label: "Country / Province",
-    description: "Aggregate nodes and paths by country and province context.",
+    description: "Aggregate entities and paths by geography context.",
     icon: MapIcon,
   },
   {
     id: "risk-propagation",
     label: "Risk Propagation",
-    description: "Explain the active transmission path and bottleneck edges.",
+    description: "Explain the active transmission path and bottleneck relationships.",
     icon: Route,
   },
   {

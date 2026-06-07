@@ -195,7 +195,7 @@ export function StageGraphView({
         warnings={metadata.warnings}
       />
       <p className="warning-text">
-        Public evidence view; evidence-context links are inspection links, not dependency edges.
+        Public evidence view; evidence-context links are inspection links, not supply-chain dependencies.
       </p>
       <div className="graph-view-summary">
         <span>{relationshipClassLabel(relationshipClassFilter)}</span>

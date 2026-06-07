@@ -3675,6 +3675,40 @@
 - Deployment status: `blocked_background_no_safe_render_api_path`.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Graph Relationship Copy Follow-Up Gate
+
+### Current HEAD
+
+- Starting commit: `437b346ab941b14e9ebf0cb98236df79e58b0dfe`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced the default graph edge table title with `Graph relationships`.
+- Reworded Graph Explorer mode descriptions from implementation terms such as `nodes` and `bottleneck edges` to user-facing `entities` and `bottleneck relationships`.
+- Reworded stage evidence-context copy so it says inspection links are not supply-chain dependencies, rather than asking users to reason about dependency edges.
+- Kept graph API fields, report exports, relationship class semantics, geography normalization, raw-payload exclusion, and evidence-context non-propagation unchanged.
+
+### Files Changed
+
+- `apps/web/src/features/common/tables/GraphEdgeTable.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_stage_frontend_artifacts.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+
+### Known Limitations
+
+- This gate is a copy-only follow-up and does not change backend graph semantics, source coverage, deployment status, or data calibration.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background System Health Graph Readiness Copy Declutter Gate
 
 ### Current HEAD
