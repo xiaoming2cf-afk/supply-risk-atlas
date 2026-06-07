@@ -657,3 +657,5 @@ def test_system_health_manifest_and_checksum_are_audit_details_not_primary_subti
     assert '{ label: "checksum", value: manifestChecksum }' in source
     assert '{ label: "manifest_ref", value: health.evidenceLineage.manifestRef }' in source
     assert '{ label: "checksum", value: health.evidenceLineage.checksum.slice(0, 12) }' in source
+    assert "source.checksum.slice" not in source
+    assert "checksum retained in audit manifest" in source

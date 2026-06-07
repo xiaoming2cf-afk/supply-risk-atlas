@@ -5384,7 +5384,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <span>{source.updateFrequency}</span>
                       <span>{t(`${source.recordCount} records`)}</span>
                       <span>{t(`${source.maxStaleMinutes} m SLA`)}</span>
-                      <span>{source.checksum.slice(0, 10)}</span>
+                      <span>{t("checksum retained in audit manifest")}</span>
                     </div>
                   </li>
                 ))}
