@@ -832,3 +832,19 @@ def test_display_values_translate_boolean_strings_for_readiness_fields() -> None
 
     assert '["true", "yes"]' in source
     assert '["false", "no"]' in source
+
+
+def test_reference_field_labels_use_user_language_not_refs_shorthand() -> None:
+    source = read("apps/web/src/features/common/displayLabels.ts")
+
+    expected_labels = {
+        '["source_refs", "Sources"]',
+        '["formula_refs", "Formula references"]',
+        '["selected_run_refs", "Selected runs"]',
+    }
+    for label in expected_labels:
+        assert label in source
+
+    assert '["source_refs", "Source refs"]' not in source
+    assert '["formula_refs", "Formula refs"]' not in source
+    assert '["selected_run_refs", "Selected run refs"]' not in source
