@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { formatDisplayLabel, formatDisplayValue } from "../displayLabels";
 
 export interface BadgeProps {
   label: string;
@@ -9,8 +10,8 @@ export interface BadgeProps {
 export function MetadataBadge({ label, value, tone = "neutral" }: BadgeProps) {
   return (
     <span className={`metadata-badge metadata-badge-${tone}`} data-component="metadata-badge">
-      <span>{label}</span>
-      <strong>{value ?? "unavailable"}</strong>
+      <span>{formatDisplayLabel(label)}</span>
+      <strong>{value === undefined || value === null ? "unavailable" : formatDisplayValue(value)}</strong>
     </span>
   );
 }

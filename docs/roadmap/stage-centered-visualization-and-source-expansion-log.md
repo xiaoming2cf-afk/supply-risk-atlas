@@ -3565,6 +3565,48 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Metadata Badge Display Formatting Gate
+
+### Current HEAD
+
+- Starting commit: `a78ab3e1893a2050b1263c4a63c59afe3f044a2f`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Routed shared metadata badge labels and values through the existing display-label formatter, so raw keys and sentinel values such as `fixture_proxy_not_calibrated` and `not_financial_loss` render as product-language copy.
+- Renamed the reusable graph version badge's default visible label from `Graph version` to `Graph snapshot`.
+- Added display mappings for `calibration_status`, `fixture_proxy_not_calibrated`, and `not_financial_loss`.
+- Added quality assertions that keep the shared badge component wired to the formatter and protect the graph snapshot wording.
+- No public route, API response schema, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context propagation rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/data-cards/DataCards.tsx`
+- `apps/web/src/features/common/data-cards/GraphVersionBadge.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 46 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m services.api.dev_server` -> started as a hidden local background API process for smoke verification.
+- `npm.cmd --workspace apps/web run dev` -> started as a hidden local background Web process with `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1` and `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000`.
+- `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000 npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes shared frontend badge display copy only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Source Coverage Readiness Label Declutter Gate
 
 ### Current HEAD

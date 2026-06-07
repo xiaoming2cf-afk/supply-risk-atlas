@@ -857,6 +857,7 @@ def test_audit_detail_labels_use_product_language_not_raw_field_language() -> No
     source = read("apps/web/src/features/common/displayLabels.ts")
 
     expected_labels = {
+        '["calibration_status", "Calibration status"]',
         '["data_mode", "Data source mode"]',
         '["failed_endpoint", "Connection target"]',
         '["graph_mode", "Graph data mode"]',
@@ -878,6 +879,20 @@ def test_audit_detail_labels_use_product_language_not_raw_field_language() -> No
     assert '["portfolio_source_status", "Portfolio source status"]' not in source
     assert '["source_manifest_id", "Source manifest ID"]' not in source
     assert '["transport_attempts", "Transport attempts"]' not in source
+
+
+def test_metadata_badges_format_raw_labels_and_values() -> None:
+    source = read("apps/web/src/features/common/data-cards/DataCards.tsx")
+    graph_badge = read("apps/web/src/features/common/data-cards/GraphVersionBadge.tsx")
+    label_source = read("apps/web/src/features/common/displayLabels.ts")
+
+    assert 'import { formatDisplayLabel, formatDisplayValue } from "../displayLabels";' in source
+    assert "<span>{formatDisplayLabel(label)}</span>" in source
+    assert "formatDisplayValue(value)" in source
+    assert 'label={props.label ?? "Graph snapshot"}' in graph_badge
+    assert 'label={props.label ?? "Graph version"}' not in graph_badge
+    assert '["fixture_proxy_not_calibrated", "Research fixture calibration"]' in label_source
+    assert '["not_financial_loss", "No financial loss estimate"]' in label_source
 
 
 def test_fixture_graph_audit_label_uses_research_mode_language() -> None:
