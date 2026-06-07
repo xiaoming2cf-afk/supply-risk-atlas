@@ -28,6 +28,10 @@ def test_data_lineage_banner_uses_user_facing_summary_and_collapsed_audit_detail
     assert "<span>transport_attempts:" not in source
     assert "fixture_proxy_not_calibrated; not_financial_loss" not in source
     assert "Research fixture calibration; no financial loss estimate" in source
+    assert "failed source status" not in source
+    assert "degraded source status" not in source
+    assert "unavailable source coverage" in source
+    assert "degraded source coverage" in source
 
 
 def test_metadata_summary_filters_internal_audit_tokens_from_primary_badges() -> None:

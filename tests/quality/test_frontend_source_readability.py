@@ -81,4 +81,4 @@ def test_deployed_smoke_accepts_only_controlled_entity_risk_degradation() -> Non
     assert "hasControlledEntityRiskDegradation" in source
     assert "riskHasControlledDegradedState" in source
     assert "View diagnostics" in source
-    assert 'includes("source status")' in source
+    assert 'includes("source coverage")' in source

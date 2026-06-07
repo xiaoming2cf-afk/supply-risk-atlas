@@ -836,7 +836,7 @@ async function main() {
     const riskHasControlledDegradedState =
       riskState.text.includes("Entity Risk 360 unavailable") &&
       riskState.text.includes("View diagnostics") &&
-      riskStateTextLower.includes("source status");
+      riskStateTextLower.includes("source coverage");
     checks.push({
       page: "Entity Risk 360 Risk Score v0",
       title: riskState.title,

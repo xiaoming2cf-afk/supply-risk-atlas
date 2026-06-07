@@ -285,9 +285,9 @@ export function App() {
         return Object.keys(nextData).length > 0 ? nextData : null;
       });
       if (rejectedCount === requests.length) {
-        setError("All public dashboard endpoints are unavailable. Page panels show the failed source status.");
+        setError("All public dashboard endpoints are unavailable. Page panels show unavailable source coverage.");
       } else if (rejectedCount > 0) {
-        setError(`${rejectedCount} public dashboard endpoint(s) did not return. Page panels show degraded source status where needed.`);
+        setError(`${rejectedCount} public dashboard endpoint(s) did not return. Page panels show degraded source coverage where needed.`);
       }
       setLastRefresh(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     } catch {
