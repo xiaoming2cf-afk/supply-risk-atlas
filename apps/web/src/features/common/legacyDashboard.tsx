@@ -2287,7 +2287,7 @@ export function CompanyRisk360({
             </div>
             <div className="inspector-grid" style={{ marginTop: 16 }}>
               <Field label="Selected entity" value={formatNodeDisplayRef(selectedNodeId)} />
-              <Field label="Source status" value={riskResult?.sourceStatus ?? "pending"} />
+              <Field label="Source coverage" value={riskResult?.sourceStatus ?? "pending"} />
             </div>
             <AuditDetails
               label="View diagnostics"

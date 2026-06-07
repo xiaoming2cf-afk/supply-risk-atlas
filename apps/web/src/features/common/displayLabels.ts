@@ -191,7 +191,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["source_refs", "Sources"],
   ["source_registry_readiness", "Source registry readiness"],
   ["source_status", "Source coverage"],
-  ["source_statuses", "Source status summary"],
+  ["source_statuses", "Source coverage summary"],
   ["storage_readiness", "Storage readiness"],
   ["transport_attempts", "Connection attempts"],
   ["false", "no"],

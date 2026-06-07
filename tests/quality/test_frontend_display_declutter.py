@@ -889,12 +889,21 @@ def test_system_health_readiness_labels_do_not_show_snake_case() -> None:
         '["model_readiness", "Model readiness"]',
         '["service_readiness", "Service readiness"]',
         '["source_registry_readiness", "Source registry readiness"]',
-        '["source_statuses", "Source status summary"]',
+        '["source_statuses", "Source coverage summary"]',
         '["storage_readiness", "Storage readiness"]',
         '["validation_readiness", "Validation readiness"]',
     }
     for label in expected_labels:
         assert label in source
+
+    assert '["source_statuses", "Source status summary"]' not in source
+
+
+def test_entity_risk_fallback_uses_source_coverage_label() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert '<Field label="Source coverage" value={riskResult?.sourceStatus ?? "pending"} />' in source
+    assert '<Field label="Source status" value={riskResult?.sourceStatus ?? "pending"} />' not in source
 
 
 def test_display_values_translate_boolean_strings_for_readiness_fields() -> None:

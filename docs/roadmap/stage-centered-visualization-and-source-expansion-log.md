@@ -3565,6 +3565,49 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Source Coverage Readiness Label Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `bb71359b99746d3d850fae4ae416194c0b13289e`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded the Entity Risk 360 unavailable fallback field from `Source status` to `Source coverage`.
+- Reworded the system health `source_statuses` display label from `Source status summary` to `Source coverage summary` while keeping the underlying data key unchanged.
+- Added quality assertions that keep the older visible status wording out of the fallback and shared readiness label map.
+- No public route, API response schema, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context propagation rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 43 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `rg -n "Source status summary" apps/web/src tests/quality` -> only the negative quality assertion still contains the old phrase.
+- `rg -n "Source status" apps/web/src tests/quality` -> only negative quality assertions still contain the old fallback/summary wording.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m services.api.dev_server` -> started as a hidden local background API process for smoke verification.
+- `npm.cmd --workspace apps/web run dev` -> started as a hidden local background Web process with `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1` and `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000`.
+- `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000 npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes visible readiness/fallback copy and quality guards only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Deployed Render endpoints were not updated by this background pass.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Global Data Status Calibration Copy Declutter Gate
 
 ### Current HEAD
