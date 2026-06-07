@@ -3617,6 +3617,48 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Audit Formatter Product Language Gate
+
+### Current HEAD
+
+- Starting commit: `e0246808c5207c744cf47ac7b0459b2b806a66ba`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Added display-label overrides so Entity Risk fallback diagnostics render `Portfolio connection target` and `Portfolio source coverage` instead of raw portfolio endpoint/status wording.
+- Reworded `fixture_graph` and `fixtureGraph` audit labels to `Research fixture mode`, matching the surrounding public-evidence demo language while preserving the underlying keys.
+- Added quality assertions that keep the older formatter outputs from returning.
+- No public route, API response schema, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context propagation rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 44 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `rg -n "Portfolio" apps/web/src/features/common/displayLabels.ts tests/quality/test_frontend_display_declutter.py apps/web/src/features/common/legacyDashboard.tsx` -> old portfolio formatter labels appear only in negative quality assertions.
+- `rg -n "Research fixture mode|Fixture graph" apps/web/src/features/common/displayLabels.ts tests/quality/test_frontend_display_declutter.py apps/web/src/features/common/AuditDetails.tsx apps/web/src/features/common/legacyDashboard.tsx` -> `fixture_graph` and `fixtureGraph` map to `Research fixture mode`; remaining `Fixture graph` strings are metadata/readiness copy covered by existing tests.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m services.api.dev_server` -> started as a hidden local background API process for smoke verification.
+- `npm.cmd --workspace apps/web run dev` -> started as a hidden local background Web process with `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1` and `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000`.
+- `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000 npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes visible audit/fallback formatter copy and quality guards only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Deployed Render endpoints were not updated by this background pass.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Global Data Status Calibration Copy Declutter Gate
 
 ### Current HEAD

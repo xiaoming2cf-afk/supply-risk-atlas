@@ -862,6 +862,8 @@ def test_audit_detail_labels_use_product_language_not_raw_field_language() -> No
         '["graph_mode", "Graph data mode"]',
         '["graph_version", "Graph snapshot"]',
         '["last_checked_at", "Last checked"]',
+        '["portfolio_endpoint", "Portfolio connection target"]',
+        '["portfolio_source_status", "Portfolio source coverage"]',
         '["retry_hint", "Recovery hint"]',
         '["source_manifest_id", "Source manifest"]',
         '["source_status", "Source coverage"]',
@@ -872,8 +874,19 @@ def test_audit_detail_labels_use_product_language_not_raw_field_language() -> No
 
     assert '["failed_endpoint", "Failed endpoint"]' not in source
     assert '["graph_version", "Graph version"]' not in source
+    assert '["portfolio_endpoint", "Portfolio endpoint"]' not in source
+    assert '["portfolio_source_status", "Portfolio source status"]' not in source
     assert '["source_manifest_id", "Source manifest ID"]' not in source
     assert '["transport_attempts", "Transport attempts"]' not in source
+
+
+def test_fixture_graph_audit_label_uses_research_mode_language() -> None:
+    source = read("apps/web/src/features/common/displayLabels.ts")
+
+    assert '["fixture_graph", "Research fixture mode"]' in source
+    assert '["fixtureGraph", "Research fixture mode"]' in source
+    assert '["fixture_graph", "Fixture graph"]' not in source
+    assert '["fixtureGraph", "Fixture graph"]' not in source
 
 
 def test_system_health_readiness_labels_do_not_show_snake_case() -> None:
