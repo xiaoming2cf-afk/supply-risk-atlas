@@ -5727,6 +5727,15 @@
 ### Known Limitations
 
 - This gate changes visible app-shell error copy and smoke expectations only. It does not add calibrated production data, new source connectors, or Render redeployment.
-- GitHub and deployment checks are still pending for this gate.
+- GitHub checks passed after push; deployed Render endpoints remain unavailable or unverified in the bounded background probe.
 - Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
 - No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
+### Post-Commit Background Status
+
+- Implementation commit: `3d948d1fd88ee9ed41a4c2618aad831ca0d5bf71`.
+- GitHub `ci` passed in run `27101230324`.
+- GitHub `Quality Gates` passed in run `27101230328`.
+- Background deployed version probe for expected commit `3d948d1` returned `deployed_unavailable`: API, Web build-info, Web proxy, and public Web HTML were unavailable in the bounded probe window; public Web HTML returned HTTP `503`.
+- Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
+- No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
