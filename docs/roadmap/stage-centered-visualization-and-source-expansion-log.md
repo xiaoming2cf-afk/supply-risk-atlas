@@ -3709,6 +3709,17 @@
 - Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
 - No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
 
+### Post-Commit Background Status
+
+- Implementation commit: `8bdd1df2bcdde299fcc0da6e3a9c15f4b063fa2c` (`Use relationship copy for graph details`).
+- GitHub `Quality Gates`: run `27096040677`, passed.
+- GitHub `ci`: run `27096040679`, passed. The first `gh run watch` attempt hit a GitHub annotations EOF while the run was still active; a follow-up `gh run list` confirmed success.
+- Deployed version probe: `python scripts/check-deployed-version.py --expected-commit 8bdd1df --timeout 20` returned `deployed_stale_or_unverified`.
+- Deployed probe details: API version probe failed with `transport_timeout`; web build info and web proxy still reported commit `b281948e446031f7605d4d85e6f7f6269adfa357`, not `8bdd1df`.
+- Render deploy dry run: `python scripts/trigger-render-deploy.py --dry-run --commit 8bdd1df --timeout 20` returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured.
+- Deployment status: `blocked_background_no_safe_render_api_path_and_deployed_web_stale`.
+- No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
 ## 2026-06-07 Background System Health Graph Readiness Copy Declutter Gate
 
 ### Current HEAD
