@@ -546,15 +546,15 @@ export function GraphExplorer({
 
       <Panel
         title="Entity network"
-        subtitle={`${graphModeLabel(mode)} view; ${view.visibleNodes.length} nodes and ${view.visibleLinks.length} edges rendered.`}
+        subtitle={`${graphModeLabel(mode)} view; ${view.visibleNodes.length} entities and ${view.visibleLinks.length} relationships shown.`}
         className="graph-main-panel"
         translateSubtitle={false}
       >
         <GraphBreadcrumbs mode={mode} selectedEdge={view.selectedEdge} selectedNode={view.selectedNode} />
         <div className="graph-view-summary">
-          <span>initial cap: 20 nodes / 35 edges</span>
-          <span>focus cap: 25 nodes / 40 edges</span>
-          <span>edge labels hidden by default</span>
+          <span>overview limit: 20 entities / 35 relationships</span>
+          <span>focus limit: 25 entities / 40 relationships</span>
+          <span>relationship labels hidden by default</span>
         </div>
         <EndpointStatusPanel details={displayedEndpointDetails} />
         <EndpointStatusPanel details={stageEndpointDetails} />

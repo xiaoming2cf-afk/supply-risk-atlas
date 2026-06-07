@@ -21,7 +21,7 @@ export function DemandRelationshipView({
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
       <div className="section-kicker">Demand relationships</div>
-      <p className="inspector-note">Demand rows show downstream source, product grade, and proxy type; demand edges are not supplier edges.</p>
+      <p className="inspector-note">Demand rows show downstream source, product grade, and proxy type; demand relationships are not supplier relationships.</p>
       <RelationshipMetadata data={data} />
       <DownstreamDemandPressureChart
         data={!isEndpointUnavailable ? demandChartData(rows) : []}

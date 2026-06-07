@@ -288,10 +288,10 @@ export function GraphControls({
       </div>
 
       <div className="inspector-grid graph-stat-grid">
-        <Field label="Visible nodes" value={`${renderCounts.visibleNodes}/${renderCounts.nodeLimit}`} />
-        <Field label="Visible links" value={`${renderCounts.visibleLinks}/${renderCounts.edgeLimit}`} />
-        <Field label="Eligible nodes" value={renderCounts.totalEligibleNodes} />
-        <Field label="Eligible links" value={renderCounts.totalEligibleEdges} />
+        <Field label="Visible entities" value={`${renderCounts.visibleNodes}/${renderCounts.nodeLimit}`} />
+        <Field label="Visible relationships" value={`${renderCounts.visibleLinks}/${renderCounts.edgeLimit}`} />
+        <Field label="Eligible entities" value={renderCounts.totalEligibleNodes} />
+        <Field label="Eligible relationships" value={renderCounts.totalEligibleEdges} />
       </div>
 
       <div className="graph-list-section">
@@ -351,7 +351,7 @@ export function GraphControls({
                 >
                   <span>
                     <strong>{country.label}</strong>
-                    <small>{country.entityCount} nodes / {country.edgeCount} edges</small>
+                    <small>{country.entityCount} entities / {country.edgeCount} relationships</small>
                   </span>
                   <b>{graphScore(country.riskScore)}</b>
                 </button>

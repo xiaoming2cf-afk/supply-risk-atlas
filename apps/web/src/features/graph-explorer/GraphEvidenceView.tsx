@@ -16,7 +16,7 @@ export function GraphEvidenceView({
     <div className="graph-v3-panel graph-v3-evidence-panel">
       <div className="section-kicker">Evidence mode</div>
       <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
-      <p className="inspector-note">Evidence-context link rows are separated from real graph edges and scenario traces.</p>
+      <p className="inspector-note">Evidence-context link rows are separated from real graph relationships and scenario traces.</p>
       <table className="graph-evidence-table">
         <thead>
           <tr>

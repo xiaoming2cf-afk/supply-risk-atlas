@@ -219,7 +219,7 @@ function CountryInspector({
           <ul className="evidence-list compact">
             {country.subdivisions.slice(0, 6).map((subdivision) => (
               <li key={subdivision.geoId}>
-                {subdivision.label}: {subdivision.entityCount} nodes / {graphScore(subdivision.riskScore)}
+                {subdivision.label}: {subdivision.entityCount} entities / {graphScore(subdivision.riskScore)}
               </li>
             ))}
           </ul>

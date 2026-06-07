@@ -21,7 +21,7 @@ export function GraphSourceCoverageView({
       <p className="inspector-note">Coverage is a transparency table and does not render the full graph.</p>
       {nodeCoverage ? (
         <div className="graph-view-summary">
-          <span>catalog nodes: {String(nodeCoverage.catalog_node_count ?? "n/a")}</span>
+          <span>Catalog entities: {String(nodeCoverage.catalog_node_count ?? "n/a")}</span>
           <span>covered: {String(nodeCoverage.covered_catalog_node_count ?? "n/a")}</span>
           <span>status: {String(nodeCoverage.status ?? "partial")}</span>
         </div>

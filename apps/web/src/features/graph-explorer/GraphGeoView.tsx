@@ -19,8 +19,8 @@ export function GraphGeoView({
       <div className="section-kicker">Geo mode</div>
       <p className="inspector-note">Geo aggregates countries, regions, trade/dependency links, logistics context, and hazard exposure overlays.</p>
       <div className="inspector-grid">
-        <span>Rendered geo nodes: {view.visibleNodes.length}</span>
-        <span>Rendered geo links: {view.visibleLinks.length}</span>
+        <span>Shown geographies: {view.visibleNodes.length}</span>
+        <span>Shown relationships: {view.visibleLinks.length}</span>
       </div>
       <ul className="evidence-list compact">
         {countries.slice(0, 6).map((country, index) => (

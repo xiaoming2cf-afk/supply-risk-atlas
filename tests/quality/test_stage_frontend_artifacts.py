@@ -37,7 +37,7 @@ def test_stage_graph_generic_view_shows_stage_metadata_and_declutter_limits() ->
     assert "source_manifest_id" in text
     assert "data_mode" in text
     assert "graph_mode" in text
-    assert "18 nodes / 30 edges" in text
+    assert "18 entities / 30 relationships" in text
     assert "evidence-context links are inspection links" in text
 
 

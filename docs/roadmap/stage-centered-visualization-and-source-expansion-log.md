@@ -3612,6 +3612,58 @@
 - Deployment status: `blocked_background_no_safe_render_api_path`.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Graph Count Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `3a0985259fbeae1ae53b399e72fc288db29e563b`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced user-facing Graph Explorer count copy such as `nodes / edges`, `Visible nodes`, `Eligible nodes`, and `edge labels` with `entities`, `relationships`, and user-facing relationship wording.
+- Replaced graph relationship view copy that described demand facts as `edges`; demand rows now say demand relationships are not supplier relationships.
+- Replaced stage view declutter limit copy from `18 nodes / 30 edges` to `18 entities / 30 relationships`.
+- Replaced report graph context and geography drilldown count copy with `entities`, `relationships`, and `catalog records` where appropriate.
+- Kept graph API payload fields, graph kernel field names, report export metadata, geography terminology, raw-payload exclusion, and evidence-context separation unchanged.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/GraphExplorer.tsx`
+- `apps/web/src/features/graph-explorer/GraphControls.tsx`
+- `apps/web/src/features/graph-explorer/GraphGeoView.tsx`
+- `apps/web/src/features/graph-explorer/GraphOverviewView.tsx`
+- `apps/web/src/features/graph-explorer/GraphScenarioOverlay.tsx`
+- `apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx`
+- `apps/web/src/features/graph-explorer/GraphTimelineView.tsx`
+- `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/GraphEvidenceView.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `tests/quality/test_stage_frontend_artifacts.py`
+- `scripts/browser-smoke.mjs`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_stage_frontend_artifacts.py -q` - passed.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `npm.cmd run smoke:web` - passed, 63 browser checks.
+
+### Known Limitations
+
+- This gate is a display-language hardening pass only. It does not add new source connectors, calibrated production datasets, or Render redeployment.
+- Some System Health technical summaries still use node/relationship counts intentionally because that page is allowed to expose readiness diagnostics in grouped form.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background System Health Graph Readiness Copy Declutter Gate
 
 ### Current HEAD

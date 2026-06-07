@@ -18,7 +18,7 @@ export function GraphTimelineView({
   return (
     <div className="graph-v3-panel graph-v3-timeline-panel">
       <div className="section-kicker">Timeline mode</div>
-      <p className="inspector-note">Event timeline shows event nodes and affected graph nodes over hop order; it does not render the full graph.</p>
+      <p className="inspector-note">Event timeline shows events and affected entities over hop order; it does not render the full graph.</p>
       <ul className="timeline-list compact">
         {endpointEvents.slice(0, 6).map((event, index) => (
           <li key={String(event.id ?? index)}>{formatTimelineEventLabel(event, index)} / hop {String(event.hop_order ?? index)}</li>

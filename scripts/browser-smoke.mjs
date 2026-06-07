@@ -427,7 +427,7 @@ async function main() {
     const graphV3Timeline = await waitFor(
       client,
       () => graphV2State(client),
-      (state) => state.text.includes("Timeline mode") && state.text.includes("event nodes") && state.flowEdgeCount <= 40,
+      (state) => state.text.includes("Timeline mode") && state.text.includes("affected entities") && state.flowEdgeCount <= 40,
     );
     checks.push({
       page: "Graph Explorer v3 timeline mode",
@@ -515,7 +515,7 @@ async function main() {
 
     const relationshipModeChecks = [
       ["Supply", "Supply relationships", "supplied item"],
-      ["Demand", "Demand relationships", "demand edges are not supplier edges"],
+      ["Demand", "Demand relationships", "demand relationships are not supplier relationships"],
       ["Production", "Production dependencies", "bottleneck flags"],
       ["Balance", "Supply-demand balance", "Shortage proxy"],
     ];
@@ -584,7 +584,7 @@ async function main() {
           stageState.text.includes(stageLabel) &&
           stageState.hasStageSelector &&
           stageState.hasRelationshipClassSelector &&
-          stageState.text.includes("Focused view: up to 18 nodes / 30 edges"),
+          stageState.text.includes("Focused view: up to 18 entities / 30 relationships"),
       });
     }
 

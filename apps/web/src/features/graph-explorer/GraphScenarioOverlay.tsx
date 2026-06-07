@@ -17,7 +17,7 @@ export function GraphScenarioOverlay({
       <p className="inspector-note">Scenario overlay renders only a selected run. It never displays all runs by default.</p>
       <div className="inspector-grid">
         <span>Selected run: {overlay?.run_id ? "available" : "none selected"}</span>
-        <span>affected nodes: {affectedNodes.length || view.visibleNodes.length}</span>
+        <span>Affected entities: {affectedNodes.length || view.visibleNodes.length}</span>
       </div>
       <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
       <AuditDetails

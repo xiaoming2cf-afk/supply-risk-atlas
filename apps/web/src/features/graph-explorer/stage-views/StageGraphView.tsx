@@ -199,8 +199,8 @@ export function StageGraphView({
       </p>
       <div className="graph-view-summary">
         <span>{relationshipClassLabel(relationshipClassFilter)}</span>
-        <span>Risk propagation: {propagates ? "available for evidence-backed edges" : "not used for propagation"}</span>
-        <span>Focused view: up to 18 nodes / 30 edges</span>
+        <span>Risk propagation: {propagates ? "available for evidence-backed relationships" : "not used for propagation"}</span>
+        <span>Focused view: up to 18 entities / 30 relationships</span>
       </div>
       {isStageEndpointLoading ? (
         <p className="inspector-note">Loading authoritative stage graph data.</p>
@@ -220,7 +220,7 @@ export function StageGraphView({
           ))}
         </ul>
       ) : (
-        <p className="muted">No stage nodes are available for the active filters.</p>
+        <p className="muted">No stage entities are available for the active filters.</p>
       )}
       {visibleEdges.length ? (
         <ul className="compact-list">
@@ -232,7 +232,7 @@ export function StageGraphView({
           ))}
         </ul>
       ) : (
-        <p className="muted">No stage edges are available for the active relationship class.</p>
+        <p className="muted">No stage relationships are available for the active relationship class.</p>
       )}
       <div className="graph-view-summary">
         <span>{sourceCoverageLabel}</span>

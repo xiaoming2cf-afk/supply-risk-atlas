@@ -707,9 +707,31 @@ def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() 
     assert "Can this edge propagate risk?" not in stage_source
     assert "fixture/promoted public-evidence view" not in stage_source
     assert "Risk propagation:" in stage_source
-    assert "Focused view: up to 18 nodes / 30 edges" in stage_source
+    assert "Focused view: up to 18 entities / 30 relationships" in stage_source
+    assert "Focused view: up to 18 nodes / 30 edges" not in stage_source
     assert "evidence refs" not in stage_source
     assert "evidence notes" in stage_source
+
+
+def test_graph_explorer_primary_count_copy_uses_user_facing_terms() -> None:
+    explorer = read("apps/web/src/features/graph-explorer/GraphExplorer.tsx")
+    controls = read("apps/web/src/features/graph-explorer/GraphControls.tsx")
+    overview = read("apps/web/src/features/graph-explorer/GraphOverviewView.tsx")
+    geo = read("apps/web/src/features/graph-explorer/GraphGeoView.tsx")
+    timeline = read("apps/web/src/features/graph-explorer/GraphTimelineView.tsx")
+    legacy = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    combined = "\n".join([explorer, controls, overview, geo, timeline, legacy])
+    assert "nodes and ${view.visibleLinks.length} edges rendered" not in explorer
+    assert "nodes / 35 edges" not in explorer
+    assert "nodes / 40 edges" not in explorer
+    assert "edge labels hidden by default" not in explorer
+    assert "Visible nodes" not in controls
+    assert "Eligible nodes" not in controls
+    assert "Rendered geo nodes" not in geo
+    assert "event nodes and affected graph nodes" not in timeline
+    assert " entities / " in combined
+    assert " relationships" in combined
 
 
 def test_evidence_records_copy_avoids_refs_jargon_in_primary_ui() -> None:

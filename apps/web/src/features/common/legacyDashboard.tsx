@@ -707,11 +707,11 @@ export function GraphExplorer({
           />
         </label>
         <div className="inspector-grid graph-stat-grid">
-          <Field label="Visible nodes" value={visibleNodes.length} />
+          <Field label="Visible entities" value={visibleNodes.length} />
           <Field label="Visible links" value={visibleLinks.length} />
-          <Field label="Total nodes" value={formatCompactNumber(graphStats?.totalNodes ?? graph.nodes.length)} />
+          <Field label="Total entities" value={formatCompactNumber(graphStats?.totalNodes ?? graph.nodes.length)} />
           <Field label="Total links" value={formatCompactNumber(graphStats?.totalLinks ?? graph.links.length)} />
-          <Field label="Critical nodes" value={criticalNodes.length} />
+          <Field label="Critical entities" value={criticalNodes.length} />
           <Field label="Transmission paths" value={transmissionPaths.length} />
         </div>
 
@@ -753,7 +753,7 @@ export function GraphExplorer({
 
       <Panel
         title="Entity network"
-        subtitle="Click nodes, edges, paths, and countries to inspect risk transmission."
+        subtitle="Click entities, relationships, paths, and geographies to inspect risk transmission."
         className="graph-main-panel"
       >
         <div className="graph-canvas">
@@ -818,7 +818,7 @@ function GraphCriticalNodeList({
   const { t } = useI18n();
   return (
     <div className="graph-list-section">
-      <div className="section-kicker">{t("Critical nodes")}</div>
+      <div className="section-kicker">{t("Critical entities")}</div>
       <ul className="critical-node-list">
         {nodes.slice(0, 10).map((node) => (
           <li key={node.id}>
@@ -897,7 +897,7 @@ function GraphCountryList({
             >
               <span>
                 <strong>{country.label}</strong>
-                <small>{country.entityCount} nodes / {country.edgeCount} edges</small>
+                <small>{country.entityCount} entities / {country.edgeCount} relationships</small>
               </span>
               <b>{graphScore(country.riskScore)}</b>
             </button>
@@ -1116,7 +1116,7 @@ function CountryInspector({
           <ul className="evidence-list compact">
             {country.subdivisions.slice(0, 6).map((subdivision) => (
               <li key={subdivision.geoId}>
-                {subdivision.label}: {subdivision.entityCount} nodes / {graphScore(subdivision.riskScore)}
+                {subdivision.label}: {subdivision.entityCount} entities / {graphScore(subdivision.riskScore)}
               </li>
             ))}
           </ul>
@@ -1130,7 +1130,7 @@ function CountryInspector({
             .slice(0, 5)
             .map((coverage) => (
               <li key={`${coverage.countryCode}-${coverage.sourceId}`}>
-                {coverage.sourceId}: {coverage.nodeCount} nodes
+                {coverage.sourceId}: {coverage.nodeCount} catalog records
               </li>
             ))}
         </ul>
@@ -3866,7 +3866,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
         <Panel title="Report evidence summary" subtitle="Evidence coverage and graph context for the selected report inputs.">
           <div className="driver-grid">
             <EvidenceCountCard count={result?.evidence_summary.length ?? 0} />
-            <GraphQualityCard status={result ? `${result.graph_context.node_count} nodes / ${result.graph_context.edge_count} edges` : "report_not_generated"} />
+            <GraphQualityCard status={result ? `${result.graph_context.node_count} entities / ${result.graph_context.edge_count} relationships` : "report_not_generated"} />
           </div>
           <EvidenceRefsTable
             title="Evidence summary table"
@@ -3928,7 +3928,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 warnings={result.warnings}
               />
               <p className="public-data-note">
-                Evidence summary: {result.evidence_summary.length}; graph context: {result.graph_context.node_count} nodes / {result.graph_context.edge_count} edges. Raw source payloads and private diagnostics are excluded.
+                Evidence summary: {result.evidence_summary.length}; graph context: {result.graph_context.node_count} entities / {result.graph_context.edge_count} relationships. Raw source payloads and private diagnostics are excluded.
               </p>
             </Panel>
             <Panel title="Methodology" subtitle="Report methodology and version metadata are rendered separately from findings.">
@@ -3961,7 +3961,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               />
               <div className="driver-grid">
                 <EvidenceCountCard count={result.evidence_summary.length} />
-                <GraphQualityCard status={`${result.graph_context.node_count} nodes / ${result.graph_context.edge_count} edges`} />
+                <GraphQualityCard status={`${result.graph_context.node_count} entities / ${result.graph_context.edge_count} relationships`} />
               </div>
               <EvidenceRefsTable
                 title="Evidence summary table"
@@ -4877,8 +4877,8 @@ export function GraphVersionStudio({ data }: { data: SupplyRiskDashboardData }) 
           action={<Button icon={CheckCircle2} variant="primary" onClick={() => setPromotedVersionId(candidate.id)}>Promote</Button>}
         >
           <div className="version-grid">
-            <Field label="Nodes" value={formatCompactNumber(candidate.nodes)} />
-            <Field label="Edges" value={formatCompactNumber(candidate.edges)} />
+            <Field label="Entities" value={formatCompactNumber(candidate.nodes)} />
+            <Field label="Relationships" value={formatCompactNumber(candidate.edges)} />
             <Field label="Schema changes" value={candidate.schemaChanges} />
             <Field label="Validation pass rate" value={formatPercent(candidate.validationPassRate, 1)} />
           </div>
@@ -4941,8 +4941,8 @@ function VersionButton({
         level={version.validationPassRate > 0.98 ? "low" : "elevated"}
       />
       <div className="row-meta">
-        <span>{t(`${formatCompactNumber(version.nodes)} nodes`)}</span>
-        <span>{t(`${formatCompactNumber(version.edges)} edges`)}</span>
+        <span>{t(`${formatCompactNumber(version.nodes)} entities`)}</span>
+        <span>{t(`${formatCompactNumber(version.edges)} relationships`)}</span>
       </div>
     </button>
   );
