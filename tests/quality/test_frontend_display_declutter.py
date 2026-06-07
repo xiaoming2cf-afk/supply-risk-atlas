@@ -146,6 +146,18 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Evidence refs" in source
     assert "Run history is not available in this environment." in source
     assert "Fixture graph metadata unavailable" in source
+    assert "Fixture-labeled SemiRisk-KG entity scores" not in source
+    assert "Entity risk scores from the public evidence graph; use them as research signals, not production decisions." in source
+    assert "Risk Score v0 API returns a real metadata envelope" not in source
+    assert "Entity scores are hidden until the risk API returns a valid public-evidence response." in source
+    assert "HHI uses fixture/proxy shares" not in source
+    assert "HHI uses public-evidence proxy shares" in source
+    assert "The page is waiting for the fixture graph Risk Score v0 API" not in source
+    assert "The page is waiting for an evidence-backed risk response. No production score is fabricated." in source
+    assert 'title="Version and freshness"' not in source
+    assert 'title="Data status"' in source
+    assert "Every displayed score is tied to graph, feature, and source manifest metadata." not in source
+    assert "Evidence version details are available in audit details." in source
     assert "Template 中国台湾 earthquake" in source
     assert ">Affected mean<" in source
     assert ">Maximum propagation<" in source
@@ -168,6 +180,12 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "formatInlineDisplayText(path.explanation)" in source
     assert "formatInlineDisplayText(shockSet.explanation)" in source
     assert "formatInlineDisplayText(topShockSet?.explanation ?? result.explanation)" in source
+    assert "Controlled chart/table states render before and after a run." not in source
+    assert "Charts and tables populate after a forward scenario run." in source
+    assert "Top fixture graph nodes by mean normalized loss." not in source
+    assert "Top affected supply-chain nodes by mean normalized loss." in source
+    assert "Evidence-backed one-hop transmission paths from the fixture graph." not in source
+    assert "Evidence-backed one-hop transmission paths for the active scenario." in source
     assert "label: action.action_id" not in source
     assert "action_id: action.action_id" not in source
     assert "target_id: action.target_id" not in source

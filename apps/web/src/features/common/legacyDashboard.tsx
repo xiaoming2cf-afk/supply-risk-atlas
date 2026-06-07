@@ -2029,7 +2029,7 @@ export function CompanyRisk360({
     <div className="page-grid split-layout">
       <Panel
         title="Entity watchlist"
-        subtitle="Fixture-labeled SemiRisk-KG entity scores. These scores are deterministic test-graph outputs, not production readiness claims."
+        subtitle="Entity risk scores from the public evidence graph; use them as research signals, not production decisions."
       >
         {visibleScores.length > 0 ? (
           <div className="company-list">
@@ -2055,8 +2055,8 @@ export function CompanyRisk360({
           </div>
         ) : (
           <div className="empty-state-shell compact">
-            <h3>{isLoadingPortfolio ? "Loading fixture portfolio" : "Risk portfolio unavailable"}</h3>
-            <p>No entity scores are rendered until the Risk Score v0 API returns a real metadata envelope.</p>
+            <h3>{isLoadingPortfolio ? "Loading entity portfolio" : "Risk portfolio unavailable"}</h3>
+            <p>Entity scores are hidden until the risk API returns a valid public-evidence response.</p>
           </div>
         )}
       </Panel>
@@ -2144,7 +2144,7 @@ export function CompanyRisk360({
                 <Field label="Weighting method" value={formatDisplayValue(risk.weighting_method ?? "unavailable")} />
               </div>
               <p className="public-data-note">
-                HHI uses fixture/proxy shares on a 0 to 1 scale and is not calibrated for production decisions.
+                HHI uses public-evidence proxy shares on a 0 to 1 scale and is not calibrated for production decisions.
               </p>
               <AuditDetails
                 items={[
@@ -2275,7 +2275,7 @@ export function CompanyRisk360({
         ) : (
           <Panel
             title="Entity Risk 360 unavailable"
-            subtitle="The page is waiting for the fixture graph Risk Score v0 API. No production score is fabricated."
+            subtitle="The page is waiting for an evidence-backed risk response. No production score is fabricated."
           >
             <div className="empty-state-shell compact">
               <h3>{isLoadingRisk ? "Loading Risk Score v0" : "Risk score unavailable"}</h3>
@@ -2296,7 +2296,7 @@ export function CompanyRisk360({
           </Panel>
         )}
 
-        <Panel title="Version and freshness" subtitle="Every displayed score is tied to graph, feature, and source manifest metadata.">
+        <Panel title="Data status" subtitle="Evidence version details are available in audit details.">
           <MetadataSummary items={[{ label: risk?.fixture_graph || portfolio?.fixture_graph ? "Research fixture mode" : "Public evidence mode", tone: risk?.fixture_graph || portfolio?.fixture_graph ? "warning" : "default" }]} />
           <AuditDetails
             items={[
@@ -2770,7 +2770,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           onRefresh={runHistory.refresh}
         />
         <ForwardRunComparePanel runs={runHistory.forwardRuns} />
-        <Panel title="Forward analytics charts and tables" subtitle="Controlled chart/table states render before and after a run.">
+        <Panel title="Forward analytics charts and tables" subtitle="Charts and tables populate after a forward scenario run.">
           <div className="driver-grid">
             <MonteCarloHistogram
               data={result ? lossDistributionChartData(result) : []}
@@ -2893,7 +2893,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                 metadata={chartMetadataForScenario(result)}
               />
             </Panel>
-            <Panel title="Affected nodes" subtitle="Top fixture graph nodes by mean normalized loss.">
+            <Panel title="Affected nodes" subtitle="Top affected supply-chain nodes by mean normalized loss.">
               <ul className="timeline-list">
                 {result.affected_nodes.slice(0, 8).map((node) => (
                   <li className="data-row" key={node.node_id}>
@@ -2910,7 +2910,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                 ))}
               </ul>
             </Panel>
-            <Panel title="Transmission paths" subtitle="Evidence-backed one-hop transmission paths from the fixture graph.">
+            <Panel title="Transmission paths" subtitle="Evidence-backed one-hop transmission paths for the active scenario.">
               <ul className="timeline-list">
                 {result.top_transmission_paths.map((path, index) => (
                   <li className="data-row" key={path.path_id}>
