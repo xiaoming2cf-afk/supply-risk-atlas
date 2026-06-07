@@ -858,3 +858,10 @@ def test_system_health_readiness_note_uses_user_language() -> None:
         "and deployment metadata are ready for this public-evidence demo."
     ) in source
     assert "fixture/proxy/promoted-public-evidence readiness signals only" not in source
+
+
+def test_graph_overview_empty_source_copy_uses_product_language() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphOverviewView.tsx")
+
+    assert "Source coverage will appear when public evidence graph records are available for this view." in source
+    assert "fixture/proxy dashboard graph" not in source

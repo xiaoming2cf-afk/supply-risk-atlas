@@ -32,7 +32,7 @@ export function GraphOverviewView({
             {row.source ?? row.kind ?? "source"}: {row.count}
           </li>
         ))}
-        {sourceRows.length === 0 ? <li>Source coverage is provided by the fixture/proxy dashboard graph.</li> : null}
+        {sourceRows.length === 0 ? <li>Source coverage will appear when public evidence graph records are available for this view.</li> : null}
       </ul>
     </div>
   );
