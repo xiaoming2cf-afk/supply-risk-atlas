@@ -3860,7 +3860,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
             title="Evidence summary table"
             rows={result ? result.evidence_summary.map((row, index) => ({
               id: `${row.section ?? "section"}:${index}`,
-              section: formatDisplayLabel(String(row.section ?? "section")),
+              section: formatReportEvidenceSection(row.section),
               evidence_ref_count: row.evidence_ref_count,
             })) : []}
             columns={["section", "evidence_ref_count"]}
@@ -3955,7 +3955,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 title="Evidence summary table"
                 rows={result.evidence_summary.map((row, index) => ({
                   id: `${row.section ?? "section"}:${index}`,
-                  section: formatDisplayLabel(String(row.section ?? "section")),
+                  section: formatReportEvidenceSection(row.section),
                   evidence_ref_count: row.evidence_ref_count,
                 }))}
                 columns={["section", "evidence_ref_count"]}
@@ -3972,7 +3972,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 {result.evidence_summary.map((row, index) => (
                   <li className="data-row" key={`${row.section}-${index}`}>
                     <div className="row-top">
-                      <span className="row-title">{formatDisplayLabel(String(row.section ?? "section"))}</span>
+                      <span className="row-title">{formatReportEvidenceSection(row.section)}</span>
                       <span className="metric-chip">Evidence refs {String(row.evidence_ref_count ?? 0)}</span>
                     </div>
                   </li>
@@ -4152,6 +4152,17 @@ function formatRunMetric(run: RunReference, key: string) {
 
 function formatRunDisplayName(run: RunReference, index: number) {
   return `${formatDisplayValue(run.run_type)} ${index + 1}`;
+}
+
+function formatReportEvidenceSection(value: unknown) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "Evidence section";
+  if (raw.includes("risk_score") || raw.includes("likelihood_impact")) return "Risk score evidence";
+  if (raw.includes("forward")) return "Forward stress evidence";
+  if (raw.includes("reverse")) return "Reverse stress evidence";
+  if (raw.includes("optimization")) return "Intervention evidence";
+  if (raw.includes("methodology")) return "Methodology evidence";
+  return formatDisplayLabel(raw);
 }
 
 function formatDashboardWarning(warning: string) {

@@ -190,7 +190,10 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Controlled report audit view renders before and after export generation." not in source
     assert "Audited report context, evidence summary, and limitations." not in source
     assert 'title="Report evidence summary"' in source
-    assert 'section: formatDisplayLabel(String(row.section ?? "section"))' in source
+    assert 'section: formatReportEvidenceSection(row.section)' in source
+    assert '<span className="row-title">{formatReportEvidenceSection(row.section)}</span>' in source
+    assert 'return "Risk score evidence";' in source
+    assert 'return "Forward stress evidence";' in source
     assert "section: row.section" not in source
     assert '"Report metadata and evidence table"' not in read("scripts/browser-smoke.mjs")
     assert '"Report evidence summary"' in read("scripts/browser-smoke.mjs")
