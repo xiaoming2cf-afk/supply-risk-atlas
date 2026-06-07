@@ -26,6 +26,8 @@ def test_data_lineage_banner_uses_user_facing_summary_and_collapsed_audit_detail
     assert "<span>not_production_ready: true" not in source
     assert "<span>failed_endpoint:" not in source
     assert "<span>transport_attempts:" not in source
+    assert "fixture_proxy_not_calibrated; not_financial_loss" not in source
+    assert "Research fixture calibration; no financial loss estimate" in source
 
 
 def test_metadata_summary_filters_internal_audit_tokens_from_primary_badges() -> None:

@@ -487,7 +487,7 @@ function DataAuditDetails({
         { label: "graph_mode", value: status.graphMode },
         { label: "graph_version", value: status.graphVersion },
         { label: "source_manifest_id", value: status.sourceManifestId },
-        { label: "calibration_status", value: "fixture_proxy_not_calibrated; not_financial_loss" },
+        { label: "calibration_status", value: "Research fixture calibration; no financial loss estimate" },
         { label: "last_checked_at", value: diagnostics?.lastCheckedAt },
       ];
   const diagnosticItems = [

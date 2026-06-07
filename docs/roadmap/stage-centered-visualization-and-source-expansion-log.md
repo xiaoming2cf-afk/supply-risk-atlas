@@ -3565,6 +3565,42 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Global Data Status Calibration Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `cfad4db8a4b99e523879d1733afb079aca67e5a6`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded the global data status audit fallback from the raw `fixture_proxy_not_calibrated; not_financial_loss` token into `Research fixture calibration; no financial loss estimate`.
+- Kept API response metadata, exported report metadata, source/graph metadata fields, raw-payload exclusion policy, geography terminology, and evidence-context safety behavior unchanged.
+- Added frontend display declutter assertions so the raw calibration token does not return to `DataLineageBanner` fallback copy.
+
+### Files Changed
+
+- `apps/web/src/app/App.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `python -m pytest tests/security tests/graph_invariants -q` - passed.
+- `npm.cmd --workspace apps/web run build` - passed.
+- `npm.cmd run smoke:web` - passed, 63 browser checks.
+
+### Known Limitations
+
+- This gate changes visible/collapsible frontend fallback wording only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background System Health Graph Readiness Copy Declutter Gate
 
 ### Current HEAD
