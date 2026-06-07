@@ -5388,9 +5388,9 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           >
             <div className="inspector-grid" style={{ marginBottom: 16 }}>
               <Field label="Sources" value={health.sourceRegistry.sourceCount} />
-              <Field label="Raw records" value={health.sourceRegistry.rawRecordCount} />
-              <Field label="Silver entities" value={health.sourceRegistry.silverEntityCount} />
-              <Field label="Gold edges" value={health.sourceRegistry.goldEdgeEventCount} />
+              <Field label="Evidence inputs" value={health.sourceRegistry.rawRecordCount} />
+              <Field label="Resolved entities" value={health.sourceRegistry.silverEntityCount} />
+              <Field label="Graph relationships" value={health.sourceRegistry.goldEdgeEventCount} />
               <Field label="Data nodes" value={health.sourceRegistry.dataNodeCount ?? 0} />
               <Field label="Promoted" value={health.sourceRegistry.promotedGraph?.status ?? "partial"} />
             </div>
@@ -5595,10 +5595,10 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
 
           <Panel
             title="Entity resolution"
-            subtitle={`${health.entityResolution.totalEntities} silver entities; ${formatPercent(health.entityResolution.averageConfidence)} average confidence.`}
+            subtitle={`${health.entityResolution.totalEntities} resolved entities; ${formatPercent(health.entityResolution.averageConfidence)} average confidence.`}
           >
             <div className="inspector-grid" style={{ marginBottom: 16 }}>
-              <Field label="Silver entities" value={formatCompactNumber(health.entityResolution.totalEntities)} />
+              <Field label="Resolved entities" value={formatCompactNumber(health.entityResolution.totalEntities)} />
               <Field label="Average confidence" value={formatPercent(health.entityResolution.averageConfidence)} />
               <Field label="Entity types" value={health.entityResolution.byEntityType.length} />
             </div>
@@ -5633,12 +5633,12 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
 
           <Panel
             title="Evidence lineage"
-            subtitle="Public evidence lineage summary from source records to graph edges."
+            subtitle="Public evidence summary showing which sources support graph relationships."
           >
             <div className="inspector-grid" style={{ marginBottom: 16 }}>
-              <Field label="Raw records" value={health.evidenceLineage.rawRecordCount} />
-              <Field label="Silver events" value={health.evidenceLineage.silverEventCount} />
-              <Field label="Gold edges" value={health.evidenceLineage.goldEdgeEventCount} />
+              <Field label="Evidence inputs" value={health.evidenceLineage.rawRecordCount} />
+              <Field label="Normalized events" value={health.evidenceLineage.silverEventCount} />
+              <Field label="Graph relationships" value={health.evidenceLineage.goldEdgeEventCount} />
               <Field label="Lineage status" value="Public evidence graph" />
             </div>
             <AuditDetails
@@ -5653,9 +5653,9 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                   <thead>
                     <tr>
                       <th>{t("Source")}</th>
-                      <th>{t("Raw record")}</th>
-                      <th>{t("Silver events")}</th>
-                      <th>{t("Gold edges")}</th>
+                      <th>{t("Evidence inputs")}</th>
+                      <th>{t("Normalized events")}</th>
+                      <th>{t("Graph relationships")}</th>
                       <th>{t("Targets")}</th>
                       <th>{t("Confidence")}</th>
                     </tr>

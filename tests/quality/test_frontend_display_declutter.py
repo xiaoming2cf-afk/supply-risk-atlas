@@ -775,10 +775,21 @@ def test_system_health_manifest_and_checksum_are_audit_details_not_primary_subti
     source = read("apps/web/src/features/common/legacyDashboard.tsx")
 
     assert 'subtitle="Public source registry summary; manifest and checksum details are available in audit details."' in source
-    assert 'subtitle="Public evidence lineage summary from source records to graph edges."' in source
+    assert 'subtitle="Public evidence summary showing which sources support graph relationships."' in source
+    assert "Public evidence lineage summary from source records to graph edges." not in source
     assert "subtitle={`${health.sourceRegistry.manifestRef}; checksum" not in source
     assert "subtitle={`${health.evidenceLineage.manifestRef}; raw to silver to gold audit chain.`}" not in source
     assert '<Field label="Checksum"' not in source
+    assert '<Field label="Raw records"' not in source
+    assert '<Field label="Silver entities"' not in source
+    assert '<Field label="Gold edges"' not in source
+    assert '<Field label="Evidence inputs"' in source
+    assert '<Field label="Resolved entities"' in source
+    assert '<Field label="Graph relationships"' in source
+    assert '<th>{t("Raw record")}</th>' not in source
+    assert '<th>{t("Gold edges")}</th>' not in source
+    assert '<th>{t("Evidence inputs")}</th>' in source
+    assert '<th>{t("Graph relationships")}</th>' in source
     assert '{ label: "manifest_ref", value: health.sourceRegistry.manifestRef }' in source
     assert '{ label: "checksum", value: manifestChecksum }' in source
     assert '{ label: "manifest_ref", value: health.evidenceLineage.manifestRef }' in source
