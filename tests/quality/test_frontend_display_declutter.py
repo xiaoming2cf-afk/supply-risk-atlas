@@ -825,3 +825,10 @@ def test_system_health_readiness_labels_do_not_show_snake_case() -> None:
     }
     for label in expected_labels:
         assert label in source
+
+
+def test_display_values_translate_boolean_strings_for_readiness_fields() -> None:
+    source = read("apps/web/src/features/common/displayLabels.ts")
+
+    assert '["true", "yes"]' in source
+    assert '["false", "no"]' in source

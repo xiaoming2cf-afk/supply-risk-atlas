@@ -193,6 +193,8 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["source_statuses", "Source status summary"],
   ["storage_readiness", "Storage readiness"],
   ["transport_attempts", "Connection attempts"],
+  ["false", "no"],
+  ["true", "yes"],
   ["supplies", "Supplies"],
   ["supplies_item", "Supplies item"],
   ["SUPPLY_DEMAND_BALANCE", "Supply-demand balance"],
