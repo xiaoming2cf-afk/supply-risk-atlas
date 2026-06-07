@@ -159,6 +159,7 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Every displayed score is tied to graph, feature, and source manifest metadata." not in source
     assert "Evidence version details are available in audit details." in source
     assert "Template 中国台湾 earthquake" in source
+    assert "Template 涓浗鍙版咕 earthquake" not in source
     assert ">Affected mean<" in source
     assert ">Maximum propagation<" in source
     assert ">Independent exposure spread<" in source
@@ -181,11 +182,23 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "formatInlineDisplayText(shockSet.explanation)" in source
     assert "formatInlineDisplayText(topShockSet?.explanation ?? result.explanation)" in source
     assert "Controlled chart/table states render before and after a run." not in source
+    assert "Graph-based forward Monte Carlo over the SemiRisk fixture graph" not in source
+    assert '<Field label="current_loss_mode"' not in source
+    assert '<Field label="current_propagation_mode"' not in source
+    assert '<Field label="functionality_metric"' not in source
+    assert '<Field label="weighting_method"' not in source
+    assert '<Field label="Loss measure"' in source
+    assert '<Field label="Propagation method"' in source
     assert "Charts and tables populate after a forward scenario run." in source
     assert "Top fixture graph nodes by mean normalized loss." not in source
     assert "Top affected supply-chain nodes by mean normalized loss." in source
     assert "Evidence-backed one-hop transmission paths from the fixture graph." not in source
     assert "Evidence-backed one-hop transmission paths for the active scenario." in source
+    assert "Greedy beam search over fixture graph shock candidates" not in source
+    assert "Find the smallest plausible shock set" in source
+    assert '<Field label="normalized_threshold"' not in source
+    assert '<Field label="Failure threshold"' in source
+    assert "Controlled shock-set views render before and after a run." not in source
     assert "label: action.action_id" not in source
     assert "action_id: action.action_id" not in source
     assert "target_id: action.target_id" not in source
@@ -215,8 +228,14 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "section: row.section" not in source
     assert '"Report metadata and evidence table"' not in read("scripts/browser-smoke.mjs")
     assert '"Report evidence summary"' in read("scripts/browser-smoke.mjs")
+    assert '"Evidence audit table"' not in read("scripts/browser-smoke.mjs")
+    assert '"Evidence review table"' in read("scripts/browser-smoke.mjs")
     assert 'title="Before/after simulation run IDs"' not in source
     assert 'title="Simulation run counts"' in source
+    assert "Greedy budget-constrained resilience action selection over the SemiRisk fixture graph." not in source
+    assert '<Field label="before_cvar95"' not in source
+    assert '<Field label="after_cvar95"' not in source
+    assert '<Field label="Before tail loss"' in source
     assert "formatNodeDisplayRef(action.target_id)" in source
     assert "formatSourceDisplayRef(row.sourceId)" in source
     assert "formatSourceDisplayList(license.sourceIds)" in source

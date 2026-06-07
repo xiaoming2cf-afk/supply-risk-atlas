@@ -2007,7 +2007,7 @@ export function CompanyRisk360({
   const degradedMessage = !risk
     ? riskResult?.envelope.errors?.[0]?.message ??
       riskResult?.envelope.warnings?.[0] ??
-      "Risk Score v0 is unavailable until the SemiRisk fixture graph API is reachable."
+      "Risk score is unavailable until the evidence-backed risk API is reachable."
     : "";
   const failedRiskEndpoint =
     sanitizePublicEndpointDiagnostic(
@@ -2672,7 +2672,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
     <div className="page-grid split-layout">
       <Panel
         title="Shock Simulator"
-        subtitle="Graph-based forward Monte Carlo over the SemiRisk fixture graph. Runs only after explicit analyst action."
+        subtitle="Run bounded supply-chain stress scenarios with public-evidence inputs. Nothing runs until you start a scenario."
         action={
           <Button disabled={isRunning} icon={Play} onClick={runScenario} variant="primary">
             {isRunning ? "Running" : "Run forward stress"}
@@ -2751,10 +2751,10 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           <Button onClick={() => applyScenarioTemplate("demand_spike_hbm")}>Template HBM demand spike</Button>
         </div>
         <div className="field-grid">
-          <Field label="current_loss_mode" value={formatDisplayValue(input.loss_mode ?? "resilience_integral_loss")} />
-          <Field label="current_propagation_mode" value={formatDisplayValue(input.propagation_mode ?? "auto_semiconductor")} />
-          <Field label="functionality_metric" value={formatDisplayValue(input.functionality_metric ?? "capacity_fulfillment")} />
-          <Field label="weighting_method" value={formatDisplayValue(input.weighting_method ?? "literature_proxy_not_calibrated")} />
+          <Field label="Loss measure" value={formatDisplayValue(input.loss_mode ?? "resilience_integral_loss")} />
+          <Field label="Propagation method" value={formatDisplayValue(input.propagation_mode ?? "auto_semiconductor")} />
+          <Field label="Functionality measure" value={formatDisplayValue(input.functionality_metric ?? "capacity_fulfillment")} />
+          <Field label="Evidence weighting" value={formatDisplayValue(input.weighting_method ?? "literature_proxy_not_calibrated")} />
         </div>
         <p className="public-data-note">
           {t("Research fixture mode")}. {t("No dollar losses are produced without licensed private exposure data.")}
@@ -2813,22 +2813,22 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           <>
             <Panel title="Forward stress results" subtitle="Latest run summary with audit details collapsed.">
               <div className="metrics-grid">
-                <MetricTile metric={{ id: "expected_loss", label: "expected_loss", value: result.expected_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.expected_loss ?? 0), detail: "normalized loss score" }} />
-                <MetricTile metric={{ id: "p50_loss", label: "p50_loss", value: result.p50_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p50_loss ?? 0), detail: "median normalized loss" }} />
-                <MetricTile metric={{ id: "p90_loss", label: "p90_loss", value: result.p90_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p90_loss ?? 0), detail: "90th percentile normalized loss" }} />
-                <MetricTile metric={{ id: "p95_loss", label: "p95_loss", value: result.p95_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p95_loss ?? 0), detail: "95th percentile normalized loss" }} />
-                <MetricTile metric={{ id: "cvar_95", label: "cvar_95", value: result.cvar_95 ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.cvar_95 ?? 0), detail: "average tail loss above p95" }} />
-                <MetricTile metric={{ id: "time_to_recover_days", label: "time_to_recover_days", value: result.time_to_recover_days ?? 0, unit: "d", delta: 0, trend: "flat", level: "guarded", detail: "deterministic fixture estimate" }} />
+                <MetricTile metric={{ id: "expected_loss", label: "Expected loss", value: result.expected_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.expected_loss ?? 0), detail: "normalized loss score" }} />
+                <MetricTile metric={{ id: "p50_loss", label: "Median loss", value: result.p50_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p50_loss ?? 0), detail: "median normalized loss" }} />
+                <MetricTile metric={{ id: "p90_loss", label: "Severe loss", value: result.p90_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p90_loss ?? 0), detail: "90th percentile normalized loss" }} />
+                <MetricTile metric={{ id: "p95_loss", label: "Extreme loss", value: result.p95_loss ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.p95_loss ?? 0), detail: "95th percentile normalized loss" }} />
+                <MetricTile metric={{ id: "cvar_95", label: "Average tail loss", value: result.cvar_95 ?? 0, unit: "", delta: 0, trend: "flat", level: riskLevelForScore(result.cvar_95 ?? 0), detail: "average tail loss above p95" }} />
+                <MetricTile metric={{ id: "time_to_recover_days", label: "Recovery time", value: result.time_to_recover_days ?? 0, unit: "d", delta: 0, trend: "flat", level: "guarded", detail: "deterministic fixture estimate" }} />
               </div>
               <div className="field-grid">
-                <Field label="seed" value={result.seed} />
-                <Field label="loss_mode" value={formatDisplayValue(result.loss_mode)} />
-                <Field label="propagation_mode" value={formatDisplayValue(result.propagation_mode)} />
-                <Field label="resilience_integral_loss" value={result.resilience_integral_loss ?? "unavailable"} />
-                <Field label="graph_weighted_loss" value={result.graph_weighted_loss ?? "unavailable"} />
-                <Field label="demand_fulfillment_loss" value={result.demand_fulfillment_loss ?? "unavailable"} />
-                <Field label="capacity_functionality_loss" value={result.capacity_functionality_loss ?? "unavailable"} />
-                <Field label="time_to_survive_days" value={result.time_to_survive_days ?? "unavailable"} />
+                <Field label="Seed" value={result.seed} />
+                <Field label="Loss measure" value={formatDisplayValue(result.loss_mode)} />
+                <Field label="Propagation method" value={formatDisplayValue(result.propagation_mode)} />
+                <Field label="Resilience loss" value={result.resilience_integral_loss ?? "unavailable"} />
+                <Field label="Graph-weighted loss" value={result.graph_weighted_loss ?? "unavailable"} />
+                <Field label="Demand fulfillment loss" value={result.demand_fulfillment_loss ?? "unavailable"} />
+                <Field label="Capacity functionality loss" value={result.capacity_functionality_loss ?? "unavailable"} />
+                <Field label="Time to survive" value={result.time_to_survive_days ?? "unavailable"} />
               </div>
               <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
               <AuditDetails
@@ -2849,8 +2849,8 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                 <MonteCarloECDF data={lossDistributionChartData(result)} metadata={chartMetadataForScenario(result)} />
                 <CVaRTailChart
                   data={[
-                    { label: "p95_loss", value: Number(result.p95_loss ?? 0) },
-                    { label: "cvar_95", value: Number(result.cvar_95 ?? 0) },
+                    { label: "Extreme loss", value: Number(result.p95_loss ?? 0) },
+                    { label: "Average tail loss", value: Number(result.cvar_95 ?? 0) },
                   ]}
                   metadata={chartMetadataForScenario(result)}
                 />
@@ -3037,7 +3037,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
     <div className="page-grid split-layout">
       <Panel
         title="Reverse Stress Lab"
-        subtitle="Greedy beam search over fixture graph shock candidates. Runs only after explicit analyst action."
+        subtitle="Find the smallest plausible shock set that crosses a selected resilience threshold."
         action={
           <div className="action-group">
             <Button
@@ -3057,7 +3057,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           <label className="form-control">
             <span>{t("Target metric")}</span>
             <select value={input.target_metric} onChange={(event) => setInput((current) => ({ ...current, target_metric: event.target.value as ReverseStressInput["target_metric"] }))}>
-              <option value="cvar95_loss">CVaR 95 loss</option>
+              <option value="cvar95_loss">Severe tail loss</option>
               <option value="capacity_loss">Capacity loss</option>
               <option value="demand_fulfillment_loss">Demand fulfillment loss</option>
               <option value="affected_critical_nodes">Affected critical nodes</option>
@@ -3068,7 +3068,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             <input min="1" max="100" onChange={(event) => setInput((current) => ({ ...current, failure_threshold: Number(event.target.value) }))} type="number" value={input.failure_threshold} />
           </label>
           <label className="form-control">
-            <span>{t("candidate node types")}</span>
+            <span>{t("Candidate node types")}</span>
             <input
               onChange={(event) => setInput((current) => ({ ...current, candidate_scope: { ...current.candidate_scope, node_types: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) } }))}
               type="text"
@@ -3110,12 +3110,12 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           </label>
         </div>
         <div className="field-grid">
-          <Field label="normalized_threshold" value={`${Math.max(0, Math.min(100, input.failure_threshold))}/100`} />
-          <Field label="threshold_basis" value={formatDisplayValue(input.target_metric)} />
-          <Field label="context_source" value={input.scenario_run ? "Forward scenario" : "Default fixture"} />
-          <Field label="context_status" value={input.scenario_run ? "Forward scenario selected" : "No prior run selected"} />
-          <Field label="max_combination_size_cap" value="4" />
-          <Field label="beam_width_cap" value="20" />
+          <Field label="Failure threshold" value={`${Math.max(0, Math.min(100, input.failure_threshold))}/100`} />
+          <Field label="Threshold basis" value={formatDisplayValue(input.target_metric)} />
+          <Field label="Scenario context" value={input.scenario_run ? "Forward scenario" : "Default fixture"} />
+          <Field label="Context status" value={input.scenario_run ? "Forward scenario selected" : "No prior run selected"} />
+          <Field label="Shock set limit" value="4" />
+          <Field label="Search width limit" value="20" />
         </div>
         <p className="public-data-note">
           {t("Compliance safety note")}: {t("Policy scenarios are for resilience planning and compliance review only.")}. {t("Research fixture mode")}.
@@ -3130,7 +3130,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           error={runHistory.error}
           onRefresh={runHistory.refresh}
         />
-        <Panel title="Reverse stress charts and tables" subtitle="Controlled shock-set views render before and after a run.">
+        <Panel title="Reverse stress charts and tables" subtitle="Shock-set views appear after a reverse stress run.">
           <div className="driver-grid">
             <DependencyHeatmap
               title="Top shock set path chart"
@@ -3179,13 +3179,13 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
           <>
             <Panel title="Ranked shock sets" subtitle="Latest reverse stress summary with audit details collapsed.">
               <div className="field-grid">
-                <Field label="seed" value={result.seed} />
-                <Field label="failure_threshold_input" value={result.failure_threshold_input} />
-                <Field label="failure_threshold_normalized" value={result.failure_threshold_normalized} />
-                <Field label="threshold_metric_basis" value={formatDisplayValue(result.threshold_metric_basis)} />
-                <Field label="loss_mode" value={formatDisplayValue(result.loss_mode)} />
-                <Field label="propagation_mode" value={formatDisplayValue(result.propagation_mode)} />
-                <Field label="plausibility_cost" value={result.plausibility_cost ?? "unavailable"} />
+                <Field label="Seed" value={result.seed} />
+                <Field label="Requested threshold" value={result.failure_threshold_input} />
+                <Field label="Normalized threshold" value={result.failure_threshold_normalized} />
+                <Field label="Threshold basis" value={formatDisplayValue(result.threshold_metric_basis)} />
+                <Field label="Loss measure" value={formatDisplayValue(result.loss_mode)} />
+                <Field label="Propagation method" value={formatDisplayValue(result.propagation_mode)} />
+                <Field label="Plausibility cost" value={result.plausibility_cost ?? "unavailable"} />
               </div>
               <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
               <AuditDetails
@@ -3255,7 +3255,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
                       </div>
                       <div className="row-meta">
                         <span>Expected loss {shockSet.expected_loss?.toFixed(2) ?? "unavailable"}</span>
-                        <span>CVaR 95 {shockSet.cvar95?.toFixed(2) ?? "unavailable"}</span>
+                        <span>Average tail loss {shockSet.cvar95?.toFixed(2) ?? "unavailable"}</span>
                         <span>Plausibility cost {shockSet.plausibility_cost.toFixed(4)}</span>
                       </div>
                       <span className="row-subtitle">{formatInlineDisplayText(shockSet.explanation)}</span>
@@ -3402,7 +3402,7 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
     <div className="page-grid split-layout">
       <Panel
         title="Intervention Optimizer"
-        subtitle="Greedy budget-constrained resilience action selection over the SemiRisk fixture graph."
+        subtitle="Rank feasible resilience actions against budget, expected effect, and compliance constraints."
         action={
           <div className="action-group">
             <Button
@@ -3450,12 +3450,12 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           ))}
         </div>
         <div className="field-grid">
-          <Field label="context_source" value={formatDisplayValue(optimizerContextSource)} />
-          <Field label="forward_context" value={input.scenario_run ? "Forward scenario selected" : "No forward scenario selected"} />
-          <Field label="reverse_context" value={input.reverse_stress_run ? "Reverse stress selected" : "No reverse stress selected"} />
-          <Field label="scenario_set_count" value={input.scenario_set?.length ?? 0} />
-          <Field label="max_actions_cap" value="10" />
-          <Field label="budget_basis" value="finite normalized budget units" />
+          <Field label="Context source" value={formatDisplayValue(optimizerContextSource)} />
+          <Field label="Forward context" value={input.scenario_run ? "Forward scenario selected" : "No forward scenario selected"} />
+          <Field label="Reverse context" value={input.reverse_stress_run ? "Reverse stress selected" : "No reverse stress selected"} />
+          <Field label="Scenario set count" value={input.scenario_set?.length ?? 0} />
+          <Field label="Action limit" value="10" />
+          <Field label="Budget basis" value="finite normalized budget units" />
         </div>
         <p className="public-data-note">
           {t("compliance constraints")}: no illegal workarounds; approved monitoring, qualification, diversification, inventory, and recovery controls only. {t("Research fixture mode")}.
@@ -3471,14 +3471,14 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           onRefresh={runHistory.refresh}
         />
         <OptimizerComparePanel runs={runHistory.optimizationRuns} />
-        <Panel title="Optimizer charts and action tables" subtitle="Controlled before/after views render before and after an optimizer run.">
+        <Panel title="Optimizer charts and action tables" subtitle="Before/after views appear after an optimizer run.">
           <div className="driver-grid">
             <OptimizerBeforeAfterChart
               data={result ? [
                 { label: "Before expected loss", value: Number(result.before_expected_loss ?? 0) },
                 { label: "After expected loss", value: Number(result.after_expected_loss ?? 0) },
-                { label: "Before CVaR 95", value: Number(result.before_cvar95 ?? 0) },
-                { label: "After CVaR 95", value: Number(result.after_cvar95 ?? 0) },
+                { label: "Before tail loss", value: Number(result.before_cvar95 ?? 0) },
+                { label: "After tail loss", value: Number(result.after_cvar95 ?? 0) },
                 { label: "Resilience ROI", value: Number(result.resilience_roi ?? 0) },
               ] : []}
               metadata={result ? chartMetadataForOptimization(result) : undefined}
@@ -3519,18 +3519,18 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
           <>
             <Panel title="Recommended actions" subtitle="Latest optimization summary with audit details collapsed.">
               <div className="metrics-grid">
-                <MetricTile metric={{ id: "before_expected_loss", label: "before_expected_loss", value: result.before_expected_loss ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_expected_loss ?? 0), detail: "baseline normalized loss" }} />
-                <MetricTile metric={{ id: "after_expected_loss", label: "after_expected_loss", value: result.after_expected_loss ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_expected_loss ?? 0), detail: "post-action normalized loss" }} />
-                <MetricTile metric={{ id: "before_cvar95", label: "before_cvar95", value: result.before_cvar95 ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_cvar95 ?? 0), detail: "baseline tail loss" }} />
-                <MetricTile metric={{ id: "after_cvar95", label: "after_cvar95", value: result.after_cvar95 ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_cvar95 ?? 0), detail: "post-action tail loss" }} />
-                <MetricTile metric={{ id: "cost", label: "cost", value: result.cost, delta: 0, trend: "flat", level: "guarded", detail: `budget ${result.budget}` }} />
-                <MetricTile metric={{ id: "resilience_roi", label: "resilience_roi", value: result.resilience_roi, delta: 0, trend: "flat", level: "guarded", detail: "tail-loss reduction per budget unit" }} />
+                <MetricTile metric={{ id: "before_expected_loss", label: "Before expected loss", value: result.before_expected_loss ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_expected_loss ?? 0), detail: "baseline normalized loss" }} />
+                <MetricTile metric={{ id: "after_expected_loss", label: "After expected loss", value: result.after_expected_loss ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_expected_loss ?? 0), detail: "post-action normalized loss" }} />
+                <MetricTile metric={{ id: "before_cvar95", label: "Before tail loss", value: result.before_cvar95 ?? 0, delta: 0, trend: "flat", level: riskLevelForScore(result.before_cvar95 ?? 0), detail: "baseline tail loss" }} />
+                <MetricTile metric={{ id: "after_cvar95", label: "After tail loss", value: result.after_cvar95 ?? 0, delta: 0, trend: "down", level: riskLevelForScore(result.after_cvar95 ?? 0), detail: "post-action tail loss" }} />
+                <MetricTile metric={{ id: "cost", label: "Action cost", value: result.cost, delta: 0, trend: "flat", level: "guarded", detail: `budget ${result.budget}` }} />
+                <MetricTile metric={{ id: "resilience_roi", label: "Resilience ROI", value: result.resilience_roi, delta: 0, trend: "flat", level: "guarded", detail: "tail-loss reduction per budget unit" }} />
               </div>
               <div className="field-grid">
-                <Field label="optimization_context_type" value={formatDisplayValue(result.optimization_context_type)} />
-                <Field label="scenario_count" value={result.scenario_count} />
-                <Field label="heuristic_estimated_after_expected_loss" value={result.heuristic_estimated_after_expected_loss ?? "unavailable"} />
-                <Field label="heuristic_estimated_after_cvar95" value={result.heuristic_estimated_after_cvar95 ?? "unavailable"} />
+                <Field label="Optimization context" value={formatDisplayValue(result.optimization_context_type)} />
+                <Field label="Scenario count" value={result.scenario_count} />
+                <Field label="Estimated expected loss after actions" value={result.heuristic_estimated_after_expected_loss ?? "unavailable"} />
+                <Field label="Estimated tail loss after actions" value={result.heuristic_estimated_after_cvar95 ?? "unavailable"} />
               </div>
               <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
               <AuditDetails
@@ -3551,8 +3551,8 @@ export function InterventionOptimizer({ apiClient }: { apiClient: SupplyRiskApiC
                   data={[
                     { label: "Before expected loss", value: Number(result.before_expected_loss ?? 0) },
                     { label: "After expected loss", value: Number(result.after_expected_loss ?? 0) },
-                    { label: "Before CVaR 95", value: Number(result.before_cvar95 ?? 0) },
-                    { label: "After CVaR 95", value: Number(result.after_cvar95 ?? 0) },
+                    { label: "Before tail loss", value: Number(result.before_cvar95 ?? 0) },
+                    { label: "After tail loss", value: Number(result.after_cvar95 ?? 0) },
                     { label: "Resilience ROI", value: Number(result.resilience_roi ?? 0) },
                   ]}
                   metadata={chartMetadataForOptimization(result)}
@@ -3890,12 +3890,12 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
               }
             >
               <div className="field-grid">
-                <Field label="format" value={result.format} />
-                <Field label="risk_scoring_method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
-                <Field label="weighting_method" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
-                <Field label="loss_mode" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
-                <Field label="propagation_mode" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
-                <Field label="selected_runs" value={(result.selected_run_refs ?? []).length || "none"} />
+                <Field label="Format" value={result.format} />
+                <Field label="Risk scoring method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
+                <Field label="Evidence weighting" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
+                <Field label="Loss measure" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
+                <Field label="Propagation method" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
+                <Field label="Selected runs" value={(result.selected_run_refs ?? []).length || "none"} />
               </div>
               <MetadataSummary items={[{ label: "Public evidence mode" }]} />
               <AuditDetails
@@ -3921,10 +3921,10 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
             </Panel>
             <Panel title="Methodology" subtitle="Report methodology and version metadata are rendered separately from findings.">
               <div className="field-grid">
-                <Field label="risk_scoring_method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
-                <Field label="weighting_method" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
-                <Field label="loss_mode" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
-                <Field label="propagation_mode" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
+                <Field label="Risk scoring method" value={formatDisplayValue(String(result.methodology.risk_scoring_method ?? "unavailable"))} />
+                <Field label="Evidence weighting" value={formatDisplayValue(String(result.methodology.weighting_method ?? "unavailable"))} />
+                <Field label="Loss measure" value={formatDisplayValue(String(result.methodology.loss_mode ?? "not included"))} />
+                <Field label="Propagation method" value={formatDisplayValue(String(result.methodology.propagation_mode ?? "not included"))} />
               </div>
               <AuditDetails
                 items={[
@@ -4093,12 +4093,12 @@ function ForwardRunComparePanel({ runs }: { runs: RunReference[] }) {
     <Panel title="Forward run compare" subtitle="Latest two sanitized forward scenario summaries.">
       {latest && previous ? (
         <div className="field-grid">
-          <Field label="latest_run" value={latest.created_at} />
-          <Field label="previous_run" value={previous.created_at} />
-          <Field label="latest_expected_loss" value={formatRunMetric(latest, "expected_loss")} />
-          <Field label="previous_expected_loss" value={formatRunMetric(previous, "expected_loss")} />
-          <Field label="latest_cvar_95" value={formatRunMetric(latest, "cvar_95")} />
-          <Field label="previous_cvar_95" value={formatRunMetric(previous, "cvar_95")} />
+          <Field label="Latest run" value={latest.created_at} />
+          <Field label="Previous run" value={previous.created_at} />
+          <Field label="Latest expected loss" value={formatRunMetric(latest, "expected_loss")} />
+          <Field label="Previous expected loss" value={formatRunMetric(previous, "expected_loss")} />
+          <Field label="Latest tail loss" value={formatRunMetric(latest, "cvar_95")} />
+          <Field label="Previous tail loss" value={formatRunMetric(previous, "cvar_95")} />
           <AuditDetails
             items={[
               { label: "latest_run_id", value: latest.run_id },
@@ -4122,12 +4122,12 @@ function OptimizerComparePanel({ runs }: { runs: RunReference[] }) {
     <Panel title="Optimizer before/after compare" subtitle="Sanitized optimizer summary from the latest run.">
       {latest ? (
         <div className="field-grid">
-          <Field label="latest_run" value={latest.created_at} />
-          <Field label="before_expected_loss" value={formatRunMetric(latest, "before_expected_loss")} />
-          <Field label="after_expected_loss" value={formatRunMetric(latest, "after_expected_loss")} />
-          <Field label="before_cvar95" value={formatRunMetric(latest, "before_cvar95")} />
-          <Field label="after_cvar95" value={formatRunMetric(latest, "after_cvar95")} />
-          <Field label="resilience_roi" value={formatRunMetric(latest, "resilience_roi")} />
+          <Field label="Latest run" value={latest.created_at} />
+          <Field label="Before expected loss" value={formatRunMetric(latest, "before_expected_loss")} />
+          <Field label="After expected loss" value={formatRunMetric(latest, "after_expected_loss")} />
+          <Field label="Before tail loss" value={formatRunMetric(latest, "before_cvar95")} />
+          <Field label="After tail loss" value={formatRunMetric(latest, "after_cvar95")} />
+          <Field label="Resilience ROI" value={formatRunMetric(latest, "resilience_roi")} />
           <AuditDetails
             items={[
               { label: "run_id", value: latest.run_id },

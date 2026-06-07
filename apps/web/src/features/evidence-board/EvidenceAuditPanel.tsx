@@ -26,16 +26,16 @@ export function EvidenceAuditPanel({
     warnings,
   });
   return (
-    <Panel title="Evidence audit table" subtitle="Source filters and confidence fields are bounded display summaries only.">
+    <Panel title="Evidence review table" subtitle="Source filters and confidence fields are bounded display summaries only.">
       <div className="lineage-chips" style={{ marginBottom: 12 }}>
         <SourceFreshnessCard status="fixture_proxy_not_live" />
         <EvidenceCountCard count={rows.length} />
       </div>
       <div className="field-grid">
-        <Field label="source_filter" value={activeSource} />
-        <Field label="confidence_filter" value={confidenceFloor} />
-        <Field label="evidence_to_graph_path" value={String(rows[0]?.graph_path_ref ?? "unavailable")} />
-        <Field label="export_scope" value={sanitizedExport.export_scope} />
+        <Field label="Source filter" value={activeSource} />
+        <Field label="Confidence filter" value={confidenceFloor} />
+        <Field label="Graph path link" value={String(rows[0]?.graph_path_ref ?? "unavailable")} />
+        <Field label="Export scope" value={sanitizedExport.export_scope} />
       </div>
       <EvidenceRefsTable
         rows={rows}

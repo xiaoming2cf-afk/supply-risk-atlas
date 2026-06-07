@@ -3510,6 +3510,51 @@
 - Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
 - No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
 
+## 2026-06-06 Background Run Page Display Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `f6080eeb94b7a8e3a2f418d781d12f7e6f931616`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced Shock Simulator primary labels such as `current_loss_mode`, `current_propagation_mode`, `functionality_metric`, and `weighting_method` with user-facing labels.
+- Replaced forward stress result metric labels such as `p50_loss`, `p95_loss`, and `cvar_95` with plain loss-summary labels.
+- Replaced Reverse Stress Lab engineering subtitles and field labels with threshold, context, and search-limit language.
+- Replaced Optimizer primary before/after and context labels with business-facing terms, while keeping run IDs and graph/source metadata in folded audit details.
+- Renamed Evidence Board `Evidence audit table` to `Evidence review table` and changed evidence filter labels to display language.
+- Updated shared display label mappings so `cvar` identifiers render as tail-loss language in tables/charts.
+- Updated browser smoke and display-declutter quality checks to prevent the old engineering labels from returning.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/evidence-board/EvidenceAuditPanel.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 30 tests.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS after increasing timeout for the full group.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks after restarting stale local background API/Web dev processes.
+
+### Known Limitations
+
+- This gate changes display language only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- A first smoke attempt failed while stale local background API/Web processes were serving degraded or mismatched state; the processes were restarted in hidden/background mode and the final smoke passed.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ### Post-Commit Background Status
 
 - Implementation commit: `4f4255ba8851eccc183dd0075f191e537a7a09f2`.
