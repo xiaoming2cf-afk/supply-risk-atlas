@@ -895,7 +895,7 @@ def test_system_health_readiness_labels_do_not_show_snake_case() -> None:
     expected_labels = {
         '["api_readiness", "API readiness"]',
         '["connector_readiness", "Connector readiness"]',
-        '["connector_statuses", "Connector status summary"]',
+        '["connector_statuses", "Connector coverage summary"]',
         '["deployment_state", "Deployment state"]',
         '["deployment_version_readiness", "Deployment version readiness"]',
         '["graph_readiness", "Graph readiness"]',
@@ -909,7 +909,26 @@ def test_system_health_readiness_labels_do_not_show_snake_case() -> None:
     for label in expected_labels:
         assert label in source
 
+    assert '["connector_statuses", "Connector status summary"]' not in source
     assert '["source_statuses", "Source status summary"]' not in source
+
+
+def test_graph_count_labels_use_entity_relationship_language() -> None:
+    source = read("apps/web/src/features/common/displayLabels.ts")
+
+    expected_labels = {
+        '["edge_count", "Relationship count"]',
+        '["edgeCount", "Relationship count"]',
+        '["node_count", "Entity count"]',
+        '["nodeCount", "Entity count"]',
+    }
+    for label in expected_labels:
+        assert label in source
+
+    assert '["edge_count", "Edge count"]' not in source
+    assert '["edgeCount", "Edge count"]' not in source
+    assert '["node_count", "Node count"]' not in source
+    assert '["nodeCount", "Node count"]' not in source
 
 
 def test_entity_risk_fallback_uses_source_coverage_label() -> None:
