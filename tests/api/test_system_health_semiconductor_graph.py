@@ -63,6 +63,16 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
 
     assert payload["request_id"] == "req_semirisk_health"
     assert payload["status"] == "success"
+    stage_labels = [stage["label"] for stage in payload["data"]["stages"]]
+    assert stage_labels == [
+        "Evidence ingestion",
+        "Entity and event normalization",
+        "Graph relationship materialization",
+        "Public evidence graph snapshot",
+    ]
+    assert "Raw public source records" not in stage_labels
+    assert "Silver entity and event records" not in stage_labels
+    assert "Gold edge event materialization" not in stage_labels
     graph = payload["data"]["semiconductorGraph"]
     assert graph["label"] == "SemiRisk-KG v0.1 fixture graph"
     assert graph["fixtureGraph"] is True

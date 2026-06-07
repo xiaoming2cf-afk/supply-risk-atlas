@@ -200,6 +200,10 @@ function formatDateTime(value: string) {
   return parsed.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+function readinessText(value: boolean | undefined) {
+  return value ? "Ready" : "Needs review";
+}
+
 function sanitizePublicEndpointDiagnostic(value: unknown) {
   if (typeof value !== "string") return "endpoint://redacted";
   return value
@@ -5427,18 +5431,18 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             {health.semiconductorGraph ? (
               <Panel
                 title="SemiRisk-KG public evidence graph"
-                subtitle="Fixture/promoted public-evidence graph readiness; not a production readiness claim."
+                subtitle="Public-evidence graph readiness for research use; not a production readiness claim."
               >
                 <div className="inspector-grid" style={{ marginBottom: 16 }}>
-                  <Field label="registryReady" value={health.semiconductorGraph.registryReady ? "true" : "false"} />
-                  <Field label="ontologyReady" value={health.semiconductorGraph.ontologyReady ? "true" : "false"} />
-                  <Field label="fixtureManifestReady" value={health.semiconductorGraph.fixtureManifestReady ? "true" : "false"} />
-                  <Field label="fixtureGraph" value={health.semiconductorGraph.fixtureGraph ? "true" : "false"} />
-                  <Field label="fixtureGraphReady" value={health.semiconductorGraph.fixtureGraphReady ? "true" : "false"} />
-                  <Field label="nodeCount" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />
-                  <Field label="edgeCount" value={formatCompactNumber(health.semiconductorGraph.edgeCount)} />
-                  <Field label="staleSourceCount" value={health.semiconductorGraph.staleSourceCount} />
-                  <Field label="unresolvedEntityCount" value={health.semiconductorGraph.unresolvedEntityCount} />
+                  <Field label="Source registry" value={readinessText(health.semiconductorGraph.registryReady)} />
+                  <Field label="Ontology" value={readinessText(health.semiconductorGraph.ontologyReady)} />
+                  <Field label="Source manifest" value={readinessText(health.semiconductorGraph.fixtureManifestReady)} />
+                  <Field label="Research graph" value={readinessText(health.semiconductorGraph.fixtureGraph)} />
+                  <Field label="Graph readiness" value={readinessText(health.semiconductorGraph.fixtureGraphReady)} />
+                  <Field label="Nodes" value={formatCompactNumber(health.semiconductorGraph.nodeCount)} />
+                  <Field label="Relationships" value={formatCompactNumber(health.semiconductorGraph.edgeCount)} />
+                  <Field label="Sources needing review" value={health.semiconductorGraph.staleSourceCount} />
+                  <Field label="Unresolved entities" value={health.semiconductorGraph.unresolvedEntityCount} />
                 </div>
                 <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
                 <AuditDetails

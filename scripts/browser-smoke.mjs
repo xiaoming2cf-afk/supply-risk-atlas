@@ -591,11 +591,12 @@ async function main() {
     await navigate(client, `${webUrl}#system-health-center`);
     const healthSemiriskTerms = [
       "SemiRisk-KG public evidence graph",
-      "Node count",
-      "Edge count",
-      "Registry ready",
-      "Ontology ready",
-      "Fixture graph",
+      "Nodes",
+      "Relationships",
+      "Source registry",
+      "Ontology",
+      "Source manifest",
+      "Research graph",
       "Storage readiness",
       "Connector readiness",
       "Deployment version readiness",

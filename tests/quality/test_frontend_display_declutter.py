@@ -873,12 +873,33 @@ def test_reference_field_labels_use_user_language_not_refs_shorthand() -> None:
 
 def test_system_health_readiness_note_uses_user_language() -> None:
     source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    api_source = read("services/api/main.py")
 
     assert (
         "These checks summarize whether the research data, graph, sources, connectors, models, "
         "and deployment metadata are ready for this public-evidence demo."
     ) in source
     assert "fixture/proxy/promoted-public-evidence readiness signals only" not in source
+    assert "Public-evidence graph readiness for research use; not a production readiness claim." in source
+    assert "Fixture/promoted public-evidence graph readiness" not in source
+    assert 'Field label="registryReady"' not in source
+    assert 'Field label="ontologyReady"' not in source
+    assert 'Field label="fixtureManifestReady"' not in source
+    assert 'Field label="fixtureGraph"' not in source
+    assert 'Field label="fixtureGraphReady"' not in source
+    assert 'Field label="nodeCount"' not in source
+    assert 'Field label="edgeCount"' not in source
+    assert 'Field label="staleSourceCount"' not in source
+    assert 'Field label="unresolvedEntityCount"' not in source
+    assert "readinessText(health.semiconductorGraph.registryReady)" in source
+    assert "readinessText(health.semiconductorGraph.fixtureGraphReady)" in source
+    assert "Evidence ingestion" in api_source
+    assert "Entity and event normalization" in api_source
+    assert "Graph relationship materialization" in api_source
+    assert "Public evidence graph snapshot" in api_source
+    assert '"label": "Raw public source records"' not in api_source
+    assert '"label": "Silver entity and event records"' not in api_source
+    assert '"label": "Gold edge event materialization"' not in api_source
 
 
 def test_graph_overview_empty_source_copy_uses_product_language() -> None:

@@ -830,10 +830,10 @@ def _real_dashboard_payloads(result: Any, query: dict[str, Any] | None = None) -
         "system-health-center": {
             "services": _dashboard_services(result),
             "stages": [
-                {"id": "stage-raw", "label": "Raw public source records", "status": "complete", "processed": len(result.real.raw_records), "total": len(result.real.raw_records)},
-                {"id": "stage-silver", "label": "Silver entity and event records", "status": "complete", "processed": len(result.real.silver_entities) + len(result.real.silver_events), "total": len(result.real.silver_entities) + len(result.real.silver_events)},
-                {"id": "stage-gold", "label": "Gold edge event materialization", "status": "complete", "processed": len(result.real.gold_edge_events), "total": len(result.real.gold_edge_events)},
-                {"id": "stage-snapshot", "label": "Promoted graph snapshot", "status": "complete", "processed": 1, "total": 1},
+                {"id": "stage-raw", "label": "Evidence ingestion", "status": "complete", "processed": len(result.real.raw_records), "total": len(result.real.raw_records)},
+                {"id": "stage-silver", "label": "Entity and event normalization", "status": "complete", "processed": len(result.real.silver_entities) + len(result.real.silver_events), "total": len(result.real.silver_entities) + len(result.real.silver_events)},
+                {"id": "stage-gold", "label": "Graph relationship materialization", "status": "complete", "processed": len(result.real.gold_edge_events), "total": len(result.real.gold_edge_events)},
+                {"id": "stage-snapshot", "label": "Public evidence graph snapshot", "status": "complete", "processed": 1, "total": 1},
             ],
             "logs": [
                 f"{last_updated} source-registry accepted {source_count} public no-key sources",

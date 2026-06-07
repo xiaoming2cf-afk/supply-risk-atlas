@@ -3565,6 +3565,50 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background System Health Graph Readiness Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `a78aadf14c57c9f6aac1d1504295cdb53f2d0b7a`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded the System Health SemiRisk-KG readiness panel from raw implementation labels such as `registryReady`, `fixtureManifestReady`, `nodeCount`, and `edgeCount` into user-facing readiness fields.
+- Replaced boolean `true`/`false` values in that primary grid with `Ready` / `Needs review`.
+- Reworded the graph readiness subtitle from `Fixture/promoted` wording into public-evidence research-use language.
+- Reworded System Health pipeline stage labels from raw/silver/gold implementation terminology into evidence ingestion, entity/event normalization, graph relationship materialization, and public evidence graph snapshot language.
+- Kept technical diagnostics, graph/source metadata, API payload fields, raw-payload exclusion policy, geography terminology, and evidence-context safety behavior unchanged.
+- Added frontend and API assertions so the raw readiness field labels and raw/silver/gold pipeline labels do not return to the primary System Health UI.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `services/api/main.py`
+- `scripts/browser-smoke.mjs`
+- `tests/api/test_system_health_semiconductor_graph.py`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- First `npm.cmd run smoke:web` attempt -> FAILED because System Health still displayed raw/silver/gold pipeline stage labels; this gate was expanded to fix the API stage labels and smoke expectations.
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 40 tests.
+- `python -m pytest tests/api/test_system_health_semiconductor_graph.py -q` -> PASS, 6 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks after API stage-label declutter.
+
+### Known Limitations
+
+- This gate changes visible System Health readiness wording only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Supply-Demand Balance Copy Declutter Gate
 
 ### Current HEAD
