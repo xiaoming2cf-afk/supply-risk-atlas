@@ -144,7 +144,7 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Recommended actions" in source
     assert "Baseline comparison" in source
     assert "Evidence refs" in source
-    assert "Run history unavailable" in source
+    assert "Run history is not available in this environment." in source
     assert "Fixture graph metadata unavailable" in source
     assert "Template 中国台湾 earthquake" in source
     assert ">Affected mean<" in source
@@ -204,6 +204,11 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert '"semirisk_reverse_stress_v0.1"' not in read("scripts/browser-smoke.mjs")
     assert '"semirisk_intervention_optimizer_v0.1"' not in read("scripts/browser-smoke.mjs")
     assert '"semirisk_investigation_report_v0.1"' not in read("scripts/browser-smoke.mjs")
+
+    assert 'Run history unavailable: {error}' not in source
+    assert "Run history is not available in this environment. Stored workflow runs are hidden." in source
+    assert 'label="Run history diagnostics"' in source
+    assert 'sanitizePublicEndpointDiagnostic(error)' in source
 
     overlay_source = read("apps/web/src/features/graph-explorer/GraphScenarioOverlay.tsx")
     assert "<span>run_id:" not in overlay_source

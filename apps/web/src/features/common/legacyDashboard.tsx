@@ -4047,7 +4047,15 @@ function RunHistoryPanel({
       subtitle="Bounded sanitized run summaries; no raw payloads or private diagnostics."
       action={<Button disabled={isLoading} icon={Clock3} onClick={() => void onRefresh()}>{isLoading ? "Refreshing" : "Refresh runs"}</Button>}
     >
-      {error ? <p className="public-data-note">Run history unavailable: {error}</p> : null}
+      {error ? (
+        <>
+          <p className="public-data-note">Run history is not available in this environment. Stored workflow runs are hidden.</p>
+          <AuditDetails
+            label="Run history diagnostics"
+            items={[{ label: "run_history_error", value: sanitizePublicEndpointDiagnostic(error) }]}
+          />
+        </>
+      ) : null}
       {uniqueRuns.length ? (
         <ul className="timeline-list">
           {uniqueRuns.map((run) => (

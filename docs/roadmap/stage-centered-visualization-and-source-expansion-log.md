@@ -4303,3 +4303,42 @@
 - Probe evidence: API timed out, public Web HTML returned HTTP 503, and Web build-info / Web proxy still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Run History Unavailable Copy Gate
+
+### Current HEAD
+
+- Starting commit: `6f17ee040f2ff78d8bfabcde443abdb9d03c4502`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Confirmed current source includes `/api/v1/runs` route wiring and API tests, but the currently running local/deployed API can still return a 404 from older runtime state.
+- Removed raw route error text such as `Route not found: /api/v1/runs` from Run History primary page copy.
+- Replaced it with a user-facing empty/degraded state: `Run history is not available in this environment. Stored workflow runs are hidden.`
+- Preserved the sanitized diagnostic in folded `Run history diagnostics` audit details.
+- Added quality assertions preventing route error text from returning to primary Run History copy.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 30 tests.
+- `npm.cmd --workspace apps/web run typecheck` initially failed on a wrong helper name; after switching to `sanitizePublicEndpointDiagnostic` -> PASS.
+- `npm.cmd run smoke:web` initially failed while the page was in the compile-error state; after the helper fix -> PASS, 63 checks.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+
+### Known Limitations
+
+- This gate cleans the Run History unavailable state; it does not redeploy Render or prove the deployed API has picked up the existing `/api/v1/runs` route.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
