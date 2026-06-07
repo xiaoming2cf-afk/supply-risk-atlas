@@ -4293,3 +4293,13 @@
 - This gate changes Investigation Report display copy and table formatting only. It does not add calibrated production data, new source connectors, or Render redeployment.
 - Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
 - No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
+### Post-Commit Background Status
+
+- Implementation commit: `8f97c9e1d9a5fd3f4a1b91219e3976aa9090310b`.
+- GitHub `ci` passed in run `27079405434`.
+- GitHub `Quality Gates` passed in run `27079405438`.
+- Background deployed version probe for expected commit `8f97c9e` returned `deployed_stale_or_unverified`.
+- Probe evidence: API timed out, public Web HTML returned HTTP 503, and Web build-info / Web proxy still reported stale commit `b281948e446031f7605d4d85e6f7f6269adfa357`.
+- Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
+- No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
