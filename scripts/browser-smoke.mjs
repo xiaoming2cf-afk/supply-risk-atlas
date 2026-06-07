@@ -851,7 +851,8 @@ async function main() {
     const forwardControlTerms = [
       "Shock Simulator",
       "Scenario type",
-      "company:tsmc",
+      "TSMC",
+      "HBM",
       "Severity distribution",
       "Duration distribution",
       "iterations",

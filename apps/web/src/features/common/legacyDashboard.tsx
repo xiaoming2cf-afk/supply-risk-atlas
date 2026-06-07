@@ -2539,6 +2539,10 @@ const forwardTargetSuggestions = [
   "product_grade:hbm",
 ];
 
+function formatScenarioTargetOption(target: string) {
+  return formatNodeDisplayRef(target) || formatDisplayLabel(target);
+}
+
 export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiClient }) {
   const { t } = useI18n();
   const [input, setInput] = useState<ForwardScenarioInput>({
@@ -2696,7 +2700,11 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           <label className="form-control">
             <span>{t("Target")}</span>
             <select value={input.targets[0]} onChange={(event) => setInput((current) => ({ ...current, targets: [event.target.value] }))}>
-              {forwardTargetSuggestions.map((target) => <option key={target} value={target}>{target}</option>)}
+              {forwardTargetSuggestions.map((target) => (
+                <option key={target} value={target}>
+                  {formatScenarioTargetOption(target)}
+                </option>
+              ))}
             </select>
           </label>
           <label className="form-control">
@@ -3767,10 +3775,10 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
           <label className="form-control">
             <span>{t("Entity")}</span>
             <select value={input.entity_id} onChange={(event) => setInput((current) => ({ ...current, entity_id: event.target.value }))}>
-              <option value="company:tsmc">company:tsmc</option>
-              <option value="company:asml">company:asml</option>
-              <option value="company:samsung">company:samsung</option>
-              <option value="company:intel">company:intel</option>
+              <option value="company:tsmc">{formatScenarioTargetOption("company:tsmc")}</option>
+              <option value="company:asml">{formatScenarioTargetOption("company:asml")}</option>
+              <option value="company:samsung">{formatScenarioTargetOption("company:samsung")}</option>
+              <option value="company:intel">{formatScenarioTargetOption("company:intel")}</option>
               <option value="company:applied_materials">Applied Materials</option>
             </select>
           </label>

@@ -160,6 +160,23 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Evidence version details are available in audit details." in source
     assert "Template 中国台湾 earthquake" in source
     assert "Template 涓浗鍙版咕 earthquake" not in source
+    assert "function formatScenarioTargetOption(target: string)" in source
+    assert "{target}</option>" not in source
+    assert "value={target}" in source
+    assert "{formatScenarioTargetOption(target)}" in source
+    assert '<option value="company:tsmc">company:tsmc</option>' not in source
+    assert '<option value="company:asml">company:asml</option>' not in source
+    assert '{formatScenarioTargetOption("company:tsmc")}' in source
+    assert '{formatScenarioTargetOption("company:asml")}' in source
+    assert '["company:tsmc", "TSMC"]' in display_source
+    assert '["company:asml", "ASML"]' in display_source
+    assert '["company:samsung", "Samsung Electronics"]' in display_source
+    assert '["product_grade:hbm", "HBM"]' in display_source
+    assert '"Scenario type",\n      "company:tsmc"' not in read("scripts/browser-smoke.mjs")
+    assert '"TSMC",' in read("scripts/browser-smoke.mjs")
+    assert '"product_grade"' in display_source
+    assert '"process_stage"' in display_source
+    assert '"policy_event"' in display_source
     assert ">Affected mean<" in source
     assert ">Maximum propagation<" in source
     assert ">Independent exposure spread<" in source

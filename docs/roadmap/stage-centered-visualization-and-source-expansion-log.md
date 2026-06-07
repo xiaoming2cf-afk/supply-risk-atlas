@@ -3618,6 +3618,50 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Target Selector Display Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `f133c549bd1e5da5f732becfe9f54f20a3b3da20`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Changed Shock Simulator target dropdown display labels from raw node IDs to business names such as `TSMC`, `EUV scanner`, `Advanced logic`, `HBM`, and `中国台湾`.
+- Kept dropdown `value` attributes as canonical node IDs so API requests and graph semantics remain unchanged.
+- Changed Investigation Report entity dropdown display labels from raw `company:*` IDs to company names while preserving canonical values for report API calls.
+- Added display mappings for common lowercase company and product-grade IDs used by UI controls.
+- Updated browser smoke to assert the user-facing target labels rather than raw node IDs.
+- Added quality assertions preventing raw target option text from returning to primary UI.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 30 tests.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/api/*.py -q` file-by-file -> PASS for all API test files. The single full-suite `tests/api` invocation timed out locally under concurrent background service load, so the files were verified serially.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks, after restarting hidden local API/Web dev services in same-origin proxy mode.
+
+### Known Limitations
+
+- This gate changes display labels only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Local smoke was sensitive to dev-server startup mode: browser smoke passed after the hidden web dev server was started with `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:3000/api/v1` and `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000`.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ### Post-Commit Background Status
 
 - Implementation commit: `4f4255ba8851eccc183dd0075f191e537a7a09f2`.
