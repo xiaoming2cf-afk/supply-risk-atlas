@@ -850,10 +850,10 @@ function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
       {details.diagnostics ? (
         <DiagnosticDetails
           items={[
-            { label: "failed_endpoint", value: details.diagnostics.failedEndpoint },
-            { label: "source_status", value: details.diagnostics.sourceStatus },
-            { label: "retry_hint", value: details.diagnostics.retryHint },
-            { label: "transport_attempts", value: details.diagnostics.transportAttempts },
+            { label: "Connection target", value: details.diagnostics.failedEndpoint },
+            { label: "Source coverage", value: details.diagnostics.sourceStatus },
+            { label: "Recovery guidance", value: details.diagnostics.retryHint },
+            { label: "Connection attempts", value: details.diagnostics.transportAttempts },
           ]}
         />
       ) : null}

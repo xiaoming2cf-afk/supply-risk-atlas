@@ -742,6 +742,19 @@ def test_graph_explorer_primary_count_copy_uses_user_facing_terms() -> None:
     assert " relationships" in combined
 
 
+def test_graph_explorer_endpoint_diagnostics_use_user_facing_labels() -> None:
+    explorer = read("apps/web/src/features/graph-explorer/GraphExplorer.tsx")
+
+    assert '{ label: "failed_endpoint"' not in explorer
+    assert '{ label: "source_status"' not in explorer
+    assert '{ label: "retry_hint"' not in explorer
+    assert '{ label: "transport_attempts"' not in explorer
+    assert '{ label: "Connection target"' in explorer
+    assert '{ label: "Source coverage"' in explorer
+    assert '{ label: "Recovery guidance"' in explorer
+    assert '{ label: "Connection attempts"' in explorer
+
+
 def test_evidence_records_copy_avoids_refs_jargon_in_primary_ui() -> None:
     display_source = read("apps/web/src/features/common/displayLabels.ts")
     legacy_source = read("apps/web/src/features/common/legacyDashboard.tsx")
