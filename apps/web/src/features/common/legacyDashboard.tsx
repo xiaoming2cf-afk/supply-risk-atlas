@@ -2557,7 +2557,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
     propagation_mode: "auto_semiconductor",
     functionality_metric: "capacity_fulfillment",
     weighting_method: "literature_proxy_not_calibrated",
-    assumptions: ["fixture/promoted test graph only; normalized loss scores, no dollar loss"]
+    assumptions: ["public evidence scenario only; normalized loss scores, no dollar loss"]
   });
   const [result, setResult] = useState<ForwardScenarioResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -2590,7 +2590,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           targets: ["material:photoresist"],
           severity_distribution: { type: "triangular", params: { min: 0.45, mode: 0.68, max: 0.86 } },
           duration_days_distribution: { type: "fixed", params: { value: 21 } },
-          assumptions: ["template: material shortage over research graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+          assumptions: ["template: material shortage over research graph", "public evidence scenario only; normalized loss scores, no dollar loss"]
         };
       }
       if (template === "policy_review") {
@@ -2610,7 +2610,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           targets: ["product_grade:hbm"],
           severity_distribution: { type: "fixed", params: { value: 0.64 } },
           duration_days_distribution: { type: "fixed", params: { value: 60 } },
-          assumptions: ["template: HBM demand spike over research graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+          assumptions: ["template: HBM demand spike over research graph", "public evidence scenario only; normalized loss scores, no dollar loss"]
         };
       }
       return {
@@ -2619,7 +2619,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
         targets: ["region:china_taiwan"],
         severity_distribution: { type: "triangular", params: { min: 0.52, mode: 0.72, max: 0.92 } },
         duration_days_distribution: { type: "triangular", params: { min: 7, mode: 28, max: 60 } },
-        assumptions: ["template: 中国台湾 corridor earthquake over research graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+        assumptions: ["template: 中国台湾 corridor earthquake over research graph", "public evidence scenario only; normalized loss scores, no dollar loss"]
       };
     });
   };
@@ -3943,7 +3943,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 ]}
               />
               <p className="public-data-note">
-                {result.formula_sources.source_principle_note}; fixture/proxy methodology only; no production readiness claim.
+                {result.formula_sources.source_principle_note}; research methodology only; no production readiness claim.
               </p>
             </Panel>
             <Panel title="Report evidence summary" subtitle="Evidence coverage, graph context, and limitations for this report.">

@@ -3565,6 +3565,43 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Scenario And Report Method Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `abca1433abcf82717382d5a9129d6d5f0b7a2c45`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded Shock Simulator scenario assumptions from `fixture/proxy only` / `fixture/promoted test graph only` wording into public-evidence scenario language.
+- Reworded Investigation Report methodology note from `fixture/proxy methodology only` into research-methodology language while preserving the no-production-readiness caveat.
+- Kept API fields, scenario input shape, report metadata, graph/source metadata, raw-payload exclusion policy, geography terminology, and evidence-context safety behavior unchanged.
+- Added frontend display declutter assertions so the old fixture/proxy-only strings do not return to primary page copy.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 40 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes visible scenario/report methodology wording only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Evidence Lineage Label Declutter Gate
 
 ### Current HEAD

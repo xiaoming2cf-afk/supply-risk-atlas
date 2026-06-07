@@ -156,6 +156,11 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "The page is waiting for an evidence-backed risk response. No production score is fabricated." in source
     assert 'title="Version and freshness"' not in source
     assert 'title="Data status"' in source
+    assert "fixture/proxy only; normalized loss scores, no dollar loss" not in source
+    assert "fixture/promoted test graph only; normalized loss scores, no dollar loss" not in source
+    assert "fixture/proxy methodology only" not in source
+    assert "public evidence scenario only; normalized loss scores, no dollar loss" in source
+    assert "research methodology only; no production readiness claim" in source
     assert "Every displayed score is tied to graph, feature, and source manifest metadata." not in source
     assert "Evidence version details are available in audit details." in source
     assert "Template 中国台湾 earthquake" in source
