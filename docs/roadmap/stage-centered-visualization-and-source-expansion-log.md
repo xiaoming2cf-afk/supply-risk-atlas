@@ -4159,3 +4159,41 @@
 - Background deployed version probe for expected commit `5f2287b` timed out in the bounded probe window and did not verify deployment.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Report Export Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `cde0af850a7a78521e6b9d866b5ea2ed800280dc`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Removed visible `report_id; report_version` subtitle copy from the Investigation Report export panel.
+- Replaced it with a user-facing sanitized export readiness sentence.
+- Kept report identifiers, selected run refs, report version, graph version, source manifest id, calibration status, formula refs, and exclusion flags in folded audit details.
+- Added a quality assertion preventing report id/version concatenation from returning to primary page copy.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 30 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+
+### Known Limitations
+
+- This gate changes report page display copy only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

@@ -3877,8 +3877,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
           <>
             <Panel
               title="Report export"
-              subtitle={`${result.report_id}; ${result.report_version}.`}
-              translateSubtitle={false}
+              subtitle="Sanitized report export is ready; report identifiers and version metadata are available in audit details."
               action={
                 <Button
                   icon={Copy}

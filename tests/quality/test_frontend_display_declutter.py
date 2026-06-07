@@ -184,6 +184,8 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert '<Field label="latest_run_id"' not in source
     assert '<Field label="previous_run_id"' not in source
     assert '<Field label="run_id"' not in source
+    assert 'subtitle={`${result.report_id}; ${result.report_version}.`}' not in source
+    assert "Sanitized report export is ready; report identifiers and version metadata are available in audit details." in source
     assert 'title="Before/after simulation run IDs"' not in source
     assert 'title="Simulation run counts"' in source
     assert "formatNodeDisplayRef(action.target_id)" in source
