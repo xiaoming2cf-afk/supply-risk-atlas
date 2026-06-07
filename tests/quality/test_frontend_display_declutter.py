@@ -848,3 +848,13 @@ def test_reference_field_labels_use_user_language_not_refs_shorthand() -> None:
     assert '["source_refs", "Source refs"]' not in source
     assert '["formula_refs", "Formula refs"]' not in source
     assert '["selected_run_refs", "Selected run refs"]' not in source
+
+
+def test_system_health_readiness_note_uses_user_language() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert (
+        "These checks summarize whether the research data, graph, sources, connectors, models, "
+        "and deployment metadata are ready for this public-evidence demo."
+    ) in source
+    assert "fixture/proxy/promoted-public-evidence readiness signals only" not in source

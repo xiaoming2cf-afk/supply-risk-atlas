@@ -5294,7 +5294,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           ]}
         />
         <p className="public-data-note">
-          service, graph, source, connector, storage, model, deployment, and validation readiness are fixture/proxy/promoted-public-evidence readiness signals only.
+          These checks summarize whether the research data, graph, sources, connectors, models, and deployment metadata are ready for this public-evidence demo.
         </p>
       </Panel>
 
