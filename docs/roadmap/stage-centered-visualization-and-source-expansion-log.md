@@ -4609,3 +4609,41 @@
 - This gate changes Entity Risk 360 display copy only. It does not add calibrated production data, new source connectors, or Render redeployment.
 - Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
 - No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
+## 2026-06-07 Background Evidence Board Graph Path Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `7659712b753a7ec8dc312a9fc3e57beef6dfb95e`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced visible Evidence Board `graph_path_ref` values with user-facing labels such as `Evidence path 1`.
+- Kept the original graph path references inside the sanitized JSON export input so audit/export paths remain available outside the primary page display.
+- Added a frontend display-declutter quality assertion that the visible table uses formatted path labels while the export builder still receives the original rows.
+- Confirmed the API client already keeps bounded idempotent GET retry, same-origin read fallback, and sanitized unavailable envelopes with `failed_endpoint`, `retry_hint`, and `transport_attempts`.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/evidence-board/EvidenceAuditPanel.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 31 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd run smoke:web` -> PASS in local proxy mode.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+
+### Known Limitations
+
+- This gate changes Evidence Board primary display labels only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

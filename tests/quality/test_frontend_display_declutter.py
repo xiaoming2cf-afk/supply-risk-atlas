@@ -633,6 +633,18 @@ def test_graph_evidence_view_does_not_use_edge_id_as_visible_source_fallback() -
     assert 'return "Evidence source"' in source
 
 
+def test_evidence_board_hides_raw_graph_path_refs_in_visible_table() -> None:
+    source = read("apps/web/src/features/evidence-board/EvidenceAuditPanel.tsx")
+
+    assert "const visibleRows = rows.map" in source
+    assert "graph_path_ref: formatEvidencePathLabel(index)" in source
+    assert 'return `Evidence path ${index + 1}`;' in source
+    assert 'value={String(rows[0]?.graph_path_ref ?? "unavailable")}' not in source
+    assert "rows={visibleRows}" in source
+    assert "buildSanitizedJsonExport({" in source
+    assert "rows," in source
+
+
 def test_relationship_chart_labels_use_user_facing_node_labels() -> None:
     supply = read("apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx")
     demand = read("apps/web/src/features/graph-explorer/DemandRelationshipView.tsx")
