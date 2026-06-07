@@ -186,6 +186,14 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert '<Field label="run_id"' not in source
     assert 'subtitle={`${result.report_id}; ${result.report_version}.`}' not in source
     assert "Sanitized report export is ready; report identifiers and version metadata are available in audit details." in source
+    assert 'title="Report metadata and evidence table"' not in source
+    assert "Controlled report audit view renders before and after export generation." not in source
+    assert "Audited report context, evidence summary, and limitations." not in source
+    assert 'title="Report evidence summary"' in source
+    assert 'section: formatDisplayLabel(String(row.section ?? "section"))' in source
+    assert "section: row.section" not in source
+    assert '"Report metadata and evidence table"' not in read("scripts/browser-smoke.mjs")
+    assert '"Report evidence summary"' in read("scripts/browser-smoke.mjs")
     assert 'title="Before/after simulation run IDs"' not in source
     assert 'title="Simulation run counts"' in source
     assert "formatNodeDisplayRef(action.target_id)" in source

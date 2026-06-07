@@ -4253,3 +4253,43 @@
 - Background deployed version probe for expected commit `5981d60` timed out in the bounded probe window and did not verify deployment.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-06 Background Report Evidence Summary Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `77b7a0647e3f595f1003c0fd72f8db6b22c3df33`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced `Report metadata and evidence table` with `Report evidence summary` in Investigation Report primary UI.
+- Replaced `Controlled report audit view...` / `Audited report context...` subtitles with evidence coverage and graph context language.
+- Formatted report evidence section ids through the display label helper so internal ids such as semirisk methodology keys are not rendered as raw primary table values.
+- Updated browser smoke to assert the new user-facing report evidence summary title.
+- Added quality assertions preventing the old audit-oriented report titles and raw section values from returning.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 30 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` initially failed because the smoke expectation still used the old report title; after updating the assertion -> PASS, 63 checks.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api tests/security tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+
+### Known Limitations
+
+- This gate changes Investigation Report display copy and table formatting only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

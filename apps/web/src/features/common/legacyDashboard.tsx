@@ -3851,7 +3851,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
           error={runHistory.error}
           onRefresh={runHistory.refresh}
         />
-        <Panel title="Report metadata and evidence table" subtitle="Controlled report audit view renders before and after export generation.">
+        <Panel title="Report evidence summary" subtitle="Evidence coverage and graph context for the selected report inputs.">
           <div className="driver-grid">
             <EvidenceCountCard count={result?.evidence_summary.length ?? 0} />
             <GraphQualityCard status={result ? `${result.graph_context.node_count} nodes / ${result.graph_context.edge_count} edges` : "report_not_generated"} />
@@ -3860,7 +3860,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
             title="Evidence summary table"
             rows={result ? result.evidence_summary.map((row, index) => ({
               id: `${row.section ?? "section"}:${index}`,
-              section: row.section,
+              section: formatDisplayLabel(String(row.section ?? "section")),
               evidence_ref_count: row.evidence_ref_count,
             })) : []}
             columns={["section", "evidence_ref_count"]}
@@ -3938,7 +3938,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 {result.formula_sources.source_principle_note}; fixture/proxy methodology only; no production readiness claim.
               </p>
             </Panel>
-            <Panel title="Report metadata and evidence table" subtitle="Audited report context, evidence summary, and limitations.">
+            <Panel title="Report evidence summary" subtitle="Evidence coverage, graph context, and limitations for this report.">
               <MetadataSummary items={[{ label: "Public evidence mode" }]} />
               <AuditDetails
                 items={[
@@ -3955,7 +3955,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                 title="Evidence summary table"
                 rows={result.evidence_summary.map((row, index) => ({
                   id: `${row.section ?? "section"}:${index}`,
-                  section: row.section,
+                  section: formatDisplayLabel(String(row.section ?? "section")),
                   evidence_ref_count: row.evidence_ref_count,
                 }))}
                 columns={["section", "evidence_ref_count"]}

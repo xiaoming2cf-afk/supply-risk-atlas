@@ -697,7 +697,7 @@ async function main() {
         page: "Investigation Report visualization integration",
         hash: "#investigation-report",
         title: "Investigation Report",
-        terms: ["Report metadata and evidence table", "Evidence summary table", "Evidence count"],
+        terms: ["Report evidence summary", "Evidence summary table", "Evidence count"],
       },
       {
         page: "Evidence Board visualization integration",
