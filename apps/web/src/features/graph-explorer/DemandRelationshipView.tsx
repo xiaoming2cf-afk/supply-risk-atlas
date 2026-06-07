@@ -89,8 +89,8 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
           { label: "source_manifest_id", value: data.source_manifest_id },
           { label: "graph_version", value: data.graph_version },
           { label: "calibration_status", value: metadata.calibration_status },
-          { label: "source_status", value: metadata.source_status },
-          { label: "evidence_refs", value: metadata.evidence_refs },
+          { label: "Source coverage", value: metadata.source_status },
+          { label: "Evidence references", value: metadata.evidence_refs },
         ]}
         warnings={data.warnings}
       />

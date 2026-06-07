@@ -705,6 +705,10 @@ def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() 
         assert "<th>Source refs</th>" not in source
         assert "<th>Evidence refs</th>" not in source
         assert "fixture/promoted" not in source
+        assert '{ label: "source_status"' not in source
+        assert '{ label: "evidence_refs"' not in source
+        assert '{ label: "Source coverage"' in source
+        assert '{ label: "Evidence references"' in source
 
     stage_source = read("apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx")
     assert "relationship class:" not in stage_source

@@ -5584,3 +5584,48 @@
 - Background deployed version probe for expected commit `c894831` timed out in the bounded probe window and did not verify deployment.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-07 Background Relationship Audit Label Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `27320fc380e5ac568a438dec3fa9e0a7f25eac1c`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded relationship audit detail labels from raw metadata names to user-facing copy in supply, demand, production dependency, and supply-demand balance relationship views.
+- Kept the underlying `source_status` and `evidence_refs` metadata fields unchanged for API compatibility, exports, diagnostics, and evidence traceability.
+- Added a frontend display declutter assertion so the relationship views do not reintroduce `source_status` or `evidence_refs` as visible audit labels.
+- No public route, API response schema, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context propagation rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 41 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> first failed because no local Web server was listening on `http://127.0.0.1:3000`.
+- `npm.cmd run smoke:web` -> then timed out under the outer command window before the local API server was available.
+- `npm.cmd run smoke:web` -> failed with the app still connecting to public data when local API port `8000` was not listening.
+- `python -m services.api.dev_server` -> started as a hidden local background API process for smoke verification.
+- `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000 npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes visible relationship audit labels only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- GitHub and deployment checks are still pending for this gate.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

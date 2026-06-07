@@ -40,8 +40,8 @@ export function SupplyDemandBalanceView({
               { label: "source_manifest_id", value: data.source_manifest_id },
               { label: "graph_version", value: data.graph_version },
               { label: "calibration_status", value: (data as BalancePayloadMetadata).calibration_status },
-              { label: "source_status", value: (data as BalancePayloadMetadata).source_status },
-              { label: "evidence_refs", value: payloadEvidenceRefs },
+              { label: "Source coverage", value: (data as BalancePayloadMetadata).source_status },
+              { label: "Evidence references", value: payloadEvidenceRefs },
             ]}
             warnings={data.warnings}
           />
