@@ -14,14 +14,14 @@ export function GraphNodeCatalogView({
   return (
     <div className="graph-v3-panel graph-v3-node-catalog-panel">
       <div className="section-kicker">Node Catalog mode</div>
-      <p className="inspector-note">Node Catalog mode shows canonical catalog rows and source candidates, not a dense node cloud.</p>
+      <p className="inspector-note">Node Catalog mode shows canonical catalog rows and evidence sources, not a dense node cloud.</p>
       <table className="graph-evidence-table">
         <thead>
           <tr>
             <th>Node</th>
             <th>Layer</th>
             <th>Type</th>
-            <th>Source candidates</th>
+            <th>Evidence sources</th>
           </tr>
         </thead>
         <tbody>
@@ -34,7 +34,7 @@ export function GraphNodeCatalogView({
                 <td>
                   {Array.isArray((row as Record<string, unknown>).source_candidates)
                     ? ((row as { source_candidates: unknown[] }).source_candidates ?? []).slice(0, 3).map(formatSourceCandidate).join(", ")
-                    : "source candidate unavailable"}
+                    : "evidence source unavailable"}
                 </td>
               </tr>
             ))

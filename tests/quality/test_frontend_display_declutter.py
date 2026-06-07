@@ -888,3 +888,11 @@ def test_graph_overview_source_rows_use_display_labels() -> None:
     assert "formatOverviewSourceLabel(row.source, row.kind)" in source
     assert "formatSourceDisplayRef(source)" in source
     assert "{row.source ?? row.kind ?? \"source\"}: {row.count}" not in source
+
+
+def test_graph_node_catalog_uses_evidence_source_copy() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx")
+
+    assert "evidence sources" in source
+    assert "Evidence sources" in source
+    assert "source candidates" not in source.lower()
