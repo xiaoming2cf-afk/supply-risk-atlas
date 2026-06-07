@@ -1,5 +1,6 @@
 import type { GraphExplorerData } from "@supply-risk/shared-types";
 import { AuditDetails, MetadataSummary } from "../common/AuditDetails";
+import { formatDisplayLabel, formatSourceDisplayRef } from "../common/displayLabels";
 import type { GraphVersionMetadata, GraphViewModel } from "./graphViewModel";
 
 export function GraphOverviewView({
@@ -29,11 +30,18 @@ export function GraphOverviewView({
       <ul className="evidence-list compact">
         {sourceRows.slice(0, 6).map((row) => (
           <li key={row.source ?? row.kind ?? "source"}>
-            {row.source ?? row.kind ?? "source"}: {row.count}
+            {formatOverviewSourceLabel(row.source, row.kind)}: {row.count}
           </li>
         ))}
         {sourceRows.length === 0 ? <li>Source coverage will appear when public evidence graph records are available for this view.</li> : null}
       </ul>
     </div>
   );
+}
+
+function formatOverviewSourceLabel(source?: string | null, kind?: string | null) {
+  const sourceLabel = formatSourceDisplayRef(source);
+  if (sourceLabel) return sourceLabel;
+  if (kind) return formatDisplayLabel(kind);
+  return "Evidence source";
 }

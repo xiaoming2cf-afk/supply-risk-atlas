@@ -865,3 +865,11 @@ def test_graph_overview_empty_source_copy_uses_product_language() -> None:
 
     assert "Source coverage will appear when public evidence graph records are available for this view." in source
     assert "fixture/proxy dashboard graph" not in source
+
+
+def test_graph_overview_source_rows_use_display_labels() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphOverviewView.tsx")
+
+    assert "formatOverviewSourceLabel(row.source, row.kind)" in source
+    assert "formatSourceDisplayRef(source)" in source
+    assert "{row.source ?? row.kind ?? \"source\"}: {row.count}" not in source
