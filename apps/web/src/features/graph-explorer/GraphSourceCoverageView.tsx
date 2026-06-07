@@ -1,5 +1,5 @@
 import type { GraphSourceCoverageData } from "@supply-risk/shared-types";
-import { formatDisplayValue, formatSourceDisplayRef } from "../common/displayLabels";
+import { formatDisplayLabel, formatDisplayValue, formatSourceDisplayRef } from "../common/displayLabels";
 
 export function GraphSourceCoverageView({
   endpointData,
@@ -21,9 +21,9 @@ export function GraphSourceCoverageView({
       <p className="inspector-note">Coverage is a transparency table and does not render the full graph.</p>
       {nodeCoverage ? (
         <div className="graph-view-summary">
-          <span>Catalog entities: {String(nodeCoverage.catalog_node_count ?? "n/a")}</span>
-          <span>covered: {String(nodeCoverage.covered_catalog_node_count ?? "n/a")}</span>
-          <span>status: {String(nodeCoverage.status ?? "partial")}</span>
+          <span>{formatDisplayLabel("catalog_node_count")}: {String(nodeCoverage.catalog_node_count ?? "n/a")}</span>
+          <span>{formatDisplayLabel("covered_catalog_node_count")}: {String(nodeCoverage.covered_catalog_node_count ?? "n/a")}</span>
+          <span>{formatDisplayLabel("source_status")}: {String(formatDisplayValue(String(nodeCoverage.status ?? "partial")))}</span>
         </div>
       ) : null}
       <table className="graph-evidence-table">

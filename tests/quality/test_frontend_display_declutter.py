@@ -337,6 +337,12 @@ def test_graph_explorer_tables_format_source_and_node_ids_for_primary_ui() -> No
     inspector = read("apps/web/src/features/graph-explorer/GraphInspector.tsx")
 
     assert "formatSourceCell(row.source_id" in source_coverage
+    assert "formatDisplayLabel(\"catalog_node_count\")" in source_coverage
+    assert "formatDisplayLabel(\"covered_catalog_node_count\")" in source_coverage
+    assert "formatDisplayLabel(\"source_status\")" in source_coverage
+    assert "formatDisplayValue(String(nodeCoverage.status" in source_coverage
+    assert "<span>covered:" not in source_coverage
+    assert "<span>status:" not in source_coverage
     assert '{String(row.source_id ?? "source_ref")}' not in source_coverage
     assert "fallbackRows" not in source_coverage
     assert "view.visibleLinks" not in source_coverage
@@ -858,6 +864,8 @@ def test_audit_detail_labels_use_product_language_not_raw_field_language() -> No
 
     expected_labels = {
         '["calibration_status", "Calibration status"]',
+        '["catalog_node_count", "Catalog entity count"]',
+        '["covered_catalog_node_count", "Covered catalog entities"]',
         '["data_mode", "Data source mode"]',
         '["failed_endpoint", "Connection target"]',
         '["graph_mode", "Graph data mode"]',
