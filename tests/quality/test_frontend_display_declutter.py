@@ -804,3 +804,24 @@ def test_audit_detail_labels_use_product_language_not_raw_field_language() -> No
     assert '["graph_version", "Graph version"]' not in source
     assert '["source_manifest_id", "Source manifest ID"]' not in source
     assert '["transport_attempts", "Transport attempts"]' not in source
+
+
+def test_system_health_readiness_labels_do_not_show_snake_case() -> None:
+    source = read("apps/web/src/features/common/displayLabels.ts")
+
+    expected_labels = {
+        '["api_readiness", "API readiness"]',
+        '["connector_readiness", "Connector readiness"]',
+        '["connector_statuses", "Connector status summary"]',
+        '["deployment_state", "Deployment state"]',
+        '["deployment_version_readiness", "Deployment version readiness"]',
+        '["graph_readiness", "Graph readiness"]',
+        '["model_readiness", "Model readiness"]',
+        '["service_readiness", "Service readiness"]',
+        '["source_registry_readiness", "Source registry readiness"]',
+        '["source_statuses", "Source status summary"]',
+        '["storage_readiness", "Storage readiness"]',
+        '["validation_readiness", "Validation readiness"]',
+    }
+    for label in expected_labels:
+        assert label in source
