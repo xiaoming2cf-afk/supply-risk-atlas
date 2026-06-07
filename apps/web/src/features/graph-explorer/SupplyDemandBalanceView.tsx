@@ -21,13 +21,13 @@ export function SupplyDemandBalanceView({
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
-      <div className="section-kicker">Supply-Demand Balance view</div>
+      <div className="section-kicker">Supply-demand balance</div>
       <p className="inspector-note">Balance rows compare bounded fixture/promoted demand signals with supply and production-dependency counts.</p>
       {data ? (
         <div className="graph-view-summary">
           <MetadataSummary
             items={[
-              { label: data.relationship_class },
+              { label: "Supply-demand balance" },
               { label: "Public evidence mode" },
               { label: "Source-backed balance" },
               data.warnings?.length ? { label: `${data.warnings.length} warning(s)`, tone: "warning" } : { label: "" },

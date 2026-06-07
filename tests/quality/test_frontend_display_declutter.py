@@ -567,6 +567,29 @@ def test_relationship_chart_labels_use_user_facing_node_labels() -> None:
     assert "label: String((row as Record<string, unknown>).product_grade_id ?? \"product\")" not in balance
 
 
+def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() -> None:
+    relationship_files = [
+        "apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx",
+        "apps/web/src/features/graph-explorer/DemandRelationshipView.tsx",
+        "apps/web/src/features/graph-explorer/ProductionDependencyView.tsx",
+        "apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx",
+    ]
+
+    for relative_path in relationship_files:
+        source = read(relative_path)
+        assert "{ label: data.relationship_class }" not in source
+        assert " Relationship view" not in source
+        assert " Dependency view" not in source
+        assert " Balance view" not in source
+
+    stage_source = read("apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx")
+    assert "relationship class:" not in stage_source
+    assert "Can this edge propagate risk?" not in stage_source
+    assert "fixture/promoted public-evidence view" not in stage_source
+    assert "Risk propagation:" in stage_source
+    assert "Focused view: up to 18 nodes / 30 edges" in stage_source
+
+
 def test_timeline_and_geo_views_avoid_raw_id_visible_fallbacks() -> None:
     timeline = read("apps/web/src/features/graph-explorer/GraphTimelineView.tsx")
     geo = read("apps/web/src/features/graph-explorer/GraphGeoView.tsx")

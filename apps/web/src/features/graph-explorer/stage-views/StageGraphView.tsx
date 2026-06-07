@@ -195,12 +195,12 @@ export function StageGraphView({
         warnings={metadata.warnings}
       />
       <p className="warning-text">
-        fixture/promoted public-evidence view; evidence-context links are inspection links, not dependency edges.
+        Public evidence view; evidence-context links are inspection links, not dependency edges.
       </p>
       <div className="graph-view-summary">
-        <span>relationship class: {relationshipClassLabel(relationshipClassFilter)}</span>
-        <span>Can this edge propagate risk? {propagates ? "yes, if evidence-backed" : "no"}</span>
-        <span>stage cap: 18 nodes / 30 edges</span>
+        <span>{relationshipClassLabel(relationshipClassFilter)}</span>
+        <span>Risk propagation: {propagates ? "available for evidence-backed edges" : "not used for propagation"}</span>
+        <span>Focused view: up to 18 nodes / 30 edges</span>
       </div>
       {isStageEndpointLoading ? (
         <p className="inspector-note">Loading authoritative stage graph data.</p>

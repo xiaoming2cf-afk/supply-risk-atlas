@@ -20,7 +20,7 @@ export function SupplyRelationshipView({
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
-      <div className="section-kicker">Supply Relationship view</div>
+      <div className="section-kicker">Supply relationships</div>
       <p className="inspector-note">Supplier rows are table-first and show supplied item, source refs, and confidence without rendering a dense graph.</p>
       <RelationshipMetadata data={data} />
       <SupplierConcentrationHHIChart
@@ -77,7 +77,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
     <div className="graph-view-summary">
       <MetadataSummary
         items={[
-          { label: data.relationship_class },
+          { label: "Supply relationships" },
           { label: "Public evidence mode" },
           { label: "Source-backed relationships" },
           data.warnings?.length ? { label: `${data.warnings.length} warning(s)`, tone: "warning" } : { label: "" },

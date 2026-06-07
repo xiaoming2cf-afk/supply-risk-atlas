@@ -514,10 +514,10 @@ async function main() {
     });
 
     const relationshipModeChecks = [
-      ["Supply", "Supply Relationship view", "supplied item"],
-      ["Demand", "Demand Relationship view", "demand edges are not supplier edges"],
-      ["Production", "Production Dependency view", "bottleneck flags"],
-      ["Balance", "Supply-Demand Balance view", "Shortage proxy"],
+      ["Supply", "Supply relationships", "supplied item"],
+      ["Demand", "Demand relationships", "demand edges are not supplier edges"],
+      ["Production", "Production dependencies", "bottleneck flags"],
+      ["Balance", "Supply-demand balance", "Shortage proxy"],
     ];
     for (const [buttonLabel, titleText, detailText] of relationshipModeChecks) {
       await evaluate(client, `(() => {
@@ -584,7 +584,7 @@ async function main() {
           stageState.text.includes(stageLabel) &&
           stageState.hasStageSelector &&
           stageState.hasRelationshipClassSelector &&
-          stageState.text.includes("stage cap: 18 nodes / 30 edges"),
+          stageState.text.includes("Focused view: up to 18 nodes / 30 edges"),
       });
     }
 

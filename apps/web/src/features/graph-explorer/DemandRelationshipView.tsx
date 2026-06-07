@@ -20,7 +20,7 @@ export function DemandRelationshipView({
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
-      <div className="section-kicker">Demand Relationship view</div>
+      <div className="section-kicker">Demand relationships</div>
       <p className="inspector-note">Demand rows show downstream source, product grade, and proxy type; demand edges are not supplier edges.</p>
       <RelationshipMetadata data={data} />
       <DownstreamDemandPressureChart
@@ -76,7 +76,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
     <div className="graph-view-summary">
       <MetadataSummary
         items={[
-          { label: data.relationship_class },
+          { label: "Demand relationships" },
           { label: "Public evidence mode" },
           { label: "Source-backed demand" },
           data.warnings?.length ? { label: `${data.warnings.length} warning(s)`, tone: "warning" } : { label: "" },

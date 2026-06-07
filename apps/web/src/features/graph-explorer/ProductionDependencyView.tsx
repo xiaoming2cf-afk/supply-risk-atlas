@@ -20,7 +20,7 @@ export function ProductionDependencyView({
 
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
-      <div className="section-kicker">Production Dependency view</div>
+      <div className="section-kicker">Production dependencies</div>
       <p className="inspector-note">Production dependency rows separate required inputs, bottleneck flags, and propagation hints from evidence-context links.</p>
       <RelationshipMetadata data={data} />
       <CriticalInputBottleneckChart
@@ -74,7 +74,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
     <div className="graph-view-summary">
       <MetadataSummary
         items={[
-          { label: data.relationship_class },
+          { label: "Production dependencies" },
           { label: "Public evidence mode" },
           { label: "Source-backed dependencies" },
           data.warnings?.length ? { label: `${data.warnings.length} warning(s)`, tone: "warning" } : { label: "" },
