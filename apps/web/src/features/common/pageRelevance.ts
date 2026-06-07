@@ -42,7 +42,7 @@ export const pageRelevancePolicies: Record<DashboardPageId, PageRelevancePolicy>
   },
   "company-risk-360": {
     pageId: "company-risk-360",
-    purpose: "Selected entity risk score, components, relevant relationship context, and evidence refs.",
+    purpose: "Selected entity risk score, components, relevant relationship context, and evidence records.",
     allowedMajorSections: [
       "selected_entity",
       "risk_score",
@@ -66,7 +66,7 @@ export const pageRelevancePolicies: Record<DashboardPageId, PageRelevancePolicy>
   },
   "graph-explorer": {
     pageId: "graph-explorer",
-    purpose: "Decluttered graph inspection with relationship-class filters, legend, inspector, and evidence refs.",
+    purpose: "Decluttered graph inspection with relationship-class filters, legend, inspector, and evidence records.",
     allowedMajorSections: [
       "stage_selector",
       "graph_controls",
@@ -157,7 +157,7 @@ export const pageRelevancePolicies: Record<DashboardPageId, PageRelevancePolicy>
   },
   "causal-evidence-board": {
     pageId: "causal-evidence-board",
-    purpose: "Evidence refs, source and confidence filters, freshness, and evidence-to-graph links.",
+    purpose: "Evidence records, source and confidence filters, freshness, and evidence-to-graph links.",
     allowedMajorSections: [
       "evidence_refs",
       "source_filters",

@@ -35,7 +35,7 @@ export function DemandRelationshipView({
             <th>Region</th>
             <th>Proxy</th>
             <th>Period</th>
-            <th>Source refs</th>
+            <th>Sources</th>
           </tr>
         </thead>
         <tbody>

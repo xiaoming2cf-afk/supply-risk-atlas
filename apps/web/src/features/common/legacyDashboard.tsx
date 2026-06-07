@@ -2246,7 +2246,7 @@ export function CompanyRisk360({
               </div>
             </Panel>
 
-            <Panel title="Evidence refs" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
+            <Panel title="Evidence records" subtitle="Lineage records used by Risk Score v0. Raw source payloads are not exposed.">
               <div className="table-wrap">
                 <table className="data-table">
                   <thead>
@@ -2383,7 +2383,7 @@ export function PredictionCenter({ data }: { data: SupplyRiskDashboardData }) {
                 value={`${Math.round(selectedPrediction.confidence_low * 100)}-${Math.round(selectedPrediction.confidence_high * 100)}`}
               />
               <Field label="Path count" value={selectedPrediction.path_details?.length ?? selectedPrediction.top_paths.length} />
-              <Field label="Evidence refs" value={selectedPrediction.evidence_refs?.length ?? 0} />
+              <Field label="Evidence records" value={selectedPrediction.evidence_refs?.length ?? 0} />
               <Field
                 label="Source coverage"
                 value={`${Math.round((selectedPrediction.source_coverage?.coverageScore ?? 0) * 100)}%`}
@@ -2928,7 +2928,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
                     </div>
                     <div className="row-meta">
                       <span>{path.edge_sequence.length} hop(s)</span>
-                      <span>{path.evidence_refs.length} evidence ref(s)</span>
+                      <span>{path.evidence_refs.length} evidence record(s)</span>
                     </div>
                     <span className="row-subtitle">{formatInlineDisplayText(path.explanation)}</span>
                   </li>
@@ -3981,7 +3981,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
                   <li className="data-row" key={`${row.section}-${index}`}>
                     <div className="row-top">
                       <span className="row-title">{formatReportEvidenceSection(row.section)}</span>
-                      <span className="metric-chip">Evidence refs {String(row.evidence_ref_count ?? 0)}</span>
+                      <span className="metric-chip">Evidence records {String(row.evidence_ref_count ?? 0)}</span>
                     </div>
                   </li>
                 ))}
@@ -4770,7 +4770,7 @@ export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData })
             <Field label="Evidence mode" value="Research fixture mode" />
           </div>
           <p className="public-data-note">
-            Evidence refs are sanitized display identifiers; source payloads, private diagnostics, and unbounded evidence text are not rendered.
+            Evidence records are sanitized display identifiers; source payloads, private diagnostics, and unbounded evidence text are not rendered.
           </p>
         </Panel>
 

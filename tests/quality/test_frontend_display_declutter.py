@@ -143,7 +143,7 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Ranked shock sets" in source
     assert "Recommended actions" in source
     assert "Baseline comparison" in source
-    assert "Evidence refs" in source
+    assert "Evidence records" in source
     assert "Run history is not available in this environment." in source
     assert "Fixture graph metadata unavailable" in source
     assert "Fixture-labeled SemiRisk-KG entity scores" not in source
@@ -529,7 +529,7 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert 'evidence refs: {evidenceRefs.length || "fallback"}' not in source
     assert "source coverage unavailable" in source
     assert "source families unavailable" in source
-    assert "evidence refs unavailable" in source
+    assert "evidence records unavailable" in source
 
 
 def test_graph_explorer_endpoint_status_uses_user_facing_unavailable_copy() -> None:
@@ -687,6 +687,8 @@ def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() 
         assert " Relationship view" not in source
         assert " Dependency view" not in source
         assert " Balance view" not in source
+        assert "<th>Source refs</th>" not in source
+        assert "<th>Evidence refs</th>" not in source
 
     stage_source = read("apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx")
     assert "relationship class:" not in stage_source
@@ -694,6 +696,22 @@ def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() 
     assert "fixture/promoted public-evidence view" not in stage_source
     assert "Risk propagation:" in stage_source
     assert "Focused view: up to 18 nodes / 30 edges" in stage_source
+    assert "evidence refs" not in stage_source
+    assert "evidence records" in stage_source
+
+
+def test_evidence_records_copy_avoids_refs_jargon_in_primary_ui() -> None:
+    display_source = read("apps/web/src/features/common/displayLabels.ts")
+    legacy_source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    inspector_source = read("apps/web/src/features/graph-explorer/GraphInspector.tsx")
+    smoke_source = read("scripts/browser-smoke.mjs")
+
+    assert '["evidence_refs", "Evidence records"]' in display_source
+    assert '["evidence_ref_count", "Evidence records"]' in display_source
+    for source in (legacy_source, inspector_source, smoke_source):
+        assert "Evidence refs" not in source
+    assert "Evidence records" in legacy_source
+    assert "Evidence records" in inspector_source
 
 
 def test_timeline_and_geo_views_avoid_raw_id_visible_fallbacks() -> None:

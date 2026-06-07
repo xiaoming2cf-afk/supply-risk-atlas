@@ -21,7 +21,7 @@ export function SupplyRelationshipView({
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
       <div className="section-kicker">Supply relationships</div>
-      <p className="inspector-note">Supplier rows are table-first and show supplied item, source refs, and confidence without rendering a dense graph.</p>
+      <p className="inspector-note">Supplier rows are table-first and show supplied item, sources, and confidence without rendering a dense graph.</p>
       <RelationshipMetadata data={data} />
       <SupplierConcentrationHHIChart
         data={!isEndpointUnavailable ? (data?.supplier_concentration ?? []).slice(0, 6).map((row) => ({
@@ -37,7 +37,7 @@ export function SupplyRelationshipView({
             <th>Supplied item</th>
             <th>Buyer or stage</th>
             <th>Confidence</th>
-            <th>Source refs</th>
+            <th>Sources</th>
           </tr>
         </thead>
         <tbody>

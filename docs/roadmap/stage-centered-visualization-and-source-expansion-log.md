@@ -4705,3 +4705,56 @@
 - Background deployed version probe for expected commit `399f2ae` timed out in the bounded probe window and did not verify deployment.
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
+
+## 2026-06-07 Background Evidence Records Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `05721fd0ce0448b82d40de069f26cc501f036d47`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced visible `Evidence refs` / `evidence refs` copy with `Evidence records` / `evidence records` across primary dashboard pages, Graph Explorer, stage views, shared evidence tables, smoke expectations, and display-label overrides.
+- Replaced relationship table `Source refs` headers with `Sources`.
+- Kept underlying API/data field names such as `evidence_refs` unchanged for compatibility, exports, and audit data.
+- Added quality assertions that block `Evidence refs`, `Source refs`, and stage-view `evidence refs` from returning to primary UI copy.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/app/i18n.tsx`
+- `apps/web/src/features/common/displayLabels.ts`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `apps/web/src/features/common/pageRelevance.ts`
+- `apps/web/src/features/common/tables/EvidenceRefsTable.tsx`
+- `apps/web/src/features/common/tables/StageEvidenceRefsTable.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/GraphInspector.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/e2e/supply-risk-atlas.feature`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 32 tests after updating expected copy.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS.
+- `python -m pytest tests/api -q` -> TIMED OUT after 180 seconds in the local background window; no API files were changed in this gate.
+
+### Known Limitations
+
+- This gate changes visible evidence-reference wording only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- The full `tests/api -q` group timed out locally under background load; GitHub `ci` remains the authoritative full-suite check after push.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.

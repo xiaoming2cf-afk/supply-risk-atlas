@@ -53,7 +53,7 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
     en: {
       label: "Entity Risk 360",
       shortLabel: "Risk 360",
-      description: "Fixture-labeled entity risk score, components, evidence refs, and graph context"
+      description: "Fixture-labeled entity risk score, components, evidence records, and graph context"
     },
     zh: {
       label: "企业风险 360",

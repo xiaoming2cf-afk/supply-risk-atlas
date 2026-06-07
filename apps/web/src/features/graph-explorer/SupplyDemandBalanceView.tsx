@@ -75,7 +75,7 @@ export function SupplyDemandBalanceView({
             <th>Supply</th>
             <th>Production deps</th>
             <th>Shortage proxy</th>
-            <th>Evidence refs</th>
+            <th>Evidence records</th>
           </tr>
         </thead>
         <tbody>

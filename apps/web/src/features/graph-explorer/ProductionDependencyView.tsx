@@ -34,7 +34,7 @@ export function ProductionDependencyView({
             <th>Dependency target</th>
             <th>Type</th>
             <th>Bottleneck</th>
-            <th>Source refs</th>
+            <th>Sources</th>
           </tr>
         </thead>
         <tbody>

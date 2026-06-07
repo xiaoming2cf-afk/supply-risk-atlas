@@ -673,7 +673,7 @@ async function main() {
         page: "Entity Risk 360 visualization integration",
         hash: "#company-risk-360",
         title: "Entity Risk 360",
-        terms: ["Supply-chain role", "Risk charts and evidence tables", "Risk component breakdown", "Supplier concentration HHI", "Downstream demand pressure", "Product to process dependency", "Evidence refs"],
+        terms: ["Supply-chain role", "Risk charts and evidence tables", "Risk component breakdown", "Supplier concentration HHI", "Downstream demand pressure", "Product to process dependency", "Evidence records"],
       },
       {
         page: "Shock Simulator visualization integration",
@@ -703,7 +703,7 @@ async function main() {
         page: "Evidence Board visualization integration",
         hash: "#causal-evidence-board",
         title: "Causal Evidence Board",
-        terms: ["Evidence review table", "Evidence refs", "Source freshness", "GRAPH PATH LINK"],
+        terms: ["Evidence review table", "Evidence records", "Source freshness", "GRAPH PATH LINK"],
       },
     ];
     for (const check of pageVisualizationChecks) {

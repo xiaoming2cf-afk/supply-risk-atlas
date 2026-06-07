@@ -78,7 +78,7 @@ Feature: SupplyRiskAtlas analyst workflows
   Scenario: Optimize budget-constrained interventions
     Given the analyst opens "#intervention-optimizer"
     When the analyst sets a budget and runs the optimizer
-    Then the page shows recommended actions, before and after expected loss, before and after CVaR95, cost, resilience ROI, assumptions, constraints, evidence refs, graph version, and source manifest
+    Then the page shows recommended actions, before and after expected loss, before and after CVaR95, cost, resilience ROI, assumptions, constraints, evidence records, graph version, and source manifest
     And recommended actions remain within the budget and avoid illegal workaround advice
 
   @smoke @report

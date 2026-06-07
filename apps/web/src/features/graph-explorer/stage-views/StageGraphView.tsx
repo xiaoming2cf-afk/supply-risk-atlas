@@ -162,10 +162,10 @@ export function StageGraphView({
       ? "source families loading"
       : "source families unavailable";
   const evidenceRefsLabel = evidenceRefs.length
-    ? `${evidenceRefs.length} evidence refs`
+    ? `${evidenceRefs.length} evidence records`
     : isStageEndpointLoading
-      ? "evidence refs loading"
-      : "evidence refs unavailable";
+      ? "evidence records loading"
+      : "evidence records unavailable";
 
   return (
     <section className="graph-list-section stage-graph-view" data-testid="stage-graph-view" data-stage-id={stage.id}>

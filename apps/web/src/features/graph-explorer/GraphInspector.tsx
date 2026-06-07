@@ -235,7 +235,7 @@ function EvidenceRefs({ refs }: { refs: string[] }) {
   if (uniqueRefs.length === 0) return null;
   return (
     <div>
-      <div className="section-kicker">Evidence refs</div>
+      <div className="section-kicker">Evidence records</div>
       <ul className="evidence-list compact">
         {uniqueRefs.map((ref) => (
           <li key={ref}>{formatEvidenceRef(ref)}</li>
