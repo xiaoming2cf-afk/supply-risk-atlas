@@ -3565,6 +3565,42 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Supply-Demand Balance Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `d0eb7fca949ba73f8711f1399de8ac7499116b31`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded the Graph Explorer Supply-Demand Balance note from `fixture/promoted demand signals` into public-evidence demand-signal language.
+- Kept relationship endpoint data, metadata, audit details, chart/table behavior, raw-payload exclusion policy, geography terminology, and evidence-context safety behavior unchanged.
+- Extended frontend display declutter assertions so the relationship views do not reintroduce `fixture/promoted` in primary page copy.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 40 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes visible Supply-Demand Balance wording only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Scenario And Report Method Copy Declutter Gate
 
 ### Current HEAD

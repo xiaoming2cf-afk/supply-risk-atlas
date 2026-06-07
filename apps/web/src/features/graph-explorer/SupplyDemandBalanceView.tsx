@@ -22,7 +22,7 @@ export function SupplyDemandBalanceView({
   return (
     <div className="graph-v3-panel graph-v3-relationship-panel">
       <div className="section-kicker">Supply-demand balance</div>
-      <p className="inspector-note">Balance rows compare bounded fixture/promoted demand signals with supply and production-dependency counts.</p>
+      <p className="inspector-note">Balance rows compare bounded public evidence demand signals with supply and production-dependency counts.</p>
       {data ? (
         <div className="graph-view-summary">
           <MetadataSummary
