@@ -527,9 +527,13 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert 'source coverage: {sourceCoverage.length || "fallback"}' not in source
     assert 'source families: {sourceFamilyCoverage.length || "not recorded"}' not in source
     assert 'evidence refs: {evidenceRefs.length || "fallback"}' not in source
-    assert "source coverage unavailable" in source
-    assert "source families unavailable" in source
-    assert "evidence records unavailable" in source
+    assert "evidence coverage unavailable" in source
+    assert "public data groups unavailable" in source
+    assert "evidence notes unavailable" in source
+    assert "evidence sources:" in source
+    assert "source records" not in source
+    assert "source families" not in source
+    assert "source candidates" not in source
 
 
 def test_graph_explorer_endpoint_status_uses_user_facing_unavailable_copy() -> None:
@@ -697,7 +701,7 @@ def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() 
     assert "Risk propagation:" in stage_source
     assert "Focused view: up to 18 nodes / 30 edges" in stage_source
     assert "evidence refs" not in stage_source
-    assert "evidence records" in stage_source
+    assert "evidence notes" in stage_source
 
 
 def test_evidence_records_copy_avoids_refs_jargon_in_primary_ui() -> None:

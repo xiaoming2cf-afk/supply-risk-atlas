@@ -152,20 +152,20 @@ export function StageGraphView({
   const propagates =
     relationshipClassFilter === "SUPPLY_RELATIONSHIP" || relationshipClassFilter === "PRODUCTION_DEPENDENCY";
   const sourceCoverageLabel = sourceCoverage.length
-    ? `${sourceCoverage.length} source records`
+    ? `${sourceCoverage.length} evidence sources`
     : isStageEndpointLoading
-      ? "source coverage loading"
-      : "source coverage unavailable";
+      ? "evidence coverage loading"
+      : "evidence coverage unavailable";
   const sourceFamilyLabel = sourceFamilyCoverage.length
-    ? `${sourceFamilyCoverage.length} source families`
+    ? `${sourceFamilyCoverage.length} public data groups`
     : isStageEndpointLoading
-      ? "source families loading"
-      : "source families unavailable";
+      ? "public data groups loading"
+      : "public data groups unavailable";
   const evidenceRefsLabel = evidenceRefs.length
-    ? `${evidenceRefs.length} evidence records`
+    ? `${evidenceRefs.length} evidence notes`
     : isStageEndpointLoading
-      ? "evidence records loading"
-      : "evidence records unavailable";
+      ? "evidence notes loading"
+      : "evidence notes unavailable";
 
   return (
     <section className="graph-list-section stage-graph-view" data-testid="stage-graph-view" data-stage-id={stage.id}>
@@ -175,8 +175,8 @@ export function StageGraphView({
       <MetadataSummary
         items={[
           { label: "Public evidence mode" },
-          { label: sourceCoverage.length ? `${sourceCoverage.length} source candidates` : isStageEndpointLoading ? "Stage source coverage loading" : "Stage source coverage unavailable", tone: sourceCoverage.length ? "default" : "warning" },
-          { label: sourceGaps.length || proxyLimitations.length ? "Known proxy gaps" : "No stage gaps recorded", tone: sourceGaps.length || proxyLimitations.length ? "warning" : "default" },
+          { label: sourceCoverage.length ? `${sourceCoverage.length} evidence sources` : isStageEndpointLoading ? "Evidence coverage loading" : "Evidence coverage unavailable", tone: sourceCoverage.length ? "default" : "warning" },
+          { label: sourceGaps.length || proxyLimitations.length ? "Coverage caveats" : "No major coverage caveats", tone: sourceGaps.length || proxyLimitations.length ? "warning" : "default" },
           { label: relationshipClassLabel(relationshipClassFilter) },
         ]}
       />
@@ -245,7 +245,7 @@ export function StageGraphView({
             <li key={String(family.source_family)}>
               <strong>{formatSourceFamilyLabel(String(family.source_family))}</strong>
               <span>
-                {String(formatDisplayValue(String(family.source_status ?? "partial")))} | sources: {String(family.source_count ?? "n/a")}
+                {String(formatDisplayValue(String(family.source_status ?? "partial")))} | evidence sources: {String(family.source_count ?? "n/a")}
                 {formatSourceList(family.source_ids)}
               </span>
             </li>

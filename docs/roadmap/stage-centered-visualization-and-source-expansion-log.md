@@ -3565,6 +3565,42 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Stage View Source Language Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `03b55db`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded Graph Explorer stage-view source coverage summaries from engineering terms such as source records/families/candidates into evidence sources, public data groups, evidence notes, and coverage caveats.
+- Kept stage endpoint data, graph caps, audit details, relationship-class filtering, evidence refs, geography terminology, and evidence-context non-propagation behavior unchanged.
+- Updated the frontend display declutter quality assertion so the old source coverage terms do not return to the stage-view primary UI.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/stage-views/StageGraphView.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 39 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes visible stage-view wording only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Graph Overview Source Label Declutter Gate
 
 ### Current HEAD
