@@ -79,6 +79,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["forward_context", "Forward context"],
   ["forward_scenario", "Forward scenario"],
   ["graph_mode", "Graph mode"],
+  ["graph_path_ref", "Graph path link"],
   ["graph_version", "Graph version"],
   ["graph_weighted_loss", "Graph-weighted loss"],
   ["heuristic_estimated_after_cvar95", "Estimated tail loss after actions"],

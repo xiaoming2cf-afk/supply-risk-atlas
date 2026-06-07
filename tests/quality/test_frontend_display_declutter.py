@@ -635,6 +635,8 @@ def test_graph_evidence_view_does_not_use_edge_id_as_visible_source_fallback() -
 
 def test_evidence_board_hides_raw_graph_path_refs_in_visible_table() -> None:
     source = read("apps/web/src/features/evidence-board/EvidenceAuditPanel.tsx")
+    legacy_source = read("apps/web/src/features/common/legacyDashboard.tsx")
+    display_source = read("apps/web/src/features/common/displayLabels.ts")
 
     assert "const visibleRows = rows.map" in source
     assert "graph_path_ref: formatEvidencePathLabel(index)" in source
@@ -643,6 +645,16 @@ def test_evidence_board_hides_raw_graph_path_refs_in_visible_table() -> None:
     assert "rows={visibleRows}" in source
     assert "buildSanitizedJsonExport({" in source
     assert "rows," in source
+    assert '["graph_path_ref", "Graph path link"]' in display_source
+    assert '<Field label="evidence_ref"' not in legacy_source
+    assert '<Field label="graph_path_ref"' not in legacy_source
+    assert '<Field label="model_component"' not in legacy_source
+    assert '<Field label="claim_source"' not in legacy_source
+    assert '<Field label="last_reviewed"' not in legacy_source
+    assert 'value={`evidence:${activeClaim.id}`}' not in legacy_source
+    assert '<Panel title="Evidence links"' in legacy_source
+    assert '<Field label="Graph path link" value={formatEvidencePathLabel(activeClaimIndex)} />' in legacy_source
+    assert 'return value ? "true" : "false";' not in legacy_source
 
 
 def test_relationship_chart_labels_use_user_facing_node_labels() -> None:

@@ -4697,8 +4697,12 @@ function formatUnknownNumber(value: unknown, digits = 4) {
 function formatUnknownValue(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) return value.toFixed(4);
   if (typeof value === "string" && value.trim()) return value;
-  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "boolean") return value ? "yes" : "no";
   return "unavailable";
+}
+
+function formatEvidencePathLabel(index: number) {
+  return `Evidence path ${index + 1}`;
 }
 
 export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData }) {
@@ -4706,6 +4710,7 @@ export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData })
   const board = data.causalEvidenceBoard;
   const [activeClaimId, setActiveClaimId] = useState(board.activeClaimId);
   const activeClaim = board.evidence.find((claim) => claim.id === activeClaimId) ?? board.evidence[0];
+  const activeClaimIndex = Math.max(0, board.evidence.findIndex((claim) => claim.id === activeClaim.id));
 
   return (
     <div className="page-grid split-layout">
@@ -4755,13 +4760,13 @@ export function CausalEvidenceBoard({ data }: { data: SupplyRiskDashboardData })
           </div>
         </Panel>
 
-        <Panel title="Graph and model links" subtitle="Display-only refs connect evidence claims to graph paths and model components without exposing raw payloads.">
+        <Panel title="Evidence links" subtitle="Display-only links connect evidence claims to graph paths and model components without exposing raw payloads.">
           <div className="field-grid">
-            <Field label="evidence_ref" value={activeClaim.id} />
-            <Field label="graph_path_ref" value={`evidence:${activeClaim.id}`} />
-            <Field label="model_component" value={activeClaim.method === "graph-inference" ? "path_transmission" : "evidence_weight"} />
-            <Field label="claim_source" value={activeClaim.source} />
-            <Field label="last_reviewed" value={activeClaim.lastReviewed} />
+            <Field label="Evidence record" value={formatEvidencePathLabel(activeClaimIndex)} />
+            <Field label="Graph path link" value={formatEvidencePathLabel(activeClaimIndex)} />
+            <Field label="Model component" value={activeClaim.method === "graph-inference" ? "Path transmission" : "Evidence weight"} />
+            <Field label="Claim source" value={activeClaim.source} />
+            <Field label="Reviewed" value={activeClaim.lastReviewed} />
             <Field label="Evidence mode" value="Research fixture mode" />
           </div>
           <p className="public-data-note">
