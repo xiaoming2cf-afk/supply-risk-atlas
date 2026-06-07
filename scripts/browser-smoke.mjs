@@ -531,7 +531,7 @@ async function main() {
           const hasUnavailablePreview = state.previewStates.includes("unavailable_preview");
           const hasControlledUnavailableCopy =
             state.text.includes("Backend relationship data unavailable; authoritative rows are hidden.") &&
-            state.text.includes("Local graph") &&
+            state.text.includes("Non-authoritative local preview data") &&
             state.text.includes("excluded from");
           return (
             state.text.includes(titleText) &&
@@ -543,7 +543,7 @@ async function main() {
       const hasUnavailablePreview = relationshipState.previewStates.includes("unavailable_preview");
       const hasControlledUnavailableCopy =
         relationshipState.text.includes("Backend relationship data unavailable; authoritative rows are hidden.") &&
-        relationshipState.text.includes("Local graph") &&
+        relationshipState.text.includes("Non-authoritative local preview data") &&
         relationshipState.text.includes("excluded from");
       checks.push({
         page: `Graph Explorer supply-demand ${buttonLabel} mode`,

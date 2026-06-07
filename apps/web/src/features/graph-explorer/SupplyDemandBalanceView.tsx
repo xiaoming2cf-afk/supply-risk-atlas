@@ -48,7 +48,7 @@ export function SupplyDemandBalanceView({
         </div>
       ) : (
         <p className="inspector-note unavailable-preview" data-preview-state="unavailable_preview">
-          Backend relationship data unavailable; authoritative rows are hidden. Local graph nodes are excluded from balance charts, tables, exports, reports, and source coverage.
+          Backend relationship data unavailable; authoritative rows are hidden. Non-authoritative local preview data is excluded from balance charts, tables, exports, reports, and source coverage.
         </p>
       )}
       <SupplyDemandBalanceChart

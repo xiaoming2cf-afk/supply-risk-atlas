@@ -3720,6 +3720,44 @@
 - Deployment status: `blocked_background_no_safe_render_api_path_and_deployed_web_stale`.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Relationship Unavailable Copy Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `25bf6a9cb482c2ac79bf0141b558039fc3103207`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Reworded supply, demand, production dependency, and supply-demand balance unavailable states so the visible copy no longer says `Local graph links` or `Local graph nodes`.
+- New unavailable copy says non-authoritative local preview data is excluded from charts, tables, exports, reports, and source coverage.
+- Updated browser smoke and quality tests so the controlled unavailable state remains testable without exposing implementation-specific graph wording.
+- Kept the backend-authoritative relationship rule unchanged: unavailable endpoints still hide authoritative rows and exclude preview data from analytical outputs.
+
+### Files Changed
+
+- `apps/web/src/features/graph-explorer/SupplyRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/DemandRelationshipView.tsx`
+- `apps/web/src/features/graph-explorer/ProductionDependencyView.tsx`
+- `apps/web/src/features/graph-explorer/SupplyDemandBalanceView.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` - passed.
+- `npm.cmd --workspace apps/web run typecheck` - passed.
+- `python -m pytest tests/quality -q` - passed.
+- `npm.cmd run smoke:web` - passed, 63 browser checks.
+
+### Known Limitations
+
+- This gate is a display-language hardening pass for unavailable relationship states only. It does not add new public source connectors, calibrated production datasets, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background System Health Graph Readiness Copy Declutter Gate
 
 ### Current HEAD

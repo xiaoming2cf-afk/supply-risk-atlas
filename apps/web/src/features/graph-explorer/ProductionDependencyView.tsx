@@ -65,7 +65,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
   if (!data) {
     return (
       <p className="inspector-note unavailable-preview" data-preview-state="unavailable_preview">
-        Backend relationship data unavailable; authoritative rows are hidden. Local graph links are excluded from dependency charts, tables, exports, reports, and source coverage.
+        Backend relationship data unavailable; authoritative rows are hidden. Non-authoritative local preview data is excluded from dependency charts, tables, exports, reports, and source coverage.
       </p>
     );
   }

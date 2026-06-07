@@ -302,6 +302,9 @@ def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> No
         assert 'data-preview-state="unavailable_preview"' in source
         assert "unavailable_preview:" not in source
         assert "Backend relationship data unavailable; authoritative rows are hidden." in source
+        assert "Non-authoritative local preview data is excluded from" in source
+        assert "Local graph links are excluded" not in source
+        assert "Local graph nodes are excluded" not in source
         assert "formatNodeDisplayRef" in source
         assert "formatSourceDisplayRef" in source
 
@@ -314,7 +317,8 @@ def test_browser_smoke_checks_unavailable_preview_as_dom_state_not_user_text() -
     assert 'relationshipState.previewStates.includes("unavailable_preview")' in source
     assert "hasControlledUnavailableCopy" in source
     assert "Backend relationship data unavailable; authoritative rows are hidden." in source
-    assert 'relationshipState.text.includes("Local graph")' in source
+    assert 'relationshipState.text.includes("Non-authoritative local preview data")' in source
+    assert 'relationshipState.text.includes("Local graph")' not in source
     assert 'relationshipState.text.includes("excluded from")' in source
     assert "(!hasUnavailablePreview || hasControlledUnavailableCopy)" in source
     assert 'state.text.includes("unavailable_preview")' not in source
