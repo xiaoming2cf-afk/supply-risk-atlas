@@ -3565,6 +3565,52 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Audit Label Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `4cd8627bbf1e3112d392a4496fb7d384008affbc`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Changed expanded audit/diagnostic labels from raw field-oriented wording to product-facing wording:
+  - `data_mode` -> `Data source mode`
+  - `graph_mode` -> `Graph data mode`
+  - `graph_version` -> `Graph snapshot`
+  - `source_manifest_id` -> `Source manifest`
+  - `source_status` -> `Source coverage`
+  - `failed_endpoint` -> `Connection target`
+  - `transport_attempts` -> `Connection attempts`
+  - `retry_hint` -> `Recovery hint`
+  - `last_checked_at` -> `Last checked`
+- Kept all API fields, export metadata, diagnostics, source refs, and report fields unchanged.
+- Added a quality assertion so raw engineering labels do not return to the display label map.
+- No public route, API response schema, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context propagation rule was changed.
+
+### Files Changed
+
+- `apps/web/src/features/common/displayLabels.ts`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 33 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS.
+
+### Known Limitations
+
+- This gate changes display labels only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-06 Background Residual Engineering-Term Declutter Gate
 
 ### Current HEAD

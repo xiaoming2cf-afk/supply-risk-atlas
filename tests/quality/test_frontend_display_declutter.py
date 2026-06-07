@@ -781,3 +781,26 @@ def test_system_health_manifest_and_checksum_are_audit_details_not_primary_subti
     assert '{ label: "checksum", value: health.evidenceLineage.checksum.slice(0, 12) }' in source
     assert "source.checksum.slice" not in source
     assert "checksum retained in audit manifest" in source
+
+
+def test_audit_detail_labels_use_product_language_not_raw_field_language() -> None:
+    source = read("apps/web/src/features/common/displayLabels.ts")
+
+    expected_labels = {
+        '["data_mode", "Data source mode"]',
+        '["failed_endpoint", "Connection target"]',
+        '["graph_mode", "Graph data mode"]',
+        '["graph_version", "Graph snapshot"]',
+        '["last_checked_at", "Last checked"]',
+        '["retry_hint", "Recovery hint"]',
+        '["source_manifest_id", "Source manifest"]',
+        '["source_status", "Source coverage"]',
+        '["transport_attempts", "Connection attempts"]',
+    }
+    for label in expected_labels:
+        assert label in source
+
+    assert '["failed_endpoint", "Failed endpoint"]' not in source
+    assert '["graph_version", "Graph version"]' not in source
+    assert '["source_manifest_id", "Source manifest ID"]' not in source
+    assert '["transport_attempts", "Transport attempts"]' not in source
