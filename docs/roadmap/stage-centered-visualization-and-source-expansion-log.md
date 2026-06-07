@@ -3565,6 +3565,49 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-06 Background Residual Engineering-Term Declutter Gate
+
+### Current HEAD
+
+- Starting commit: `8662d23a8b1edaf552a5bb0e1204b5aa39ae7044`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Renamed the default tail-loss chart title from `CVaR tail` to `Tail loss detail`.
+- Replaced remaining main-page `fixture graph` wording in intervention navigation, report generation, scenario assumptions, and System Health graph titles with `public evidence graph` / `research graph` language.
+- Kept fixture/promoted/research status visible while avoiding internal graph implementation terms in default presentation copy.
+- Updated browser smoke to expect the System Health public-evidence graph title.
+- Added display-declutter assertions preventing old `CVaR tail`, `SemiRisk-KG v0.1 fixture graph`, and report-generation fixture graph copy from returning.
+- No public route, API response field, report export field, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context safety rule was changed.
+
+### Files Changed
+
+- `apps/web/src/app/i18n.tsx`
+- `apps/web/src/features/common/charts/CVaRTailChart.tsx`
+- `apps/web/src/features/common/legacyDashboard.tsx`
+- `scripts/browser-smoke.mjs`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 30 tests.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/api -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes display language only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ### Post-Commit Background Status
 
 - Implementation commit: `4f4255ba8851eccc183dd0075f191e537a7a09f2`.

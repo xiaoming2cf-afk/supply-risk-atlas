@@ -590,7 +590,7 @@ async function main() {
 
     await navigate(client, `${webUrl}#system-health-center`);
     const healthSemiriskTerms = [
-      "SemiRisk-KG v0.1 fixture graph",
+      "SemiRisk-KG public evidence graph",
       "Node count",
       "Edge count",
       "Registry ready",

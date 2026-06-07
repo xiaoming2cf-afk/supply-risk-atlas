@@ -2586,7 +2586,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           targets: ["material:photoresist"],
           severity_distribution: { type: "triangular", params: { min: 0.45, mode: 0.68, max: 0.86 } },
           duration_days_distribution: { type: "fixed", params: { value: 21 } },
-          assumptions: ["template: material shortage over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+          assumptions: ["template: material shortage over research graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
         };
       }
       if (template === "policy_review") {
@@ -2596,7 +2596,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           targets: ["equipment:euv_scanner"],
           severity_distribution: { type: "fixed", params: { value: 0.58 } },
           duration_days_distribution: { type: "triangular", params: { min: 14, mode: 45, max: 90 } },
-          assumptions: ["template: policy review shock over fixture graph", "resilience planning only; no compliance workarounds"]
+          assumptions: ["template: policy review shock over research graph", "resilience planning only; no compliance workarounds"]
         };
       }
       if (template === "demand_spike_hbm") {
@@ -2606,7 +2606,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
           targets: ["product_grade:hbm"],
           severity_distribution: { type: "fixed", params: { value: 0.64 } },
           duration_days_distribution: { type: "fixed", params: { value: 60 } },
-          assumptions: ["template: HBM demand spike over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+          assumptions: ["template: HBM demand spike over research graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
         };
       }
       return {
@@ -2615,7 +2615,7 @@ export function ForwardShockSimulator({ apiClient }: { apiClient: SupplyRiskApiC
         targets: ["region:china_taiwan"],
         severity_distribution: { type: "triangular", params: { min: 0.52, mode: 0.72, max: 0.92 } },
         duration_days_distribution: { type: "triangular", params: { min: 7, mode: 28, max: 60 } },
-        assumptions: ["template: 中国台湾 corridor earthquake over fixture graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
+        assumptions: ["template: 中国台湾 corridor earthquake over research graph", "fixture/proxy only; normalized loss scores, no dollar loss"]
       };
     });
   };
@@ -3751,7 +3751,7 @@ export function InvestigationReport({ apiClient }: { apiClient: SupplyRiskApiCli
     <div className="page-grid split-layout">
       <Panel
         title="Investigation Report"
-        subtitle="Generate an auditable fixture graph report. No raw source payloads or private diagnostics are exported."
+        subtitle="Generate an auditable public-evidence report. No raw source payloads or private diagnostics are exported."
         action={
           <div className="action-group">
             <Button disabled={isRunning} icon={Database} onClick={() => runReport("json")} variant="primary">
@@ -5413,7 +5413,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
 
             {health.semiconductorGraph ? (
               <Panel
-                title="SemiRisk-KG v0.1 fixture graph"
+                title="SemiRisk-KG public evidence graph"
                 subtitle="Fixture/promoted public-evidence graph readiness; not a production readiness claim."
               >
                 <div className="inspector-grid" style={{ marginBottom: 16 }}>
@@ -5493,12 +5493,12 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               </Panel>
             ) : (
               <Panel
-                title="SemiRisk-KG v0.1 fixture graph unavailable"
-                subtitle="The System Health Center did not receive fixture graph metadata from the API, so no graph readiness metrics are fabricated."
+                title="SemiRisk-KG public evidence graph unavailable"
+                subtitle="The System Health Center did not receive public evidence graph metadata from the API, so no graph readiness metrics are fabricated."
               >
                 <div className="empty-state-shell compact">
                   <h3>Fixture graph readiness unavailable</h3>
-                  <p>Expected readiness fields include graph metadata, node counts, edge counts, registry readiness, ontology readiness, and fixture graph state.</p>
+                  <p>Expected readiness fields include graph metadata, node counts, edge counts, registry readiness, ontology readiness, and research graph state.</p>
                 </div>
                 <ul className="health-list" style={{ marginTop: 16 }}>
                   <li className="data-row">

@@ -172,12 +172,12 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
     en: {
       label: "Intervention Optimizer",
       shortLabel: "Optimize",
-      description: "Budget-constrained fixture graph resilience action selection"
+      description: "Budget-constrained resilience action selection"
     },
     zh: {
       label: "Intervention Optimizer",
       shortLabel: "Optimize",
-      description: "Budget-constrained fixture graph resilience action selection"
+      description: "Budget-constrained resilience action selection"
     },
     fr: {
       label: "Intervention Optimizer",

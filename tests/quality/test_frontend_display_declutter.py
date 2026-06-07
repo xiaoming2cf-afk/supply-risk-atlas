@@ -233,6 +233,10 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert 'title="Before/after simulation run IDs"' not in source
     assert 'title="Simulation run counts"' in source
     assert "Greedy budget-constrained resilience action selection over the SemiRisk fixture graph." not in source
+    assert "Budget-constrained fixture graph resilience action selection" not in read("apps/web/src/app/i18n.tsx")
+    assert 'title="SemiRisk-KG v0.1 fixture graph"' not in source
+    assert 'title="SemiRisk-KG public evidence graph"' in source
+    assert "Generate an auditable fixture graph report" not in source
     assert '<Field label="before_cvar95"' not in source
     assert '<Field label="after_cvar95"' not in source
     assert '<Field label="Before tail loss"' in source
@@ -244,6 +248,12 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert '"semirisk_reverse_stress_v0.1"' not in read("scripts/browser-smoke.mjs")
     assert '"semirisk_intervention_optimizer_v0.1"' not in read("scripts/browser-smoke.mjs")
     assert '"semirisk_investigation_report_v0.1"' not in read("scripts/browser-smoke.mjs")
+    assert '"SemiRisk-KG v0.1 fixture graph"' not in read("scripts/browser-smoke.mjs")
+    assert '"SemiRisk-KG public evidence graph"' in read("scripts/browser-smoke.mjs")
+
+    chart_source = read("apps/web/src/features/common/charts/CVaRTailChart.tsx")
+    assert "CVaR tail" not in chart_source
+    assert "Tail loss detail" in chart_source
 
     assert 'Run history unavailable: {error}' not in source
     assert "Run history is not available in this environment. Stored workflow runs are hidden." in source
