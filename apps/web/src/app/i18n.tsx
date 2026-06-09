@@ -104,17 +104,17 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
     en: {
       label: "Country Lens",
       shortLabel: "Country",
-      description: "Country risk, critical nodes, data coverage, and cross-border flow"
+      description: "Country risk, critical entities, data coverage, and cross-border flow"
     },
     zh: {
       label: "Country Lens",
       shortLabel: "Country",
-      description: "Country risk, critical nodes, data coverage, and cross-border flow"
+      description: "Country risk, critical entities, data coverage, and cross-border flow"
     },
     fr: {
       label: "Country Lens",
       shortLabel: "Pays",
-      description: "Risque pays, noeuds critiques, couverture et flux transfrontaliers"
+      description: "Risque pays, entites critiques, couverture et flux transfrontaliers"
     }
   },
   "path-explainer": {
@@ -338,11 +338,11 @@ const phraseCopy: Record<string, TranslationPair> = {
     fr: "Voies commerciales portant une exposition de chiffre d'affaires disproportionnée."
   },
   "Graph filters": { zh: "图谱筛选", fr: "Filtres du graphe" },
-  "Scope the visible network without losing node context.": {
-    zh: "限定可见网络，同时保留节点上下文。",
-    fr: "Délimiter le réseau visible sans perdre le contexte des nœuds."
+  "Scope the visible network without losing entity context.": {
+    zh: "限定可见网络，同时保留实体上下文。",
+    fr: "Delimiter le reseau visible sans perdre le contexte des entites."
   },
-  "Graph node type": { zh: "图节点类型", fr: "Type de nœud du graphe" },
+  "Entity type": { zh: "实体类型", fr: "Type d'entite" },
   all: { zh: "全部", fr: "Tous" },
   company: { zh: "企业", fr: "entreprise" },
   supplier: { zh: "供应商", fr: "fournisseur" },
@@ -351,20 +351,20 @@ const phraseCopy: Record<string, TranslationPair> = {
   route: { zh: "路线", fr: "route" },
   country: { zh: "国家", fr: "pays" },
   signal: { zh: "信号", fr: "signal" },
-  "Visible nodes": { zh: "可见节点", fr: "Nœuds visibles" },
-  "Visible links": { zh: "可见链接", fr: "Liens visibles" },
+  "Visible entities": { zh: "可见实体", fr: "Entites visibles" },
+  "Visible relationships": { zh: "可见关系", fr: "Relations visibles" },
   "Focus score": { zh: "焦点分数", fr: "Score focal" },
   "Focus type": { zh: "焦点类型", fr: "Type focal" },
   "Entity network": { zh: "实体网络", fr: "Réseau d'entités" },
-  "Click a node to inspect metadata and high-risk adjacency.": {
-    zh: "点击节点查看元数据和高风险邻接关系。",
-    fr: "Cliquer sur un nœud pour inspecter les métadonnées et adjacences à risque."
+  "Click an entity to inspect metadata and high-risk adjacency.": {
+    zh: "点击实体查看元数据和高风险邻接关系。",
+    fr: "Cliquer sur une entite pour inspecter les metadonnees et adjacences a risque."
   },
   "Save view": { zh: "保存视图", fr: "Enregistrer la vue" },
-  "Node inspector": { zh: "节点检查器", fr: "Inspecteur de nœud" },
-  "Live metadata attached to the selected graph node.": {
-    zh: "所选图节点附带的实时元数据。",
-    fr: "Métadonnées actives liées au nœud sélectionné."
+  "Entity inspector": { zh: "实体检查器", fr: "Inspecteur d'entite" },
+  "Live metadata attached to the selected entity.": {
+    zh: "所选实体附带的实时元数据。",
+    fr: "Metadonnees actives liees a l'entite selectionnee."
   },
   Name: { zh: "名称", fr: "Nom" },
   "Risk level": { zh: "风险等级", fr: "Niveau de risque" },
@@ -484,8 +484,8 @@ const phraseCopy: Record<string, TranslationPair> = {
   },
   "Candidate readiness": { zh: "候选就绪度", fr: "Préparation du candidat" },
   Promote: { zh: "发布", fr: "Promouvoir" },
-  Nodes: { zh: "节点", fr: "Nœuds" },
-  Edges: { zh: "边", fr: "Arêtes" },
+  Entities: { zh: "实体", fr: "Entites" },
+  Relationships: { zh: "关系", fr: "Relations" },
   "Schema changes": { zh: "模式变更", fr: "Changements de schéma" },
   "Validation pass rate": { zh: "校验通过率", fr: "Taux de validation" },
   "Diff matrix": { zh: "差异矩阵", fr: "Matrice de différences" },

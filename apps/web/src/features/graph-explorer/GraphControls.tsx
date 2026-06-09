@@ -185,7 +185,7 @@ export function GraphControls({
         })}
       </div>
 
-      <div className="segmented" aria-label={t("Graph node type")}>
+      <div className="segmented" aria-label={t("Entity type")}>
         {(["all", ...filters] as Array<GraphNodeKind | "all">).map((filter) => (
           <button
             className={`segment ${nodeKind === filter ? "is-active" : ""}`}

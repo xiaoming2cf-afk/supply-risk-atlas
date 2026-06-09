@@ -738,16 +738,32 @@ def test_graph_explorer_primary_count_copy_uses_user_facing_terms() -> None:
     geo = read("apps/web/src/features/graph-explorer/GraphGeoView.tsx")
     timeline = read("apps/web/src/features/graph-explorer/GraphTimelineView.tsx")
     legacy = read("apps/web/src/features/common/legacyDashboard.tsx")
+    i18n = read("apps/web/src/app/i18n.tsx")
 
-    combined = "\n".join([explorer, controls, overview, geo, timeline, legacy])
+    combined = "\n".join([explorer, controls, overview, geo, timeline, legacy, i18n])
     assert "nodes and ${view.visibleLinks.length} edges rendered" not in explorer
     assert "nodes / 35 edges" not in explorer
     assert "nodes / 40 edges" not in explorer
     assert "edge labels hidden by default" not in explorer
+    assert "Graph node type" not in controls
+    assert "Graph node type" not in i18n
     assert "Visible nodes" not in controls
+    assert "Visible nodes" not in i18n
+    assert "Visible links" not in i18n
+    assert "Node inspector" not in i18n
+    assert "Click a node" not in i18n
+    assert "selected graph node" not in i18n
+    assert "node context" not in i18n
     assert "Eligible nodes" not in controls
     assert "Rendered geo nodes" not in geo
     assert "event nodes and affected graph nodes" not in timeline
+    assert "Entity type" in controls
+    assert "Entity type" in i18n
+    assert "Visible entities" in i18n
+    assert "Visible relationships" in i18n
+    assert "Entity inspector" in i18n
+    assert "critical entities" in i18n
+    assert "entity context" in i18n
     assert " entities / " in combined
     assert " relationships" in combined
 

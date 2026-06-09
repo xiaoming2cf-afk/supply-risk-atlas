@@ -3668,6 +3668,47 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-07 Background Graph Explorer I18n Entity Terminology Gate
+
+### Current HEAD
+
+- Starting commit: `714a2042a65f7437bb876e7910c6d1beb9eb8cbb`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Replaced stale Graph Explorer translation keys that still said `Visible nodes`, `Visible links`, `Graph node type`, and `Node inspector` with entity/relationship terminology.
+- Updated the GraphControls segmented-control ARIA label from `Graph node type` to `Entity type`, matching the visible product-language controls.
+- Reworded Country Lens page descriptions from `critical nodes` to `critical entities` in the shared page copy.
+- Added quality assertions that keep the old Graph Explorer node/link i18n phrases out of the shared translation map.
+- No public route, API response schema, source connector, live-fetch setting, raw-payload policy, geography terminology rule, or evidence-context propagation rule was changed.
+
+### Files Changed
+
+- `apps/web/src/app/i18n.tsx`
+- `apps/web/src/features/graph-explorer/GraphControls.tsx`
+- `tests/quality/test_frontend_display_declutter.py`
+- `docs/roadmap/stage-centered-visualization-and-source-expansion-log.md`
+
+### Commands Run
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py -q` -> PASS, 46 tests.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/quality/test_no_forbidden_geography_labels.py -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- `python -m services.api.dev_server` -> started as a hidden local background API process for smoke verification.
+- `npm.cmd --workspace apps/web run dev` -> started as a hidden local background Web process with `NEXT_PUBLIC_SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1` and `SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000`.
+- `SUPPLY_RISK_WEB_URL=http://127.0.0.1:3000 SUPPLY_RISK_API_URL=http://127.0.0.1:8000/api/v1 SUPPLY_RISK_API_ORIGIN=http://127.0.0.1:8000 npm.cmd run smoke:web` -> PASS, 63 checks.
+
+### Known Limitations
+
+- This gate changes shared frontend translation/control copy only. It does not add calibrated production data, new source connectors, or Render redeployment.
+- Render deployment remains blocked in background mode until a safe Render API key / service IDs / GitHub Actions secrets / Render MCP path is configured.
+- No Chrome, Render UI, credential entry, screenshot capture, raw response logging, or ChatGPT handoff occurred because the user asked the agent to work in the background without affecting foreground browser activity.
+
 ## 2026-06-07 Background Source Coverage Readiness Label Declutter Gate
 
 ### Current HEAD
