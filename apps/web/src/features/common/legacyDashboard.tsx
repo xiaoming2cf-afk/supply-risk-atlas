@@ -684,7 +684,7 @@ export function GraphExplorer({
             );
           })}
         </div>
-        <div className="segmented" aria-label={t("Graph node type")}>
+        <div className="segmented" aria-label={t("Entity type")}>
           {(["all", ...graph.filters] as Array<GraphNodeKind | "all">).map((filter) => (
             <button
               className={`segment ${kind === filter ? "is-active" : ""}`}
@@ -708,9 +708,9 @@ export function GraphExplorer({
         </label>
         <div className="inspector-grid graph-stat-grid">
           <Field label="Visible entities" value={visibleNodes.length} />
-          <Field label="Visible links" value={visibleLinks.length} />
+          <Field label="Visible relationships" value={visibleLinks.length} />
           <Field label="Total entities" value={formatCompactNumber(graphStats?.totalNodes ?? graph.nodes.length)} />
-          <Field label="Total links" value={formatCompactNumber(graphStats?.totalLinks ?? graph.links.length)} />
+          <Field label="Total relationships" value={formatCompactNumber(graphStats?.totalLinks ?? graph.links.length)} />
           <Field label="Critical entities" value={criticalNodes.length} />
           <Field label="Transmission paths" value={transmissionPaths.length} />
         </div>
@@ -975,7 +975,7 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
   return (
     <div className="inspector-stack edge-inspector">
       <div className="inspector-grid">
-        <Field label="Edge type" value={edge.edgeType ?? edge.label} />
+        <Field label="Relationship type" value={formatDisplayLabel(String(edge.edgeType ?? edge.label ?? "relationship"))} />
         <Field label="Role" value={edge.edgeRole ?? "context"} />
         <Field label="Risk score" value={`${edge.riskScore ?? Math.round(edge.weight * 100)}/100`} />
         <Field label="Weight" value={formatPercent(edge.transmissionWeight ?? edge.weight)} />
@@ -985,7 +985,7 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
         <Field label="Target country" value={edge.targetCountry ?? "global"} />
       </div>
       <p className="inspector-note">
-        {edge.source} -&gt; {edge.target} / {edge.sourceId ?? "public source"}
+        {formatNodeDisplayRef(edge.source)} -&gt; {formatNodeDisplayRef(edge.target)} / {formatSourceDisplayRef(edge.sourceId ?? "public_source")}
       </p>
     </div>
   );
@@ -1463,7 +1463,7 @@ function useTopologyPositions(
 
 function formatEdgeTooltipTitle(edgeLabel: unknown, link?: GraphLink) {
   const label = edgeLabel || link?.label || link?.edgeRole || link?.edgeType;
-  if (!label) return "Graph edge";
+  if (!label) return "Graph relationship";
   return String(formatDisplayValue(String(label)));
 }
 
@@ -1482,7 +1482,7 @@ function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
       <Handle className="risk-flow-handle" id="target" position={Position.Left} type="target" />
       <Handle className="risk-flow-handle" id="source" position={Position.Right} type="source" />
       <div className="risk-flow-node-topline">
-        <span>{node.kind}</span>
+        <span>{formatDisplayLabel(node.kind)}</span>
         <strong>{graphScore(node.criticalityScore ?? node.score)}</strong>
       </div>
       <p>{node.label}</p>
@@ -2084,7 +2084,7 @@ export function CompanyRisk360({
                   <Field label="Likelihood" value={risk.likelihood?.toFixed(4) ?? "unavailable"} />
                   <Field label="Impact" value={risk.impact?.toFixed(4) ?? "unavailable"} />
                   <Field label="Vulnerability adjustment" value={risk.vulnerability_modifier?.toFixed(4) ?? "unavailable"} />
-                  <Field label="Node type" value={risk.entity.node_type} />
+                  <Field label="Entity type" value={risk.entity.node_type} />
                   <Field label="Confidence" value={formatPercent(risk.entity.confidence)} />
                   <Field label="Evidence records" value={formatCompactNumber(risk.evidence_refs.length)} />
                 </div>
@@ -3072,7 +3072,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
               <option value="cvar95_loss">Severe tail loss</option>
               <option value="capacity_loss">Capacity loss</option>
               <option value="demand_fulfillment_loss">Demand fulfillment loss</option>
-              <option value="affected_critical_nodes">Affected critical nodes</option>
+              <option value="affected_critical_nodes">Affected critical entities</option>
             </select>
           </label>
           <label className="form-control">
@@ -3080,7 +3080,7 @@ export function ReverseStressLab({ apiClient }: { apiClient: SupplyRiskApiClient
             <input min="1" max="100" onChange={(event) => setInput((current) => ({ ...current, failure_threshold: Number(event.target.value) }))} type="number" value={input.failure_threshold} />
           </label>
           <label className="form-control">
-            <span>{t("Candidate node types")}</span>
+            <span>{t("Candidate entity types")}</span>
             <input
               onChange={(event) => setInput((current) => ({ ...current, candidate_scope: { ...current.candidate_scope, node_types: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) } }))}
               type="text"
@@ -5395,7 +5395,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
               <Field label="Evidence inputs" value={health.sourceRegistry.rawRecordCount} />
               <Field label="Resolved entities" value={health.sourceRegistry.silverEntityCount} />
               <Field label="Graph relationships" value={health.sourceRegistry.goldEdgeEventCount} />
-              <Field label="Data nodes" value={health.sourceRegistry.dataNodeCount ?? 0} />
+              <Field label="Data assets" value={health.sourceRegistry.dataNodeCount ?? 0} />
               <Field label="Promoted" value={health.sourceRegistry.promotedGraph?.status ?? "partial"} />
             </div>
             <AuditDetails
@@ -5457,13 +5457,13 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                     { label: "source_manifest_id", value: health.semiconductorGraph.sourceManifestId },
                   ]}
                 />
-                <AuditDetails label="Node, edge, and warning details">
+                <AuditDetails label="Entity, relationship, and warning details">
                   <div className="driver-grid">
                     <div className="table-wrap">
                       <table className="data-table">
                         <thead>
                           <tr>
-                            <th>{t("Node type")}</th>
+                            <th>{t("Entity type")}</th>
                             <th>{t("Count")}</th>
                           </tr>
                         </thead>
@@ -5481,7 +5481,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <table className="data-table">
                         <thead>
                           <tr>
-                            <th>{t("Edge type")}</th>
+                            <th>{t("Relationship type")}</th>
                             <th>{t("Count")}</th>
                           </tr>
                         </thead>
@@ -5530,11 +5530,11 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   
             {health.dataCatalog ? (
               <Panel
-              title="Data node catalog"
-              subtitle={`${health.dataCatalog.totalDataNodes} governed data nodes across source, dataset, indicator, license, release, field, and series classes.`}
+              title="Data asset catalog"
+              subtitle={`${health.dataCatalog.totalDataNodes} governed data assets across source, dataset, indicator, license, release, field, and series classes.`}
             >
               <div className="inspector-grid" style={{ marginBottom: 16 }}>
-                <Field label="Data nodes" value={formatCompactNumber(health.dataCatalog.totalDataNodes)} />
+                <Field label="Data assets" value={formatCompactNumber(health.dataCatalog.totalDataNodes)} />
                 <Field label="Source count" value={health.dataCatalog.bySource.length} />
                 <Field label="Catalog promoted" value={health.dataCatalog.promoted ? "yes" : "review"} />
               </div>
@@ -5544,7 +5544,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                     <table className="data-table">
                       <thead>
                         <tr>
-                          <th>{t("Data node type")}</th>
+                          <th>{t("Data asset type")}</th>
                           <th>{t("Count")}</th>
                         </tr>
                       </thead>
@@ -5563,7 +5563,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <thead>
                         <tr>
                           <th>{t("Source")}</th>
-                          <th>{t("Data nodes")}</th>
+                          <th>{t("Data assets")}</th>
                         </tr>
                       </thead>
                       <tbody>

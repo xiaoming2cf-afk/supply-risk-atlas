@@ -17,7 +17,7 @@ export function GraphSourceCoverageView({
 
   return (
     <div className="graph-v3-panel graph-v3-source-coverage-panel">
-      <div className="section-kicker">Source Coverage mode</div>
+      <div className="section-kicker">Source coverage</div>
       <p className="inspector-note">Coverage is a transparency table and does not render the full graph.</p>
       {nodeCoverage ? (
         <div className="graph-view-summary">
@@ -30,7 +30,7 @@ export function GraphSourceCoverageView({
         <thead>
           <tr>
             <th>Source</th>
-            <th>References</th>
+            <th>Evidence records</th>
           </tr>
         </thead>
         <tbody>

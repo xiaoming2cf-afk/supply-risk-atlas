@@ -29,10 +29,10 @@ export function GraphLegend({ metadata }: { metadata: GraphVersionMetadata }) {
         ))}
         <span className="graph-legend-item graph-legend-link-kind">
           <i className="evidence-context-swatch" />
-          evidence-context link
+          Evidence context
         </span>
       </div>
-      <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
+      <p className="inspector-warning">Evidence context is inspection support, not supply-chain dependency.</p>
       <MetadataSummary items={[{ label: "Public evidence mode" }]} />
       <AuditDetails
         items={[

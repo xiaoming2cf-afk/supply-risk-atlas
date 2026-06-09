@@ -72,8 +72,8 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
   return (
     <div className={`inspector-stack edge-inspector ${evidenceContext ? "is-evidence-context" : ""}`}>
       <div className="inspector-grid">
-        <Field label="Inspector section" value={evidenceContext ? "Evidence context link" : scenarioTrace ? "Scenario trace" : "Real graph edge"} />
-        <Field label={evidenceContext ? "Link type" : "Edge type"} value={formatInspectorValue(evidenceContext ? "evidence_context_link" : edge.edgeType ?? edge.label)} />
+        <Field label="Inspector section" value={evidenceContext ? "Evidence context" : scenarioTrace ? "Scenario trace" : "Graph relationship"} />
+        <Field label="Relationship type" value={formatInspectorValue(evidenceContext ? "evidence_context_link" : edge.edgeType ?? edge.label)} />
         <Field label="Role" value={formatInspectorValue(edge.edgeRole ?? "context")} />
         <Field label="Risk score" value={`${edge.riskScore ?? Math.round(edge.weight * 100)}/100`} />
         <Field label="Weight" value={formatPercent(edge.transmissionWeight ?? edge.weight)} />
@@ -83,7 +83,7 @@ function EdgeInspector({ edge }: { edge: GraphLink }) {
         <Field label="Target country" value={formatCountryRef(edge.targetCountry ?? "global")} />
       </div>
       {evidenceContext ? (
-        <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
+        <p className="inspector-warning">Evidence context is inspection support, not supply-chain dependency.</p>
       ) : null}
       <EvidenceRefs refs={[edge.sourceId ?? "public_source_manifest", edge.edgeType ?? edge.edgeRole ?? "graph_edge", String(edge.metadata?.source ?? "")]} />
       <p className="inspector-note">
@@ -191,7 +191,7 @@ function CountryInspector({
         <Field label="Country" value={formatCountryRef(country.code) || country.label} />
         <Field label="Risk score" value={`${graphScore(country.riskScore)}/100`} />
         <Field label="Centrality" value={`${graphScore(country.centralityScore)}/100`} />
-        <Field label="Nodes" value={country.entityCount} />
+        <Field label="Entities" value={country.entityCount} />
         <Field label="Inbound risk" value={country.inboundRisk.toFixed(1)} />
         <Field label="Outbound risk" value={country.outboundRisk.toFixed(1)} />
       </div>
@@ -272,7 +272,7 @@ function formatEvidenceRef(ref: string) {
   if (sourceLabel) return sourceLabel;
   const nodeLabel = formatNodeDisplayRef(ref);
   if (nodeLabel) return nodeLabel;
-  if (ref.startsWith("edge:")) return "Graph edge evidence";
+  if (ref.startsWith("edge:")) return "Graph relationship evidence";
   return formatInspectorValue(ref);
 }
 

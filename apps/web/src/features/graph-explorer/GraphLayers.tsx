@@ -31,8 +31,8 @@ export function GraphLayers({
 }) {
   return (
     <div className="graph-list-section">
-      <div className="section-kicker">Layer controls</div>
-      <div className="graph-layer-grid" role="group" aria-label="Graph layer controls">
+      <div className="section-kicker">Relationship filters</div>
+      <div className="graph-layer-grid" role="group" aria-label="Relationship filters">
         {graphLayerCategories.map((layer) => (
           <label className="graph-layer-toggle" key={layer}>
             <input checked={enabledLayers.has(layer)} onChange={() => onLayerToggle(layer)} type="checkbox" />
@@ -45,7 +45,7 @@ export function GraphLayers({
           <EyeOff aria-hidden="true" /> Low confidence
         </button>
         <button className={`control-button ${showEdgeLabels ? "primary" : ""}`} onClick={onToggleShowEdgeLabels} type="button">
-          <Tags aria-hidden="true" /> Edge labels
+          <Tags aria-hidden="true" /> Relationship labels
         </button>
       </div>
     </div>

@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib
 import urllib.request
 
+import pytest
+
 
 def test_connector_imports_do_not_open_network(monkeypatch) -> None:
     calls: list[object] = []
@@ -34,4 +36,28 @@ def test_connector_instantiation_does_not_open_network(monkeypatch) -> None:
 
     PublicEvidenceConnector("sec_edgar_lite", config=ConnectorConfig(mode="live_disabled"))
 
+    assert calls == []
+
+
+def test_api_app_startup_and_health_do_not_open_network(monkeypatch) -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    calls: list[object] = []
+
+    def fail_urlopen(*args, **kwargs):  # pragma: no cover - should never be reached
+        calls.append((args, kwargs))
+        raise AssertionError("network call during API startup or health request")
+
+    monkeypatch.setattr(urllib.request, "urlopen", fail_urlopen)
+    monkeypatch.setenv("SUPPLY_RISK_DATA_MODE", "live_enabled")
+    monkeypatch.setenv("SUPPLY_RISK_GRAPH_MODE", "promoted")
+
+    from services.api import main
+
+    app = main.create_app()
+    with TestClient(app) as client:
+        response = client.get("/api/v1/health")
+
+    assert response.status_code == 200
     assert calls == []

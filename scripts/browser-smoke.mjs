@@ -343,7 +343,7 @@ async function main() {
         state.flowEdgeCount <= 35,
     );
     checks.push({
-      page: "Graph Explorer v2 overview caps",
+      page: "Graph workspace overview caps",
       graphNodeCount: graphV2Overview.graphNodeCount,
       flowEdgeCount: graphV2Overview.flowEdgeCount,
       hasLegend: graphV2Overview.hasLegend,
@@ -379,7 +379,7 @@ async function main() {
       (state) => state.text.includes("Focus view") && state.graphNodeCount >= 2 && state.graphNodeCount <= 25 && state.flowEdgeCount <= 40,
     );
     checks.push({
-      page: "Graph Explorer v2 focus expansion caps",
+      page: "Graph workspace focus expansion caps",
       graphNodeCount: graphV2Focus.graphNodeCount,
       flowEdgeCount: graphV2Focus.flowEdgeCount,
       passed: graphV2Focus.graphNodeCount >= 2 && graphV2Focus.graphNodeCount <= 25 && graphV2Focus.flowEdgeCount <= 40,
@@ -395,7 +395,7 @@ async function main() {
       (state) => state.text.includes("Path view") && state.text.includes("Transmission paths") && state.graphNodeCount >= 2 && state.flowEdgeCount >= 1,
     );
     checks.push({
-      page: "Graph Explorer v2 path mode",
+      page: "Graph workspace path mode",
       graphNodeCount: graphV2Path.graphNodeCount,
       flowEdgeCount: graphV2Path.flowEdgeCount,
       passed:
@@ -415,7 +415,7 @@ async function main() {
       (state) => state.hasLayerControls && state.flowEdgeCount <= 40,
     );
     checks.push({
-      page: "Graph Explorer v2 layer toggle",
+      page: "Graph workspace relationship filter toggle",
       flowEdgeCount: graphV2LayerToggle.flowEdgeCount,
       passed: graphV2LayerToggle.hasLayerControls && graphV2LayerToggle.flowEdgeCount <= 40,
     });
@@ -430,7 +430,7 @@ async function main() {
       (state) => state.text.includes("Timeline mode") && state.text.includes("affected entities") && state.flowEdgeCount <= 40,
     );
     checks.push({
-      page: "Graph Explorer v3 timeline mode",
+      page: "Graph workspace timeline mode",
       flowEdgeCount: graphV3Timeline.flowEdgeCount,
       passed: graphV3Timeline.text.includes("Timeline mode") && graphV3Timeline.flowEdgeCount <= 40,
     });
@@ -445,7 +445,7 @@ async function main() {
       (state) => state.text.includes("Geo mode") && state.graphNodeCount <= 20 && state.flowEdgeCount <= 35,
     );
     checks.push({
-      page: "Graph Explorer v3 geo mode",
+      page: "Graph workspace geo mode",
       graphNodeCount: graphV3Geo.graphNodeCount,
       flowEdgeCount: graphV3Geo.flowEdgeCount,
       passed: graphV3Geo.text.includes("Geo mode") && graphV3Geo.graphNodeCount <= 20 && graphV3Geo.flowEdgeCount <= 35,
@@ -461,7 +461,7 @@ async function main() {
       (state) => state.text.includes("Matrix mode") && state.text.includes("dense node cloud"),
     );
     checks.push({
-      page: "Graph Explorer v3 matrix mode",
+      page: "Graph workspace matrix mode",
       graphNodeCount: graphV3Matrix.graphNodeCount,
       passed: graphV3Matrix.text.includes("Matrix mode") && graphV3Matrix.text.includes("dense node cloud"),
     });
@@ -476,41 +476,41 @@ async function main() {
       (state) => state.text.includes("Evidence mode") && state.hasEvidenceContextSafety,
     );
     checks.push({
-      page: "Graph Explorer v3 evidence-context safety",
+      page: "Graph workspace evidence-context safety",
       hasEvidenceContextSafety: graphV3Evidence.hasEvidenceContextSafety,
       passed: graphV3Evidence.text.includes("Evidence mode") && graphV3Evidence.hasEvidenceContextSafety,
     });
 
     await evaluate(client, `(() => {
       const buttons = Array.from(document.querySelectorAll('button'));
-      buttons.find((button) => button.textContent?.trim().startsWith('Source Coverage'))?.click();
+      buttons.find((button) => button.textContent?.trim().startsWith('Source coverage'))?.click();
     })()`);
     const graphV3SourceCoverage = await waitFor(
       client,
       () => graphV2State(client),
-      (state) => state.text.includes("Source Coverage mode") && state.text.includes("does not render the full graph"),
+      (state) => state.text.includes("Source coverage") && state.text.includes("does not render the full graph"),
     );
     checks.push({
-      page: "Graph Explorer v3 source coverage mode",
+      page: "Graph workspace source coverage mode",
       passed:
-        graphV3SourceCoverage.text.includes("Source Coverage mode") &&
+        graphV3SourceCoverage.text.includes("Source coverage") &&
         graphV3SourceCoverage.text.includes("does not render the full graph"),
     });
 
     await evaluate(client, `(() => {
       const buttons = Array.from(document.querySelectorAll('button'));
-      buttons.find((button) => button.textContent?.trim().startsWith('Node Catalog'))?.click();
+      buttons.find((button) => button.textContent?.trim().startsWith('Entity catalog'))?.click();
     })()`);
     const graphV3NodeCatalog = await waitFor(
       client,
       () => graphV2State(client),
-      (state) => state.text.includes("Node Catalog mode") && state.text.includes("canonical catalog rows"),
+      (state) => state.text.includes("Entity catalog") && state.text.includes("canonical rows"),
     );
     checks.push({
-      page: "Graph Explorer v3 node catalog mode",
+      page: "Graph workspace entity catalog mode",
       passed:
-        graphV3NodeCatalog.text.includes("Node Catalog mode") &&
-        graphV3NodeCatalog.text.includes("canonical catalog rows"),
+        graphV3NodeCatalog.text.includes("Entity catalog") &&
+        graphV3NodeCatalog.text.includes("canonical rows"),
     });
 
     const relationshipModeChecks = [
@@ -1905,15 +1905,15 @@ async function graphV2State(client) {
       graphNodeCount: document.querySelectorAll('.risk-flow-node').length,
       flowNodeCount: document.querySelectorAll('.react-flow__node').length,
       flowEdgeCount: document.querySelectorAll('.react-flow__edge, .risk-flow-link-node').length,
-      hasV2Title: text.includes('Graph Explorer v2'),
-      hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence') && text.includes('Source Coverage') && text.includes('Node Catalog'),
+      hasV2Title: text.includes('Graph workspace'),
+      hasV3ModeSelector: text.includes('View mode selector') && text.includes('Matrix') && text.includes('Evidence') && text.includes('Source coverage') && text.includes('Entity catalog'),
       hasStageSelector: Boolean(document.querySelector('[data-testid="stage-selector"]')) && text.includes('Supply-chain stage selector'),
       hasRelationshipClassSelector: Boolean(document.querySelector('[data-testid="relationship-class-selector"]')) && text.includes('Relationship class'),
       previewStates: Array.from(document.querySelectorAll('[data-preview-state]')).map((item) => item.getAttribute('data-preview-state')).filter(Boolean),
       hasLegend: text.includes('Legend'),
-      hasLayerControls: text.includes('Layer controls'),
+      hasLayerControls: text.includes('Relationship filters'),
       hasFixtureWarning: text.includes('Research fixture mode'),
-      hasEvidenceContextSafety: text.includes('This is not a supply-chain dependency edge.'),
+      hasEvidenceContextSafety: text.includes('Evidence context is inspection support, not supply-chain dependency.'),
       layoutOverlapCount: Math.max(0, ...Array.from(document.querySelectorAll('.risk-flow-render-metrics')).map((item) => Number(item.dataset.layoutOverlapCount ?? 0))),
     };
   })()`);

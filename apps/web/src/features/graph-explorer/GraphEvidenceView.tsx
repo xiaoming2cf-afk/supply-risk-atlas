@@ -15,13 +15,13 @@ export function GraphEvidenceView({
   return (
     <div className="graph-v3-panel graph-v3-evidence-panel">
       <div className="section-kicker">Evidence mode</div>
-      <p className="inspector-warning">This is not a supply-chain dependency edge.</p>
-      <p className="inspector-note">Evidence-context link rows are separated from real graph relationships and scenario traces.</p>
+      <p className="inspector-warning">Evidence context is inspection support, not supply-chain dependency.</p>
+      <p className="inspector-note">Evidence-context rows are separated from supply-chain relationships and scenario traces.</p>
       <table className="graph-evidence-table">
         <thead>
           <tr>
-            <th>Evidence ref</th>
-            <th>Edge semantics</th>
+            <th>Evidence record</th>
+            <th>Relationship context</th>
             <th>Confidence</th>
           </tr>
         </thead>
@@ -31,7 +31,7 @@ export function GraphEvidenceView({
               <td>{formatEvidenceRef((row as Record<string, unknown>).source_id)}</td>
               <td>
                 {String(formatDisplayValue(String((row as Record<string, unknown>).edge_type ?? "evidence-context link")))}
-                {Boolean((row as Record<string, unknown>).not_supply_chain_dependency) ? " / not supply-chain dependency" : ""}
+                {Boolean((row as Record<string, unknown>).not_supply_chain_dependency) ? " / inspection only" : ""}
               </td>
               <td>{Number((row as Record<string, unknown>).confidence ?? 0).toFixed(2)}</td>
             </tr>

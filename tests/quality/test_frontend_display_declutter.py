@@ -378,7 +378,7 @@ def test_system_health_heavy_inventory_sections_are_collapsed() -> None:
 
     expected_disclosures = [
         'label="Source registry details"',
-        'label="Node, edge, and warning details"',
+        'label="Entity, relationship, and warning details"',
         'label="Data catalog details"',
         'label="Entity resolution details"',
         'label="Evidence lineage details"',
@@ -734,36 +734,122 @@ def test_relationship_views_do_not_use_internal_class_names_as_summary_badges() 
 def test_graph_explorer_primary_count_copy_uses_user_facing_terms() -> None:
     explorer = read("apps/web/src/features/graph-explorer/GraphExplorer.tsx")
     controls = read("apps/web/src/features/graph-explorer/GraphControls.tsx")
+    canvas = read("apps/web/src/features/graph-explorer/GraphCanvas.tsx")
+    evidence = read("apps/web/src/features/graph-explorer/GraphEvidenceView.tsx")
+    explorer_shell = read("apps/web/src/features/graph-explorer/GraphExplorer.tsx")
+    graph_layers = read("apps/web/src/features/graph-explorer/GraphLayers.tsx")
+    graph_legend = read("apps/web/src/features/graph-explorer/GraphLegend.tsx")
+    inspector = read("apps/web/src/features/graph-explorer/GraphInspector.tsx")
+    node_catalog = read("apps/web/src/features/graph-explorer/GraphNodeCatalogView.tsx")
     overview = read("apps/web/src/features/graph-explorer/GraphOverviewView.tsx")
+    source_coverage = read("apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx")
     geo = read("apps/web/src/features/graph-explorer/GraphGeoView.tsx")
     timeline = read("apps/web/src/features/graph-explorer/GraphTimelineView.tsx")
+    view_model = read("apps/web/src/features/graph-explorer/graphViewModel.ts")
     legacy = read("apps/web/src/features/common/legacyDashboard.tsx")
     i18n = read("apps/web/src/app/i18n.tsx")
+    labels = read("apps/web/src/features/common/displayLabels.ts")
+    stage_catalog = read("apps/web/src/features/common/tables/StageNodeCatalogTable.tsx")
 
-    combined = "\n".join([explorer, controls, overview, geo, timeline, legacy, i18n])
+    combined = "\n".join([
+        explorer,
+        controls,
+        canvas,
+        evidence,
+        explorer_shell,
+        graph_layers,
+        graph_legend,
+        inspector,
+        node_catalog,
+        overview,
+        source_coverage,
+        geo,
+        timeline,
+        view_model,
+        legacy,
+        i18n,
+        labels,
+        stage_catalog,
+    ])
     assert "nodes and ${view.visibleLinks.length} edges rendered" not in explorer
     assert "nodes / 35 edges" not in explorer
     assert "nodes / 40 edges" not in explorer
     assert "edge labels hidden by default" not in explorer
     assert "Graph node type" not in controls
+    assert "Graph node type" not in legacy
     assert "Graph node type" not in i18n
     assert "Visible nodes" not in controls
     assert "Visible nodes" not in i18n
     assert "Visible links" not in i18n
+    assert 'Field label="Visible links"' not in legacy
+    assert 'Field label="Total links"' not in legacy
     assert "Node inspector" not in i18n
     assert "Click a node" not in i18n
     assert "selected graph node" not in i18n
     assert "node context" not in i18n
+    assert "<span>{node.kind}</span>" not in canvas
+    assert "<span>{node.kind}</span>" not in legacy
+    assert "Edge labels" not in graph_layers
+    assert "Edge semantics" not in evidence
+    assert "Real graph edge" not in inspector
+    assert "Graph edge evidence" not in inspector
+    assert "This is not a supply-chain dependency edge." not in canvas
+    assert "This is not a supply-chain dependency edge." not in graph_legend
+    assert "This is not a supply-chain dependency edge." not in evidence
+    assert "This is not a supply-chain dependency edge." not in inspector
+    assert '"Node ID"' not in labels
+    assert '"Node type"' not in labels
+    assert '"Raw payload excluded"' not in labels
+    assert '"Stale source count"' not in labels
+    assert "Affected critical nodes" not in combined
+    assert "Stage node catalog" not in stage_catalog
+    assert "Graph Explorer v2" not in explorer_shell
+    assert "Graph Explorer v3" not in explorer_shell
+    assert "Source Coverage mode" not in source_coverage
+    assert "Overview mode source coverage summary" not in overview
+    assert "Node Catalog" not in controls
+    assert "Node Catalog" not in node_catalog
+    assert "Node Catalog" not in view_model
+    assert "Data node catalog" not in legacy
+    assert "Data node type" not in legacy
+    assert "Candidate node types" not in legacy
     assert "Eligible nodes" not in controls
     assert "Rendered geo nodes" not in geo
     assert "event nodes and affected graph nodes" not in timeline
     assert "Entity type" in controls
+    assert "Entity type" in legacy
     assert "Entity type" in i18n
     assert "Visible entities" in i18n
     assert "Visible relationships" in i18n
+    assert 'Field label="Visible relationships"' in legacy
+    assert 'Field label="Total relationships"' in legacy
+    assert "Relationship labels" in graph_layers
+    assert "Relationship context" in evidence
+    assert "Graph relationship" in inspector
+    assert "Graph relationship evidence" in inspector
+    assert "Evidence context is inspection support, not supply-chain dependency." in canvas
+    assert "Evidence context is inspection support, not supply-chain dependency." in graph_legend
+    assert "Evidence context is inspection support, not supply-chain dependency." in evidence
+    assert "Evidence context is inspection support, not supply-chain dependency." in inspector
     assert "Entity inspector" in i18n
     assert "critical entities" in i18n
     assert "entity context" in i18n
+    assert '"Entity ID"' in labels
+    assert '"Entity type"' in labels
+    assert '"Raw source details excluded"' in labels
+    assert '"Sources needing review"' in labels
+    assert "Affected critical entities" in combined
+    assert "Stage entity catalog" in stage_catalog
+    assert "Graph workspace" in explorer_shell
+    assert "Source coverage" in controls
+    assert "Source coverage" in source_coverage
+    assert "Source coverage summary" in overview
+    assert "Entity catalog" in controls
+    assert "Entity catalog" in node_catalog
+    assert "Entity catalog" in view_model
+    assert "Data asset catalog" in legacy
+    assert "Data asset type" in legacy
+    assert "Candidate entity types" in legacy
     assert " entities / " in combined
     assert " relationships" in combined
 
@@ -823,7 +909,7 @@ def test_graph_canvas_tooltips_do_not_fallback_to_raw_edge_ids() -> None:
     for source in (graph_canvas, legacy_dashboard):
         assert "title: formatEdgeTooltipTitle(edge.label, link)" in source
         assert "title: edge.label ? String(edge.label) : link?.label ?? edge.id" not in source
-        assert 'return "Graph edge";' in source
+        assert 'return "Graph relationship";' in source
         assert "link?.edgeRole || link?.edgeType" in source
 
 

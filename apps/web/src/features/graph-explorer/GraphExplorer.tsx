@@ -461,9 +461,9 @@ export function GraphExplorer({
 
   return (
     <div className="graph-workbench graph-workbench-v2 graph-workbench-v3">
-      <Panel title="Graph scope" subtitle="Graph Explorer v2 / v3 layered views." className="graph-side-panel">
+      <Panel title="Graph scope" subtitle="Layered entity, relationship, evidence, and source views." className="graph-side-panel">
         <div className="graph-version-strip">
-          <strong>Graph Explorer v2 / v3</strong>
+          <strong>Graph workspace</strong>
           <span>{graphModeLabel(mode)}</span>
         </div>
         <GraphControls

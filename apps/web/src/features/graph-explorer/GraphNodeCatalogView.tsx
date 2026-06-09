@@ -13,12 +13,12 @@ export function GraphNodeCatalogView({
 
   return (
     <div className="graph-v3-panel graph-v3-node-catalog-panel">
-      <div className="section-kicker">Node Catalog mode</div>
-      <p className="inspector-note">Node Catalog mode shows canonical catalog rows and evidence sources, not a dense node cloud.</p>
+      <div className="section-kicker">Entity catalog</div>
+      <p className="inspector-note">Entity catalog shows canonical rows and evidence sources, not a dense graph view.</p>
       <table className="graph-evidence-table">
         <thead>
           <tr>
-            <th>Node</th>
+            <th>Entity</th>
             <th>Layer</th>
             <th>Type</th>
             <th>Evidence sources</th>
@@ -40,7 +40,7 @@ export function GraphNodeCatalogView({
             ))
           ) : (
             <tr className="unavailable-preview" data-preview-state="node_catalog_endpoint_unavailable">
-              <td colSpan={4}>Backend node catalog data unavailable; authoritative rows are hidden.</td>
+              <td colSpan={4}>Backend entity catalog data unavailable; authoritative rows are hidden.</td>
             </tr>
           )}
         </tbody>
@@ -52,7 +52,7 @@ export function GraphNodeCatalogView({
 function formatNodeCell(row: Record<string, unknown>) {
   const nodeId = typeof row.node_id === "string" ? row.node_id : "";
   const label = typeof row.label === "string" ? row.label : "";
-  return label || formatNodeDisplayRef(nodeId) || "Catalog node";
+  return label || formatNodeDisplayRef(nodeId) || "Catalog entity";
 }
 
 function formatSourceCandidate(value: unknown) {

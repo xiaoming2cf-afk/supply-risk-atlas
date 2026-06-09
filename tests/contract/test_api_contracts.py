@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 pytest.importorskip("pydantic")
@@ -26,6 +28,37 @@ def test_success_envelope_matches_contract_shape() -> None:
     assert payload["metadata"]["graph_version"] == result.snapshot.graph_version
     assert payload["warnings"] == []
     assert payload["errors"] == []
+
+
+def test_success_envelope_drops_sensitive_keys_by_default() -> None:
+    result = run_synthetic_pipeline()
+
+    payload = make_envelope(
+        {
+            "service": "api",
+            "raw_payload": {"secret": "must-not-render"},
+            "source_payload": {"authorization": "Bearer secret-token"},
+            "private_diagnostics": {"internal_path": "D:/private/file.py"},
+            "raw_payload_excluded": True,
+            "private_diagnostics_excluded": True,
+            "source_payload_policy": "summary_only",
+        },
+        metadata=default_metadata(result),
+        request_id="req_sanitized_contract",
+    )
+    rendered = json.dumps(payload, sort_keys=True)
+
+    assert payload["data"] == {
+        "service": "api",
+        "raw_payload_excluded": True,
+        "private_diagnostics_excluded": True,
+        "source_payload_policy": "summary_only",
+    }
+    assert "must-not-render" not in rendered
+    assert "authorization" not in rendered.lower()
+    assert "secret-token" not in rendered
+    assert '"private_diagnostics":' not in rendered
+    assert "internal_path" not in rendered
 
 
 def test_error_envelope_matches_contract_shape() -> None:

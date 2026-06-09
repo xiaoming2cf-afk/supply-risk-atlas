@@ -195,10 +195,10 @@ export function GraphCanvas({
             y: event.clientY,
             title: formatEdgeTooltipTitle(edge.label, link),
             meta: evidenceContext
-              ? "evidence-context link / not supply-chain dependency"
-              : `${link?.edgeRole ?? link?.edgeType ?? "edge"} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
+              ? "Evidence context / inspection support"
+              : `${formatDisplayLabel(String(link?.edgeRole ?? link?.edgeType ?? "relationship"))} / ${formatPercent(link?.transmissionWeight ?? link?.weight ?? 0)}`,
             detail: evidenceContext
-              ? "This is not a supply-chain dependency edge."
+              ? "Evidence context is inspection support, not supply-chain dependency."
               : `${link?.sourceCountry ?? "global"} -> ${link?.targetCountry ?? "global"}`,
           });
         }}
@@ -247,7 +247,7 @@ export function GraphCanvas({
 
 function formatEdgeTooltipTitle(edgeLabel: unknown, link?: GraphLink) {
   const label = edgeLabel || link?.label || link?.edgeRole || link?.edgeType;
-  if (!label) return "Graph edge";
+  if (!label) return "Graph relationship";
   return String(formatDisplayValue(String(label)));
 }
 
@@ -266,7 +266,7 @@ function RiskFlowNodeCard({ data }: NodeProps<RiskFlowNode>) {
       <Handle className="risk-flow-handle" id="target" position={Position.Left} type="target" />
       <Handle className="risk-flow-handle" id="source" position={Position.Right} type="source" />
       <div className="risk-flow-node-topline">
-        <span>{node.kind}</span>
+        <span>{formatDisplayLabel(node.kind)}</span>
         <strong>{graphScore(node.criticalityScore ?? node.score)}</strong>
       </div>
       <p>{node.label}</p>

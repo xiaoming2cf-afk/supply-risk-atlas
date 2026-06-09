@@ -15,7 +15,7 @@ export function GraphOverviewView({
   const sourceRows = graph.graphStats?.bySource ?? [];
   return (
     <div className="graph-v3-panel graph-v3-overview-panel">
-      <div className="section-kicker">Overview mode source coverage summary</div>
+      <div className="section-kicker">Source coverage summary</div>
       <div className="inspector-grid">
         <span>Visible entities: {view.visibleNodes.length} / 20</span>
         <span>Visible relationships: {view.visibleLinks.length} / 35</span>

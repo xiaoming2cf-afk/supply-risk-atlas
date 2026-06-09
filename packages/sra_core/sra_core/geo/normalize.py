@@ -15,6 +15,42 @@ from sra_core.geo.terminology import (
     REGION_CONTEXT_KEYS,
 )
 
+SENSITIVE_RESPONSE_KEYS = {
+    "api_key",
+    "authorization",
+    "cookie",
+    "internal_path",
+    "password",
+    "payload_body",
+    "private_diagnostic",
+    "private_diagnostics",
+    "raw_body",
+    "raw_payload",
+    "raw_payload_path",
+    "request_body",
+    "response_body",
+    "secret",
+    "source_payload",
+    "source_raw_payload",
+    "token",
+}
+SAFE_RESPONSE_KEYS = {
+    "private_diagnostics_excluded",
+    "raw_payload_excluded",
+    "raw_payload_storage_allowed",
+    "raw_payload_storage_policy",
+    "raw_payload_stored",
+    "source_payload_policy",
+}
+SENSITIVE_RESPONSE_KEY_PARTS = (
+    "authorization",
+    "cookie",
+    "internal_path",
+    "password",
+    "private_diagnostic",
+    "secret",
+)
+
 
 def _compact(value: str) -> str:
     return " ".join(value.strip().split())
@@ -128,8 +164,19 @@ def _sanitize_mapping(payload: Mapping[str, Any]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in payload.items():
         safe_key = sanitize_identifier(str(key))
+        if _is_sensitive_response_key(safe_key):
+            continue
         result[safe_key] = _sanitize_value_for_key(safe_key, value)
     return result
+
+
+def _is_sensitive_response_key(key: str) -> bool:
+    lowered = key.strip().lower()
+    if lowered in SAFE_RESPONSE_KEYS:
+        return False
+    if lowered in SENSITIVE_RESPONSE_KEYS:
+        return True
+    return any(part in lowered for part in SENSITIVE_RESPONSE_KEY_PARTS)
 
 
 def _sanitize_value_for_key(key: str, value: Any) -> Any:

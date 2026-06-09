@@ -15,7 +15,7 @@ const ACRONYMS = new Map<string, string>([
 ]);
 
 const LABEL_OVERRIDES = new Map<string, string>([
-  ["affected_critical_nodes", "Affected critical nodes"],
+  ["affected_critical_nodes", "Affected critical entities"],
   ["affected_mean", "Affected mean"],
   ["api_readiness", "API readiness"],
   ["add_alternative_supplier", "Add alternative supplier"],
@@ -134,8 +134,8 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["model_readiness", "Model readiness"],
   ["node_count", "Entity count"],
   ["nodeCount", "Entity count"],
-  ["node_id", "Node ID"],
-  ["node_type", "Node type"],
+  ["node_id", "Entity ID"],
+  ["node_type", "Entity type"],
   ["noisy_or", "Independent exposure spread"],
   ["not_financial_loss", "No financial loss estimate"],
   ["normalized_threshold", "Normalized threshold"],
@@ -168,7 +168,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["portfolio_source_status", "Portfolio source coverage"],
   ["qualify_backup_material", "Qualify backup material"],
   ["random_intervention", "Random intervention"],
-  ["raw_payload_excluded", "Raw payload excluded"],
+  ["raw_payload_excluded", "Raw source details excluded"],
   ["registryReady", "Registry ready"],
   ["regional_diversification", "Regional diversification"],
   ["report_id", "Report ID"],
@@ -218,7 +218,7 @@ const LABEL_OVERRIDES = new Map<string, string>([
   ["api_commit_reported", "API commit reported"],
   ["country_concentration_hhi", "Country concentration HHI"],
   ["country_concentration_level", "Country concentration level"],
-  ["staleSourceCount", "Stale source count"],
+  ["staleSourceCount", "Sources needing review"],
   ["target_id", "Target ID"],
   ["target_metric", "Target metric"],
   ["threshold_metric_basis", "Threshold metric basis"],

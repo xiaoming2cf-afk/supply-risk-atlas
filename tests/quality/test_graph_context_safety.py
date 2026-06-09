@@ -24,8 +24,7 @@ def test_inspector_and_canvas_make_context_link_semantics_explicit() -> None:
     canvas = (ROOT / "GraphCanvas.tsx").read_text(encoding="utf-8")
     styles = Path("packages/design-system/src/styles.css").read_text(encoding="utf-8")
 
-    assert "This is not a supply-chain dependency edge." in inspector
-    assert "evidence-context link / not supply-chain dependency" in canvas
+    assert "Evidence context is inspection support, not supply-chain dependency." in inspector
+    assert "Evidence context / inspection support" in canvas
     assert "risk-flow-evidence-context-link" in canvas
     assert "risk-flow-evidence-context-link" in styles
-
