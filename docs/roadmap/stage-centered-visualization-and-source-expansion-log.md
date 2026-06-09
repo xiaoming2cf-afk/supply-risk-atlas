@@ -3668,6 +3668,50 @@
 - Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
 - No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred in this background-only pass.
 
+## 2026-06-09 Background Controller Batch: Graph Display And Response Safety
+
+### Current HEAD
+
+- Starting commit: `4d62ca3ee3e2a3bfcacb5af2d0c91d6f7e37a839`.
+- Implementation commit: `9de9c4329e4001047ede9949ca6336a3f15605db`.
+- Branch: `main`.
+- Preserved untracked user files: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md`.
+
+### Gate Result
+
+- Switched from single-label micro gates to a controller batch: frontend, backend/data, and CI/deploy sub-agent audits were gathered first, then one high-value batch was implemented and validated.
+- Reworded remaining Graph workspace visible copy from node/link/edge/version-mode phrasing to entity/relationship/evidence/source-coverage terminology.
+- Formatted graph canvas entity kinds and relationship tooltip fallbacks through display formatters instead of showing raw graph kind/edge terms.
+- Unified source coverage and entity catalog labels across controls, view model, table views, local smoke assertions, legacy graph panels, and i18n phrases.
+- Hardened `sanitize_chart_table_payload` so API envelopes drop obvious raw/private/secret/token/cookie/internal-path response keys by default while preserving safe governance flags such as `raw_payload_excluded`, `private_diagnostics_excluded`, and `source_payload_policy`.
+- Added startup no-network coverage for API app creation, TestClient startup, and `/api/v1/health` under live-looking environment settings.
+- No source connector, live-fetch startup behavior, public route shape, geography canonical rule, or evidence-context dependency semantics was changed.
+
+### Validation
+
+- `python -m pytest tests/quality/test_frontend_display_declutter.py tests/quality/test_graph_context_safety.py -q` -> PASS, 48 tests.
+- `python -m pytest tests/contract/test_api_contracts.py tests/ingestion/test_no_startup_network.py tests/security/test_response_sanitization.py -q` -> PASS, 14 tests.
+- `python -m pytest tests/quality -q` -> PASS.
+- `python -m pytest tests/security tests/graph_invariants -q` -> PASS.
+- `python -m pytest tests/contract tests/sources -q` -> PASS.
+- `python scripts/check-no-raw-payloads.py` -> PASS.
+- `npm.cmd --workspace apps/web run typecheck` -> PASS.
+- `npm.cmd --workspace apps/web run build` -> PASS.
+- Hidden local smoke with API on `127.0.0.1:8000` and Web on `127.0.0.1:3000` -> PASS, 63 checks; hidden processes were stopped afterward.
+- GitHub `ci` passed in run `27223688679`.
+- GitHub `Quality Gates` passed in run `27223689096`.
+
+### Deployment Status
+
+- Bounded public deployment probe for expected commit `9de9c43` returned `deployed_unavailable`: API, Web build-info, Web proxy, and public Web HTML were unavailable in the bounded probe; public Web HTML returned HTTP `503`.
+- Background Render deploy helper dry run returned `render_deploy_blocked_missing_safe_deploy_path` because `RENDER_API_KEY`, `RENDER_API_SERVICE_ID`, and `RENDER_WEB_SERVICE_ID` are not configured in the local environment.
+- No Render API call, Chrome action, credential entry, raw response logging, screenshot capture, or ChatGPT handoff occurred.
+
+### Known Limitations
+
+- Source/readiness remains degraded by design until source coverage, promoted graph coverage, and safe Render credentials are improved in later batches.
+- Deployment remains unverified until a safe Render deploy path is configured and public probes report the expected commit.
+
 ## 2026-06-07 Background Graph Explorer I18n Entity Terminology Gate
 
 ### Current HEAD
