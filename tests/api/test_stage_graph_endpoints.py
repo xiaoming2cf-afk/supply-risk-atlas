@@ -25,6 +25,9 @@ STAGE_IDS = [
     "L11_compliance",
 ]
 
+COVERAGE_CLAIM_STATUSES = {"promoted_evidence", "candidate_only", "unavailable", "deferred"}
+NON_PROMOTED_CLAIM_STATUSES = COVERAGE_CLAIM_STATUSES - {"promoted_evidence"}
+
 
 def _client() -> TestClient:
     app = create_app()
@@ -118,6 +121,14 @@ def test_stage_graph_endpoint_returns_bounded_stage_data(
         assert row["supports_edge_types"] == data["core_edge_types"]
         assert row["supports_relationship_classes"] == data["relationship_classes"]
         assert row["coverage_summary"]
+        assert row["registry_status"]
+        assert isinstance(row["promoted_reference_count"], int)
+        assert row["promoted_reference_count"] >= 0
+        assert row["coverage_claim_status"] in COVERAGE_CLAIM_STATUSES
+        if row["promoted_reference_count"] > 0:
+            assert row["coverage_claim_status"] == "promoted_evidence"
+        else:
+            assert row["coverage_claim_status"] in NON_PROMOTED_CLAIM_STATUSES
         assert row["fixture_policy"] == "fixture_required_live_disabled"
         assert row["api_visibility_policy"] == "sanitized_summary_and_lineage_only"
     for row in data["source_family_coverage"]:
@@ -181,6 +192,31 @@ def test_stage_graph_support_endpoints_return_sanitized_metadata(
     assert "raw_payload" not in rendered
     assert "country:" + "tw" not in rendered
     assert "region:" + "tw" not in rendered
+
+
+def test_stage_source_coverage_separates_candidates_from_promoted_references(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_GRAPH_MODE", "promoted")
+
+    raw_minerals = _client().get("/api/v1/stage-graph/L1_raw_minerals/source-coverage").json()["data"]
+    mineral_rows = {row["source_id"]: row for row in raw_minerals["source_coverage"]}
+
+    usgs = mineral_rows["usgs_mineral_commodity_summaries_lite"]
+    assert usgs["promoted_reference_count"] > 0
+    assert usgs["coverage_claim_status"] == "promoted_evidence"
+
+    wits = mineral_rows["wits_trade_tariff_lite"]
+    assert wits["registry_status"] == "disabled_review_required"
+    assert wits["promoted_reference_count"] == 0
+    assert wits["coverage_claim_status"] == "candidate_only"
+
+    policy_macro = _client().get("/api/v1/stage-graph/L0_policy_macro/source-coverage").json()["data"]
+    policy_rows = {row["source_id"]: row for row in policy_macro["source_coverage"]}
+    oecd = policy_rows["oecd_semiconductor_value_chain_reports"]
+    assert oecd["registry_status"] == "unavailable_terms_review"
+    assert oecd["promoted_reference_count"] == 0
+    assert oecd["coverage_claim_status"] == "unavailable"
 
 
 def test_stage_graph_tables_use_stage_specific_payloads(monkeypatch: pytest.MonkeyPatch) -> None:

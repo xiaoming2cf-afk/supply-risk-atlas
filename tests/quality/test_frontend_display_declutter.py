@@ -151,7 +151,8 @@ def test_primary_run_page_copy_uses_user_facing_labels_for_common_metrics() -> N
     assert "Baseline comparison" in source
     assert "Evidence records" in source
     assert "Run history is not available in this environment." in source
-    assert "Fixture graph metadata unavailable" in source
+    assert "Fixture graph metadata unavailable" not in source
+    assert "Public evidence graph metadata unavailable" in source
     assert "Fixture-labeled SemiRisk-KG entity scores" not in source
     assert "Entity risk scores from the public evidence graph; use them as research signals, not production decisions." in source
     assert "Risk Score v0 API returns a real metadata envelope" not in source
@@ -865,6 +866,31 @@ def test_graph_explorer_endpoint_diagnostics_use_user_facing_labels() -> None:
     assert '{ label: "Source coverage"' in explorer
     assert '{ label: "Recovery guidance"' in explorer
     assert '{ label: "Connection attempts"' in explorer
+
+
+def test_graph_explorer_table_modes_are_single_render_and_stage_gated() -> None:
+    explorer = read("apps/web/src/features/graph-explorer/GraphExplorer.tsx")
+    detail_panel = explorer[explorer.index("function GraphModeDetailPanel") :]
+
+    assert explorer.count("<GraphSourceCoverageView ") == 1
+    assert explorer.count("<GraphNodeCatalogView ") == 1
+    assert 'mode === "source-coverage" ? (\n            <GraphSourceCoverageView' in explorer
+    assert 'mode === "node-catalog" ? (\n            <GraphNodeCatalogView' in explorer
+    assert "GraphSourceCoverageView" not in detail_panel
+    assert "GraphNodeCatalogView" not in detail_panel
+    assert "{usesStageEndpoint ? <EndpointStatusPanel details={stageEndpointDetails} /> : null}" in explorer
+    assert re.search(r"\{usesStageEndpoint \? \(\s*<StageModePanel", explorer)
+    assert 'return mode !== "source-coverage" && mode !== "node-catalog";' in explorer
+
+
+def test_missing_graph_metadata_avoids_legacy_unknown_readiness_fallbacks() -> None:
+    source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert 'return value ? "Ready" : "Needs review"' not in source
+    assert '? "ready" : "degraded"' not in source
+    assert "Fixture graph readiness unavailable" not in source
+    assert "Public evidence graph readiness unavailable" in source
+    assert "Public evidence graph metadata unavailable" in source
 
 
 def test_evidence_records_copy_avoids_refs_jargon_in_primary_ui() -> None:

@@ -201,7 +201,9 @@ function formatDateTime(value: string) {
 }
 
 function readinessText(value: boolean | undefined) {
-  return value ? "Ready" : "Needs review";
+  if (value === true) return "Ready";
+  if (value === false) return "Not ready";
+  return "Unavailable";
 }
 
 function sanitizePublicEndpointDiagnostic(value: unknown) {
@@ -4179,7 +4181,7 @@ function formatReportEvidenceSection(value: unknown) {
 
 function formatDashboardWarning(warning: string) {
   if (warning.includes("semirisk_fixture_metadata")) {
-    return "Fixture graph metadata available";
+    return "Public evidence graph metadata available";
   }
   if (warning.includes("fixture_source_freshness_degraded")) {
     return "Some fixture source freshness is limited";
@@ -4972,9 +4974,14 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         : "complete";
   const freshnessStatus = maxFreshnessLag === 0 ? "operational" : "degraded";
   const manifestChecksum = health.sourceRegistry.checksum.slice(0, 12);
-  const graphReadiness = health.semiconductorGraph?.fixtureGraphReady ? "ready" : "degraded";
-  const modelReadiness = health.semiconductorGraph?.fixtureGraphReady ? "fixture_ready" : "unavailable";
-  const validationReadiness = "deterministic_fixture_suite";
+  const graphReadiness =
+    health.semiconductorGraph?.fixtureGraphReady === true
+      ? "Ready"
+      : health.semiconductorGraph?.fixtureGraphReady === false
+        ? "Not ready"
+        : "Unavailable";
+  const modelReadiness = health.semiconductorGraph?.fixtureGraphReady === true ? "Public evidence graph ready" : "Unavailable";
+  const validationReadiness = "Public evidence validation suite";
   const platformStatus = health.platformStatus ?? {
     apiReadiness: serviceSummaryStatus,
     graphReadiness,
@@ -5256,7 +5263,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         </Panel>
       ) : null}
 
-      <Panel title="Readiness summary" subtitle="Fixture readiness is shown separately from production readiness.">
+      <Panel title="Readiness summary" subtitle="Public evidence graph readiness is shown separately from production readiness.">
         <div className="field-grid">
           <Field label="service_readiness" value={serviceSummaryStatus} />
           <Field label="api_readiness" value={platformStatus.apiReadiness} />
@@ -5271,7 +5278,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           <Field label="connector_statuses" value={connectorStatusSummary} />
           <Field label="source_statuses" value={sourceStatusSummary} />
         </div>
-        <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }]} />
+        <MetadataSummary items={[{ label: "Public evidence graph readiness" }]} />
         <AuditDetails
           label="Technical diagnostics"
           items={[
@@ -5287,7 +5294,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             { label: "deployment_unavailable", value: deploymentReadiness.unavailable },
             { label: "deployment_last_checked_at", value: deploymentReadiness.lastCheckedAt ?? "not_verified" },
             { label: "deployment_environment", value: deploymentReadiness.environment ?? "unknown" },
-            { label: "fixture_status", value: health.semiconductorGraph?.fixtureGraph ? "Fixture graph available" : "Fixture graph metadata unavailable" },
+            { label: "graph_metadata_status", value: health.semiconductorGraph?.fixtureGraph ? "Public evidence graph available" : "Public evidence graph metadata unavailable" },
             { label: "data_mode", value: platformStatus.dataMode },
             { label: "graph_mode", value: platformStatus.graphMode },
             { label: "production_status", value: platformStatus.productionStatus },
@@ -5501,7 +5508,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                       <li className="data-row" key={warning}>
                         <div className="row-top">
                           <span className="row-title">{formatDashboardWarning(warning)}</span>
-                          <StatusPill status={health.semiconductorGraph?.status ?? "degraded"} />
+                          <StatusPill status={health.semiconductorGraph?.status ?? "unavailable"} />
                         </div>
                       </li>
                     ))}
@@ -5514,14 +5521,14 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                 subtitle="The System Health Center did not receive public evidence graph metadata from the API, so no graph readiness metrics are fabricated."
               >
                 <div className="empty-state-shell compact">
-                  <h3>Fixture graph readiness unavailable</h3>
-                  <p>Expected readiness fields include graph metadata, node counts, edge counts, registry readiness, ontology readiness, and research graph state.</p>
+                  <h3>Public evidence graph readiness unavailable</h3>
+                  <p>Expected readiness fields include public evidence graph metadata, node counts, relationship counts, registry readiness, ontology readiness, and research graph state.</p>
                 </div>
                 <ul className="health-list" style={{ marginTop: 16 }}>
                   <li className="data-row">
                     <div className="row-top">
-                      <span className="row-title">Fixture graph metadata unavailable</span>
-                      <StatusPill status="degraded" />
+                      <span className="row-title">Public evidence graph metadata unavailable</span>
+                      <StatusPill status="unavailable" />
                     </div>
                   </li>
                 </ul>

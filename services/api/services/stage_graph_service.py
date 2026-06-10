@@ -7,6 +7,7 @@ from typing import Any
 import yaml
 
 from graph_kernel.relationship_builder import classify_edge
+from sra_core.sources import source_registry_readiness
 from services.api.services.common import (
     semiconductor_fixture_warnings,
     semiconductor_metadata,
@@ -96,7 +97,7 @@ def route_stage_graph_source_coverage(
         return _stage_not_found(stage_id, request_id=request_id)
     snapshot = _build_active_semiconductor_snapshot()
     payload = _stage_base_payload(snapshot, stage=stage, mode="stage-source-coverage")
-    payload["source_coverage"] = _stage_source_coverage(stage)
+    payload["source_coverage"] = _stage_source_coverage(stage, snapshot=snapshot)
     return make_envelope(
         sanitize_chart_table_payload(payload),
         metadata=semiconductor_metadata(snapshot, feature_version=GRAPH_VIEW_VERSION),
@@ -210,7 +211,7 @@ def _route_stage_payload(
         "clusters": _stage_clusters(selected_nodes),
         "chart_data_refs": stage.get("charts", []),
         "table_data_refs": stage.get("tables", []),
-        "source_coverage": _stage_source_coverage(stage),
+        "source_coverage": _stage_source_coverage(stage, snapshot=snapshot),
         "evidence_refs": _evidence_refs(selected_edges, limit=50),
         "relationship_class_counts": dict(Counter(edge["relationship_class"] for edge in selected_edges)),
         "relationship_class_filter": relationship_class,
@@ -328,24 +329,59 @@ def _stage_clusters(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
-def _stage_source_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:
+def _stage_source_coverage(stage: dict[str, Any], snapshot: Any | None = None) -> list[dict[str, Any]]:
     primary = set(stage.get("primary_sources", []))
     secondary = set(stage.get("secondary_sources", []))
     node_types = list(stage.get("core_node_types", []))
     edge_types = list(stage.get("core_edge_types", []))
     relationship_classes = list(stage.get("relationship_classes", []))
+    registry_rows = _source_registry_rows_by_id()
+    promoted_reference_counts = _stage_promoted_reference_counts(stage, snapshot)
     return [
-        {
+        _stage_source_coverage_row(
+            source_id=source_id,
+            stage=stage,
+            tier="primary" if source_id in primary else "secondary",
+            registry_row=registry_rows.get(source_id, {}),
+            promoted_reference_count=promoted_reference_counts.get(source_id, 0),
+            node_types=node_types,
+            edge_types=edge_types,
+            relationship_classes=relationship_classes,
+        )
+        for source_id in sorted(primary | secondary)
+    ]
+
+
+def _stage_source_coverage_row(
+    *,
+    source_id: str,
+    stage: dict[str, Any],
+    tier: str,
+    registry_row: dict[str, Any],
+    promoted_reference_count: int,
+    node_types: list[str],
+    edge_types: list[str],
+    relationship_classes: list[str],
+) -> dict[str, Any]:
+    registry_status = str(registry_row.get("status") or "unavailable")
+    connector_status = str(registry_row.get("connector_status") or "unavailable")
+    return {
             "source_id": source_id,
             "stage_id": stage["stage_id"],
-            "tier": "primary" if source_id in primary else "secondary",
+            "tier": tier,
             "source_family": _source_family_for_source(source_id, stage),
             "source_scope": _source_scope_for_source(source_id),
             "supports_node_types": node_types,
             "supports_edge_types": edge_types,
             "supports_relationship_classes": relationship_classes,
             "coverage_summary": _source_coverage_summary(source_id, stage),
-            "connector_status": "fixture_or_registry",
+            "connector_status": connector_status,
+            "registry_status": registry_status,
+            "promoted_reference_count": int(promoted_reference_count),
+            "coverage_claim_status": _coverage_claim_status(
+                registry_status=registry_status,
+                promoted_reference_count=promoted_reference_count,
+            ),
             "source_status": stage.get("source_status", "incomplete_fixture_proxy"),
             "calibration_status": stage.get("calibration_status", "fixture_proxy_not_calibrated"),
             "failure_reason": stage.get("failure_reason", "not_recorded"),
@@ -357,8 +393,50 @@ def _stage_source_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:
                 "sanitized_summary_and_lineage_only",
             ),
         }
-        for source_id in sorted(primary | secondary)
-    ]
+
+
+def _source_registry_rows_by_id() -> dict[str, dict[str, Any]]:
+    try:
+        readiness = source_registry_readiness()
+    except Exception:
+        return {}
+    rows = readiness.get("sources", [])
+    if not isinstance(rows, list):
+        return {}
+    return {
+        str(row.get("source_id")): row
+        for row in rows
+        if isinstance(row, dict) and row.get("source_id")
+    }
+
+
+def _stage_promoted_reference_counts(stage: dict[str, Any], snapshot: Any | None) -> Counter[str]:
+    if snapshot is None or str(getattr(snapshot, "graph_mode", "")).lower() != "promoted":
+        return Counter()
+    nodes = _stage_nodes(snapshot, stage)
+    edges = _stage_edges(
+        snapshot,
+        stage,
+        selected_node_ids={node["id"] for node in nodes},
+        relationship_class=None,
+        evidence_only=False,
+    )
+    counts: Counter[str] = Counter()
+    for node in nodes:
+        counts.update(str(source_id) for source_id in node.get("evidence_refs", []) if source_id)
+    for edge in edges:
+        counts.update(str(source_id) for source_id in edge.get("evidence_refs", []) if source_id)
+    return counts
+
+
+def _coverage_claim_status(*, registry_status: str, promoted_reference_count: int) -> str:
+    if promoted_reference_count > 0:
+        return "promoted_evidence"
+    if registry_status == "deferred_paid_or_proprietary":
+        return "deferred"
+    if registry_status in {"unavailable", "unavailable_terms_review", "live_unavailable"}:
+        return "unavailable"
+    return "candidate_only"
 
 
 def _stage_source_family_coverage(stage: dict[str, Any]) -> list[dict[str, Any]]:

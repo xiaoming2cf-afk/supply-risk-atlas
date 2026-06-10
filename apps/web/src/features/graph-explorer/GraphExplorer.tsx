@@ -130,6 +130,7 @@ export function GraphExplorer({
   const criticalNodes = useMemo(() => criticalGraphNodes(graph), [graph]);
   const sourceOptions = useMemo(() => graphSourceOptions(graph), [graph]);
   const productOptions = useMemo(() => graphProductOptions(graph), [graph]);
+  const usesStageEndpoint = graphModeUsesStageEndpoint(mode);
 
   useEffect(() => {
     const nextMode = normalizeGraphViewMode(initialMode);
@@ -227,6 +228,7 @@ export function GraphExplorer({
   useEffect(() => {
     let cancelled = false;
     let timeoutHandle: ReturnType<typeof globalThis.setTimeout> | undefined;
+    if (!usesStageEndpoint) return;
     if (!apiClient) {
       setStageEndpointDetails({
         source: "fallback",
@@ -291,7 +293,7 @@ export function GraphExplorer({
       cancelled = true;
       if (timeoutHandle) globalThis.clearTimeout(timeoutHandle);
     };
-  }, [apiClient, relationshipClassFilter, selectedStage]);
+  }, [apiClient, relationshipClassFilter, selectedStage, usesStageEndpoint]);
 
   const view = useMemo(
     () =>
@@ -557,14 +559,16 @@ export function GraphExplorer({
           <span>relationship labels hidden by default</span>
         </div>
         <EndpointStatusPanel details={displayedEndpointDetails} />
-        <EndpointStatusPanel details={stageEndpointDetails} />
-        <StageModePanel
-          endpointDetails={stageEndpointDetails}
-          metadata={metadata}
-          relationshipClassFilter={relationshipClassFilter}
-          selectedStage={selectedStage}
-          view={view}
-        />
+        {usesStageEndpoint ? <EndpointStatusPanel details={stageEndpointDetails} /> : null}
+        {usesStageEndpoint ? (
+          <StageModePanel
+            endpointDetails={stageEndpointDetails}
+            metadata={metadata}
+            relationshipClassFilter={relationshipClassFilter}
+            selectedStage={selectedStage}
+            view={view}
+          />
+        ) : null}
         <div className="graph-canvas">
           {mode === "supply" ? (
             <SupplyRelationshipView view={view} endpointData={endpointDataForMode} />
@@ -744,6 +748,10 @@ function isRelationshipGraphMode(mode: GraphViewMode) {
   return mode === "supply" || mode === "demand" || mode === "production-dependency" || mode === "supply-demand-balance";
 }
 
+function graphModeUsesStageEndpoint(mode: GraphViewMode) {
+  return mode !== "source-coverage" && mode !== "node-catalog";
+}
+
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -903,8 +911,6 @@ function GraphModeDetailPanel({
   if (mode === "timeline") return <GraphTimelineView graph={graph} endpointData={endpointData} view={view} />;
   if (mode === "geo") return <GraphGeoView endpointData={endpointData} graph={graph} view={view} />;
   if (mode === "scenario") return <GraphScenarioOverlay endpointData={endpointData} view={view} />;
-  if (mode === "source-coverage") return <GraphSourceCoverageView endpointData={endpointData} view={view} />;
-  if (mode === "node-catalog") return <GraphNodeCatalogView endpointData={endpointData} view={view} />;
   if (mode === "path") return <GraphPathView view={view} />;
   if (mode === "focus") return <GraphFocusView view={view} />;
   return null;

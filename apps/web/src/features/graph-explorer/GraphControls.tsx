@@ -19,7 +19,7 @@ import {
 import type { CountryRiskSummary, GraphNode, GraphNodeKind, GraphTransmissionPath } from "@supply-risk/shared-types";
 import { Field } from "../../app/components";
 import { useI18n } from "../../app/i18n";
-import { formatDisplayLabel, formatGeographyDisplayRef } from "../common/displayLabels";
+import { formatDisplayLabel, formatDisplayValue, formatGeographyDisplayRef, formatSourceDisplayRef } from "../common/displayLabels";
 import { graphScore } from "./graphLayout";
 import { graphModeLabel, type GraphFocusDirection, type GraphViewMode } from "./graphViewModel";
 import { stageViewOptions, type RelationshipClassFilter, type StageId } from "./stage-views";
@@ -234,7 +234,7 @@ export function GraphControls({
             <option value="all">{t("All sources")}</option>
             {sourceOptions.map((source) => (
               <option key={source} value={source}>
-                {source}
+                {formatSourceFilterOptionLabel(source)}
               </option>
             ))}
           </select>
@@ -256,7 +256,7 @@ export function GraphControls({
             <option value="all">{t("All product grades")}</option>
             {productOptions.map((product) => (
               <option key={product} value={product}>
-                {product}
+                {formatProductFilterOptionLabel(product)}
               </option>
             ))}
           </select>
@@ -362,4 +362,16 @@ export function GraphControls({
       ) : null}
     </>
   );
+}
+
+function formatSourceFilterOptionLabel(source: string) {
+  const sourceRef = formatSourceDisplayRef(source);
+  if (sourceRef) return sourceRef;
+  const displayValue = formatDisplayValue(source);
+  return typeof displayValue === "string" && displayValue !== source ? displayValue : formatDisplayLabel(source);
+}
+
+function formatProductFilterOptionLabel(product: string) {
+  const displayValue = formatDisplayValue(product);
+  return typeof displayValue === "string" && displayValue !== product ? displayValue : formatDisplayLabel(product);
 }

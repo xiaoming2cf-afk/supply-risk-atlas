@@ -16,6 +16,13 @@ from services.api.services.semiconductor_content_service import semiconductor_co
 from services.api.services.version_service import build_version_payload
 
 
+READY_CONNECTOR_STATUSES = {
+    "fixture_connector",
+    "promoted_connector",
+    "live_connector_available",
+}
+
+
 def source_registry_readiness_payload() -> dict[str, Any]:
     try:
         return source_registry_readiness()
@@ -227,7 +234,7 @@ def platform_status_payload(
     data_mode = configured_data_mode(graph_mode, str(graph_health.get("dataMode") or ""))
     storage_mode = configured_storage_mode()
     connector_counts = registry_readiness.get("connector_status_counts", {})
-    enabled_connectors = sum(int(value) for value in connector_counts.values()) if isinstance(connector_counts, dict) else 0
+    ready_connector_count = _ready_connector_count(connector_counts)
     live_default_count = int(registry_readiness.get("live_default_count") or 0)
     registry_status = str(registry_readiness.get("status") or "unavailable")
     graph_status = str(graph_health.get("status") or "unavailable")
@@ -248,7 +255,7 @@ def platform_status_payload(
         "apiReadiness": "ready",
         "graphReadiness": "ready" if graph_status == "ready" else "degraded",
         "sourceRegistryReadiness": registry_status,
-        "connectorReadiness": "ready" if enabled_connectors > 0 else "unavailable",
+        "connectorReadiness": "ready" if ready_connector_count > 0 else "unavailable",
         "storageReadiness": {
             "status": "ready" if storage_mode == "sqlite" else "memory_fallback",
             "storageMode": storage_mode,
@@ -279,9 +286,19 @@ def platform_status_payload(
         "sourceManifestId": str(graph_health.get("sourceManifestId") or "unavailable"),
         "graphVersion": str(graph_health.get("graphVersion") or "unavailable"),
         "connectorStatusCounts": connector_counts if isinstance(connector_counts, dict) else {},
+        "readyConnectorCount": ready_connector_count,
         "sourceStatusCounts": registry_readiness.get("source_status_counts", {}),
         "sourceCount": int(registry_readiness.get("source_count") or 0),
         "enabledSourceCount": int(registry_readiness.get("enabled_count") or 0),
         "liveDefaultCount": live_default_count,
         "warnings": sorted(set(warnings)),
     }
+
+
+def _ready_connector_count(connector_counts: Any) -> int:
+    if not isinstance(connector_counts, dict):
+        return 0
+    return sum(
+        int(connector_counts.get(status) or 0)
+        for status in READY_CONNECTOR_STATUSES
+    )

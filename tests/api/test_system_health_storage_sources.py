@@ -3,6 +3,14 @@ from __future__ import annotations
 import json
 
 from services.api import main
+from services.api.services.system_health_service import platform_status_payload
+
+
+READY_CONNECTOR_STATUSES = {
+    "fixture_connector",
+    "promoted_connector",
+    "live_connector_available",
+}
 
 
 def _response_text(payload: object) -> str:
@@ -43,6 +51,10 @@ def test_system_health_exposes_storage_source_and_connector_readiness_without_pa
     assert platform["storageReadiness"]["pathRedacted"] is True
     assert platform["storageReadiness"]["path"] == "redacted"
     assert platform["connectorStatusCounts"]
+    assert platform["readyConnectorCount"] == sum(
+        int(platform["connectorStatusCounts"].get(status) or 0)
+        for status in READY_CONNECTOR_STATUSES
+    )
     assert platform["sourceStatusCounts"]
     assert platform["liveDefaultCount"] == 0
 
@@ -62,3 +74,52 @@ def test_system_health_graph_mode_promoted_transparency(monkeypatch) -> None:
     assert platform["dataMode"] == "promoted"
     assert platform["productionStatus"] == "public_evidence_promoted"
     assert platform["notProductionReady"] is True
+
+
+def test_platform_connector_readiness_counts_only_ready_connector_statuses() -> None:
+    graph_health = {
+        "status": "ready",
+        "graphMode": "fixture",
+        "dataMode": "fixture",
+        "sourceManifestId": "fixture_manifest",
+        "graphVersion": "fixture_graph",
+        "warnings": [],
+    }
+    blocked_registry = {
+        "status": "degraded",
+        "connector_status_counts": {
+            "disabled_review_required": 8,
+            "deferred_not_allowed": 3,
+            "live_connector_unavailable": 2,
+        },
+        "source_status_counts": {
+            "disabled_review_required": 8,
+            "deferred_paid_or_proprietary": 3,
+            "unavailable_terms_review": 2,
+        },
+        "source_count": 13,
+        "enabled_count": 0,
+        "live_default_count": 0,
+        "warnings": [],
+    }
+
+    blocked = platform_status_payload(graph_health, blocked_registry)
+
+    assert blocked["connectorReadiness"] == "unavailable"
+    assert blocked["readyConnectorCount"] == 0
+
+    ready_registry = {
+        **blocked_registry,
+        "connector_status_counts": {
+            "fixture_connector": 1,
+            "promoted_connector": 1,
+            "live_connector_available": 1,
+            "disabled_review_required": 8,
+            "deferred_not_allowed": 3,
+        },
+    }
+
+    ready = platform_status_payload(graph_health, ready_registry)
+
+    assert ready["connectorReadiness"] == "ready"
+    assert ready["readyConnectorCount"] == 3
