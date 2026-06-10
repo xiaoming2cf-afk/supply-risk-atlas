@@ -39,7 +39,7 @@ export function GraphMatrixView({
             ))
           ) : (
             <tr className="unavailable-preview" data-preview-state="matrix_endpoint_unavailable">
-              <td colSpan={4}>Backend matrix data unavailable; authoritative rows are hidden.</td>
+              <td colSpan={4}>Matrix data is temporarily unavailable; review source coverage before using this view.</td>
             </tr>
           )}
         </tbody>

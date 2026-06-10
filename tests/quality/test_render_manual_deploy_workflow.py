@@ -24,17 +24,27 @@ def test_render_deploy_workflow_uses_secret_gated_api_path() -> None:
     for secret_name in ["RENDER_API_KEY", "RENDER_API_SERVICE_ID", "RENDER_WEB_SERVICE_ID"]:
         assert f"secrets.{secret_name}" in source
 
-    assert "POST" in source
-    assert "https://api.render.com/v1/services/${service_id}/deploys" in source
-    assert '\\"commitId\\":\\"${EXPECTED_COMMIT}\\"' in source
-    assert '\\"clearCache\\":\\"${CLEAR_CACHE}\\"' in source
+    assert "Render deploy preflight" in source
+    assert "python scripts/trigger-render-deploy.py \\" in source
+    assert "--dry-run" in source
+    assert "--commit \"${EXPECTED_COMMIT}\"" in source
+    assert "--clear-cache \"${CLEAR_CACHE}\"" in source
     assert "scripts/check-deployed-version.py" in source
-    assert "render_preflight_failed_missing_secrets" in source
-    assert "render_preflight_status=missing_required_deploy_secrets" in source
-    assert "No Render deploy API call was attempted." in source
+    assert "curl " not in source
+    assert "response_file" not in source
     assert "cat ${response_file}" not in source
     assert "cat \"${response_file}\"" not in source
     assert "upload-artifact" not in source
+
+
+def test_render_deploy_workflow_does_not_inline_render_payload_or_service_url() -> None:
+    source = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+    assert "https://api.render.com/v1/services/${service_id}/deploys" not in source
+    assert "commitId" not in source
+    assert "clearCache" not in source
+    assert "Bearer ${RENDER_API_KEY}" not in source
+    assert "mktemp" not in source
 
 
 def test_render_secret_requirements_doc_is_actionable_without_values() -> None:

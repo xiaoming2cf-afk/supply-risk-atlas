@@ -34,7 +34,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Validate requested commit and required secrets
+      - name: Render deploy preflight
         shell: bash
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -42,22 +42,11 @@ jobs:
           RENDER_WEB_SERVICE_ID: ${{ secrets.RENDER_WEB_SERVICE_ID }}
         run: |
           set -euo pipefail
-          if [[ ! "${EXPECTED_COMMIT}" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
-            echo "::error::commit_sha must be a 7-40 character Git SHA."
-            exit 1
-          fi
-          missing=()
-          [[ -n "${RENDER_API_KEY}" ]] || missing+=("RENDER_API_KEY")
-          [[ -n "${RENDER_API_SERVICE_ID}" ]] || missing+=("RENDER_API_SERVICE_ID")
-          [[ -n "${RENDER_WEB_SERVICE_ID}" ]] || missing+=("RENDER_WEB_SERVICE_ID")
-          if (( ${#missing[@]} > 0 )); then
-            echo "::error title=render_preflight_failed_missing_secrets::Missing required GitHub Actions secrets by safe name only: ${missing[*]}"
-            echo "render_preflight_status=missing_required_deploy_secrets"
-            echo "No Render deploy API call was attempted."
-            echo "See docs/roadmap/render-deploy-secret-requirements.md for setup guidance."
-            exit 1
-          fi
-          echo "Deploy preflight passed for commit ${EXPECTED_COMMIT:0:12}; clear_cache=${CLEAR_CACHE}."
+          python scripts/trigger-render-deploy.py \
+            --dry-run \
+            --commit "${EXPECTED_COMMIT}" \
+            --clear-cache "${CLEAR_CACHE}" \
+            --timeout 20
 
       - name: Trigger Render deploys
         shell: bash
@@ -67,35 +56,10 @@ jobs:
           RENDER_WEB_SERVICE_ID: ${{ secrets.RENDER_WEB_SERVICE_ID }}
         run: |
           set -euo pipefail
-
-          trigger_deploy() {
-            local service_name="$1"
-            local service_id="$2"
-            local payload
-            payload="{\"clearCache\":\"${CLEAR_CACHE}\",\"commitId\":\"${EXPECTED_COMMIT}\"}"
-            local response_file
-            response_file="$(mktemp)"
-            local http_code
-            http_code="$(
-              curl -sS \
-                -o "${response_file}" \
-                -w "%{http_code}" \
-                -X POST "https://api.render.com/v1/services/${service_id}/deploys" \
-                -H "accept: application/json" \
-                -H "content-type: application/json" \
-                -H "authorization: Bearer ${RENDER_API_KEY}" \
-                --data "${payload}"
-            )"
-            rm -f "${response_file}"
-            if [[ "${http_code}" != "201" && "${http_code}" != "202" ]]; then
-              echo "::error::Render deploy trigger failed for ${service_name}; HTTP ${http_code}."
-              exit 1
-            fi
-            echo "Triggered Render deploy for ${service_name}; commit=${EXPECTED_COMMIT:0:12}; clear_cache=${CLEAR_CACHE}."
-          }
-
-          trigger_deploy "supply-risk-atlas-api" "${RENDER_API_SERVICE_ID}"
-          trigger_deploy "supply-risk-atlas-web" "${RENDER_WEB_SERVICE_ID}"
+          python scripts/trigger-render-deploy.py \
+            --commit "${EXPECTED_COMMIT}" \
+            --clear-cache "${CLEAR_CACHE}" \
+            --timeout 20
 
       - name: Wait for public version convergence
         shell: bash

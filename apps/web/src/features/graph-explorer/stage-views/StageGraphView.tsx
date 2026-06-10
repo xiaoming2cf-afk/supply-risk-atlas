@@ -144,11 +144,11 @@ export function StageGraphView({
   const proxyLimitations = list(endpointData?.proxy_limitations).slice(0, 3);
   const failureReason = String(endpointData?.failure_reason ?? "none");
   const narrowPatchPlan = String(endpointData?.required_narrow_patch_if_failed ?? "none");
-  const hasAuthoritativeStageData = endpointStatus === "active" && Boolean(endpointData);
+  const hasReviewedStageData = endpointStatus === "active" && Boolean(endpointData);
   const isStageEndpointLoading = endpointStatus === "loading";
   const isStageEndpointUnavailable = endpointStatus === "fallback";
-  const visibleNodes = hasAuthoritativeStageData ? endpointNodes : [];
-  const visibleEdges = hasAuthoritativeStageData ? endpointEdges : [];
+  const visibleNodes = hasReviewedStageData ? endpointNodes : [];
+  const visibleEdges = hasReviewedStageData ? endpointEdges : [];
   const propagates =
     relationshipClassFilter === "SUPPLY_RELATIONSHIP" || relationshipClassFilter === "PRODUCTION_DEPENDENCY";
   const sourceCoverageLabel = sourceCoverage.length
@@ -190,7 +190,7 @@ export function StageGraphView({
           { label: "known source gaps", value: sourceGaps },
           { label: "proxy limitations", value: proxyLimitations },
           { label: "why coverage is partial", value: failureReason },
-          { label: "next narrow patch", value: narrowPatchPlan },
+          { label: "suggested review action", value: narrowPatchPlan },
         ]}
         warnings={metadata.warnings}
       />
@@ -203,11 +203,11 @@ export function StageGraphView({
         <span>Focused view: up to 18 entities / 30 relationships</span>
       </div>
       {isStageEndpointLoading ? (
-        <p className="inspector-note">Loading authoritative stage graph data.</p>
+        <p className="inspector-note">Loading stage graph data for this view.</p>
       ) : null}
       {isStageEndpointUnavailable ? (
         <p className="inspector-note unavailable-preview" data-preview-state="stage_endpoint_unavailable">
-          Stage graph data unavailable; backend stage rows are hidden.
+          Stage graph data is temporarily unavailable. Review source coverage and documented gaps before using this stage view.
         </p>
       ) : null}
       {visibleNodes.length ? (

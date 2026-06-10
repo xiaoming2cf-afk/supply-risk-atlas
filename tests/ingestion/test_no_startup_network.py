@@ -58,6 +58,15 @@ def test_api_app_startup_and_health_do_not_open_network(monkeypatch) -> None:
     app = main.create_app()
     with TestClient(app) as client:
         response = client.get("/api/v1/health")
+        system_response = client.get("/api/v1/system-health")
 
     assert response.status_code == 200
+    assert system_response.status_code == 200
+    platform = system_response.json()["data"]["platformStatus"]
+    assert platform["requestedDataMode"] == "live_enabled"
+    assert platform["dataMode"] == "promoted"
+    assert platform["liveFetchRequested"] is True
+    assert platform["liveFetchEffective"] is False
+    assert platform["liveDefaultCount"] == 0
+    assert "live_fetch_requested_but_disabled_by_registry_defaults" in platform["warnings"]
     assert calls == []

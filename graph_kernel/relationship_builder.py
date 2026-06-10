@@ -62,6 +62,12 @@ DEMAND_RELATIONSHIP_CLASS = "DEMAND_RELATIONSHIP"
 EVIDENCE_RELATIONSHIP_CLASS = "EVIDENCE_CONTEXT"
 PRODUCTION_DEPENDENCY_CLASS = "PRODUCTION_DEPENDENCY"
 SUPPLY_RELATIONSHIP_CLASS = "SUPPLY_RELATIONSHIP"
+RELATIONSHIP_CLASSES = {
+    DEMAND_RELATIONSHIP_CLASS,
+    EVIDENCE_RELATIONSHIP_CLASS,
+    PRODUCTION_DEPENDENCY_CLASS,
+    SUPPLY_RELATIONSHIP_CLASS,
+}
 RELATIONSHIP_EDGE_GROUP_KEYS = (
     "supply_edges",
     "demand_edges",
@@ -90,7 +96,7 @@ def relationship_metadata(
     attributes: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     attributes = attributes or {}
-    relationship_class = classify_edge(edge_type)
+    relationship_class = _relationship_class_for_metadata(edge_type, attributes)
     metadata: dict[str, Any] = {
         "relationship_class": relationship_class,
         "not_supply_chain_dependency": relationship_class == EVIDENCE_RELATIONSHIP_CLASS,
@@ -168,7 +174,10 @@ def normalize_relationship_edge(edge: Mapping[str, Any]) -> dict[str, Any]:
     edge_type = str(edge.get("edge_type") or "")
     source_node_id = normalize_geo_id(edge.get("source_node_id"))
     target_node_id = normalize_geo_id(edge.get("target_node_id"))
-    safe_attributes = _safe_attributes(edge.get("attributes") or {})
+    safe_attributes = _relationship_classification_attributes(
+        edge,
+        _safe_attributes(edge.get("attributes") or {}),
+    )
     attributes = {
         **safe_attributes,
         **relationship_metadata(
@@ -237,6 +246,57 @@ def _safe_attributes(attributes: Mapping[str, Any]) -> dict[str, Any]:
             continue
         clean[str(key)] = value
     return clean
+
+
+def _relationship_class_for_metadata(edge_type: str, attributes: Mapping[str, Any]) -> str:
+    if _has_evidence_context_metadata(attributes):
+        return EVIDENCE_RELATIONSHIP_CLASS
+    return classify_edge(edge_type)
+
+
+def _relationship_classification_attributes(
+    edge: Mapping[str, Any],
+    attributes: dict[str, Any],
+) -> dict[str, Any]:
+    top_level_class = _normalized_relationship_class(edge.get("relationship_class"))
+    top_level_not_dependency = _truthy(edge.get("not_supply_chain_dependency"))
+    if top_level_class == EVIDENCE_RELATIONSHIP_CLASS or top_level_not_dependency:
+        return {
+            **attributes,
+            "relationship_class": EVIDENCE_RELATIONSHIP_CLASS,
+            "not_supply_chain_dependency": True,
+        }
+    if top_level_class and "relationship_class" not in attributes:
+        attributes = {**attributes, "relationship_class": top_level_class}
+    if edge.get("not_supply_chain_dependency") is not None and "not_supply_chain_dependency" not in attributes:
+        attributes = {
+            **attributes,
+            "not_supply_chain_dependency": edge.get("not_supply_chain_dependency"),
+        }
+    return attributes
+
+
+def _has_evidence_context_metadata(attributes: Mapping[str, Any]) -> bool:
+    return (
+        _normalized_relationship_class(attributes.get("relationship_class"))
+        == EVIDENCE_RELATIONSHIP_CLASS
+        or _truthy(attributes.get("not_supply_chain_dependency"))
+    )
+
+
+def _normalized_relationship_class(value: Any) -> str | None:
+    if value is None:
+        return None
+    normalized = str(value).strip().upper()
+    return normalized if normalized in RELATIONSHIP_CLASSES else None
+
+
+def _truthy(value: Any) -> bool:
+    if value is True:
+        return True
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    return False
 
 
 def _normalize_source_refs(refs: Any) -> list[dict[str, str]]:

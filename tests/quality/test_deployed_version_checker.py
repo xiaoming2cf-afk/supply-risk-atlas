@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from email.message import Message
 from pathlib import Path
 
@@ -337,3 +338,77 @@ def test_deployment_failure_class_prioritizes_commit_mismatch() -> None:
 
     assert failure_class == "commit_mismatch"
     assert checker.retry_hint(failure_class) == "redeploy_api_and_web_from_expected_commit_or_verify_render_service_commit"
+
+
+def test_build_report_emits_sanitized_next_action_for_every_probe() -> None:
+    checker = _load_checker_module()
+
+    report = checker.build_deployment_report(
+        expected_commit="9674e6005021597182b05aac4700247b89f81464",
+        api_result={
+            "status": "ok",
+            "git_commit": "8942950",
+            "app_version": "0.1.0",
+            "environment": "production",
+            "latency_class": "fast",
+            "attempts": 1,
+        },
+        web_html_result={
+            "status": "commit_not_visible",
+            "commit_visible": False,
+            "latency_class": "fast",
+            "failure_class": "web_commit_marker_missing",
+            "attempts": 1,
+        },
+        web_build_result={
+            "status": "ok",
+            "web_commit": "9674e6005021597182b05aac4700247b89f81464",
+            "deployment_readiness_state": "web_build_metadata",
+            "cache_control": "public, max-age=3600",
+            "latency_class": "fast",
+            "attempts": 1,
+        },
+        web_proxy_result={
+            "status": "failed",
+            "latency_class": "failed",
+            "failure_class": "unavailable",
+            "attempts": 2,
+        },
+    )
+
+    assert report["failure_class"] == "commit_mismatch"
+    assert report["retry_hint"] == "redeploy_api_and_web_from_expected_commit_or_verify_render_service_commit"
+    assert report["next_action"] == "redeploy_api_and_web_from_expected_commit_or_verify_render_service_commit"
+    assert report["api"]["next_action"] == "redeploy_api_from_expected_commit_or_verify_render_service_commit"
+    assert (
+        report["web"]["html"]["next_action"]
+        == "add_static_web_commit_marker_to_html_shell_and_redeploy_web"
+    )
+    assert report["web"]["build_info"]["next_action"] == "set_web_build_info_cache_control_no_store"
+    assert (
+        report["web"]["proxy"]["next_action"]
+        == "verify_web_proxy_read_fallback_and_public_api_origin"
+    )
+
+    probe_actions = {probe["name"]: probe["next_action"] for probe in report["probes"]}
+    assert probe_actions == {
+        "api_version": report["api"]["next_action"],
+        "web_html_commit_marker": report["web"]["html"]["next_action"],
+        "web_build_info": report["web"]["build_info"]["next_action"],
+        "web_proxy_read_fallback": report["web"]["proxy"]["next_action"],
+    }
+    for action in [report["next_action"], *probe_actions.values()]:
+        assert re.fullmatch(r"[a-z0-9_]+", action)
+        assert "http" not in action
+        assert "secret" not in action
+        assert "token" not in action
+        assert "password" not in action
+
+
+def test_next_action_sanitizer_rejects_raw_or_secret_like_values() -> None:
+    checker = _load_checker_module()
+
+    assert checker.sanitize_next_action("retry_public_probe") == "retry_public_probe"
+    assert checker.sanitize_next_action("https://example.test/private?token=value") == (
+        "inspect_sanitized_probe_warnings"
+    )

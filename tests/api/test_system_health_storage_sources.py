@@ -41,7 +41,13 @@ def test_system_health_exposes_storage_source_and_connector_readiness_without_pa
     assert isinstance(platform["deploymentVersionReadiness"]["staleOrUnverified"], bool)
     assert isinstance(platform["deploymentVersionReadiness"]["unavailable"], bool)
     assert platform["deploymentVersionReadiness"]["lastCheckedAt"]
-    assert platform["dataMode"] in {"fixture", "promoted", "live_disabled", "live_enabled"}
+    assert platform["dataMode"] in {"fixture", "promoted"}
+    assert platform["data_mode"] == platform["dataMode"]
+    assert platform["effectiveDataMode"] == platform["dataMode"]
+    assert platform["effective_data_mode"] == platform["dataMode"]
+    assert platform["requestedDataMode"] in {"fixture", "promoted", "live_disabled", "live_enabled", "public_evidence_promoted"}
+    assert platform["liveFetchEffective"] is False
+    assert platform["live_fetch_effective"] is False
     assert platform["graphMode"] in {"fixture", "promoted"}
     assert platform["productionStatus"] in {"research_fixture", "public_evidence_promoted"}
     assert platform["notProductionReady"] is True
@@ -72,8 +78,32 @@ def test_system_health_graph_mode_promoted_transparency(monkeypatch) -> None:
 
     assert platform["graphMode"] == "promoted"
     assert platform["dataMode"] == "promoted"
+    assert platform["effectiveDataMode"] == "promoted"
     assert platform["productionStatus"] == "public_evidence_promoted"
     assert platform["notProductionReady"] is True
+
+
+def test_system_health_live_enabled_request_is_guarded_by_registry_defaults(monkeypatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_DATA_MODE", "live_enabled")
+    monkeypatch.setenv("SUPPLY_RISK_GRAPH_MODE", "promoted")
+    monkeypatch.delenv("SUPPLY_RISK_ALLOW_LIVE_FETCH", raising=False)
+    monkeypatch.delenv("SUPPLY_RISK_LIVE_FETCH_ALLOWED", raising=False)
+
+    payload = main.route_dashboard_page("system-health-center", request_id="req_health_live_guard")
+    platform = payload["data"]["platformStatus"]
+
+    assert platform["requestedDataMode"] == "live_enabled"
+    assert platform["requested_data_mode"] == "live_enabled"
+    assert platform["dataMode"] == "promoted"
+    assert platform["data_mode"] == "promoted"
+    assert platform["effectiveDataMode"] == "promoted"
+    assert platform["liveFetchRequested"] is True
+    assert platform["live_fetch_requested"] is True
+    assert platform["liveFetchEffective"] is False
+    assert platform["live_fetch_effective"] is False
+    assert platform["liveFetchGuard"] == "blocked_registry_live_defaults"
+    assert platform["liveDefaultCount"] == 0
+    assert "live_fetch_requested_but_disabled_by_registry_defaults" in platform["warnings"]
 
 
 def test_platform_connector_readiness_counts_only_ready_connector_statuses() -> None:

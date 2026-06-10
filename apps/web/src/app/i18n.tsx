@@ -238,19 +238,19 @@ const pageCopy: Record<DashboardPageId, Record<PageLanguage, Pick<DashboardPage,
   },
   "system-health-center": {
     en: {
-      label: "System Health Center",
-      shortLabel: "Health",
-      description: "Data pipeline, model, API, and graph service health"
+      label: "Data Trust Center",
+      shortLabel: "Trust",
+      description: "Public evidence coverage, source registry trust, graph lineage, and research caveats"
     },
     zh: {
-      label: "系统健康中心",
-      shortLabel: "健康",
-      description: "数据管道、模型、API 和图服务健康状态"
+      label: "数据可信度中心",
+      shortLabel: "可信度",
+      description: "公共证据覆盖、来源注册可信度、图谱谱系和研究限制"
     },
     fr: {
-      label: "Centre de santé du système",
-      shortLabel: "Santé",
-      description: "Santé des pipelines, modèles, API et services de graphe"
+      label: "Centre de confiance des données",
+      shortLabel: "Confiance",
+      description: "Couverture des preuves publiques, registre des sources, lignée du graphe et limites de recherche"
     }
   }
 };
@@ -506,39 +506,53 @@ const phraseCopy: Record<string, TranslationPair> = {
   candidate: { zh: "候选", fr: "candidat" },
   archived: { zh: "已归档", fr: "archivé" },
   draft: { zh: "草稿", fr: "brouillon" },
-  "Services operational": { zh: "服务运行正常", fr: "Services opérationnels" },
+  "Public evidence coverage": { zh: "公共证据覆盖", fr: "Couverture des preuves publiques" },
   operational: { zh: "运行正常", fr: "opérationnel" },
   degraded: { zh: "降级", fr: "dégradé" },
   down: { zh: "宕机", fr: "en panne" },
   complete: { zh: "完成", fr: "terminé" },
   queued: { zh: "排队中", fr: "en file" },
   blocked: { zh: "阻塞", fr: "bloqué" },
-  "API, graph, model, and signal ingest fleet.": {
-    zh: "API、图、模型和信号接入服务群。",
-    fr: "Flotte API, graphe, modèle et ingestion de signaux."
+  unavailable: { zh: "不可用", fr: "indisponible" },
+  "Semiconductor evidence coverage is shown by source families and L0-L11 stage mapping.": {
+    zh: "半导体证据覆盖按来源族和 L0-L11 阶段映射展示。",
+    fr: "La couverture des preuves semiconducteurs est affichée par familles de sources et cartographie L0-L11."
   },
-  "Pipeline processed": { zh: "管道处理进度", fr: "Pipeline traité" },
-  "Current build is advancing through entity resolution.": {
-    zh: "当前构建正在推进实体解析。",
-    fr: "Le build actuel progresse dans la résolution d'entités."
+  "Source registry trust": { zh: "来源注册可信度", fr: "Confiance du registre des sources" },
+  "Registry status summarizes enabled public sources, license review, and connector availability.": {
+    zh: "注册状态汇总已启用公共来源、许可审查和连接器可用性。",
+    fr: "Le registre résume les sources publiques activées, la revue des licences et la disponibilité des connecteurs."
   },
-  "Median latency": { zh: "中位延迟", fr: "Latence médiane" },
-  "Across API, graph query, ingest, and scorer endpoints.": {
-    zh: "覆盖 API、图查询、接入和评分端点。",
-    fr: "Sur les points API, requête graphe, ingestion et scoring."
+  "Graph / evidence lineage": { zh: "图谱 / 证据谱系", fr: "Lignée graphe / preuve" },
+  "Evidence lineage links public inputs to normalized events and graph relationships.": {
+    zh: "证据谱系将公共输入连接到标准化事件和图谱关系。",
+    fr: "La lignée des preuves relie les entrées publiques aux événements normalisés et aux relations du graphe."
   },
-  "Freshness lag": { zh: "新鲜度滞后", fr: "Retard de fraîcheur" },
-  "Signal ingest is the current freshness constraint.": {
-    zh: "信号接入是当前新鲜度瓶颈。",
-    fr: "L'ingestion de signaux contraint actuellement la fraîcheur."
+  "Research caveat": { zh: "研究限制", fr: "Limite de recherche" },
+  Fixture: { zh: "fixture", fr: "fixture" },
+  "Not production ready; research fixture caveats remain.": {
+    zh: "未达到生产就绪；仍保留研究 fixture 限制。",
+    fr: "Pas prêt pour la production ; les limites de fixture de recherche restent applicables."
   },
-  "Service status": { zh: "服务状态", fr: "État des services" },
-  "Runtime health by service owner.": { zh: "按服务负责人展示运行健康。", fr: "Santé d'exécution par propriétaire de service." },
-  "Build pipeline": { zh: "构建管道", fr: "Pipeline de build" },
-  "Current graph and scoring run progress.": { zh: "当前图和评分运行进度。", fr: "Progression du graphe et du scoring en cours." },
-  "Runtime log": { zh: "运行日志", fr: "Journal d'exécution" },
-  "Recent platform events.": { zh: "最近平台事件。", fr: "Événements récents de la plateforme." },
-  "Open terminal log": { zh: "打开终端日志", fr: "Ouvrir le journal terminal" },
+  "Production readiness is not claimed by this page.": {
+    zh: "本页不声明生产就绪。",
+    fr: "Cette page ne revendique pas la préparation à la production."
+  },
+  "Supporting service audit": { zh: "服务审计辅助信息", fr: "Audit de service en appui" },
+  "Service signals support data trust review; latency details stay in audit details.": {
+    zh: "服务信号仅支持数据可信度审查；延迟细节保留在审计明细中。",
+    fr: "Les signaux de service appuient la revue de confiance ; la latence reste dans les détails d'audit."
+  },
+  "Supporting build audit": { zh: "构建审计辅助信息", fr: "Audit de build en appui" },
+  "Current graph and scoring progress supports evidence lineage review.": {
+    zh: "当前图谱和评分进度用于支持证据谱系审查。",
+    fr: "La progression du graphe et du scoring appuie la revue de lignée des preuves."
+  },
+  "Audit event summary": { zh: "审计事件摘要", fr: "Résumé des événements d'audit" },
+  "Runtime event text is omitted from the UI; only aggregate audit counts are shown.": {
+    zh: "运行事件文本不在界面展示；仅显示聚合审计计数。",
+    fr: "Le texte des événements d'exécution est omis ; seuls les comptes d'audit agrégés sont affichés."
+  },
   "中国台湾海峡": { zh: "中国台湾海峡", fr: "中国台湾海峡" },
   "Suez / Red Sea": { zh: "苏伊士 / 红海", fr: "Suez / mer Rouge" },
   "Panama Canal": { zh: "巴拿马运河", fr: "Canal de Panama" },

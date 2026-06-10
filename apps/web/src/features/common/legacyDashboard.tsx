@@ -206,6 +206,18 @@ function readinessText(value: boolean | undefined) {
   return "Unavailable";
 }
 
+function trustStatusFromReadiness(status?: string) {
+  if (status === "ready" || status === "operational" || status === "available" || status === "Ready") return "operational";
+  if (status === "unavailable" || status === "down" || status === "Not ready") return "unavailable";
+  return "degraded";
+}
+
+function trustStatusFromBoolean(value: boolean | undefined) {
+  if (value === true) return "operational";
+  if (value === false) return "degraded";
+  return "unavailable";
+}
+
 function sanitizePublicEndpointDiagnostic(value: unknown) {
   if (typeof value !== "string") return "endpoint://redacted";
   return value
@@ -945,6 +957,7 @@ function GraphInspector({
 }
 
 function NodeInspector({ node }: { node: GraphNode }) {
+  const metadataFields = nodeMetadataFields(node.metadata);
   return (
     <div className="inspector-stack">
       <div className="inspector-grid">
@@ -964,13 +977,69 @@ function NodeInspector({ node }: { node: GraphNode }) {
           ))}
         </ul>
       ) : null}
-      <div className="inspector-grid">
-        {Object.entries(node.metadata).slice(0, 8).map(([label, value]) => (
-          <Field key={label} label={label} value={String(value)} />
-        ))}
-      </div>
+      {metadataFields.length ? (
+        <div className="inspector-grid">
+          {metadataFields.map((field) => (
+            <Field key={field.label} label={formatDisplayLabel(field.label)} value={formatInspectorValue(field.value)} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+const NODE_METADATA_FIELD_ALLOWLIST: Array<{ label: string; keys: string[] }> = [
+  { label: "Source", keys: ["source", "source_id", "sourceId"] },
+  { label: "Dataset", keys: ["dataset"] },
+  { label: "Evidence ref", keys: ["evidence_ref"] },
+  { label: "Entity type", keys: ["entity_type", "node_type"] },
+  { label: "Country", keys: ["country", "countryCode"] },
+  { label: "Product", keys: ["product", "product_grade"] },
+  { label: "Category", keys: ["category", "product_category"] },
+  { label: "Confidence", keys: ["confidence", "confidence_score"] },
+  { label: "Layer", keys: ["layer", "tier"] },
+  { label: "Stage", keys: ["stage", "stage_id", "stage_label"] },
+  { label: "Sector", keys: ["sector", "industry", "downstream_sector"] },
+  { label: "Process stage", keys: ["process_stage", "process"] },
+];
+
+function nodeMetadataFields(metadata: GraphNode["metadata"]) {
+  const record = (metadata ?? {}) as Record<string, unknown>;
+  const fields: Array<{ label: string; value: unknown }> = [];
+  const usedKeys = new Set<string>();
+
+  for (const field of NODE_METADATA_FIELD_ALLOWLIST) {
+    const match = field.keys.find((key) => !usedKeys.has(key) && isDisplayableMetadataValue(record[key]));
+    if (!match) continue;
+    usedKeys.add(match);
+    fields.push({ label: field.label, value: record[match] });
+    if (fields.length >= 8) break;
+  }
+
+  return fields;
+}
+
+function isDisplayableMetadataValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return false;
+  if (Array.isArray(value)) {
+    return value.some((item) => item !== null && item !== undefined && item !== "") && value.every(isPrimitiveMetadataValue);
+  }
+  return isPrimitiveMetadataValue(value);
+}
+
+function isPrimitiveMetadataValue(value: unknown) {
+  return value === null || value === undefined || ["string", "number", "boolean"].includes(typeof value);
+}
+
+function formatInspectorValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "n/a";
+  if (Array.isArray(value)) {
+    return value.map((item) => formatInspectorValue(item)).join(", ");
+  }
+  if (typeof value === "object") return "Structured metadata";
+
+  const raw = String(value).trim();
+  return formatSourceDisplayRef(raw) || formatNodeDisplayRef(raw) || String(formatDisplayValue(raw));
 }
 
 function EdgeInspector({ edge }: { edge: GraphLink }) {
@@ -4954,8 +5023,6 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const { t } = useI18n();
   const health = data.systemHealthCenter;
   const operationalCount = health.services.filter((service) => service.status === "operational").length;
-  const pipelineTotal = health.stages.reduce((total, stage) => total + stage.total, 0);
-  const pipelineProcessed = health.stages.reduce((total, stage) => total + stage.processed, 0);
   const sortedLatencies = [...health.services].map((service) => service.latencyMs).sort((left, right) => left - right);
   const medianLatency = sortedLatencies.length === 0 ? 0 : sortedLatencies[Math.floor(sortedLatencies.length / 2)];
   const maxFreshnessLag = Math.max(0, ...health.services.map((service) => service.freshnessMinutes));
@@ -5080,55 +5147,75 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
   const partialChainStageRows = chainStageCoverageRows.filter((row) => row.coverage_status !== "implemented");
   const partialChainStageCount = partialChainStageRows.length;
   const chainStageSourceFamilyRows = Object.entries(contentCoverage?.stage_source_family_counts ?? {});
+  const publicCoverageStatus = contentCoverage
+    ? partialChainStageCount > 0
+      ? "degraded"
+      : "operational"
+    : "unavailable";
+  const sourceRegistryTrustStatus = trustStatusFromReadiness(platformStatus.sourceRegistryReadiness);
+  const graphEvidenceStatus = health.semiconductorGraph
+    ? trustStatusFromBoolean(health.semiconductorGraph.fixtureGraphReady)
+    : "unavailable";
+  const lineageRelationshipCount = health.evidenceLineage.goldEdgeEventCount || health.semiconductorGraph?.edgeCount || 0;
+  const coverageMetricValue = chainStageCoverageRows.length
+    ? implementedChainStageCount
+    : platformStatus.sourceCount || health.sourceRegistry.sourceCount;
+  const coverageMetricUnit = chainStageCoverageRows.length ? `/${chainStageCoverageRows.length} stages` : " sources";
+  const researchCaveatDetail = platformStatus.notProductionReady
+    ? "Not production ready; research fixture caveats remain."
+    : "Production readiness is not claimed by this page.";
 
   return (
     <div className="page-grid">
       <div className="metrics-grid">
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">{t("Services operational")}</p>
-            <StatusPill status={serviceSummaryStatus} />
+            <p className="metric-label">{t("Public evidence coverage")}</p>
+            <StatusPill status={publicCoverageStatus} />
           </div>
           <p className="metric-value">
-            {operationalCount}
-            <span className="metric-unit">/{health.services.length}</span>
+            {coverageMetricValue}
+            <span className="metric-unit">{coverageMetricUnit}</span>
           </p>
-          <p className="metric-detail">{t("API, graph, model, and signal ingest fleet.")}</p>
+          <p className="metric-detail">{t("Semiconductor evidence coverage is shown by source families and L0-L11 stage mapping.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">{t("Pipeline processed")}</p>
-            <StatusPill status={stageSummaryStatus} />
+            <p className="metric-label">{t("Source registry trust")}</p>
+            <StatusPill status={sourceRegistryTrustStatus} />
           </div>
-          <p className="metric-value">{formatPercent(pipelineTotal === 0 ? 0 : pipelineProcessed / pipelineTotal)}</p>
-          <p className="metric-detail">{t("Current build is advancing through entity resolution.")}</p>
+          <p className="metric-value">
+            {platformStatus.sourceCount || health.sourceRegistry.sourceCount}
+            <span className="metric-unit"> sources</span>
+          </p>
+          <p className="metric-detail">{t("Registry status summarizes enabled public sources, license review, and connector availability.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">{t("Median latency")}</p>
-            <StatusPill status={serviceSummaryStatus} />
+            <p className="metric-label">{t("Graph / evidence lineage")}</p>
+            <StatusPill status={graphEvidenceStatus} />
           </div>
           <p className="metric-value">
-            {medianLatency}<span className="metric-unit">ms</span>
+            {formatCompactNumber(lineageRelationshipCount)}<span className="metric-unit"> relationships</span>
           </p>
-          <p className="metric-detail">{t("Across API, graph query, ingest, and scorer endpoints.")}</p>
+          <p className="metric-detail">{t("Evidence lineage links public inputs to normalized events and graph relationships.")}</p>
         </article>
         <article className="metric-tile">
           <div className="metric-head">
-            <p className="metric-label">{t("Freshness lag")}</p>
-            <StatusPill status={freshnessStatus} />
+            <p className="metric-label">{t("Research caveat")}</p>
+            <StatusPill status="degraded" />
           </div>
           <p className="metric-value">
-            {maxFreshnessLag}<span className="metric-unit">m</span>
+            {t("Fixture")}<span className="metric-unit"> mode</span>
           </p>
-          <p className="metric-detail">{t("Signal ingest is the current freshness constraint.")}</p>
+          <p className="metric-detail">{t(researchCaveatDetail)}</p>
         </article>
       </div>
 
       {contentCoverage && contentCounts ? (
         <Panel
-          title="Chip supply chain coverage"
-          subtitle="Country/region, value-chain, entity, relationship, and chokepoint fixture coverage for semiconductor research."
+          title="Public evidence coverage"
+          subtitle="Country/region, value-chain, entity, relationship, and chokepoint coverage for semiconductor research fixtures."
         >
           <div className="inspector-grid" style={{ marginBottom: 16 }}>
             <Field label="Countries / regions" value={contentCounts.country_region_count} />
@@ -5216,7 +5303,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                 ))}
               </ul>
               <p className="public-data-note">
-                Stage coverage links national/policy, enterprise disclosure, and industry fixture sources to each supply-chain layer.
+                Stage coverage links national policy, enterprise disclosure, and industry fixture sources to each supply-chain layer.
               </p>
               {partialChainStageRows.length ? (
                 <div className="public-data-note" aria-label="Priority stage coverage gaps">
@@ -5263,27 +5350,35 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
         </Panel>
       ) : null}
 
-      <Panel title="Readiness summary" subtitle="Public evidence graph readiness is shown separately from production readiness.">
+      <Panel title="Data trust summary" subtitle="Public evidence coverage, source registry trust, and graph lineage are shown separately from production readiness.">
+        <NotProductionReadyBanner message={researchCaveatDetail} />
         <div className="field-grid">
-          <Field label="service_readiness" value={serviceSummaryStatus} />
-          <Field label="api_readiness" value={platformStatus.apiReadiness} />
+          <Field label="public_evidence_coverage" value={publicCoverageStatus} />
+          <Field label="source_registry_trust" value={sourceRegistryTrustStatus} />
+          <Field label="graph_evidence_lineage" value={graphEvidenceStatus} />
           <Field label="graph_readiness" value={platformStatus.graphReadiness} />
           <Field label="source_registry_readiness" value={platformStatus.sourceRegistryReadiness} />
           <Field label="connector_readiness" value={platformStatus.connectorReadiness} />
-          <Field label="storage_readiness" value={platformStatus.storageReadiness.status} />
-          <Field label="model_readiness" value={platformStatus.modelReadiness} />
-          <Field label="deployment_version_readiness" value={platformStatus.deploymentVersionReadiness.status} />
-          <Field label="deployment_state" value={deploymentReadiness.deploymentState ?? deploymentReadiness.status} />
           <Field label="validation_readiness" value={validationReadiness} />
           <Field label="connector_statuses" value={connectorStatusSummary} />
           <Field label="source_statuses" value={sourceStatusSummary} />
+          <Field label="live_default_sources" value={platformStatus.liveDefaultCount} />
         </div>
-        <MetadataSummary items={[{ label: "Public evidence graph readiness" }]} />
+        <MetadataSummary items={[{ label: "Public evidence coverage" }, { label: "Source registry trust" }, { label: "Not production ready", tone: "warning" }]} />
         <AuditDetails
-          label="Technical diagnostics"
+          label="Supporting technical diagnostics"
           items={[
+            { label: "service_readiness", value: serviceSummaryStatus },
+            { label: "api_readiness", value: platformStatus.apiReadiness },
+            { label: "model_readiness", value: platformStatus.modelReadiness },
+            { label: "pipeline_status", value: stageSummaryStatus },
+            { label: "median_service_latency_ms", value: medianLatency },
+            { label: "max_freshness_lag_minutes", value: maxFreshnessLag },
+            { label: "storage_readiness", value: platformStatus.storageReadiness.status },
             { label: "storage_mode", value: platformStatus.storageReadiness.storageMode },
-            { label: "storage_path", value: platformStatus.storageReadiness.pathRedacted ? "redacted" : platformStatus.storageReadiness.path },
+            { label: "storage_path", value: "redacted" },
+            { label: "deployment_version_readiness", value: platformStatus.deploymentVersionReadiness.status },
+            { label: "deployment_state", value: deploymentReadiness.deploymentState ?? deploymentReadiness.status },
             { label: "api_version", value: deploymentReadiness.apiVersion },
             { label: "api_git_commit", value: deploymentReadiness.apiGitCommit ?? "not_verified" },
             { label: "api_build_time", value: deploymentReadiness.apiBuildTime ?? "not_verified" },
@@ -5305,11 +5400,11 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           ]}
         />
         <p className="public-data-note">
-          These checks summarize whether the research data, graph, sources, connectors, models, and deployment metadata are ready for this public-evidence demo.
+          These checks summarize whether the research data, public sources, connector registry, and graph lineage can be reviewed without exposing raw payloads.
         </p>
       </Panel>
 
-      <Panel title="Evidence-bound chart and table components" subtitle="Reusable chart/table components render controlled states with source metadata.">
+      <Panel title="Evidence coverage visuals" subtitle="Charts and tables summarize public evidence coverage with source metadata and research caveats.">
         <MetadataSummary items={[{ label: "Research fixture mode", tone: "warning" }, { label: "Public evidence graph" }]} />
         <AuditDetails
           label="Technical diagnostics"
@@ -5356,7 +5451,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
       </Panel>
 
       <div className="page-grid split-layout">
-        <Panel title="Service status" subtitle="Runtime health by service owner.">
+        <Panel title="Supporting service audit" subtitle="Service signals support data trust review; latency details stay in audit details.">
           <ul className="health-list">
             {health.services.map((service) => (
               <li className="data-row" key={service.id}>
@@ -5367,18 +5462,21 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
                   </div>
                   <StatusPill status={service.status} />
                 </div>
-                <div className="row-meta">
-                  <span>{t(`${service.latencyMs} ms`)}</span>
-                  <span>{t(`${service.freshnessMinutes} m freshness`)}</span>
-                  <span>{t(`${formatPercent(service.errorRate, 1)} errors`)}</span>
-                </div>
+                <AuditDetails
+                  label="Service audit details"
+                  items={[
+                    { label: "latency_ms", value: service.latencyMs },
+                    { label: "freshness_minutes", value: service.freshnessMinutes },
+                    { label: "error_rate", value: formatPercent(service.errorRate, 1) },
+                  ]}
+                />
               </li>
             ))}
           </ul>
         </Panel>
 
         <div className="page-grid">
-          <Panel title="Build pipeline" subtitle="Current graph and scoring run progress.">
+          <Panel title="Supporting build audit" subtitle="Current graph and scoring progress supports evidence lineage review.">
             <ul className="timeline-list">
               {health.stages.map((stage) => {
                 const value = stage.total === 0 ? 0 : (stage.processed / stage.total) * 100;
@@ -5438,7 +5536,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             {health.semiconductorGraph ? (
               <Panel
                 title="SemiRisk-KG public evidence graph"
-                subtitle="Public-evidence graph readiness for research use; not a production readiness claim."
+                subtitle="Public evidence graph data trust and evidence confidence for research use."
               >
                 <div className="inspector-grid" style={{ marginBottom: 16 }}>
                   <Field label="Source registry" value={readinessText(health.semiconductorGraph.registryReady)} />
@@ -5518,7 +5616,7 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
             ) : (
               <Panel
                 title="SemiRisk-KG public evidence graph unavailable"
-                subtitle="The System Health Center did not receive public evidence graph metadata from the API, so no graph readiness metrics are fabricated."
+                subtitle="The Data Trust page did not receive public evidence graph metadata from the API, so no graph readiness metrics are fabricated."
               >
                 <div className="empty-state-shell compact">
                   <h3>Public evidence graph readiness unavailable</h3>
@@ -5689,20 +5787,19 @@ export function SystemHealthCenter({ data }: { data: SupplyRiskDashboardData }) 
           </Panel>
 
           <Panel
-            title="Runtime log"
-            subtitle="Recent platform events."
-            action={<IconButton icon={TerminalSquare} label="Open terminal log" />}
+            title="Audit event summary"
+            subtitle="Runtime event text is omitted from the UI; only aggregate audit counts are shown."
           >
             <p className="public-data-note">
-              {health.logs.length} recent platform event(s) are available for audit review.
+              {health.logs.length} recent platform event(s) were counted for audit review; raw event text is not displayed.
             </p>
-            <AuditDetails label="Runtime event details">
-              <pre className="terminal-log">
-                {health.logs.map((line) => (
-                  <code key={line}>{line}</code>
-                ))}
-              </pre>
-            </AuditDetails>
+            <AuditDetails
+              label="Runtime event details"
+              items={[
+                { label: "event_count", value: health.logs.length },
+                { label: "raw_event_text", value: "omitted_from_ui" },
+              ]}
+            />
           </Panel>
         </div>
       </div>

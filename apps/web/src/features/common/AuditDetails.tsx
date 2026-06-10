@@ -132,13 +132,13 @@ export function publicDataModeLabel(mode?: string | null, sourceStatus?: string 
 
 export function formatPublicWarning(warning: string) {
   if (warning.includes("relationship_endpoint_unavailable")) {
-    return "Backend relationship data unavailable; authoritative rows are hidden.";
+    return "Relationship data is temporarily unavailable; review source coverage before using this view.";
   }
   if (warning.includes("semirisk_fixture_metadata")) return "Fixture graph metadata available";
   if (warning.includes("fixture_source_freshness_degraded")) return "Some public fixture source freshness is limited";
   if (warning.includes("not_production_ready") || warning.includes("fixture_graph")) return "Research fixture mode";
-  if (warning.includes("raw_payload_excluded")) return "Raw source payloads are excluded from the UI";
-  if (warning.includes("private_diagnostics_excluded")) return "Private diagnostics are excluded";
+  if (warning.includes("raw_payload_excluded")) return "Detailed source records are summarized in the UI";
+  if (warning.includes("private_diagnostics_excluded")) return "Operational diagnostics are not shown";
   return String(formatDisplayValue(warning));
 }
 

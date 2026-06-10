@@ -14,6 +14,7 @@ from urllib.request import Request, urlopen
 DEFAULT_API_URL = "https://supply-risk-atlas-api.onrender.com/api/v1"
 DEFAULT_WEB_URL = "https://supply-risk-atlas-web.onrender.com"
 GIT_SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
+NEXT_ACTION_RE = re.compile(r"^[a-z0-9_]+$")
 
 
 def main() -> int:
@@ -34,6 +35,26 @@ def main() -> int:
     )
     web_build_result = retry_probe(lambda: fetch_web_build_info(args.web_url, args.timeout), attempts=attempts)
     web_proxy_result = retry_probe(lambda: fetch_web_proxy_version(args.web_url, args.timeout), attempts=attempts)
+    report = build_deployment_report(
+        expected_commit=expected_commit,
+        api_result=api_result,
+        web_html_result=web_html_result,
+        web_build_result=web_build_result,
+        web_proxy_result=web_proxy_result,
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["status"] == "deployed_verified" else 1
+
+
+def build_deployment_report(
+    *,
+    expected_commit: str,
+    api_result: dict[str, Any],
+    web_html_result: dict[str, Any],
+    web_build_result: dict[str, Any],
+    web_proxy_result: dict[str, Any],
+) -> dict[str, Any]:
+    expected_commit = _clean_commit(expected_commit)
     api_commit = _clean_commit(str(api_result.get("git_commit") or "unknown"))
     web_build_commit = _clean_commit(str(web_build_result.get("web_commit") or "unknown"))
     web_proxy_commit = _clean_commit(str(web_proxy_result.get("git_commit") or "unknown"))
@@ -53,12 +74,47 @@ def main() -> int:
         warnings=warnings,
         probe_results=[api_result, web_html_result, web_build_result, web_proxy_result],
     )
+    warnings = sorted(set(warnings))
+    next_actions = {
+        "api_version": probe_next_action(
+            "api_version",
+            result=api_result,
+            expected_commit=expected_commit,
+            observed_commit=api_commit,
+            warnings=warnings,
+        ),
+        "web_html_commit_marker": probe_next_action(
+            "web_html_commit_marker",
+            result=web_html_result,
+            expected_commit=expected_commit,
+            observed_commit="unknown",
+            warnings=warnings,
+        ),
+        "web_build_info": probe_next_action(
+            "web_build_info",
+            result=web_build_result,
+            expected_commit=expected_commit,
+            observed_commit=web_build_commit,
+            warnings=warnings,
+        ),
+        "web_proxy_read_fallback": probe_next_action(
+            "web_proxy_read_fallback",
+            result=web_proxy_result,
+            expected_commit=expected_commit,
+            observed_commit=web_proxy_commit,
+            warnings=warnings,
+        ),
+    }
 
-    report = {
+    html_report = dict(web_html_result)
+    html_report["next_action"] = next_actions["web_html_commit_marker"]
+
+    return {
         "status": status,
         "deployment_status": status,
         "failure_class": failure_class,
         "retry_hint": retry_hint(failure_class),
+        "next_action": consolidated_next_action(failure_class, next_actions.values()),
         "expected_commit": expected_commit,
         "api": {
             "status": api_result.get("status", "failed"),
@@ -68,16 +124,20 @@ def main() -> int:
             "latency_class": api_result.get("latency_class", "failed"),
             "failure_class": api_result.get("failure_class", "none"),
             "attempts": api_result.get("attempts", 1),
+            "next_action": next_actions["api_version"],
         },
         "web": {
-            "html": web_html_result,
+            "html": html_report,
             "build_info": {
                 "status": web_build_result.get("status", "failed"),
                 "web_commit": web_build_commit,
-                "deployment_readiness_state": web_build_result.get("deployment_readiness_state", "unknown"),
+                "deployment_readiness_state": web_build_result.get(
+                    "deployment_readiness_state", "unknown"
+                ),
                 "latency_class": web_build_result.get("latency_class", "failed"),
                 "failure_class": web_build_result.get("failure_class", "none"),
                 "attempts": web_build_result.get("attempts", 1),
+                "next_action": next_actions["web_build_info"],
             },
             "proxy": {
                 "status": web_proxy_result.get("status", "failed"),
@@ -87,12 +147,25 @@ def main() -> int:
                 "latency_class": web_proxy_result.get("latency_class", "failed"),
                 "failure_class": web_proxy_result.get("failure_class", "none"),
                 "attempts": web_proxy_result.get("attempts", 1),
+                "next_action": next_actions["web_proxy_read_fallback"],
             },
         },
-        "warnings": sorted(set(warnings)),
+        "probes": [
+            probe_summary("api_version", api_result, next_actions["api_version"]),
+            probe_summary(
+                "web_html_commit_marker",
+                web_html_result,
+                next_actions["web_html_commit_marker"],
+            ),
+            probe_summary("web_build_info", web_build_result, next_actions["web_build_info"]),
+            probe_summary(
+                "web_proxy_read_fallback",
+                web_proxy_result,
+                next_actions["web_proxy_read_fallback"],
+            ),
+        ],
+        "warnings": warnings,
     }
-    print(json.dumps(report, indent=2, sort_keys=True))
-    return 0 if status == "deployed_verified" else 1
 
 
 def fetch_api_version(api_url: str, timeout: float) -> dict[str, Any]:
@@ -357,6 +430,123 @@ def deployment_failure_class(
     if status == "probe_error":
         return "probe_error"
     return "deployed_stale_or_unverified"
+
+
+def consolidated_next_action(failure_class: str, probe_actions: Any = ()) -> str:
+    actions = {
+        "none": "none",
+        "cold_start_or_deploy_transition": "wait_for_render_warmup_then_retry_bounded_probe",
+        "transport_timeout": "retry_bounded_probe_with_existing_timeout_limits",
+        "commit_mismatch": "redeploy_api_and_web_from_expected_commit_or_verify_render_service_commit",
+        "schema_mismatch": "verify_public_version_envelope_and_web_build_info_contract",
+        "unavailable": "check_api_web_service_readiness_before_redeploy",
+        "probe_error": "provide_expected_git_commit_and_retry_probe",
+    }
+    if failure_class in actions:
+        return sanitize_next_action(actions[failure_class])
+    for action in probe_actions:
+        sanitized = sanitize_next_action(str(action))
+        if sanitized != "none":
+            return sanitized
+    return sanitize_next_action("inspect_sanitized_probe_warnings")
+
+
+def probe_next_action(
+    probe_name: str,
+    *,
+    result: dict[str, Any],
+    expected_commit: str,
+    observed_commit: str,
+    warnings: list[str],
+) -> str:
+    if expected_commit == "unknown":
+        return sanitize_next_action("provide_expected_git_commit_and_retry_probe")
+
+    warning_set = set(warnings)
+    status = str(result.get("status", "failed"))
+    failure_class = str(result.get("failure_class", "none"))
+
+    if probe_name == "api_version":
+        if "api_commit_mismatch" in warning_set or (
+            status == "ok" and not commits_match(expected_commit, observed_commit)
+        ):
+            return sanitize_next_action("redeploy_api_from_expected_commit_or_verify_render_service_commit")
+        if "api_reported_deployment_unavailable" in warning_set:
+            return sanitize_next_action("inspect_api_deployment_unavailable_state")
+        if "api_reported_deployment_stale_or_unverified" in warning_set:
+            return sanitize_next_action("verify_api_reports_current_deployment_commit")
+        if status != "ok" or "api_unavailable" in warning_set:
+            return failed_probe_next_action("api_version", failure_class)
+        return sanitize_next_action("none")
+
+    if probe_name == "web_html_commit_marker":
+        if status == "verified":
+            return sanitize_next_action("none")
+        if "web_html_commit_not_visible" in warning_set or status == "commit_not_visible":
+            return sanitize_next_action("add_static_web_commit_marker_to_html_shell_and_redeploy_web")
+        if any(warning.startswith("web_html_") for warning in warning_set):
+            return failed_probe_next_action("web_html_commit_marker", failure_class)
+        return failed_probe_next_action("web_html_commit_marker", failure_class)
+
+    if probe_name == "web_build_info":
+        if "web_build_info_commit_mismatch" in warning_set or (
+            status == "ok" and not commits_match(expected_commit, observed_commit)
+        ):
+            return sanitize_next_action("redeploy_web_from_expected_commit_or_verify_build_metadata")
+        if "web_build_info_cache_control_missing" in warning_set:
+            return sanitize_next_action("set_web_build_info_cache_control_no_store")
+        if status != "ok" or "web_build_info_unavailable" in warning_set:
+            return failed_probe_next_action("web_build_info", failure_class)
+        return sanitize_next_action("none")
+
+    if probe_name == "web_proxy_read_fallback":
+        if "web_proxy_commit_mismatch" in warning_set or (
+            status == "ok" and not commits_match(expected_commit, observed_commit)
+        ):
+            return sanitize_next_action("redeploy_api_and_web_from_expected_commit_or_verify_proxy_commit")
+        if status != "ok" or "web_proxy_unavailable" in warning_set:
+            return failed_probe_next_action("web_proxy_read_fallback", failure_class)
+        return sanitize_next_action("none")
+
+    return sanitize_next_action("inspect_sanitized_probe_warnings")
+
+
+def failed_probe_next_action(probe_name: str, failure_class: str) -> str:
+    if failure_class == "cold_start_or_deploy_transition":
+        if probe_name == "api_version":
+            return sanitize_next_action("wait_for_render_api_warmup_then_retry_version_probe")
+        return sanitize_next_action("wait_for_render_web_warmup_then_retry_probe")
+    if failure_class == "transport_timeout":
+        return sanitize_next_action(f"retry_{probe_name}_with_existing_timeout_limits")
+    if failure_class == "schema_mismatch":
+        return sanitize_next_action(f"verify_{probe_name}_response_contract")
+    if probe_name == "api_version":
+        return sanitize_next_action("check_api_version_endpoint_readiness_before_redeploy")
+    if probe_name == "web_html_commit_marker":
+        return sanitize_next_action("check_web_service_readiness_then_retry_html_marker_probe")
+    if probe_name == "web_build_info":
+        return sanitize_next_action("verify_web_build_info_route_contract_and_render_readiness")
+    if probe_name == "web_proxy_read_fallback":
+        return sanitize_next_action("verify_web_proxy_read_fallback_and_public_api_origin")
+    return sanitize_next_action("inspect_sanitized_probe_warnings")
+
+
+def probe_summary(name: str, result: dict[str, Any], next_action: str) -> dict[str, Any]:
+    return {
+        "name": name,
+        "status": result.get("status", "failed"),
+        "failure_class": result.get("failure_class", "none"),
+        "latency_class": result.get("latency_class", "failed"),
+        "attempts": result.get("attempts", 1),
+        "next_action": sanitize_next_action(next_action),
+    }
+
+
+def sanitize_next_action(value: str) -> str:
+    candidate = value.strip().lower()
+    if NEXT_ACTION_RE.fullmatch(candidate):
+        return candidate
+    return "inspect_sanitized_probe_warnings"
 
 
 def retry_hint(failure_class: str) -> str:

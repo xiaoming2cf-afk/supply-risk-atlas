@@ -41,6 +41,7 @@ export function GraphInspector({
 function NodeInspector({ node }: { node: GraphNode }) {
   const evidenceRefs = nodeEvidenceRefs(node);
   const countryRef = formatCountryRef(node.countryCode ?? String(node.metadata.country ?? "global"));
+  const metadataFields = nodeMetadataFields(node.metadata);
   return (
     <div className="inspector-stack">
       <div className="inspector-grid">
@@ -54,13 +55,58 @@ function NodeInspector({ node }: { node: GraphNode }) {
         <Field label="Country" value={countryRef} />
       </div>
       <EvidenceRefs refs={evidenceRefs} />
-      <div className="inspector-grid">
-        {Object.entries(node.metadata).slice(0, 8).map(([label, value]) => (
-          <Field key={label} label={formatDisplayLabel(label)} value={formatInspectorValue(value)} />
-        ))}
-      </div>
+      {metadataFields.length ? (
+        <div className="inspector-grid">
+          {metadataFields.map((field) => (
+            <Field key={field.label} label={formatDisplayLabel(field.label)} value={formatInspectorValue(field.value)} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+const NODE_METADATA_FIELD_ALLOWLIST: Array<{ label: string; keys: string[] }> = [
+  { label: "Entity type", keys: ["entity_type", "node_type"] },
+  { label: "Layer", keys: ["layer", "tier"] },
+  { label: "Stage", keys: ["stage", "stage_id", "stage_label"] },
+  { label: "Product grade", keys: ["product_grade"] },
+  { label: "Product category", keys: ["product_category", "category"] },
+  { label: "Commodity code", keys: ["commodity_code"] },
+  { label: "Sector", keys: ["sector", "industry", "downstream_sector"] },
+  { label: "Process stage", keys: ["process_stage", "process"] },
+  { label: "Technology node", keys: ["technology_node", "node_generation"] },
+  { label: "Material family", keys: ["material_family", "chemical_family"] },
+  { label: "Evidence coverage", keys: ["source_status", "coverage_status"] },
+  { label: "Confidence", keys: ["confidence"] },
+];
+
+function nodeMetadataFields(metadata: GraphNode["metadata"]) {
+  const record = (metadata ?? {}) as Record<string, unknown>;
+  const fields: Array<{ label: string; value: unknown }> = [];
+  const usedKeys = new Set<string>();
+
+  for (const field of NODE_METADATA_FIELD_ALLOWLIST) {
+    const match = field.keys.find((key) => !usedKeys.has(key) && isDisplayableMetadataValue(record[key]));
+    if (!match) continue;
+    usedKeys.add(match);
+    fields.push({ label: field.label, value: record[match] });
+    if (fields.length >= 8) break;
+  }
+
+  return fields;
+}
+
+function isDisplayableMetadataValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return false;
+  if (Array.isArray(value)) {
+    return value.some((item) => item !== null && item !== undefined && item !== "") && value.every(isPrimitiveMetadataValue);
+  }
+  return isPrimitiveMetadataValue(value);
+}
+
+function isPrimitiveMetadataValue(value: unknown) {
+  return value === null || value === undefined || ["string", "number", "boolean"].includes(typeof value);
 }
 
 function EdgeInspector({ edge }: { edge: GraphLink }) {

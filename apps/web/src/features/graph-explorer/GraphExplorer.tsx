@@ -70,14 +70,14 @@ import {
 } from "./graphViewModel";
 
 const GRAPH_ENDPOINT_LOADING_TIMEOUT_MS = 15000;
-const GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE = "Backend graph data unavailable; authoritative rows are hidden.";
-const STAGE_ENDPOINT_UNAVAILABLE_MESSAGE = "Backend stage graph data unavailable; authoritative rows are hidden.";
-const GRAPH_DATA_LOADING_MESSAGE = "Loading authoritative graph data.";
-const GRAPH_DATA_TIMEOUT_MESSAGE = "Authoritative graph data timed out; rows are hidden.";
-const GRAPH_DATA_LOADED_MESSAGE = "Authoritative graph data loaded.";
-const STAGE_DATA_LOADING_MESSAGE = "Loading authoritative stage graph data.";
-const STAGE_DATA_TIMEOUT_MESSAGE = "Authoritative stage graph data timed out; rows are hidden.";
-const STAGE_DATA_LOADED_MESSAGE = "Authoritative stage graph data loaded.";
+const GRAPH_ENDPOINT_UNAVAILABLE_MESSAGE = "Graph data is temporarily unavailable for this view.";
+const STAGE_ENDPOINT_UNAVAILABLE_MESSAGE = "Stage graph data is temporarily unavailable for this view.";
+const GRAPH_DATA_LOADING_MESSAGE = "Loading graph data for this view.";
+const GRAPH_DATA_TIMEOUT_MESSAGE = "Graph data is taking longer than expected; review source coverage before using this view.";
+const GRAPH_DATA_LOADED_MESSAGE = "Graph data is available for this view.";
+const STAGE_DATA_LOADING_MESSAGE = "Loading stage graph data for this view.";
+const STAGE_DATA_TIMEOUT_MESSAGE = "Stage graph data is taking longer than expected; review source coverage before using this stage.";
+const STAGE_DATA_LOADED_MESSAGE = "Stage graph data is available for this view.";
 
 export function GraphExplorer({
   apiClient,
@@ -191,7 +191,7 @@ export function GraphExplorer({
           status: "fallback",
           message: GRAPH_DATA_TIMEOUT_MESSAGE,
           diagnostics: {
-            retryHint: "Retry the graph view request. The UI keeps loading bounded and hides non-authoritative rows.",
+            retryHint: "Refresh this view or open Source coverage to confirm public evidence support.",
             transportAttempts: 0,
           },
         });
@@ -251,7 +251,7 @@ export function GraphExplorer({
           status: "fallback",
           message: STAGE_DATA_TIMEOUT_MESSAGE,
           diagnostics: {
-            retryHint: "Retry the stage graph request. The UI keeps loading bounded and hides non-authoritative rows.",
+            retryHint: "Refresh this stage view or review source coverage and documented gaps.",
             transportAttempts: 0,
           },
         });
@@ -351,7 +351,7 @@ export function GraphExplorer({
           status: "fallback",
           message: GRAPH_DATA_TIMEOUT_MESSAGE,
           diagnostics: {
-            retryHint: "Retry the graph view request. The UI keeps loading bounded and hides non-authoritative rows.",
+            retryHint: "Refresh this view or open Source coverage to confirm public evidence support.",
             transportAttempts: 0,
           },
         } satisfies GraphEndpointDetails)
@@ -704,11 +704,11 @@ function buildRelationshipExportSummary(
   if (!isPlainRecord(endpointData) || endpointData.relationship_class !== expectedClass) {
     return {
       ...base,
-      data_scope: "unavailable_preview_no_authoritative_relationship_rows",
+      data_scope: "relationship_data_temporarily_unavailable",
       preview_state: "unavailable_preview",
       endpoint_status: endpointDetails.status,
       endpoint_source: endpointDetails.source,
-      diagnostics: endpointDetails.diagnostics,
+      diagnostics: publicEndpointDiagnostics(endpointDetails.diagnostics),
       relationships: [],
       balance_rows: [],
       warnings: [...metadata.warnings, "relationship_endpoint_unavailable_or_wrong_class"],
@@ -726,7 +726,7 @@ function buildRelationshipExportSummary(
       : [];
     return {
       ...base,
-      data_scope: "authoritative_backend_aggregate_rows_only",
+      data_scope: "reviewed_public_aggregate_rows",
       balance_rows: balanceRows,
       relationships: [],
     };
@@ -738,7 +738,7 @@ function buildRelationshipExportSummary(
     : [];
   return {
     ...base,
-    data_scope: "authoritative_backend_relationship_rows_only",
+    data_scope: "reviewed_public_relationship_rows",
     relationships,
     balance_rows: [],
   };
@@ -754,6 +754,14 @@ function graphModeUsesStageEndpoint(mode: GraphViewMode) {
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function publicEndpointDiagnostics(diagnostics?: GraphEndpointDetails["diagnostics"]) {
+  if (!diagnostics) return undefined;
+  return {
+    sourceStatus: diagnostics.sourceStatus,
+    retryHint: diagnostics.retryHint,
+  };
 }
 
 type GraphEndpointDetails = {
@@ -852,16 +860,14 @@ function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
       {details.diagnostics ? (
         <MetadataSummary
           ariaLabel="Graph data diagnostic summary"
-          items={[{ label: "Backend relationship data unavailable; authoritative rows are hidden.", tone: "warning" }]}
+          items={[{ label: "Public evidence data needs review", tone: "warning" }]}
         />
       ) : null}
       {details.diagnostics ? (
         <DiagnosticDetails
           items={[
-            { label: "Connection target", value: details.diagnostics.failedEndpoint },
             { label: "Source coverage", value: details.diagnostics.sourceStatus },
             { label: "Recovery guidance", value: details.diagnostics.retryHint },
-            { label: "Connection attempts", value: details.diagnostics.transportAttempts },
           ]}
         />
       ) : null}
@@ -870,9 +876,9 @@ function EndpointStatusPanel({ details }: { details: GraphEndpointDetails }) {
 }
 
 function endpointStatusTitle(details: GraphEndpointDetails) {
-  if (details.status === "loading") return "Authoritative data loading";
-  if (details.source === "backend") return "Authoritative data connected";
-  return "Backend data unavailable";
+  if (details.status === "loading") return "Data loading";
+  if (details.source === "backend") return "Data available";
+  return "Data temporarily unavailable";
 }
 
 function diagnosticsForEndpointResult(result: ApiResult<unknown>): GraphEndpointDetails["diagnostics"] {

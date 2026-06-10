@@ -40,7 +40,7 @@ export function GraphNodeCatalogView({
             ))
           ) : (
             <tr className="unavailable-preview" data-preview-state="node_catalog_endpoint_unavailable">
-              <td colSpan={4}>Backend entity catalog data unavailable; authoritative rows are hidden.</td>
+              <td colSpan={4}>Entity catalog data is temporarily unavailable; review source coverage to confirm entity evidence.</td>
             </tr>
           )}
         </tbody>

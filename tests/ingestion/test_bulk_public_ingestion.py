@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import urllib.request
 
 import pytest
 
@@ -17,6 +18,19 @@ class ChunkedResponse:
     def read(self, size: int = -1) -> bytes:
         self.read_sizes.append(size)
         return self.chunks.pop(0) if self.chunks else b""
+
+
+def _small_limits() -> BulkLimits:
+    return BulkLimits(
+        sec_companies=2,
+        gleif_legal_entities=2,
+        world_bank_indicators=2,
+        world_bank_countries=4,
+        ourairports_airports=2,
+        gdelt_articles=2,
+        ofac_entries=1,
+        usgs_earthquakes=1,
+    )
 
 
 def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
@@ -39,6 +53,11 @@ def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
     edge_types = {edge["edge_type"] for edge in catalog["edges"]}
 
     assert manifest["raw_data_in_git"] is False
+    assert manifest["mode"] == "fixture"
+    assert manifest["requested_mode"] == "fixture"
+    assert manifest["effective_mode"] == "fixture"
+    assert manifest["live_fetch_requested"] is False
+    assert manifest["live_fetch_effective"] is False
     assert manifest["source_status"] == "fresh"
     assert len(catalog["entities"]) >= 240
     assert len(catalog["edges"]) >= 340
@@ -63,6 +82,95 @@ def test_bulk_public_fixture_builds_data_governance_nodes(tmp_path) -> None:
     assert any(entity["source_id"] == "usgs_earthquakes" for entity in catalog["entities"])
 
 
+def test_bulk_public_default_build_is_offline_safe(monkeypatch, tmp_path) -> None:
+    calls: list[object] = []
+
+    def fail_urlopen(*args, **kwargs):  # pragma: no cover - should never be reached
+        calls.append((args, kwargs))
+        raise AssertionError("network call during default bulk catalog build")
+
+    monkeypatch.setattr(urllib.request, "urlopen", fail_urlopen)
+
+    _catalog, manifest = build_bulk_catalog(
+        cache_dir=tmp_path / "cache",
+        limits=_small_limits(),
+    )
+
+    assert calls == []
+    assert manifest["mode"] == "cache"
+    assert manifest["requested_mode"] == "cache"
+    assert manifest["effective_mode"] == "cache"
+    assert manifest["live_fetch_requested"] is False
+    assert manifest["live_fetch_effective"] is False
+
+
+def test_bulk_public_online_without_allow_live_downgrades_without_network(monkeypatch, tmp_path) -> None:
+    calls: list[object] = []
+
+    def fail_urlopen(*args, **kwargs):  # pragma: no cover - should never be reached
+        calls.append((args, kwargs))
+        raise AssertionError("network call without explicit allow-live guard")
+
+    monkeypatch.setattr(urllib.request, "urlopen", fail_urlopen)
+
+    _catalog, manifest = build_bulk_catalog(
+        mode="online",
+        cache_dir=tmp_path / "cache",
+        limits=_small_limits(),
+    )
+
+    assert calls == []
+    assert manifest["requested_mode"] == "online"
+    assert manifest["effective_mode"] == "cache"
+    assert manifest["mode"] == "cache"
+    assert manifest["live_fetch_requested"] is True
+    assert manifest["live_fetch_effective"] is False
+    assert manifest["live_fetch_guard"] == "blocked_explicit_allow_live_fetch_required"
+    assert "bulk_public_live_fetch_blocked_without_explicit_allow" in manifest["warnings"]
+
+
+def test_bulk_public_cli_default_is_offline_safe(monkeypatch, tmp_path, capsys) -> None:
+    calls: list[object] = []
+
+    def fail_urlopen(*args, **kwargs):  # pragma: no cover - should never be reached
+        calls.append((args, kwargs))
+        raise AssertionError("network call during default bulk catalog CLI")
+
+    monkeypatch.setattr(urllib.request, "urlopen", fail_urlopen)
+
+    exit_code = bulk_public.main(
+        [
+            "--cache-dir",
+            str(tmp_path / "cache"),
+            "--promoted-dir",
+            str(tmp_path / "promoted"),
+            "--sec-limit",
+            "2",
+            "--gleif-limit",
+            "2",
+            "--world-bank-indicator-limit",
+            "2",
+            "--world-bank-country-limit",
+            "4",
+            "--airport-limit",
+            "2",
+            "--gdelt-limit",
+            "2",
+            "--ofac-limit",
+            "1",
+            "--usgs-earthquake-limit",
+            "1",
+        ]
+    )
+    output = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert calls == []
+    assert output["requested_mode"] == "cache"
+    assert output["effective_mode"] == "cache"
+    assert output["live_fetch_effective"] is False
+
+
 def test_bulk_public_writer_creates_promoted_manifest(tmp_path) -> None:
     promoted_dir = tmp_path / "promoted" / "public_real" / "latest"
 
@@ -81,6 +189,9 @@ def test_bulk_public_writer_creates_promoted_manifest(tmp_path) -> None:
     assert manifest["catalog_path"] == str(catalog_path)
     assert manifest["manifest_path"] == str(manifest_path)
     assert written_manifest["schema_version"] == "promoted-public-real-v1"
+    assert written_manifest["requested_mode"] == "fixture"
+    assert written_manifest["effective_mode"] == "fixture"
+    assert written_manifest["live_fetch_effective"] is False
     assert written_manifest["record_counts"]["entities"] == len(catalog["entities"])
     assert written_manifest["record_counts"]["edges"] == len(catalog["edges"])
 

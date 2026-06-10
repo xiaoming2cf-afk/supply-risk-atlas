@@ -13,7 +13,7 @@ from services.api.services.common import (
 )
 from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 from services.api.services.semiconductor_content_service import semiconductor_content_summary_payload
-from services.api.services.version_service import build_version_payload
+from services.api.services.version_service import build_data_mode_resolution, build_version_payload
 
 
 READY_CONNECTOR_STATUSES = {
@@ -129,11 +129,19 @@ def semiconductor_only_system_health_payload(exc: Exception) -> dict[str, Any]:
 
 def semiconductor_graph_health_payload() -> dict[str, Any]:
     graph_mode = configured_graph_mode()
-    data_mode = configured_data_mode(graph_mode)
+    data_mode_resolution = build_data_mode_resolution(graph_mode)
+    data_mode = str(data_mode_resolution["effective_data_mode"])
     production_status = production_status_for_mode(graph_mode)
     try:
         snapshot = fixture_snapshot_for_services()
     except Exception as exc:
+        warnings = [
+            f"fixture_graph_unavailable:{type(exc).__name__}",
+            "not_production_ready",
+            "calibration_status:fixture_proxy_not_calibrated",
+            "calibration_status:not_financial_loss",
+            *[str(warning) for warning in data_mode_resolution["warnings"]],
+        ]
         return {
             "label": "SemiRisk-KG v0.1 fixture graph",
             "status": "unavailable",
@@ -154,22 +162,33 @@ def semiconductor_graph_health_payload() -> dict[str, Any]:
             "unresolvedEntityCount": 0,
             "staleSourceCount": 0,
             "dataMode": data_mode,
+            "data_mode": data_mode,
+            "requestedDataMode": data_mode_resolution["requested_data_mode"],
+            "requested_data_mode": data_mode_resolution["requested_data_mode"],
+            "effectiveDataMode": data_mode_resolution["effective_data_mode"],
+            "effective_data_mode": data_mode_resolution["effective_data_mode"],
+            "liveFetchRequested": data_mode_resolution["live_fetch_requested"],
+            "live_fetch_requested": data_mode_resolution["live_fetch_requested"],
+            "liveFetchEffective": data_mode_resolution["live_fetch_effective"],
+            "live_fetch_effective": data_mode_resolution["live_fetch_effective"],
+            "liveFetchGuard": data_mode_resolution["live_fetch_guard"],
+            "live_fetch_guard": data_mode_resolution["live_fetch_guard"],
             "graphMode": graph_mode,
             "productionStatus": production_status,
             "notProductionReady": True,
             "calibrationStatus": "fixture_proxy_not_calibrated;not_financial_loss",
-            "warnings": [
-                f"fixture_graph_unavailable:{type(exc).__name__}",
-                "not_production_ready",
-                "calibration_status:fixture_proxy_not_calibrated",
-                "calibration_status:not_financial_loss",
-            ],
+            "warnings": sorted(set(warnings)),
         }
     warnings = semiconductor_fixture_warnings(snapshot)
     env_graph_mode = configured_graph_mode()
     snapshot_graph_mode = getattr(snapshot, "graph_mode", graph_mode)
     graph_mode = "promoted" if env_graph_mode == "promoted" else snapshot_graph_mode
-    data_mode = configured_data_mode(graph_mode, getattr(snapshot, "data_mode", None))
+    data_mode_resolution = build_data_mode_resolution(
+        graph_mode,
+        snapshot_data_mode=getattr(snapshot, "data_mode", None),
+    )
+    data_mode = str(data_mode_resolution["effective_data_mode"])
+    warnings.extend(str(warning) for warning in data_mode_resolution["warnings"])
     production_status = production_status_for_mode(graph_mode)
     return {
         "label": "SemiRisk-KG v0.1 fixture graph",
@@ -193,11 +212,22 @@ def semiconductor_graph_health_payload() -> dict[str, Any]:
         "unresolvedEntityCount": snapshot.unresolved_entity_count,
         "staleSourceCount": snapshot.stale_source_count,
         "dataMode": data_mode,
+        "data_mode": data_mode,
+        "requestedDataMode": data_mode_resolution["requested_data_mode"],
+        "requested_data_mode": data_mode_resolution["requested_data_mode"],
+        "effectiveDataMode": data_mode_resolution["effective_data_mode"],
+        "effective_data_mode": data_mode_resolution["effective_data_mode"],
+        "liveFetchRequested": data_mode_resolution["live_fetch_requested"],
+        "live_fetch_requested": data_mode_resolution["live_fetch_requested"],
+        "liveFetchEffective": data_mode_resolution["live_fetch_effective"],
+        "live_fetch_effective": data_mode_resolution["live_fetch_effective"],
+        "liveFetchGuard": data_mode_resolution["live_fetch_guard"],
+        "live_fetch_guard": data_mode_resolution["live_fetch_guard"],
         "graphMode": graph_mode,
         "productionStatus": production_status,
         "notProductionReady": True,
         "calibrationStatus": "fixture_proxy_not_calibrated;not_financial_loss",
-        "warnings": warnings,
+        "warnings": sorted(set(warnings)),
     }
 
 
@@ -207,17 +237,12 @@ def configured_graph_mode() -> str:
 
 
 def configured_data_mode(graph_mode: str, snapshot_data_mode: str | None = None) -> str:
-    explicit = os.getenv("SUPPLY_RISK_DATA_MODE", "").strip().lower()
-    allowed = {"fixture", "promoted", "live_disabled", "live_enabled", "public_evidence_promoted"}
-    if explicit in allowed:
-        return "promoted" if explicit == "public_evidence_promoted" else explicit
-    if snapshot_data_mode == "public_evidence_promoted":
-        return "promoted"
-    if snapshot_data_mode in allowed:
-        return snapshot_data_mode
-    if graph_mode == "promoted":
-        return "promoted"
-    return "fixture"
+    return str(
+        build_data_mode_resolution(
+            graph_mode,
+            snapshot_data_mode=snapshot_data_mode,
+        )["effective_data_mode"]
+    )
 
 
 def production_status_for_mode(graph_mode: str) -> str:
@@ -231,7 +256,12 @@ def platform_status_payload(
     graph_health = graph_health or semiconductor_graph_health_payload()
     registry_readiness = registry_readiness or source_registry_readiness_payload()
     graph_mode = str(graph_health.get("graphMode") or configured_graph_mode())
-    data_mode = configured_data_mode(graph_mode, str(graph_health.get("dataMode") or ""))
+    data_mode_resolution = build_data_mode_resolution(
+        graph_mode,
+        snapshot_data_mode=str(graph_health.get("dataMode") or ""),
+        registry_readiness=registry_readiness,
+    )
+    data_mode = str(data_mode_resolution["effective_data_mode"])
     storage_mode = configured_storage_mode()
     connector_counts = registry_readiness.get("connector_status_counts", {})
     ready_connector_count = _ready_connector_count(connector_counts)
@@ -250,6 +280,7 @@ def platform_status_payload(
     warnings.extend(str(warning) for warning in graph_health.get("warnings", []) if warning)
     warnings.extend(str(warning) for warning in registry_readiness.get("warnings", []) if warning)
     warnings.extend(str(warning) for warning in version.get("warnings", []) if warning)
+    warnings.extend(str(warning) for warning in data_mode_resolution["warnings"])
 
     return {
         "apiReadiness": "ready",
@@ -279,6 +310,17 @@ def platform_status_payload(
             "warnings": version["warnings"],
         },
         "dataMode": data_mode,
+        "data_mode": data_mode,
+        "requestedDataMode": data_mode_resolution["requested_data_mode"],
+        "requested_data_mode": data_mode_resolution["requested_data_mode"],
+        "effectiveDataMode": data_mode_resolution["effective_data_mode"],
+        "effective_data_mode": data_mode_resolution["effective_data_mode"],
+        "liveFetchRequested": data_mode_resolution["live_fetch_requested"],
+        "live_fetch_requested": data_mode_resolution["live_fetch_requested"],
+        "liveFetchEffective": data_mode_resolution["live_fetch_effective"],
+        "live_fetch_effective": data_mode_resolution["live_fetch_effective"],
+        "liveFetchGuard": data_mode_resolution["live_fetch_guard"],
+        "live_fetch_guard": data_mode_resolution["live_fetch_guard"],
         "graphMode": graph_mode,
         "productionStatus": production_status_for_mode(graph_mode),
         "notProductionReady": True,

@@ -5,6 +5,7 @@ from graph_kernel.relationship_builder import (
     EVIDENCE_RELATIONSHIP_CLASS,
     edge_allowed_for_demand_shock,
     edge_allowed_for_physical_propagation,
+    normalize_relationship_edge,
 )
 
 
@@ -43,6 +44,44 @@ def test_evidence_context_links_cannot_be_used_for_propagation() -> None:
         assert edge["attributes"]["warning"] == "This is not a supply-chain dependency edge."
         assert not edge_allowed_for_physical_propagation(edge)
         assert not edge_allowed_for_demand_shock(edge)
+
+
+def test_not_supply_chain_dependency_overrides_depends_on_edge_type() -> None:
+    edge = {
+        "edge_id": "edge:context-not-dependency",
+        "source_node_id": "evidence:public-context",
+        "target_node_id": "vc_wafer_fabrication",
+        "edge_type": "depends_on",
+        "attributes": {"not_supply_chain_dependency": True},
+    }
+
+    normalized = normalize_relationship_edge(edge)
+
+    assert normalized["relationship_class"] == EVIDENCE_RELATIONSHIP_CLASS
+    assert normalized["attributes"]["not_supply_chain_dependency"] is True
+    assert normalized["attributes"]["derived_context"] is True
+    assert "dependency_type" not in normalized["attributes"]
+    assert not edge_allowed_for_physical_propagation(edge)
+    assert not edge_allowed_for_demand_shock(edge)
+
+
+def test_explicit_evidence_context_overrides_depends_on_edge_type() -> None:
+    edge = {
+        "edge_id": "edge:explicit-evidence-context",
+        "source_node_id": "evidence:public-context",
+        "target_node_id": "vc_advanced_packaging",
+        "edge_type": "depends_on",
+        "attributes": {"relationship_class": EVIDENCE_RELATIONSHIP_CLASS},
+    }
+
+    normalized = normalize_relationship_edge(edge)
+
+    assert normalized["relationship_class"] == EVIDENCE_RELATIONSHIP_CLASS
+    assert normalized["attributes"]["not_supply_chain_dependency"] is True
+    assert normalized["attributes"]["user_facing_label"] == "evidence-context link"
+    assert "dependency_type" not in normalized["attributes"]
+    assert not edge_allowed_for_physical_propagation(edge)
+    assert not edge_allowed_for_demand_shock(edge)
 
 
 def test_demand_and_supply_relationships_do_not_share_operational_roles() -> None:

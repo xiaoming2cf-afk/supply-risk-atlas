@@ -84,6 +84,11 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert graph["ontologyReady"] is True
     assert graph["fixtureGraphReady"] is True
     assert graph["dataMode"] in {"fixture", "promoted"}
+    assert graph["data_mode"] == graph["dataMode"]
+    assert graph["effectiveDataMode"] == graph["dataMode"]
+    assert graph["effective_data_mode"] == graph["dataMode"]
+    assert graph["liveFetchEffective"] is False
+    assert graph["live_fetch_effective"] is False
     assert graph["graphMode"] in {"fixture", "promoted"}
     assert graph["productionStatus"] in {"research_fixture", "public_evidence_promoted"}
     assert graph["notProductionReady"] is True
@@ -128,12 +133,36 @@ def test_system_health_reports_semiconductor_graph_metadata() -> None:
     assert isinstance(platform["deploymentVersionReadiness"]["unavailable"], bool)
     assert platform["deploymentVersionReadiness"]["lastCheckedAt"]
     assert platform["dataMode"] in {"fixture", "promoted"}
+    assert platform["effectiveDataMode"] == platform["dataMode"]
+    assert platform["liveFetchEffective"] is False
     assert platform["graphMode"] in {"fixture", "promoted"}
     assert platform["notProductionReady"] is True
     assert "fixture_proxy_not_calibrated" in platform["calibrationStatus"]
     assert "not_financial_loss" in platform["calibrationStatus"]
     assert platform["sourceManifestId"] == graph["sourceManifestId"]
     assert platform["graphVersion"] == graph["graphVersion"]
+    _assert_no_raw_payload(payload)
+
+
+def test_semiconductor_graph_live_enabled_request_is_reported_as_guarded_effective_mode(monkeypatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_DATA_MODE", "live_enabled")
+    monkeypatch.setenv("SUPPLY_RISK_GRAPH_MODE", "promoted")
+    monkeypatch.delenv("SUPPLY_RISK_ALLOW_LIVE_FETCH", raising=False)
+    monkeypatch.delenv("SUPPLY_RISK_LIVE_FETCH_ALLOWED", raising=False)
+
+    payload = main.route_dashboard_page("system-health-center", request_id="req_semirisk_live_guard")
+    graph = payload["data"]["semiconductorGraph"]
+
+    assert graph["requestedDataMode"] == "live_enabled"
+    assert graph["requested_data_mode"] == "live_enabled"
+    assert graph["dataMode"] == "promoted"
+    assert graph["effectiveDataMode"] == "promoted"
+    assert graph["liveFetchRequested"] is True
+    assert graph["live_fetch_requested"] is True
+    assert graph["liveFetchEffective"] is False
+    assert graph["live_fetch_effective"] is False
+    assert graph["liveFetchGuard"] == "blocked_registry_live_defaults"
+    assert "live_fetch_requested_but_disabled_by_registry_defaults" in graph["warnings"]
     _assert_no_raw_payload(payload)
 
 

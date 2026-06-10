@@ -7,6 +7,7 @@ from typing import Any
 from datetime import datetime, timezone
 
 from sra_core.api.envelope import make_envelope
+from sra_core.sources import source_registry_readiness
 
 from services.api.services.common import semiconductor_metadata
 from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
@@ -16,13 +17,15 @@ from services.api.storage.sqlite_store import configured_storage_mode
 APP_VERSION = "0.1.0"
 VERSION_SERVICE_VERSION = "supply_risk_version_v0.1"
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+ALLOWED_DATA_MODES = {"fixture", "promoted", "live_disabled", "live_enabled", "public_evidence_promoted"}
+LIVE_ALLOW_ENV_NAMES = ("SUPPLY_RISK_ALLOW_LIVE_FETCH", "SUPPLY_RISK_LIVE_FETCH_ALLOWED")
 
 
 def build_version_payload() -> dict[str, Any]:
     graph_version = "unavailable"
     source_manifest_id = "unavailable"
     graph_mode = _configured_graph_mode()
-    data_mode = _configured_data_mode(graph_mode)
+    snapshot_data_mode = None
     warnings = [
         "not_production_ready",
         "deployment_version_not_a_production_readiness_claim",
@@ -32,8 +35,16 @@ def build_version_payload() -> dict[str, Any]:
         snapshot = fixture_snapshot_for_services()
         graph_version = snapshot.graph_version
         source_manifest_id = snapshot.source_manifest_id
+        snapshot_data_mode = getattr(snapshot, "data_mode", None)
     except Exception as exc:
         warnings.append(f"version_graph_metadata_unavailable:{type(exc).__name__}")
+
+    data_mode_resolution = build_data_mode_resolution(
+        graph_mode,
+        snapshot_data_mode=snapshot_data_mode,
+    )
+    data_mode = str(data_mode_resolution["effective_data_mode"])
+    warnings.extend(str(warning) for warning in data_mode_resolution["warnings"])
 
     git_commit = current_git_commit()
     build_time = current_build_time()
@@ -51,6 +62,12 @@ def build_version_payload() -> dict[str, Any]:
         "app_version": APP_VERSION,
         "version_service": VERSION_SERVICE_VERSION,
         "data_mode": data_mode,
+        "requested_data_mode": data_mode_resolution["requested_data_mode"],
+        "effective_data_mode": data_mode_resolution["effective_data_mode"],
+        "live_fetch_requested": data_mode_resolution["live_fetch_requested"],
+        "live_fetch_effective": data_mode_resolution["live_fetch_effective"],
+        "live_fetch_guard": data_mode_resolution["live_fetch_guard"],
+        "live_default_count": data_mode_resolution["live_default_count"],
         "graph_mode": graph_mode,
         "storage_mode": configured_storage_mode(),
         "source_manifest_id": source_manifest_id,
@@ -152,17 +169,125 @@ def runtime_environment() -> str:
     return "local" if (PROJECT_ROOT / ".git").exists() else "unknown"
 
 
+def build_data_mode_resolution(
+    graph_mode: str,
+    *,
+    snapshot_data_mode: str | None = None,
+    registry_readiness: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    requested_data_mode, request_warnings = _requested_data_mode(graph_mode, snapshot_data_mode)
+    registry_readiness = registry_readiness if registry_readiness is not None else _safe_source_registry_readiness()
+    live_default_count = _registry_live_default_count(registry_readiness)
+    live_fetch_requested = requested_data_mode == "live_enabled"
+    live_fetch_allowed = _live_fetch_explicitly_allowed()
+    warnings = list(request_warnings)
+
+    if live_fetch_requested:
+        if live_fetch_allowed and live_default_count > 0:
+            effective_data_mode = "live_enabled"
+            live_fetch_effective = True
+            live_fetch_guard = "explicit_allow_live_fetch"
+        else:
+            effective_data_mode = _fallback_effective_data_mode(graph_mode, snapshot_data_mode)
+            live_fetch_effective = False
+            if live_default_count <= 0:
+                live_fetch_guard = "blocked_registry_live_defaults"
+                warnings.append("live_fetch_requested_but_disabled_by_registry_defaults")
+            else:
+                live_fetch_guard = "blocked_explicit_allow_live_fetch_required"
+                warnings.append("live_fetch_requested_but_missing_allow_live_guard")
+    else:
+        effective_data_mode = _effective_non_live_data_mode(requested_data_mode, graph_mode, snapshot_data_mode)
+        live_fetch_effective = False
+        live_fetch_guard = "live_fetch_disabled"
+
+    return {
+        "requested_data_mode": requested_data_mode,
+        "effective_data_mode": effective_data_mode,
+        "live_fetch_requested": live_fetch_requested,
+        "live_fetch_effective": live_fetch_effective,
+        "live_fetch_allowed": live_fetch_allowed,
+        "live_fetch_guard": live_fetch_guard,
+        "live_default_count": live_default_count,
+        "warnings": sorted(set(warnings)),
+    }
+
+
 def _configured_graph_mode() -> str:
     mode = os.getenv("SUPPLY_RISK_GRAPH_MODE", "fixture").strip().lower()
     return mode if mode in {"fixture", "promoted"} else "fixture"
 
 
 def _configured_data_mode(graph_mode: str) -> str:
+    return str(build_data_mode_resolution(graph_mode)["effective_data_mode"])
+
+
+def _requested_data_mode(graph_mode: str, snapshot_data_mode: str | None) -> tuple[str, list[str]]:
+    warnings: list[str] = []
     explicit = os.getenv("SUPPLY_RISK_DATA_MODE", "").strip().lower()
-    allowed = {"fixture", "promoted", "live_disabled", "live_enabled", "public_evidence_promoted"}
-    if explicit in allowed:
-        return "promoted" if explicit == "public_evidence_promoted" else explicit
+    if explicit:
+        if explicit in ALLOWED_DATA_MODES:
+            return explicit, warnings
+        warnings.append("data_mode_request_unrecognized_defaulted_to_safe_mode")
+        return _fallback_effective_data_mode(graph_mode, snapshot_data_mode), warnings
+
+    if graph_mode == "promoted":
+        return "promoted", warnings
+
+    normalized_snapshot_mode = _normalize_snapshot_data_mode(snapshot_data_mode)
+    if normalized_snapshot_mode:
+        return normalized_snapshot_mode, warnings
+    return _fallback_effective_data_mode(graph_mode, snapshot_data_mode), warnings
+
+
+def _effective_non_live_data_mode(requested_data_mode: str, graph_mode: str, snapshot_data_mode: str | None) -> str:
+    if requested_data_mode == "public_evidence_promoted":
+        return "promoted"
+    if requested_data_mode in {"fixture", "promoted"}:
+        return requested_data_mode
+    if requested_data_mode == "live_disabled":
+        return _fallback_effective_data_mode(graph_mode, snapshot_data_mode)
+    return _fallback_effective_data_mode(graph_mode, snapshot_data_mode)
+
+
+def _fallback_effective_data_mode(graph_mode: str, snapshot_data_mode: str | None) -> str:
+    if graph_mode == "promoted":
+        return "promoted"
+    normalized_snapshot_mode = _normalize_snapshot_data_mode(snapshot_data_mode)
+    if normalized_snapshot_mode == "public_evidence_promoted":
+        return "promoted"
+    if normalized_snapshot_mode in {"fixture", "promoted"}:
+        return normalized_snapshot_mode
     return "promoted" if graph_mode == "promoted" else "fixture"
+
+
+def _normalize_snapshot_data_mode(snapshot_data_mode: str | None) -> str | None:
+    mode = str(snapshot_data_mode or "").strip().lower()
+    return mode if mode in ALLOWED_DATA_MODES else None
+
+
+def _safe_source_registry_readiness() -> dict[str, Any]:
+    try:
+        readiness = source_registry_readiness()
+    except Exception as exc:
+        return {"live_default_count": 0, "warnings": [f"source_registry_unavailable_for_live_guard:{type(exc).__name__}"]}
+    return readiness if isinstance(readiness, dict) else {"live_default_count": 0, "warnings": ["source_registry_unavailable_for_live_guard"]}
+
+
+def _registry_live_default_count(registry_readiness: dict[str, Any]) -> int:
+    try:
+        return int(registry_readiness.get("live_default_count") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _live_fetch_explicitly_allowed() -> bool:
+    return any(_env_flag(name) for name in LIVE_ALLOW_ENV_NAMES)
+
+
+def _env_flag(name: str) -> bool:
+    value = os.getenv(name, "").strip().lower()
+    return value in {"1", "true", "yes", "y", "on"}
 
 
 def _first_env(*names: str) -> str | None:

@@ -306,8 +306,12 @@ def test_relationship_views_do_not_show_unavailable_preview_as_user_copy() -> No
         source = read(relative_path)
         assert 'data-preview-state="unavailable_preview"' in source
         assert "unavailable_preview:" not in source
-        assert "Backend relationship data unavailable; authoritative rows are hidden." in source
-        assert "Non-authoritative local preview data is excluded from" in source
+        assert "data is temporarily unavailable" in source
+        assert "coverage review is needed before this table can be used" in source
+        assert "Open Source coverage to review public evidence support" in source
+        assert "Backend relationship data unavailable; authoritative rows are hidden." not in source
+        assert "Non-authoritative local preview data is excluded from" not in source
+        assert "authoritative rows are hidden" not in source
         assert "Local graph links are excluded" not in source
         assert "Local graph nodes are excluded" not in source
         assert "formatNodeDisplayRef" in source
@@ -320,12 +324,14 @@ def test_browser_smoke_checks_unavailable_preview_as_dom_state_not_user_text() -
     assert "previewStates: Array.from(document.querySelectorAll('[data-preview-state]'))" in source
     assert 'state.previewStates.includes("unavailable_preview")' in source
     assert 'relationshipState.previewStates.includes("unavailable_preview")' in source
-    assert "hasControlledUnavailableCopy" in source
-    assert "Backend relationship data unavailable; authoritative rows are hidden." in source
-    assert 'relationshipState.text.includes("Non-authoritative local preview data")' in source
+    assert "hasCoverageReviewUnavailableCopy" in source
+    assert 'relationshipState.text.includes("coverage review")' in source
+    assert 'relationshipState.text.includes("public evidence support")' in source
+    assert "Backend relationship data unavailable; authoritative rows are hidden." not in source
+    assert 'relationshipState.text.includes("Non-authoritative local preview data")' not in source
+    assert 'relationshipState.text.includes("authoritative rows are hidden")' not in source
     assert 'relationshipState.text.includes("Local graph")' not in source
-    assert 'relationshipState.text.includes("excluded from")' in source
-    assert "(!hasUnavailablePreview || hasControlledUnavailableCopy)" in source
+    assert "(!hasUnavailablePreview || hasCoverageReviewUnavailableCopy)" in source
     assert 'state.text.includes("unavailable_preview")' not in source
     assert 'relationshipState.text.includes("unavailable_preview")' not in source
 
@@ -360,6 +366,41 @@ def test_graph_explorer_tables_format_source_and_node_ids_for_primary_ui() -> No
     assert "<li key={ref}>{ref}</li>" not in inspector
     assert "formatCountryRef(node.countryCode" in inspector
     assert "formatNodeRef(edge.source)" in inspector
+
+
+def test_source_coverage_unavailable_state_uses_actionable_data_trust_copy() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphSourceCoverageView.tsx")
+
+    assert 'data-preview-state="source_coverage_endpoint_unavailable"' in source
+    assert "source_coverage_endpoint_unavailable" in source
+    assert re.search(r"(retry|review|check|use|open).{0,120}source coverage", source, re.IGNORECASE | re.DOTALL) or re.search(
+        r"source coverage.{0,120}(retry|review|check|use|open)",
+        source,
+        re.IGNORECASE | re.DOTALL,
+    )
+    assert "public evidence coverage still needs review" in source
+    assert "Backend source coverage data unavailable; authoritative rows are hidden." not in source
+    assert "authoritative rows are hidden" not in source
+
+
+def test_graph_inspector_uses_whitelisted_metadata_helper() -> None:
+    source = read("apps/web/src/features/graph-explorer/GraphInspector.tsx")
+    legacy_source = read("apps/web/src/features/common/legacyDashboard.tsx")
+
+    assert "Object.entries(node.metadata).slice(0, 8)" not in source
+    assert "NODE_METADATA_FIELD_ALLOWLIST" in source
+    assert "function nodeMetadataFields(metadata: GraphNode[\"metadata\"])" in source
+    assert "const metadataFields = nodeMetadataFields(node.metadata)" in source
+    assert "metadataFields.map((field)" in source
+    assert "isDisplayableMetadataValue(record[key])" in source
+    assert "if (fields.length >= 8) break;" in source
+    assert "formatDisplayLabel(field.label)" in source
+    assert "Object.entries(node.metadata).slice(0, 8)" not in legacy_source
+    assert "NODE_METADATA_FIELD_ALLOWLIST" in legacy_source
+    assert "function nodeMetadataFields(metadata: GraphNode[\"metadata\"])" in legacy_source
+    assert "const metadataFields = nodeMetadataFields(node.metadata)" in legacy_source
+    assert "metadataFields.map((field)" in legacy_source
+    assert "formatInspectorValue(field.value)" in legacy_source
 
 
 def test_run_page_unavailable_states_keep_endpoint_diagnostics_collapsed() -> None:
@@ -398,7 +439,8 @@ def test_semiconductor_content_coverage_is_summarized_on_primary_pages() -> None
     api_client = read("packages/api-client/src/dashboard.ts")
 
     assert "semiconductorContentCoverage" in source
-    assert 'title="Chip supply chain coverage"' in source
+    assert 'title="Public evidence coverage"' in source
+    assert 'title="Chip supply chain coverage"' not in source
     assert '<Field label="Countries / regions"' in source
     assert '<Field label="Value-chain layers"' in source
     assert '<Field label="Entity profiles"' in source
@@ -414,7 +456,7 @@ def test_semiconductor_content_coverage_is_summarized_on_primary_pages() -> None
     assert "chainStageCoverageRows.slice(0, 6)" not in source
     assert "{stage.stage_name}" in source
     assert "fixture required | live fetch" in source
-    assert "Stage coverage links national/policy, enterprise disclosure, and industry fixture sources" in source
+    assert "Stage coverage links national policy, enterprise disclosure, and industry fixture sources" in source
     assert "National and regional coverage" in source
     assert "Industry layer coverage" in source
     assert "Enterprise coverage" in source
@@ -530,7 +572,8 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "formatDisplayValue(String(family.source_status" in source
     assert 'label: "known source gaps"' in source
     assert 'label: "proxy limitations"' in source
-    assert 'label: "next narrow patch"' in source
+    assert 'label: "suggested review action"' in source
+    assert 'label: "next narrow patch"' not in source
     assert 'label: "source_gaps"' not in source
     assert 'label: "proxy_limitations"' not in source
     assert "Evidence support by source" in source
@@ -542,8 +585,10 @@ def test_stage_graph_view_keeps_audit_metadata_out_of_primary_metrics() -> None:
     assert "view.visibleLinks" not in source
     assert "fallbackNodes" not in source
     assert "fallbackEdges" not in source
-    assert "Stage graph data unavailable; backend stage rows are hidden." in source
-    assert "Loading authoritative stage graph data." in source
+    assert "Stage graph data is temporarily unavailable. Review source coverage and documented gaps before using this stage view." in source
+    assert "Loading stage graph data for this view." in source
+    assert "Stage graph data unavailable; backend stage rows are hidden." not in source
+    assert "Loading authoritative stage graph data." not in source
     assert "isStageEndpointUnavailable" in source
     assert "Source coverage fallback" not in source
     assert 'source coverage: {sourceCoverage.length || "fallback"}' not in source
@@ -569,14 +614,24 @@ def test_graph_explorer_endpoint_status_uses_user_facing_unavailable_copy() -> N
     assert "STAGE_DATA_LOADING_MESSAGE" in source
     assert "STAGE_DATA_TIMEOUT_MESSAGE" in source
     assert "STAGE_DATA_LOADED_MESSAGE" in source
-    assert "Backend graph data unavailable; authoritative rows are hidden." in source
-    assert "Backend stage graph data unavailable; authoritative rows are hidden." in source
-    assert "Loading authoritative graph data." in source
-    assert "Authoritative graph data loaded." in source
-    assert "Loading authoritative stage graph data." in source
-    assert "Authoritative stage graph data loaded." in source
-    assert "Authoritative data connected" in source
-    assert "Backend data unavailable" in source
+    assert "Graph data is temporarily unavailable for this view." in source
+    assert "Stage graph data is temporarily unavailable for this view." in source
+    assert "review source coverage before using this view" in source
+    assert "review source coverage before using this stage" in source
+    assert "Refresh this view or open Source coverage to confirm public evidence support." in source
+    assert "Refresh this stage view or review source coverage and documented gaps." in source
+    assert "Public evidence data needs review" in source
+    assert "Data temporarily unavailable" in source
+    assert "Backend graph data unavailable; authoritative rows are hidden." not in source
+    assert "Backend stage graph data unavailable; authoritative rows are hidden." not in source
+    assert "Loading authoritative graph data." not in source
+    assert "Authoritative graph data loaded." not in source
+    assert "Loading authoritative stage graph data." not in source
+    assert "Authoritative stage graph data loaded." not in source
+    assert "Authoritative data connected" not in source
+    assert "Backend data unavailable" not in source
+    assert "authoritative rows are hidden" not in source
+    assert "Backend relationship data unavailable; authoritative rows are hidden." not in source
     assert "Fallback graph payload" not in source
     assert "Fallback stage graph payload" not in source
     assert "Backend graph view endpoint loading." not in source
@@ -600,6 +655,57 @@ def test_browser_smoke_uses_stage_labels_not_component_names() -> None:
         assert needle not in source
     assert "L0 Policy / macro" in source
     assert "L11 Compliance" in source
+
+
+def test_browser_smoke_waits_for_stage_2_data_trust_terms() -> None:
+    source = read("scripts/browser-smoke.mjs")
+    data_trust_relevance = source.split('title: "Data Trust Center"', 1)[1].split("allowsDenseGraph: false,", 1)[0]
+    data_trust_terms = source.split("const dataTrustStage2Terms = [", 1)[1].split("];", 1)[0]
+    chart_table_terms = source.split("const chartTableTerms = [", 1)[1].split("];", 1)[0]
+
+    assert 'state.title === "Data Trust Center"' in source
+    for needle in [
+        "Public evidence coverage",
+        "Source registry trust",
+        "Graph / evidence lineage",
+        "Research caveat",
+        "Data trust summary",
+    ]:
+        assert needle in data_trust_terms
+        assert needle in data_trust_relevance
+    assert "Data audit details" in data_trust_relevance
+    assert "visibleRequiredTerms" in data_trust_relevance
+    assert "requiresSharedMetadataSignals: false" in data_trust_relevance
+    assert '"connector_readiness"' not in data_trust_relevance
+    assert "expected.visibleRequiredTerms ?? []" in source
+    for legacy_needle in [
+        "Storage readiness",
+        "Connector readiness",
+        "Deployment version readiness",
+        "Source manifest",
+        "Research graph",
+    ]:
+        assert legacy_needle not in data_trust_terms
+    assert 'state.text.includes("Data temporarily unavailable")' in source
+    assert 'state.text.includes("Public data unavailable")' in source
+    assert 'healthState.text.includes("Partial public data")' in source
+    assert "/unavailable|degraded/i.test(healthState.text)" in source
+    assert "healthSemiriskTerms" not in source
+    assert "Evidence coverage visuals" in chart_table_terms
+    assert "Evidence-bound chart and table components" not in chart_table_terms
+
+
+def test_browser_smoke_deployment_success_claim_ignores_negated_caveats() -> None:
+    source = read("scripts/browser-smoke.mjs")
+
+    assert "const deploymentSuccessClaimText" in source
+    for negated_caveat in [
+        r"\\bnot\\s+production[-\\s]+ready\\b",
+        r"\\bnot\\s+a\\s+production\\s+readiness\\s+claim\\b",
+        r"\\bproduction\\s+readiness\\s+is\\s+not\\s+claimed\\b",
+    ]:
+        assert negated_caveat in source
+    assert r"deployed_success|deployment\\s+success|production[-\\s]+ready" in source
 
 
 def test_deployed_smoke_accepts_only_controlled_forward_diagnostics() -> None:
@@ -862,10 +968,12 @@ def test_graph_explorer_endpoint_diagnostics_use_user_facing_labels() -> None:
     assert '{ label: "source_status"' not in explorer
     assert '{ label: "retry_hint"' not in explorer
     assert '{ label: "transport_attempts"' not in explorer
-    assert '{ label: "Connection target"' in explorer
     assert '{ label: "Source coverage"' in explorer
     assert '{ label: "Recovery guidance"' in explorer
-    assert '{ label: "Connection attempts"' in explorer
+    assert '{ label: "Connection target"' not in explorer
+    assert '{ label: "Connection attempts"' not in explorer
+    assert "Public evidence data needs review" in explorer
+    assert "failedEndpoint" not in explorer.split("function EndpointStatusPanel", 1)[1].split("function endpointStatusTitle", 1)[0]
 
 
 def test_graph_explorer_table_modes_are_single_render_and_stage_gated() -> None:
@@ -1112,16 +1220,27 @@ def test_reference_field_labels_use_user_language_not_refs_shorthand() -> None:
     assert '["selected_run_refs", "Selected run refs"]' not in source
 
 
-def test_system_health_readiness_note_uses_user_language() -> None:
+def test_system_health_data_trust_note_uses_user_language() -> None:
     source = read("apps/web/src/features/common/legacyDashboard.tsx")
     api_source = read("services/api/main.py")
 
+    assert 'Panel title="Data trust summary"' in source
+    assert "Public evidence coverage, source registry trust, and graph lineage are shown separately from production readiness." in source
+    assert '<Field label="public_evidence_coverage"' in source
+    assert '<Field label="source_registry_trust"' in source
+    assert '<Field label="graph_evidence_lineage"' in source
+    assert "Public evidence coverage" in source
+    assert "Source registry trust" in source
+    assert "These checks summarize whether the research data, public sources, connector registry, and graph lineage can be reviewed without exposing raw payloads." in source
+    assert "Readiness summary" not in source
+    assert "Public evidence graph readiness is shown separately from production readiness." not in source
     assert (
         "These checks summarize whether the research data, graph, sources, connectors, models, "
         "and deployment metadata are ready for this public-evidence demo."
-    ) in source
+    ) not in source
     assert "fixture/proxy/promoted-public-evidence readiness signals only" not in source
-    assert "Public-evidence graph readiness for research use; not a production readiness claim." in source
+    assert "Public-evidence graph readiness for research use; not a production readiness claim." not in source
+    assert "Public evidence graph data trust and evidence confidence for research use." in source
     assert "Fixture/promoted public-evidence graph readiness" not in source
     assert 'Field label="registryReady"' not in source
     assert 'Field label="ontologyReady"' not in source

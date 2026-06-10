@@ -48,7 +48,7 @@ export function SupplyDemandBalanceView({
         </div>
       ) : (
         <p className="inspector-note unavailable-preview" data-preview-state="unavailable_preview">
-          Backend relationship data unavailable; authoritative rows are hidden. Non-authoritative local preview data is excluded from balance charts, tables, exports, reports, and source coverage.
+          Supply-demand balance data is temporarily unavailable. Open Source coverage to review public evidence support before using balance charts, tables, exports, or reports.
         </p>
       )}
       <SupplyDemandBalanceChart
@@ -81,11 +81,11 @@ export function SupplyDemandBalanceView({
         <tbody>
           {isEndpointUnavailable ? (
             <tr className="unavailable-preview" data-preview-state="unavailable_preview">
-              <td colSpan={6}>Backend relationship data unavailable; authoritative rows are hidden.</td>
+              <td colSpan={6}>Supply-demand balance data is temporarily unavailable; coverage review is needed before this table can be used.</td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={6}>No authoritative supply-demand balance rows are available for this selection.</td>
+              <td colSpan={6}>No supply-demand balance rows are available for this selection.</td>
             </tr>
           ) : rows.slice(0, 16).map((row, index) => (
             <tr key={String(row.product_grade_id ?? index)}>

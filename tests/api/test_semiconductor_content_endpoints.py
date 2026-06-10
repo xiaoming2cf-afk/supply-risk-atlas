@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 
 from services.api import main
 from services.api.dev_server import Handler
+from services.api.services import semiconductor_content_service as content_service
 from sra_core.geo.terminology import CANONICAL_DISPLAY, CANONICAL_REGION_ID
 
 
@@ -72,6 +73,94 @@ def dev_server_base_url() -> str:
 def _get_json(base_url: str, path: str) -> tuple[int, dict[str, Any]]:
     with urllib.request.urlopen(f"{base_url}{path}", timeout=10) as response:
         return response.status, json.loads(response.read().decode("utf-8"))
+
+
+def _conflict_relationship_fixture() -> dict[str, Any]:
+    return {
+        "content_version": "test_conflict_relationships_v0",
+        "source_manifest_id": "test_manifest",
+        "data_mode": "fixture",
+        "graph_mode": "fixture",
+        "coverage_level": "test_fixture",
+        "generated_at": "2026-05-12T00:00:00+00:00",
+        "fixture_required": True,
+        "live_fetch_default": "disabled",
+        "warnings": ["test_fixture:not_production_ready"],
+        "api_visibility_policy": "public_fields_only",
+        "source_payload_policy": "source_payloads_excluded",
+        "production_status": "test_fixture_not_production_ready",
+        "country_region_exposures": [],
+        "value_chain_layers": [
+            {
+                "layer_id": "vc_test_source",
+                "layer_name": "Test source",
+                "stage": "upstream",
+                "coverage_level": "test_fixture",
+                "provenance": ["eto_cset_advanced_semiconductor_supply_chain"],
+            },
+            {
+                "layer_id": "vc_test_target",
+                "layer_name": "Test target",
+                "stage": "midstream",
+                "coverage_level": "test_fixture",
+                "provenance": ["eto_cset_advanced_semiconductor_supply_chain"],
+            },
+        ],
+        "entity_profiles": [],
+        "relationship_edges": [
+            {
+                "edge_id": "edge:valid-production-dependency",
+                "source_id": "vc_test_source",
+                "source_node_id": "vc_test_source",
+                "target_id": "vc_test_target",
+                "target_node_id": "vc_test_target",
+                "relationship_type": "depends_on",
+                "relationship_class": "PRODUCTION_DEPENDENCY",
+                "edge_type": "depends_on",
+                "confidence": "fixture_high",
+                "rationale": "Valid test dependency.",
+                "evidence_summary": "Public fixture evidence supports the dependency.",
+                "provenance": ["eto_cset_advanced_semiconductor_supply_chain"],
+            },
+            {
+                "edge_id": "edge:explicit-evidence-context-conflict",
+                "source_id": "evidence:test_context",
+                "source_node_id": "evidence:test_context",
+                "target_id": "vc_test_target",
+                "target_node_id": "vc_test_target",
+                "relationship_type": "depends_on",
+                "relationship_class": "EVIDENCE_CONTEXT",
+                "edge_type": "depends_on",
+                "confidence": "fixture_high",
+                "rationale": "Depends-on syntax is context-only for this row.",
+                "evidence_summary": "Public fixture evidence marks this as context.",
+                "provenance": ["eto_cset_advanced_semiconductor_supply_chain"],
+            },
+            {
+                "edge_id": "edge:not-supply-chain-dependency-conflict",
+                "source_id": "evidence:test_context_flag",
+                "source_node_id": "evidence:test_context_flag",
+                "target_id": "vc_test_target",
+                "target_node_id": "vc_test_target",
+                "relationship_type": "depends_on",
+                "relationship_class": "PRODUCTION_DEPENDENCY",
+                "edge_type": "depends_on",
+                "not_supply_chain_dependency": True,
+                "confidence": "fixture_high",
+                "rationale": "The explicit non-dependency flag makes this context-only.",
+                "evidence_summary": "Public fixture evidence marks this as non-propagating context.",
+                "provenance": ["eto_cset_advanced_semiconductor_supply_chain"],
+            },
+        ],
+        "chokepoints": [],
+        "source_summaries": {
+            "industry_public_fixture": {
+                "source_count": 1,
+                "status": "fixture",
+            }
+        },
+        "coverage_gaps": [],
+    }
 
 
 def test_semiconductor_coverage_overview_endpoint_returns_counts_and_sources() -> None:
@@ -212,10 +301,45 @@ def test_relationship_endpoint_keeps_evidence_context_non_propagating() -> None:
     assert data["relationships"]
     for row in data["relationships"]:
         assert row["relationship_class"] == "EVIDENCE_CONTEXT"
-        assert row["edge_type"] == "evidence_context_link"
         assert row["not_supply_chain_dependency"] is True
         assert row["can_propagate_risk"] is False
         assert row["warning"] == "This is not a supply-chain dependency edge."
+
+
+def test_relationship_endpoint_keeps_conflict_context_out_of_dependency_propagation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(content_service, "_content_fixture", _conflict_relationship_fixture)
+
+    dependency_response = _client().get(
+        "/api/v1/semiconductor/relationships?relationship_class=PRODUCTION_DEPENDENCY&limit=20"
+    )
+    dependency_data = _assert_content_envelope(dependency_response.json())
+
+    assert dependency_response.status_code == 200
+    assert {row["edge_id"] for row in dependency_data["relationships"]} == {
+        "edge:valid-production-dependency"
+    }
+    assert dependency_data["relationship_class_counts"] == {"PRODUCTION_DEPENDENCY": 1}
+    assert all(row["can_propagate_risk"] is True for row in dependency_data["relationships"])
+
+    evidence_response = _client().get(
+        "/api/v1/semiconductor/relationships?relationship_class=EVIDENCE_CONTEXT&edge_type=depends_on&limit=20"
+    )
+    evidence_data = _assert_content_envelope(evidence_response.json())
+    evidence_rows = evidence_data["relationships"]
+
+    assert evidence_response.status_code == 200
+    assert {row["edge_id"] for row in evidence_rows} == {
+        "edge:explicit-evidence-context-conflict",
+        "edge:not-supply-chain-dependency-conflict",
+    }
+    assert evidence_data["relationship_class_counts"] == {"EVIDENCE_CONTEXT": 2}
+    for row in evidence_rows:
+        assert row["relationship_class"] == "EVIDENCE_CONTEXT"
+        assert row["edge_type"] == "depends_on"
+        assert row["not_supply_chain_dependency"] is True
+        assert row["can_propagate_risk"] is False
 
 
 def test_source_coverage_endpoint_summarizes_layer_support() -> None:

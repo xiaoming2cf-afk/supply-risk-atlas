@@ -43,11 +43,11 @@ export function SupplyRelationshipView({
         <tbody>
           {isEndpointUnavailable ? (
             <tr className="unavailable-preview" data-preview-state="unavailable_preview">
-              <td colSpan={5}>Backend relationship data unavailable; authoritative rows are hidden.</td>
+              <td colSpan={5}>Supply relationship data is temporarily unavailable; coverage review is needed before this table can be used.</td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={5}>No authoritative supply relationship rows are available for this selection.</td>
+              <td colSpan={5}>No supply relationship rows are available for this selection.</td>
             </tr>
           ) : rows.slice(0, 16).map((row, index) => (
             <tr key={String(row.edge_id ?? index)}>
@@ -68,7 +68,7 @@ function RelationshipMetadata({ data }: { data?: GraphRelationshipData }) {
   if (!data) {
     return (
       <p className="inspector-note unavailable-preview" data-preview-state="unavailable_preview">
-        Backend relationship data unavailable; authoritative rows are hidden. Non-authoritative local preview data is excluded from relationship charts, tables, exports, reports, and source coverage.
+        Supply relationship data is temporarily unavailable. Open Source coverage to review public evidence support before using relationship charts, tables, exports, or reports.
       </p>
     );
   }

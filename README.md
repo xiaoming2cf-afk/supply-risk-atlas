@@ -78,12 +78,13 @@ POST http://127.0.0.1:8000/api/v1/optimization/interventions
 POST http://127.0.0.1:8000/api/v1/reports/investigation
 ```
 
-Build or refresh the promoted public-real graph from local cache or public no-key
-sources:
+Build or refresh the promoted public-real graph from local cache/fixtures by
+default. Live public no-key fetches require an explicit guard:
 
 ```powershell
-python -m sra_core.ingestion.bulk_public --mode online --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
+python -m sra_core.ingestion.bulk_public --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
 python -m sra_core.ingestion.bulk_public --mode cache --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
+python -m sra_core.ingestion.bulk_public --mode online --allow-live-fetch --sec-limit 500 --gleif-limit 300 --world-bank-indicator-limit 300 --world-bank-country-limit 200 --airport-limit 500 --gdelt-limit 80 --ofac-limit 100
 ```
 
 The command writes raw downloads under `data/cache/public_real/` and the

@@ -4,13 +4,14 @@ import argparse
 import csv
 import json
 import re
+import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 import yaml
 
@@ -24,6 +25,9 @@ DEFAULT_CACHE_DIR = Path("data/cache/public_real")
 DEFAULT_PROMOTED_DIR = Path("data/promoted/public_real/latest")
 DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 DEFAULT_MAX_DOWNLOAD_BYTES = 8 * 1024 * 1024
+BULK_SAFE_MODE = "cache"
+BULK_ONLINE_MODES = {"online", "live"}
+BULK_ALLOWED_MODES = {"cache", "fixture", *BULK_ONLINE_MODES}
 MAX_DOWNLOAD_BYTES_BY_SOURCE = {
     "ourairports": 32 * 1024 * 1024,
     "sec_edgar": 8 * 1024 * 1024,
@@ -64,6 +68,17 @@ class CachedSourceFile:
     byte_count: int
 
 
+@dataclass(frozen=True)
+class BulkModeResolution:
+    requested_mode: str
+    effective_mode: str
+    live_fetch_requested: bool
+    live_fetch_effective: bool
+    live_fetch_allowed: bool
+    live_fetch_guard: str
+    warnings: tuple[str, ...]
+
+
 def project_root() -> Path:
     return Path(__file__).resolve().parents[4]
 
@@ -98,7 +113,8 @@ def load_promoted_catalog(root: Path | None = None) -> dict[str, Any] | None:
 
 def build_bulk_catalog(
     *,
-    mode: str = "online",
+    mode: str = BULK_SAFE_MODE,
+    allow_live_fetch: bool = False,
     cache_dir: Path | None = None,
     limits: BulkLimits = BulkLimits(),
     as_of_time: datetime | None = None,
@@ -108,7 +124,12 @@ def build_bulk_catalog(
     cache_dir.mkdir(parents=True, exist_ok=True)
     base_catalog = _load_base_catalog()
     builder = _BulkCatalogBuilder(base_catalog)
-    source_files = _download_or_seed_sources(mode=mode, cache_dir=cache_dir, limits=limits)
+    mode_resolution = _resolve_bulk_mode(mode, allow_live_fetch=allow_live_fetch)
+    source_files = _download_or_seed_sources(
+        mode=mode_resolution.effective_mode,
+        cache_dir=cache_dir,
+        limits=limits,
+    )
 
     source_registry = load_source_registry()
     source_by_id = {source.source_id: source for source in source_registry.sources}
@@ -133,10 +154,17 @@ def build_bulk_catalog(
         "as_of_time": as_of_time.isoformat(),
         "cache_dir": str(cache_dir.as_posix()),
         "raw_data_in_git": False,
-        "mode": mode,
+        "mode": mode_resolution.effective_mode,
+        "requested_mode": mode_resolution.requested_mode,
+        "effective_mode": mode_resolution.effective_mode,
+        "live_fetch_requested": mode_resolution.live_fetch_requested,
+        "live_fetch_effective": mode_resolution.live_fetch_effective,
+        "live_fetch_allowed": mode_resolution.live_fetch_allowed,
+        "live_fetch_guard": mode_resolution.live_fetch_guard,
         "source_status": "fresh"
         if all(item.status == "ok" for item in source_files.values())
         else "partial",
+        "warnings": list(mode_resolution.warnings),
         "source_files": [
             {
                 "source_id": item.source_id,
@@ -167,12 +195,18 @@ def build_bulk_catalog(
 
 def write_promoted_catalog(
     *,
-    mode: str = "online",
+    mode: str = BULK_SAFE_MODE,
+    allow_live_fetch: bool = False,
     cache_dir: Path | None = None,
     promoted_dir: Path | None = None,
     limits: BulkLimits = BulkLimits(),
 ) -> dict[str, Any]:
-    catalog, manifest = build_bulk_catalog(mode=mode, cache_dir=cache_dir, limits=limits)
+    catalog, manifest = build_bulk_catalog(
+        mode=mode,
+        allow_live_fetch=allow_live_fetch,
+        cache_dir=cache_dir,
+        limits=limits,
+    )
     promoted_dir = promoted_dir or project_root() / DEFAULT_PROMOTED_DIR
     promoted_dir.mkdir(parents=True, exist_ok=True)
     catalog_path = promoted_dir / "catalog.json"
@@ -811,7 +845,7 @@ def _download_or_seed_sources(
                     "Accept": "application/json,text/csv,*/*",
                 },
             )
-            with urlopen(req, timeout=30) as response:
+            with urllib.request.urlopen(req, timeout=30) as response:
                 payload = _read_limited_response(response, source_id)
             if source_id != "ourairports" and not _payload_looks_json(payload):
                 raise ValueError("downloaded payload was not JSON")
@@ -829,6 +863,57 @@ def _download_or_seed_sources(
                 path.write_bytes(payload)
                 files[source_id] = _cached_file(source_id, url, path, "partial", f"seeded fixture after {type(exc).__name__}: {exc}")
     return files
+
+
+def _resolve_bulk_mode(mode: str, *, allow_live_fetch: bool) -> BulkModeResolution:
+    requested_mode = str(mode or "").strip().lower() or BULK_SAFE_MODE
+    warnings: list[str] = []
+    if requested_mode not in BULK_ALLOWED_MODES:
+        requested_mode = "unrecognized"
+        effective_mode = BULK_SAFE_MODE
+        warnings.append("bulk_public_mode_unrecognized_defaulted_to_cache")
+        return BulkModeResolution(
+            requested_mode=requested_mode,
+            effective_mode=effective_mode,
+            live_fetch_requested=False,
+            live_fetch_effective=False,
+            live_fetch_allowed=allow_live_fetch,
+            live_fetch_guard="offline_safe_default",
+            warnings=tuple(warnings),
+        )
+
+    live_fetch_requested = requested_mode in BULK_ONLINE_MODES
+    if not live_fetch_requested:
+        return BulkModeResolution(
+            requested_mode=requested_mode,
+            effective_mode=requested_mode,
+            live_fetch_requested=False,
+            live_fetch_effective=False,
+            live_fetch_allowed=allow_live_fetch,
+            live_fetch_guard="live_fetch_not_requested",
+            warnings=(),
+        )
+
+    if allow_live_fetch:
+        return BulkModeResolution(
+            requested_mode=requested_mode,
+            effective_mode="online",
+            live_fetch_requested=True,
+            live_fetch_effective=True,
+            live_fetch_allowed=True,
+            live_fetch_guard="explicit_allow_live_fetch",
+            warnings=(),
+        )
+
+    return BulkModeResolution(
+        requested_mode=requested_mode,
+        effective_mode=BULK_SAFE_MODE,
+        live_fetch_requested=True,
+        live_fetch_effective=False,
+        live_fetch_allowed=False,
+        live_fetch_guard="blocked_explicit_allow_live_fetch_required",
+        warnings=("bulk_public_live_fetch_blocked_without_explicit_allow",),
+    )
 
 
 def _read_limited_response(response: Any, source_id: str) -> bytes:
@@ -1391,7 +1476,12 @@ _WPI_PRIORITY_PORTS = [
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build promoted public-real bulk graph cache.")
-    parser.add_argument("--mode", choices=["online", "cache", "fixture"], default="online")
+    parser.add_argument("--mode", choices=["online", "live", "cache", "fixture"], default=BULK_SAFE_MODE)
+    parser.add_argument(
+        "--allow-live-fetch",
+        action="store_true",
+        help="Permit network fetches when --mode online/live is requested.",
+    )
     parser.add_argument("--cache-dir", type=Path, default=project_root() / DEFAULT_CACHE_DIR)
     parser.add_argument("--promoted-dir", type=Path, default=project_root() / DEFAULT_PROMOTED_DIR)
     parser.add_argument("--sec-limit", type=int, default=BulkLimits.sec_companies)
@@ -1415,6 +1505,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     manifest = write_promoted_catalog(
         mode=args.mode,
+        allow_live_fetch=args.allow_live_fetch,
         cache_dir=args.cache_dir,
         promoted_dir=args.promoted_dir,
         limits=limits,

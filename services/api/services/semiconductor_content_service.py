@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml
 
+from graph_kernel.relationship_builder import normalize_relationship_edge
 from services.api.services.common import semiconductor_fixture_warnings, semiconductor_metadata
 from services.api.services.semiconductor_snapshot_cache import fixture_snapshot_for_services
 from sra_core.api.envelope import make_envelope, make_error_envelope
@@ -471,7 +472,15 @@ def _relationship_row(
     layer_stage: dict[str, str],
     chokepoint_layers: set[str],
 ) -> dict[str, Any]:
+    normalized_edge = normalize_relationship_edge(
+        {
+            **edge,
+            "source_refs": edge.get("source_refs") or edge.get("provenance") or [],
+        }
+    )
+    relationship_attributes = normalized_edge["attributes"]
     row = deepcopy(edge)
+    row["relationship_class"] = relationship_attributes["relationship_class"]
     row["source_refs"] = list(edge.get("provenance", []))
     row["evidence_refs"] = list(edge.get("provenance", []))
     row["valid_from"] = fixture["generated_at"]
@@ -481,16 +490,21 @@ def _relationship_row(
         {_source_family_for_source(source_id) for source_id in row["source_refs"]}
     )
     row["stage_context"] = _relationship_stage_context(edge, layer_stage)
-    row["can_propagate_risk"] = row["relationship_class"] in {
-        "SUPPLY_RELATIONSHIP",
-        "PRODUCTION_DEPENDENCY",
-    }
+    row["can_propagate_risk"] = (
+        row["relationship_class"]
+        in {
+            "SUPPLY_RELATIONSHIP",
+            "PRODUCTION_DEPENDENCY",
+        }
+        and relationship_attributes.get("not_supply_chain_dependency") is not True
+    )
     if row["relationship_class"] == "SUPPLY_RELATIONSHIP":
         row.update(
             {
                 "supplier_id": row["source_node_id"],
                 "buyer_or_stage_id": row["target_node_id"],
-                "supplied_item_id": row["target_node_id"],
+                "supplied_item_id": relationship_attributes.get("supplied_item_id")
+                or row["target_node_id"],
                 "supplied_item_type": _node_kind(row["target_node_id"]),
                 "relationship_scope": "public_evidence_stage_summary",
                 "share_or_capacity_proxy": None,
@@ -517,23 +531,31 @@ def _relationship_row(
             {
                 "dependency_source_id": row["source_node_id"],
                 "dependency_target_id": row["target_node_id"],
-                "dependency_type": row["edge_type"],
+                "dependency_type": relationship_attributes.get("dependency_type", row["edge_type"]),
                 "criticality": "high_proxy"
                 if row["source_node_id"] in chokepoint_layers or row["target_node_id"] in chokepoint_layers
                 else "public_evidence_proxy",
                 "substitutability": "low_or_uncertain_proxy",
-                "bottleneck_flag": row["source_node_id"] in chokepoint_layers or row["target_node_id"] in chokepoint_layers,
+                "bottleneck_flag": row["source_node_id"] in chokepoint_layers
+                or row["target_node_id"] in chokepoint_layers,
                 "propagation_mode_hint": "physical_or_policy_constraint",
             }
         )
     elif row["relationship_class"] == "EVIDENCE_CONTEXT":
         row.update(
             {
-                "derived_context": True,
-                "not_supply_chain_dependency": True,
+                "derived_context": relationship_attributes.get("derived_context") is True,
+                "not_supply_chain_dependency": relationship_attributes.get("not_supply_chain_dependency")
+                is True,
                 "can_propagate_risk": False,
-                "user_facing_label": "evidence-context link",
-                "warning": "This is not a supply-chain dependency edge.",
+                "user_facing_label": relationship_attributes.get(
+                    "user_facing_label",
+                    "evidence-context link",
+                ),
+                "warning": relationship_attributes.get(
+                    "warning",
+                    "This is not a supply-chain dependency edge.",
+                ),
             }
         )
     return row

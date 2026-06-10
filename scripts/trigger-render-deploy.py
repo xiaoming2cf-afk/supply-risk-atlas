@@ -12,9 +12,13 @@ from urllib.request import Request, urlopen
 
 
 RENDER_DEPLOY_URL_TEMPLATE = "https://api.render.com/v1/services/{service_id}/deploys"
-GIT_SHA_RE = re.compile(r"^[0-9a-fA-F]{7,40}$")
+GIT_SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
 SERVICE_ID_RE = re.compile(r"^srv-[A-Za-z0-9]+$")
 REQUIRED_ENV_VARS = ("RENDER_API_KEY", "RENDER_API_SERVICE_ID", "RENDER_WEB_SERVICE_ID")
+SERVICE_ENV_PLAN = (
+    ("supply-risk-atlas-api", "RENDER_API_SERVICE_ID"),
+    ("supply-risk-atlas-web", "RENDER_WEB_SERVICE_ID"),
+)
 
 
 def main() -> int:
@@ -52,41 +56,22 @@ def trigger_render_deploys(
     dry_run: bool,
     env: Any,
 ) -> dict[str, Any]:
-    missing = [name for name in REQUIRED_ENV_VARS if not str(env.get(name, "")).strip()]
-    if commit == "unknown":
-        return {
-            "status": "render_deploy_blocked_invalid_commit",
-            "missing_env": [],
-            "services": [],
-            "retry_hint": "provide_7_to_40_character_git_sha",
-        }
-    if missing:
-        return {
-            "status": "render_deploy_blocked_missing_safe_deploy_path",
-            "missing_env": missing,
-            "services": [],
-            "retry_hint": "set_render_api_key_and_service_ids_outside_chat_then_retry",
-        }
+    preflight = render_deploy_preflight_report(commit=commit, clear_cache=clear_cache, env=env)
+    if not preflight["safe_deploy_path"]:
+        return preflight
 
-    service_plan = [
-        ("supply-risk-atlas-api", str(env["RENDER_API_SERVICE_ID"]).strip()),
-        ("supply-risk-atlas-web", str(env["RENDER_WEB_SERVICE_ID"]).strip()),
-    ]
-    invalid_services = [name for name, service_id in service_plan if not SERVICE_ID_RE.fullmatch(service_id)]
-    if invalid_services:
-        return {
-            "status": "render_deploy_blocked_invalid_service_id",
-            "missing_env": [],
-            "services": [{"service": name, "status": "invalid_service_id"} for name in invalid_services],
-            "retry_hint": "verify_render_service_ids_outside_chat_then_retry",
-        }
+    service_plan = service_plan_from_env(env)
 
     if dry_run:
         return {
             "status": "render_deploy_dry_run",
             "commit": commit,
             "clear_cache": clear_cache,
+            "missing_env": [],
+            "render_api_call_attempted": False,
+            "safe_deploy_path": True,
             "services": [{"service": name, "status": "would_trigger"} for name, _service_id in service_plan],
+            "next_action": "rerun_without_dry_run_when_ready",
             "retry_hint": "rerun_without_dry_run_when_ready",
         }
 
@@ -111,9 +96,88 @@ def trigger_render_deploys(
         "status": status,
         "commit": commit,
         "clear_cache": clear_cache,
+        "missing_env": [],
+        "render_api_call_attempted": True,
+        "safe_deploy_path": True,
         "services": service_reports,
+        "next_action": "run_check_deployed_version_after_render_builds_finish",
         "retry_hint": "run_check_deployed_version_after_render_builds_finish",
     }
+
+
+def render_deploy_preflight_report(*, commit: str, clear_cache: str, env: Any) -> dict[str, Any]:
+    if commit == "unknown":
+        return blocked_report(
+            status="render_deploy_blocked_invalid_commit",
+            commit=commit,
+            clear_cache=clear_cache,
+            missing_env=[],
+            services=[],
+            next_action="provide_7_to_40_character_git_sha",
+        )
+
+    missing = [name for name in REQUIRED_ENV_VARS if not str(env.get(name, "")).strip()]
+    if missing:
+        return blocked_report(
+            status="render_deploy_blocked_missing_safe_deploy_path",
+            commit=commit,
+            clear_cache=clear_cache,
+            missing_env=missing,
+            services=[],
+            next_action="set_render_api_key_and_service_ids_outside_chat_then_retry",
+        )
+
+    service_plan = service_plan_from_env(env)
+    invalid_services = [
+        service_name for service_name, service_id in service_plan if not SERVICE_ID_RE.fullmatch(service_id)
+    ]
+    if invalid_services:
+        return blocked_report(
+            status="render_deploy_blocked_invalid_service_id",
+            commit=commit,
+            clear_cache=clear_cache,
+            missing_env=[],
+            services=[{"service": service_name, "status": "invalid_service_id"} for service_name in invalid_services],
+            next_action="set_valid_render_service_ids_outside_chat_then_retry",
+        )
+
+    return {
+        "status": "render_deploy_preflight_passed",
+        "commit": commit,
+        "clear_cache": clear_cache,
+        "missing_env": [],
+        "render_api_call_attempted": False,
+        "safe_deploy_path": True,
+        "services": [{"service": service_name, "status": "validated"} for service_name, _service_id in service_plan],
+        "next_action": "rerun_without_dry_run_when_ready_or_trigger_deploy",
+        "retry_hint": "rerun_without_dry_run_when_ready_or_trigger_deploy",
+    }
+
+
+def blocked_report(
+    *,
+    status: str,
+    commit: str,
+    clear_cache: str,
+    missing_env: list[str],
+    services: list[dict[str, Any]],
+    next_action: str,
+) -> dict[str, Any]:
+    return {
+        "status": status,
+        "commit": commit,
+        "clear_cache": clear_cache,
+        "missing_env": missing_env,
+        "render_api_call_attempted": False,
+        "safe_deploy_path": False,
+        "services": services,
+        "next_action": next_action,
+        "retry_hint": next_action,
+    }
+
+
+def service_plan_from_env(env: Any) -> list[tuple[str, str]]:
+    return [(service_name, str(env[env_name]).strip()) for service_name, env_name in SERVICE_ENV_PLAN]
 
 
 def trigger_service_deploy(
@@ -178,7 +242,7 @@ def local_git_commit() -> str:
 
 
 def clean_commit(value: str) -> str:
-    cleaned = "".join(character for character in value.strip().lower() if character.isalnum())
+    cleaned = value.strip().lower()
     return cleaned if GIT_SHA_RE.fullmatch(cleaned) else "unknown"
 
 

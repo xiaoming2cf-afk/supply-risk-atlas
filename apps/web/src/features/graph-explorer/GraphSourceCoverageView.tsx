@@ -14,11 +14,19 @@ export function GraphSourceCoverageView({
   const nodeCoverage = (sourceCoverage as Record<string, unknown> | undefined)?.node_catalog_coverage as
     | Record<string, unknown>
     | undefined;
+  const supportedSourceSummary = supportedSourcesText(rows);
+  const coverageStatusSummary = coverageStatusText(nodeCoverage?.status, rows.length);
+  const reviewAction = coverageReviewAction(rows, nodeCoverage);
 
   return (
     <div className="graph-v3-panel graph-v3-source-coverage-panel">
       <div className="section-kicker">Source coverage</div>
       <p className="inspector-note">Coverage is a transparency table and does not render the full graph.</p>
+      <div className="graph-view-summary">
+        <span>Supported by: {supportedSourceSummary}</span>
+        <span>{coverageStatusSummary}</span>
+        <span>Next review: {reviewAction}</span>
+      </div>
       {nodeCoverage ? (
         <div className="graph-view-summary">
           <span>{formatDisplayLabel("catalog_node_count")}: {String(nodeCoverage.catalog_node_count ?? "n/a")}</span>
@@ -49,7 +57,7 @@ export function GraphSourceCoverageView({
             ))
           ) : (
             <tr className="unavailable-preview" data-preview-state="source_coverage_endpoint_unavailable">
-              <td colSpan={2}>Backend source coverage data unavailable; authoritative rows are hidden.</td>
+              <td colSpan={2}>Source coverage data is temporarily unavailable; public evidence coverage still needs review.</td>
             </tr>
           )}
         </tbody>
@@ -61,4 +69,30 @@ export function GraphSourceCoverageView({
 function formatSourceCell(value: unknown) {
   if (typeof value !== "string") return "Public evidence source";
   return formatSourceDisplayRef(value) || String(formatDisplayValue(value));
+}
+
+function supportedSourcesText(rows: Array<Record<string, unknown>>) {
+  const labels = rows
+    .slice(0, 4)
+    .map((row) => formatSourceCell(row.source_id ?? row.source ?? "source_ref"))
+    .filter(Boolean);
+  if (labels.length === 0) return "public evidence sources pending review";
+  const remaining = rows.length - labels.length;
+  return `${labels.join(", ")}${remaining > 0 ? ` +${remaining} more` : ""}`;
+}
+
+function coverageStatusText(value: unknown, rowCount: number) {
+  const status = typeof value === "string" ? value : rowCount ? "partial" : "unavailable";
+  if (status === "unavailable") return "Unavailable means coverage data is not loaded for this view.";
+  if (status === "partial") return "Partial means some catalog entities or source groups still need evidence review.";
+  if (status === "complete" || status === "available") return "Coverage is available for the listed public evidence sources.";
+  return `${String(formatDisplayValue(status))} coverage needs review.`;
+}
+
+function coverageReviewAction(rows: Array<Record<string, unknown>>, nodeCoverage?: Record<string, unknown>) {
+  if (rows.length === 0) return "refresh this view, then confirm public evidence sources before using coverage.";
+  const catalogCount = Number(nodeCoverage?.catalog_node_count ?? 0);
+  const coveredCount = Number(nodeCoverage?.covered_catalog_node_count ?? 0);
+  if (catalogCount > 0 && coveredCount < catalogCount) return "review uncovered catalog entities and confirm missing evidence sources.";
+  return "compare listed sources with entity catalog coverage and document remaining gaps.";
 }

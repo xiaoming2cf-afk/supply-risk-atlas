@@ -32,7 +32,7 @@ const waitForTimeoutMs = deployedBestEffort
 const chromeReadyTimeoutMs = Number(process.env.SUPPLY_RISK_CHROME_READY_MS ?? 60000);
 
 const pages = [
-  ["System Health Center", "#system-health-center"],
+  ["Data Trust Center", "#system-health-center"],
   ["Global Risk Cockpit", "#global-risk-cockpit"],
   ["Graph Explorer", "#graph-explorer"],
   ["Entity Risk 360", "#company-risk-360"],
@@ -48,10 +48,20 @@ const pages = [
 
 const pageRelevanceExpectations = [
   {
-    title: "System Health Center",
+    title: "Data Trust Center",
     hash: "#system-health-center",
     policy: "system-health-center",
-    required: ["source_coverage", "connector_readiness"],
+    required: [],
+    visibleRequiredTerms: [
+      "Public evidence coverage",
+      "Source registry trust",
+      "Graph / evidence lineage",
+      "Research caveat",
+      "Data trust summary",
+      "SemiRisk-KG public evidence graph",
+      "Data audit details",
+    ],
+    requiresSharedMetadataSignals: false,
     allowsDenseGraph: false,
   },
   {
@@ -529,31 +539,31 @@ async function main() {
         () => graphV2State(client),
         (state) => {
           const hasUnavailablePreview = state.previewStates.includes("unavailable_preview");
-          const hasControlledUnavailableCopy =
-            state.text.includes("Backend relationship data unavailable; authoritative rows are hidden.") &&
-            state.text.includes("Non-authoritative local preview data") &&
-            state.text.includes("excluded from");
+          const hasCoverageReviewUnavailableCopy =
+            state.text.includes("data is temporarily unavailable") &&
+            state.text.includes("coverage review") &&
+            state.text.includes("public evidence support");
           return (
             state.text.includes(titleText) &&
             state.text.includes(detailText) &&
-            (!hasUnavailablePreview || hasControlledUnavailableCopy)
+            (!hasUnavailablePreview || hasCoverageReviewUnavailableCopy)
           );
         },
       );
       const hasUnavailablePreview = relationshipState.previewStates.includes("unavailable_preview");
-      const hasControlledUnavailableCopy =
-        relationshipState.text.includes("Backend relationship data unavailable; authoritative rows are hidden.") &&
-        relationshipState.text.includes("Non-authoritative local preview data") &&
-        relationshipState.text.includes("excluded from");
+      const hasCoverageReviewUnavailableCopy =
+        relationshipState.text.includes("data is temporarily unavailable") &&
+        relationshipState.text.includes("coverage review") &&
+        relationshipState.text.includes("public evidence support");
       checks.push({
         page: `Graph Explorer supply-demand ${buttonLabel} mode`,
         relationshipEndpointsReady,
         hasUnavailablePreview,
-        hasControlledUnavailableCopy,
+        hasCoverageReviewUnavailableCopy,
         passed:
           relationshipState.text.includes(titleText) &&
           relationshipState.text.includes(detailText) &&
-          (!hasUnavailablePreview || hasControlledUnavailableCopy),
+          (!hasUnavailablePreview || hasCoverageReviewUnavailableCopy),
       });
     }
 
@@ -589,36 +599,23 @@ async function main() {
     }
 
     await navigate(client, `${webUrl}#system-health-center`);
-    const healthSemiriskTerms = [
+    const dataTrustStage2Terms = [
+      "Public evidence coverage",
+      "Source registry trust",
+      "Graph / evidence lineage",
+      "Research caveat",
+      "Data trust summary",
       "SemiRisk-KG public evidence graph",
-      "Nodes",
-      "Relationships",
-      "Source registry",
-      "Ontology",
-      "Source manifest",
-      "Research graph",
-      "Storage readiness",
-      "Connector readiness",
-      "Deployment version readiness",
-      "Chip supply chain coverage",
-      "Countries / regions",
-      "Value-chain layers",
-      "Entity profiles",
-      "Relationship summaries",
-      "Chokepoints",
-      "Source families",
-      "Research fixture mode",
-      "Technical diagnostics",
     ];
     const healthState = await waitFor(
       client,
       () => pageState(client),
       (state) =>
-        state.title === "System Health Center" &&
+        state.title === "Data Trust Center" &&
         (semiriskSystemHealthReady
-          ? healthSemiriskTerms.every((term) => state.text.toLowerCase().includes(term.toLowerCase()))
+          ? dataTrustStage2Terms.every((term) => state.text.toLowerCase().includes(term.toLowerCase()))
           : (
-              state.text.includes("Source registry") ||
+              state.text.includes("Source registry trust") ||
               state.text.includes("Data temporarily unavailable") ||
               state.text.includes("Public data unavailable")
             )),
@@ -638,22 +635,22 @@ async function main() {
       healthState.text.includes("Partial public data") ||
         /unavailable|degraded/i.test(healthState.text);
     const healthTextLower = healthState.text.toLowerCase();
-    const healthHasSemiriskEvidence = healthSemiriskTerms.every((term) => healthTextLower.includes(term.toLowerCase()));
+    const healthHasDataTrustStage2Semantics = dataTrustStage2Terms.every((term) => healthTextLower.includes(term.toLowerCase()));
     checks.push({
-      page: "System Health Center public route",
+      page: "Data Trust Center public route",
       title: healthState.title,
       firstNavId: healthState.firstNavId,
       hasRegistryEvidence: healthHasRegistryEvidence,
-      hasSemiriskEvidence: healthHasSemiriskEvidence,
+      hasDataTrustStage2Semantics: healthHasDataTrustStage2Semantics,
       hasControlledDegradedState: healthHasControlledDegradedState,
-      evidenceExcerpt: textExcerpt(healthState.text, healthSemiriskTerms),
+      evidenceExcerpt: textExcerpt(healthState.text, dataTrustStage2Terms),
       passed:
-        healthState.title === "System Health Center" &&
+        healthState.title === "Data Trust Center" &&
         healthState.firstNavId === "system-health-center" &&
-        (semiriskSystemHealthReady ? healthHasSemiriskEvidence : healthHasControlledDegradedState),
+        (semiriskSystemHealthReady ? healthHasDataTrustStage2Semantics : healthHasControlledDegradedState),
     });
     const chartTableTerms = [
-      "Evidence-bound chart and table components",
+      "Evidence coverage visuals",
       "Source freshness",
       "Graph quality",
       "Source coverage by tier",
@@ -746,12 +743,20 @@ async function main() {
         () => pageRelevanceState(client),
         (state) => state.title === expected.title && state.policy === expected.policy,
       );
-      const requiredSignals = expected.required.every((signal) => relevance.requiredSignals.includes(signal));
+      const visibleTextLower = relevance.visibleText.toLowerCase();
+      const visibleRequiredTerms = expected.visibleRequiredTerms ?? [];
+      const requiredSignals =
+        visibleRequiredTerms.length > 0
+          ? visibleRequiredTerms.every((term) => visibleTextLower.includes(term.toLowerCase()))
+          : expected.required.every((signal) => relevance.requiredSignals.includes(signal));
       const hasSharedMetadata =
-        relevance.requiredSignals.includes("data_mode") &&
-        relevance.requiredSignals.includes("graph_mode") &&
-        relevance.requiredSignals.includes("graph_version") &&
-        relevance.requiredSignals.includes("source_manifest_id");
+        expected.requiresSharedMetadataSignals === false ||
+        (
+          relevance.requiredSignals.includes("data_mode") &&
+          relevance.requiredSignals.includes("graph_mode") &&
+          relevance.requiredSignals.includes("graph_version") &&
+          relevance.requiredSignals.includes("source_manifest_id")
+        );
       const denseGraphAllowed = relevance.allowsDenseGraph === "true";
       const denseGraphCount = relevance.flowNodeCount + Math.max(0, relevance.graphNodeCount - 8);
       checks.push({
@@ -759,6 +764,8 @@ async function main() {
         policy: relevance.policy,
         purpose: relevance.purpose,
         requiredSignals: relevance.requiredSignals,
+        visibleRequiredTerms,
+        presentVisibleRequiredTerms: visibleRequiredTerms.filter((term) => visibleTextLower.includes(term.toLowerCase())),
         disallowedMajorSections: relevance.disallowedMajorSections,
         flowNodeCount: relevance.flowNodeCount,
         graphNodeCount: relevance.graphNodeCount,
@@ -1891,7 +1898,14 @@ async function pageRelevanceState(client) {
           if (section === 'dense_graph_canvas') return document.querySelectorAll('.react-flow__node').length > 0;
           return false;
         }),
-      hasDeploymentSuccessClaim: /deployed_success|deployment success|production ready|production-ready/i.test(document.body?.innerText ?? ''),
+      hasDeploymentSuccessClaim: (() => {
+        const deploymentSuccessClaimText = (document.body?.innerText ?? '')
+          .replace(/\\bnot\\s+production[-\\s]+ready\\b/gi, ' ')
+          .replace(/\\bnot\\s+a\\s+production\\s+readiness\\s+claim\\b/gi, ' ')
+          .replace(/\\bproduction\\s+readiness\\s+is\\s+not\\s+claimed\\b/gi, ' ')
+          .replace(/\\bno\\s+production\\s+readiness\\s+claim\\b/gi, ' ');
+        return /deployed_success|deployment\\s+success|production[-\\s]+ready/i.test(deploymentSuccessClaimText);
+      })(),
     };
   })()`);
 }

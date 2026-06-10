@@ -32,6 +32,10 @@ def test_route_version_returns_sanitized_deployment_metadata(monkeypatch) -> Non
     assert data["build_time"] == "2026-05-12T12:00:00Z"
     assert data["app_version"] == "0.1.0"
     assert data["data_mode"] == "fixture"
+    assert data["requested_data_mode"] == "fixture"
+    assert data["effective_data_mode"] == "fixture"
+    assert data["live_fetch_requested"] is False
+    assert data["live_fetch_effective"] is False
     assert data["graph_mode"] == "fixture"
     assert data["storage_mode"] == "memory"
     assert data["environment"] == "render"
@@ -47,6 +51,26 @@ def test_route_version_returns_sanitized_deployment_metadata(monkeypatch) -> Non
     assert data["graph_version"].startswith("semirisk_kg_v0_1_")
     assert data["source_manifest_id"].startswith("semirisk_fixture_manifest_")
     assert "not_production_ready" in data["warnings"]
+    _assert_sanitized_version(payload)
+
+
+def test_version_endpoint_live_enabled_request_is_guarded_by_registry_defaults(monkeypatch) -> None:
+    monkeypatch.setenv("SUPPLY_RISK_DATA_MODE", "live_enabled")
+    monkeypatch.setenv("SUPPLY_RISK_GRAPH_MODE", "promoted")
+    monkeypatch.delenv("SUPPLY_RISK_ALLOW_LIVE_FETCH", raising=False)
+    monkeypatch.delenv("SUPPLY_RISK_LIVE_FETCH_ALLOWED", raising=False)
+
+    payload = main.route_version(request_id="req_version_live_guard")
+    data = payload["data"]
+
+    assert data["requested_data_mode"] == "live_enabled"
+    assert data["data_mode"] == "promoted"
+    assert data["effective_data_mode"] == "promoted"
+    assert data["live_fetch_requested"] is True
+    assert data["live_fetch_effective"] is False
+    assert data["live_fetch_guard"] == "blocked_registry_live_defaults"
+    assert data["live_default_count"] == 0
+    assert "live_fetch_requested_but_disabled_by_registry_defaults" in data["warnings"]
     _assert_sanitized_version(payload)
 
 
